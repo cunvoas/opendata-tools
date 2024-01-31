@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr" 
+    xmlns:th= "http://www.thymeleaf.org" 
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+    <head th:insert="~{fragments/fragment-head :: head}"></head>
+    
+    <body class="sb-nav-fixed">
+        <div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+        <div id="layoutSidenav">
+            <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+            <div id="layoutSidenav_content" >
+ <!-- debut MAIN -->
+                <main>
+
+
+  <div class="container">
+     <div class="col-lg-7">
+     
+            <div class="container-fluid px-4">
+                   <h3 class="mt-4" th:text="#{association.title}">title</h3>
+            </div>
+           
+            <div class="row">
+                <form th:action="@{/mvc/management/asso/edit}" th:object="${editAssociation}" method="post">
+                
+                
+                    <div class="form-floating mb-3">
+                            <div class="form-floating">
+                                <input class="form-control" required="required" id="nom" name="nom"  type="text" th:attr="placeholder=#{association.name.placeholder}"  th:field="*{nom}" />
+                                <label for="nom" th:text="#{association.name}">name</label>
+                                <input id="id" name="id" type="hidden" th:field="*{id}" />
+                            </div>
+                    </div>
+                
+                    <div class="form-floating mb-3">
+                            <div class="form-floating">
+		                        <input class="form-control" required="required" id="email" name="email" type="email" th:attr="placeholder=#{association.email.placeholder}" th:field="*{email}" />
+		                        <label for="email" th:text="#{association.email}">Email</label>
+                            </div>
+                    </div>
+                
+                    <div class="form-floating mb-3">
+                            <div class="form-floating">
+                                <input class="form-control" id="siteUrl" name="siteUrl" type="text" th:attr="placeholder=#{association.site.placeholder}" th:field="*{siteUrl}" />
+                                <label for="siteUrl" th:text="#{association.site}">site</label>
+                            </div>
+                    </div>
+                
+                    <div class="form-floating mb-3">
+                            <div class="form-floating">
+                                <input class="form-control"  id="helloAssoUrl" name="helloAssoUrl" type="text" th:attr="placeholder=#{association.helloasso.placeholder}" th:field="*{helloAssoUrl}" />
+                                <label for="helloAssoUrl" th:text="#{association.helloasso}">hello asso</label>
+                            </div>
+                    </div>
+                    
+                    <div class="mt-4 mb-0">
+                        <div class="d-grid">
+                            <input class="btn btn-primary btn-block" type="submit" th:value="#{association.submit}"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        
+     </div>
+  </div>
+                </main>
+ <!-- fin MAIN -->
+               
+               <div th:insert="~{fragments/fragment-footer :: footer}"></div> 
+            </div>
+            
+        </div>
+        <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+        <script th:src="@{/mvc/static/js/scripts.js}"></script>
+    </body>
+</html>

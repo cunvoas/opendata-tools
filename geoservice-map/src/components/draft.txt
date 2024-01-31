@@ -1,0 +1,8 @@
+        <b-container >
+          <div class="w-100">Légende</div>
+          <b-row style="background-color:#2B100D;color:#FFFFFF;padding:2px"><b-col>N'est pas un parc selon l'OMS</b-col></b-row>
+          <b-row style="background-color:#58D83E;color:#FFFFFF;padding:2px"><b-col >&gt; 12 m²/habitant</b-col></b-row>
+          <b-row style="background-color:#D8C13E;color:#FFFFFF;padding:2x"><b-col>6 &lt; m²/habitant &lt;= 12</b-col></b-row>
+          <b-row style="background-color:#D8783E;color:#FFFFFF;padding:2px"><b-col>3 &lt; m²/habitant &lt;= 6</b-col></b-row>
+          <b-row style="background-color:#D84E3E;color:#FFFFFF;padding:2px"><b-col>&lt;= 3 m²/habitant</b-col></b-row>
+        </b-container>

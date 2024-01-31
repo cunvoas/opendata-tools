@@ -1,0 +1,304 @@
+<template>
+
+    <div>
+       
+        <span v-if="loading">Chargement...</span>
+
+        <label for="checkbox">Isochrones</label>
+        <input
+          id="checkbox"
+          v-model="showIsochrones"
+          type="checkbox"
+        >
+        <label for="checkboxWithOMS">Conforme OMS</label>
+        <input
+          id="checkboxWithOMS"
+          v-model="checkboxWithOMS"
+          type="checkbox"
+        >
+        
+        <label for="cbCarre">Données carroyées</label>
+        <input
+          id="cbCarre"
+          v-model="showCarre"
+          type="checkbox"
+        >
+        
+        <label for="cbCadastre">Cadastre</label>
+        <input
+          id="cbCadastre"
+          v-model="showCadastre"
+          type="checkbox"
+        >
+        <br />
+
+      <l-map
+        :zoom="zoom"
+        :center="center"
+        style="height: 700px; width: 95%"
+        @update:bounds="boundsUpdated"
+      >
+        <l-tile-layer
+          :url="url"
+          :attribution="attribution"
+        />
+        <l-geo-json
+          v-if="showIsochrones"
+          :geojson="geojsonIsochrone"
+          :options="detailIsochrone"
+          :options-style="styleIsochroneFunction"
+        />
+        <l-geo-json
+          v-if="showCarre"
+          :geojson="geojsonCarre"
+          :options="detailCarre"
+          :options-style="styleCarreFunction"
+        />
+        <l-geo-json
+          v-if="showCadastre"
+          :geojson="geojsonCadastre"
+          :options="detailCadastre"
+          :options-style="styleCadastreFunction"
+        />
+        <l-control-scale position="topright" :imperial="false" :metric="true"></l-control-scale>
+        
+      </l-map>
+
+      <br />
+      <span>Bounds: {{ bounds }}</span>
+    </div>
+  </template>
+  
+  <script>
+  import { latLng } from "leaflet";
+  import { LMap, LTileLayer, LGeoJson, LMarker, LIconDefault, LPolygon, LControlScale } from "vue2-leaflet";
+  
+  export default {
+
+    name: "Isochrone",
+    components: {
+      LMap,
+      LIconDefault,
+      LMarker,
+      LTileLayer,
+      LGeoJson,
+      LPolygon,
+      LControlScale
+    },
+    data() {
+      return {
+        loading: false,
+        showIsochrones: true,
+        showCarre: false,
+        showCadastre: false,
+        checkboxWithOMS: true,
+        zoom: 14,
+        minZoom: 9,
+        center: [50.6349747,3.046428],
+        bounds: null,
+        boundSwLat: 0,
+        boundSwLng: 0,
+        boundNeLat: 0,
+        boundNeLng: 0,
+        geojsonIsochrone: null,
+        geojsonCarre: null,
+        geojsonCadastre: null,
+        restUrlCadastre: "http://localhost:8980/cadastre/area",
+        restUrlCarre: "http://localhost:8980/insee/carre200m/corner",
+        restUrlIsochrones: "http://localhost:8980/map/park/parkByCorner",
+        fillColor: "#A0DCA0",
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> <a href="https://www.facebook.com/lmoxygene/">LM Oxygène</a> '
+      };
+    },
+    methods: {
+          boundsUpdated (bounds) {
+            this.bounds = bounds;
+
+            // the new map is outside the previous GeoJson calls
+            if (  bounds._southWest.lat < this.boundSwLat || 
+                  bounds._southWest.lng < this.boundSwLng || 
+                  bounds._northEast.lat > this.boundNeLat || 
+                  bounds._northEast.lng > this.boundNeLng   ){
+                    
+                    this.boundSwLat = bounds._southWest.lat;
+                    this.boundSwLng = bounds._southWest.lng;
+                    this.boundNeLat = bounds._northEast.lat;
+                    this.boundNeLng = bounds._northEast.lng;
+
+                    var qryPrms =  "?swLat="+ this.boundSwLat
+                                  +"&swLng="+ this.boundSwLng
+                                  +"&neLat="+ this.boundNeLat
+                                  +"&neLng="+ this.boundNeLng;
+                    console.log(qryPrms);
+               
+                    this.callGeoJsonIsochrones(qryPrms);
+                    this.callGeoJsonCarres(qryPrms);
+                    this.callGeoJsonCadastre(qryPrms);
+            }
+          },
+          async callGeoJsonIsochrones(prms){
+            // data isochrones
+            console.log("callGeoJsonIsochrones");
+  //var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lilleParks.json"
+            var base=this.restUrlIsochrones;
+            const respIsochrone = await fetch(base+prms);
+            const dataIsochrone = await respIsochrone.json();
+            this.geojsonIsochrone = dataIsochrone;
+          },
+          async callGeoJsonCarres(prms){
+            // data carreau 20m
+            console.log("callGeoJsonCarres");
+//            var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lilleCarre.json"
+            var base=this.restUrlCarre;
+            const respCarre= await fetch(base+prms);
+            const dataCarre = await respCarre.json();
+            this.geojsonCarre = dataCarre;
+          },
+          async callGeoJsonCadastre(prms){
+            // data Cadastre
+            console.log("callGeoJsonCadastre");
+ //           var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lilleCadastre.json"
+            var base=this.restUrlCadastre;
+            const respCadastre= await fetch(base+prms);
+            const dataCadastre = await respCadastre.json();
+            this.geojsonCadastre = dataCadastre;
+          }
+    },
+    computed: {
+      detailIsochrone() {
+        return {
+          onEachFeature: this.onDetailIsochrone
+        };
+      },
+      detailCadastre() {
+        return {
+          onEachFeature: this.onDetailCadastre
+        };
+      },
+      detailCarre() {
+        return {
+          onEachFeature: this.onDetailCarre
+        };
+      },
+      styleIsochroneFunction() {
+        const fillColor = this.fillColor; // important! need touch fillColor in computed for re-calculate when change fillColor
+        return () => {
+          return {
+            weight: 2,
+            color: "#406C40",
+            opacity: 0.95,
+            fillColor: fillColor,
+            fillOpacity: 0.6
+          };
+        };
+      },
+      styleCarreFunction() {
+        return () => {
+          return {
+            weight: 2,
+            color: "#24216a",
+            opacity: 0.95,
+            fillColor: "#060512",
+            fillOpacity: 0.2
+          };
+        };
+      },
+      styleCadastreFunction() {
+        return () => {
+          return {
+            weight: 2,
+            color: "#CB9800",
+            opacity: 0.95,
+            fillColor: "#FFFF99",
+            fillOpacity: 0.3
+          };
+        };
+      },
+      
+      
+      onDetailIsochrone() {
+        return (feature, layer) => {
+          layer.bindTooltip(
+            "<div>Quartier:" + feature.properties.quartier +
+              "</div><div>" + feature.properties.name + " (id:"+ feature.properties.id +
+              ")</div><div>" + feature.properties.people +
+              " hab. pour " + feature.properties.area +
+              " m² (" + feature.properties.areaPerPeople +
+              " m²/h)</div>",
+            { permanent: false, sticky: true }
+          );
+          if (this.checkboxWithOMS && !feature.properties.oms) {
+              layer.setStyle({
+                fillColor: feature.properties.fillColor,
+                opacity: 0.4,
+                fillOpacity: 0.2
+              });
+            
+          } else {
+              layer.setStyle({
+                fillColor: feature.properties.fillColor,
+                fillOpacity: 0.6
+              });
+          }
+        }
+      },
+      
+      onDetailCarre() {
+        return (feature, layer) => {
+          layer.bindTooltip(
+            "<div>ID:" + feature.properties.id +
+            "</div><div>Commune: " + feature.properties.commune +
+            "</div><div>Population: " + feature.properties.people +
+            "</div><div>Dont parc: " + feature.properties.popParkIncluded +
+            "</div><div>Sans parc: " + feature.properties.popParkExcluded +
+            "</div>",
+            { permanent: false, sticky: true }
+          );
+          if ( feature.properties.popParkIncluded !=='n/a') {
+            layer.setStyle({
+              fillColor: feature.properties.fillColor,
+              fillOpacity: 0.6
+            });
+          }
+        };
+      },
+      
+      onDetailCadastre() {
+        return (feature, layer) => {
+          layer.bindTooltip(
+            "<div>INSEE:" + feature.properties.idInsee +
+            "</div><div>Commune: " + feature.properties.nom +
+            "</div>",
+            { permanent: false, sticky: true }
+          );
+        };
+      }
+
+
+    },
+    created() {
+      var self = this;
+      this.loading = true;
+
+      //  async parallel calls
+      Promise.all([
+          this.callGeoJsonCarres(self.restUrlCarre+"?swLat=50.61309246538529&swLng=2.967338562011719&neLat=50.65664364875093&neLng=3.125095367431641"), 
+          this.callGeoJsonIsochrones(self.restUrlIsochrones+"?swLat=50.61309246538529&swLng=2.967338562011719&neLat=50.65664364875093&neLng=3.125095367431641"),
+          this.callGeoJsonCadastre(self.restUrlCadastre+"?swLat=50.61309246538529&swLng=2.967338562011719&neLat=50.65664364875093&neLng=3.125095367431641")
+
+      //    this.callGeoJsonCarres(""),
+      //    this.callGeoJsonIsochrones(""),
+      //    this.callGeoJsonCadastre("")
+        ])
+      .then((response) => {
+        console.log(response)   
+        // same as : this.loading = false;
+        //    but this is not reachable
+        self.loading = false;
+      });
+
+    }
+  };
+  </script>
+  

@@ -1,0 +1,89 @@
+
+
+
+            <div id="layoutSidenav_nav" th:fragment="navLeft">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav">
+                        
+                            <div class="sb-sidenav-menu-heading" th:text="#{menu.abstract}">group 1</div>
+                            <a class="nav-link" th:href="@{/mvc/dashboard}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-gauge-high"></i></div>
+                                <div th:text="#{menu.abstract.dashboard}">g1 t1</div>
+                            </a>
+
+                       <span sec:authorize="hasAuthority('ADMINISTRATOR')">
+                            <div class="sb-sidenav-menu-heading" th:text="#{menu.management}">group 2</div>
+                            
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                <div th:text="#{menu.management.members}">group2-1</div>
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                	<a class="nav-link" th:href="@{/mvc/management/asso/list}" th:text="#{menu.management.association}">g2-1 t1</a>
+                                    <a class="nav-link" th:href="@{/mvc/management/contrib/list}" th:text="#{menu.management.contributor}">g2-1 t2</a>
+                                </nav>
+                            </div>
+                       </span>
+                            
+                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="fas fa-database"></i></div>
+                                 <div th:text="#{menu.management.opendata}">group2-2</div>
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                	<a class="nav-link" th:href="@{/mvc/cityGroup}" th:text="#{menu.management.cityGroups}">g2-1 t1</a>
+                                    <a class="nav-link" th:href="@{/mvc/city}" th:text="#{menu.management.cities}">g2-1 t2</a>
+                                </nav>
+                            </div>
+                            
+                        
+                            <div class="sb-sidenav-menu-heading" th:text="#{menu.maps}">group 3</div>
+                            <a class="nav-link" th:href="@{/mvc/park}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-tree-city"></i></div>
+                                <div th:text="#{menu.maps.parks}">g3 t1</div>
+                            </a>
+                            <a class="nav-link" th:href="@{/mvc/entrance}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-map-location-dot"></i></div>
+                                <div th:text="#{menu.maps.entances}">g3 t1</div>
+                            </a>
+                            
+<!-- 
+                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+
+                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
+                                        collapsed 2°
+                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                    </a>
+                                    <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
+                                        <nav class="sb-sidenav-menu-nested nav">
+                                            <a class="nav-link" href="login.html">Login</a>
+                                            <a class="nav-link" href="register.html">Register</a>
+                                            <a class="nav-link" href="password.html">Forgot Password</a>
+                                            <a class="nav-link" href="401.html">401 Page</a>
+                                            <a class="nav-link" href="404.html">404 Page</a>
+                                            <a class="nav-link" href="500.html">500 Page</a>
+                                            <a class="nav-link" href="charts.html">charts.html</a>
+                                            <a class="nav-link" href="tables.html">tables.html</a>
+                                            <a class="nav-link" href="layout-static.html">layout-static.html</a>
+                                            <a class="nav-link" href="layout-sidenav-light.html">layout-sidenav-light.html</a>
+                                        </nav>
+                                    </div>
+                                </nav>
+                            </div>
+ -->                            
+                            
+                        </div>
+                    </div>
+                    <div class="sb-sidenav-footer" sec:authorize="isAuthenticated()">
+                        <div class="small" th:text="#{global.user.logged}">Logged in as:</div>
+                        <span sec:authentication="name">bob</span>
+                        <span sec:authentication="principal.authorities">role</span>
+                    </div>
+                </nav>
+            </div>
+           

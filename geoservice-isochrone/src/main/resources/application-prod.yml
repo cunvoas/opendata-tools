@@ -1,0 +1,41 @@
+server:
+  servlet:
+    contextPath: /isochrone
+
+
+
+  
+# Config for PROD
+spring:
+  jpa:
+    hibernate.ddl-auto: none
+    generate-ddl: false
+    show-sql: false
+    format-sql: false
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+application:
+  security:
+    jwt-sign-key: FAKE_KEY
+    salt-len: ${PASSWORD_SALT}
+    hash-len: ${PASSWORD_LENGTH}
+    nb-iters: ${PASSWORD_INTERATIONS}
+#    1 << 15  =32768
+#    1 << 17  =131072
+    memSizeInKb: ${PASSWORD_MEMORY}
+  mailjet:
+    apiToken: ${MAILJET_TOKEN}
+    apiSecret: ${MAILJET_SECRET}
+    senderEmail: ${MAILJET_EMAIL}
+    senderName: ${MAILJET_NAME}
+    attachementPath: /var/isochrone/mail
+  feature-flipping:
+    parkAnalysisEnabled: true
+    salaryAnalysisEnabled: false
+    pollutionAnalysisEnabled: false
+    isochrone-impl: ign-api
+    
+  admin:
+    photo-path: /var/isochrone/photo

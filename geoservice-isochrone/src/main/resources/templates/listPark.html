@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:insert="~{fragments/fragment-head :: head}"></head>
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<main>
+
+				<div class="container">
+
+<div class="row row-cols-1 row-cols-md-12 g-2 ">
+	<div class="container-fluid px-4">
+		<h1 class="mt-12" th:text="#{park.title}">title</h1>
+	</div>
+     <div class="row">
+         <div class="col-3">
+             <div class="card" style="text-align: center">
+               	<!-- region -->
+				<form th:action="@{/mvc/park/region}" th:object="${formParkList}" method="post" onchange="submit();">
+					<div class="form-floating">
+						<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+							<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
+							<option th:each="region : ${regions}" 
+								th:value="${region.id}" 
+								th:text="${region.name}" 
+								th:selected="${region.id==idRegion}"></option>
+						</select>
+						<label for="idRegion" th:text="#{entrance.region}">region</label>
+					</div>
+				</form>
+             </div>
+         </div>
+         <div class="col-3">
+             <div class="card" style="text-align: center">
+                	<!-- comm2co -->
+					<form th:action="@{/mvc/park/commDeCo}" th:object="${formParkList}" method="post" onchange="submit();">
+					<fieldset id="fsComm2co" disabled="disabled">
+						<div class="form-floating">
+							<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+								<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
+								<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+							</select>
+							<label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
+							<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						</div>
+					</fieldset>
+					</form>
+             </div>
+         </div>
+         <div class="col-6">
+             <div class="card" style="text-align: center">
+             	<!-- commune -->
+				<form id="formSelectCity" th:action="@{/mvc/park/city}" method="POST" th:object="${formParkList}">
+				<fieldset id="fsCity" disabled="disabled">
+					<div class="form-floating">
+	
+	
+						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
+						<datalist id="communes" class="form-label">
+							<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
+						</datalist>
+						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+					</div>
+				</fieldset>
+				</form>
+             </div>
+         </div>
+     </div>
+     
+     
+     <div class="row">
+         <div class="col-12">
+             <div class="card" style="text-align: left">
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i>
+                    <txt th:text="#{park.table.title}"></txt>
+                </div>
+                <div class="card-body">
+
+<!-- table here -->
+
+			<table border="1"id="datatablesSimple">
+			    <thead>
+			        <tr>
+			            <th th:text="#{park.table.nameCommune}" />
+                        <th th:text="#{park.table.block}" />
+			            <th th:text="#{park.table.namePark}" />
+                        <th th:text="#{park.table.oms}" />
+                        <th th:text="#{park.table.lastEntranceUpdate}" />
+                        <th th:text="#{park.table.lastIsochroneUpdate}" />
+                        <th th:text="#{park.table.link}" />
+			        </tr>
+			    </thead>
+			    <tbody>
+			        <tr th:each="park : ${formParkListItems}" >
+			            <td th:text="${park.nameCommune}" />
+                        <td th:text="${park.nameQuartier}" />
+                        <td th:text="${park.namePark}" />
+                        <td th:text="${park.oms}" />
+                        <td th:text="${park.lastEntranceUpdate}" />
+                        <td th:text="${park.lastIsochroneUpdate}" />
+                        <td>
+                            <a th:href="@{/mvc/park/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkPark}"></a>
+                            &nbsp;
+                            <a th:href="@{/mvc/entrance/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkEtrance}"></a>
+                        </td>
+                        
+
+			        </tr>
+			    </tbody>
+			</table>
+
+			</div>
+
+
+             </div>
+         </div>
+     </div>
+     
+
+    </div>
+    
+</div>
+
+							
+			</main>
+		</div> <!-- layoutSidenav_content -->
+	</div> <!-- layoutSidenav -->
+	
+
+	<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+
+     <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+
+	<script th:inline="javascript">
+	
+	/* manage correct ID for COMMUNNE SELECTION */
+	// th-field broke the datalist work
+	document.querySelector('#idCommune-filter').value=[[${formParkList.nameCommune}]];
+	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
+	    var input = e.target,
+	        list = input.getAttribute('list'),
+	        options = document.querySelectorAll('#' + list + ' option'),
+	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+	        inputValue = input.value;
+		    
+	    	hiddenInput.value = inputValue;
+		    
+		    for(var i = 0; i < options.length; i++) {
+		        var option = options[i];
+		        if(option.value === inputValue) {
+		        	hiddenInput.value = option.getAttribute('data-value');
+		        	document.querySelector("#formSelectCity").submit();
+		            break;
+		        }
+		    }
+	});
+	document.querySelector('#idCommune-filter').addEventListener('focusout', function(e) {
+	    var input = e.target,
+        list = input.getAttribute('list'),
+        options = document.querySelectorAll('#' + list + ' option'),
+        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+        inputValue = input.value;
+	    
+	    const regex = /[0-9]/g;
+	    const found = hiddenInput.match(regex);
+	    if (found) {
+	    	document.querySelector("#formSelectCity").submit();
+	    }
+	});
+
+    
+    manageDisabled();
+    function manageDisabled() {
+    	if (document.getElementById("idRegion").value!="") {
+    		document.getElementById("fsComm2co").disabled = false;
+    	}
+    	if (document.getElementById("idCommunauteDeCommunes").value!="") {
+    		document.getElementById("fsCity").disabled = false;
+    	}
+
+    }
+    
+    window.addEventListener('DOMContentLoaded', event => {
+        // Simple-DataTables
+        // https://github.com/fiduswriter/Simple-DataTables/wiki
+
+        const datatablesSimple = document.getElementById('datatablesSimple');
+        if (datatablesSimple) {
+            new simpleDatatables.DataTable(datatablesSimple);
+        }
+    });
+
+</script>
+
+</body>
+</html>

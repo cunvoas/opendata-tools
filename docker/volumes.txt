@@ -1,0 +1,22 @@
+sudo docker volume create pg_volume_data --opt type=none --opt device=/mnt/usb1/ASSOS/docker/volumes/postgresql/data --opt o=bind
+sudo docker volume create pg_volume_log --opt type=none --opt device=/mnt/usb1/ASSOS/docker/volumes/postgresql/log --opt o=bind
+
+
+#  /var/lib/docker/volumes/
+
+https://stackoverflow.com/questions/36014554/how-to-change-the-default-location-for-docker-create-volume-command
+
+If you're using systemd for service management, the file is usually located at /lib/systemd/system/docker.service. Edit the file as such:
+
+# Old - taken from the generated docker.service file in Ubuntu 16.04's docker.io package
+ExecStart=/usr/bin/dockerd -H fd:// $DOCKER_OPTS
+
+# New
+ExecStart=/usr/bin/dockerd --data-root /new_location/ -H fd:// $DOCKER_OPTS
+
+
+
+
+sudo systemctl daemon-reload
+sudo service docker restart
+

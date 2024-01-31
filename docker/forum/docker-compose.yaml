@@ -1,0 +1,22 @@
+version: '2.3'
+services:     
+  element:
+    container_name: "element"
+    hostname: "element"
+    image: vectorim/element-web:latest
+    restart: unless-stopped
+    volumes:
+      - ./element-config.json:/app/config.json
+
+        
+  synapse:
+    container_name: "synapse"
+    hostname: "synapse"
+    image: matrixdotorg/synapse:latest
+    restart: unless-stopped
+    volumes:
+     - ./synapse:/data
+
+networks:
+  autmel-vlan:
+    external: true

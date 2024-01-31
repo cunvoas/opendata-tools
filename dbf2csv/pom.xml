@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.cunvoas</groupId>
+    <artifactId>dbf2csv</artifactId>
+    <version>1.0.0</version>
+
+
+    <properties>
+        <java.version>11</java.version>
+        <spring.version>3.1.0.RELEASE</spring.version>
+        <cglib.version>2.2.2</cglib.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/com.github.albfernandez/javadbf -->
+        <dependency>
+            <groupId>com.github.albfernandez</groupId>
+            <artifactId>javadbf</artifactId>
+            <version>1.14.0</version>
+        </dependency>
+
+
+    </dependencies>
+
+
+
+    <repositories>
+        <repository>
+            <id>springsource-milestones</id>
+            <name>SpringSource Milestones Proxy</name>
+            <url>https://oss.sonatype.org/content/repositories/springsource-milestones</url>
+        </repository>
+
+
+        <repository>
+            <id>geotools</id>
+            <name>geotools repo</name>
+            <url>https://repo.osgeo.org/repository/release/</url>
+        </repository>
+
+
+
+    </repositories>
+
+    <build>
+        <finalName>dbf2csv</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.0.2</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>

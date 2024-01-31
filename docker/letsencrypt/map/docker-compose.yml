@@ -1,0 +1,17 @@
+version: "3.3" 
+services:
+
+  letsencrypt-map:
+    container_name: 'certbot-service-map'
+    env_file: ../secret.env
+    image: certbot/certbot:latest
+# fist time
+#    command: sh -c "certbot certonly --webroot -w /tmp/acme_challenge -d ${AUTMEL_MAP} --text --agree-tos --email=${AUTMEL_EMAIL} --rsa-key-size 4096 --verbose --keep-until-expiring --preferred-challenges=dns,http"
+    command: sh -c "certbot certonly  --force-renew --webroot -w /tmp/acme_challenge -d ${AUTMEL_MAP} --text --agree-tos --email=${AUTMEL_EMAIL} --rsa-key-size 4096 --verbose --keep-until-expiring --preferred-challenges=dns,http"
+     entrypoint: ""
+    volumes:
+      - "/etc/letsencrypt:/etc/letsencrypt"
+      - "/tmp/acme_challenge:/tmp/acme_challenge"
+    environment:
+      - TERM=xterm
+   

@@ -1,0 +1,34 @@
+#
+version: '2.4'
+services:
+  pg_autmel:
+    image: tobi312/rpi-postgresql-postgis:15-3.4-alpine-arm
+    container_name: "pg_autmel"
+    hostname: "pg_autmel"
+    restart: unless-stopped
+    env_file: secret.env
+    build:
+      context: .
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ${VOLUMES_PATH}/log/postgresql:/var/log/postgresql
+      #- /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+    environment:
+       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+       #POSTGRES_DB: user
+       #POSTGRES_USER: user
+    ports:
+      - 5432:5432
+    networks:
+      - autmel-vlan
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 60s
+      timeout: 5s
+      retries: 5
+volumes:
+  pg_data:
+networks:
+  autmel-vlan:
+    external: true

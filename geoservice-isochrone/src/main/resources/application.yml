@@ -1,0 +1,95 @@
+# https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#appendix.application-properties.web
+
+server:
+  port: ${APP_PORT:8980}
+  
+  application.name: isochrone
+  
+  # Hardening
+  server-header:
+  servlet:
+    application-display-name: isochrone
+    session.cookie.name: PHPSESSID
+  reactive:
+    session.cookie.name: PHPSESSID
+    
+  # conf server
+  tomcat:
+    max-http-form-post-size: 6MB
+    max-keep-alive-requests: 20
+    threads:
+      max: 100
+      min-spare: 10
+      accept-count: 50
+
+   # Database configuration
+  datasource:
+    driverClassName: org.postgresql.Driver
+#    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgis}?useTimeZone=true&serverTimezone=UTC&autoReconnect=true&useSSL=false
+    url: ${DB_URL}
+    username: ${DB_USER:postgis}
+    password: ${DB_PASSWORD:postgis
+    testWhileIdle: true
+    validationQuery: SELECT 1
+
+  # Pool JDBC : HikariCP
+  # https://refactorizando.com/en/hikari-configuration-spring-boot/
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle: 2
+      maximum-pool-size: 20
+      idle-timeout:  600000
+      max-lifetime: 1800000
+      connection-timeout: 20000
+      auto-commit: false 
+
+# JPA configuration
+  jpa:
+    database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
+#    hibernate.ddl-auto: update
+    hibernate.ddl-auto: none
+    open-in-view: true
+    generate-ddl: true
+    show-sql: true
+    format-sql: true
+    properties:
+      hibernate:
+# dépend de la version d'hibernate
+#        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
+        jdbc:
+          batch_size:  10
+        format_sql:    false
+        order_inserts: true
+        order_updates: false
+
+# PostGIS configuration
+
+# thymeleaf configuration
+  thymeleaf:
+    cache: false
+    enable-spring-el-compiler: true
+    
+    
+application:
+  business:
+    oms:
+      urban:
+        distance: 300
+        area: 12
+        area_min: 10
+      suburban:
+        distance: 1200
+        area: 45
+        area_min: 25
+# InseeDensiteCommune: IDs denses
+    insee:
+      densite: 1,2
+  feature-flipping:
+    parkAnalysisEnabled: true
+    salaryAnalysisEnabled: false
+    pollutionAnalysisEnabled: false
+    isochrone-impl: ign-api
+  admin:
+    photo-path: /work/demo/isochrone/photo_path
+

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head th:insert="~{fragments/fragment-head :: head}" />
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<!-- debut MAIN -->
+			<main>
+
+				<div class="container-fluid px-4">
+					<h3 class="mt-4" th:text="#{menu.abstract.dashboard}">Dashboard</h3>
+
+					<div class="row mt-4">
+
+
+						<div class="col-sm-4 col-md-4 col-lg-4">
+							<div
+								class="card bg-warning text-white  border-left-primary shadow h-100 py-2 ">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-users-rays fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbAssociation}">nbAssociation</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbAssociation, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="col-sm-4 col-md-4 col-lg-4">
+							<div
+								class="card bg-warning text-white  border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-users fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbContributeur}">
+												nbContributeur</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbContributeur, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+
+
+						<div class="col-sm-4 col-md-4 col-lg-4">
+							<div
+								class="card bg-secondary text-white  border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-book-atlas fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbCarreau}">nbCarreau</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbCarreau, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+					<div class="row mt-4">
+
+
+						<div class="col-sm-4 col-md-4 col-lg-4">
+							<div
+								class="card bg-secondary text-white  border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-city fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbCommunauteCommune}">
+												nbCommunauteCommune</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbCommunauteCommune, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-sm-4 col-md-4 col-lg-4">
+							<div
+								class="card bg-secondary text-white  border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-building fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbCommune}">nbCommune</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbCommune, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+
+						<div class="col-sm-4 col-md-4 col-lg-4">
+							<div
+								class="card bg-primary text-white  border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-torii-gate fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbParcEntance}">nbParcEntance</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbParcEntance, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+					<div class="row mt-4">
+
+						<div class="col-sm-4 col-md-4 col-lg-4">
+							<div
+								class="card bg-secondary text-white  border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-tree-city fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbParcReference}">
+												nbParcReference</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbParcReference, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-sm-4 col-md-4 col-lg-4">
+							<div
+								class="card bg-primary text-white  border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-check fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbParc}">nbParc</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbParc, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-sm-4 col-md-4 col-lg-4">
+							<div
+								class="card bg-success text-white  border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-gears fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbParcIsochrone}">
+												nbParcIsochrone</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbParcIsochrone, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+<h3 class="mt-12" th:text="#{menu.abstract.history}">History</h3>
+						
+					<div class="card mt-12">
+						<div class="card-body col-md-12">
+                            <p>
+                                <code>A venir</code>
+                                <br /> 
+								<ul>
+									<li>Rendre disponible depuis l'interface la fusion des isochrones des entrées et leur visualisation sur la page de gestion</li>
+									<li>Permettre la création des parcs sur la MEL (aide avec data de la préfecture)</li>
+									<li>une IHM de production des calculs relatifs à la population d'une commune ou communauté de commune</li>
+									<li>Production des rapports (à définir)</li>
+									<li>...</li>
+								</ul>
+                            </p>
+                            <p>
+                                <code>V1.0.3-20240130</code> 
+                                <br /> 
+                                <ul>
+                                <li>Ajouter les parcs de l'OpenData Roubaix & Tourcoing</li>
+                                <li>Automatiser l'envoi de mail en cas de création ou de réinitialisation de mot de passe.</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.2-20240125</code> 
+                                <br /> 
+								<ul>
+								<li>Liste et édition des associations</li>
+								<li>Liste et édition des utilisateurs</li>
+								</ul>
+                            </p>
+                            <p>
+                                <code>V1.0.1-20240119</code>
+                                <br /> 
+                                <ul>
+                                <li>Edition des entrées</li>
+                                <li>Liste des parcs</li>
+                                </ul>
+                            </p>
+							<p>
+								<code>V1.0.0-20231010</code>
+								<br />
+                                <ul>
+                                <li>Première version</li>
+                                </ul> 
+							</p>
+
+						</div>
+					</div>
+				</div>
+			</main>
+			<!-- fin MAIN -->
+
+			<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+		</div>
+
+	</div>
+
+	<div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+	<script th:src="@{/mvc/static/assets/demo/chart-area-demo.js}"></script>
+	<script th:src="@{/mvc/static/assets/demo/chart-bar-demo.js}"></script>
+	<script th:src="@{/mvc/static/js/datatables-simple-demo.js}"></script>
+
+</body>
+</html>
