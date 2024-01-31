@@ -1,0 +1,44 @@
+version: '3.9'
+
+#volumes:
+#  pg_volume_data:
+#  pg_volume_log:
+
+services:
+  pg_autmel:
+    container_name: "pg_autmel"
+    hostname: "pg_autmel"
+    restart: unless-stopped
+    env_file: .env
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 5432:5432
+    volumes:
+#      - ${VOLUMES_PATH}/postgresql/:/var/lib/postgresql/
+      - postgres_data:/var/lib/postgresql/
+#      - pg_volume_data:/var/lib/postgresql/data
+#      - pg_volume_log:/var/log/postgresql
+    environment:
+      POSTGRES_DB: ${PG_DBs}
+      POSTGRES_USER: ${PG_USERs}
+      POSTGRES_PASSWORD: ${PG_PASSWDs}
+      ALLOW_IP_RANGE: ${ALLOW_IP_RANGE}
+#      POSTGRES_MULTIPLE_EXTENSIONS: postgis,hstore,postgis_topology,postgis_raster,pgrouting
+      POSTGRES_MULTIPLE_EXTENSIONS: postgis
+    networks:
+      - autmel-vlan
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "pg_isready"
+
+networks:
+  autmel-vlan:
+    external: true
+    
+volumes:
+  postgres_data:
+    driver: local

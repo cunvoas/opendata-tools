@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:insert="~{fragments/fragment-head :: head}"></head>
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<main>
+
+				<div class="container">
+
+<div class="row row-cols-1 row-cols-md-12 g-2 ">
+	<div class="container-fluid px-4">
+		<h1 class="mt-12" th:text="#{entrance.title}">title</h1>
+	</div>
+     <div class="row">
+         <div class="col-3">
+             <div class="card" style="text-align: center">
+               	<!-- region -->
+				<form th:action="@{/mvc/entrance/region}" th:object="${editEntrance}" method="post" onchange="submit();">
+					<div class="form-floating">
+						<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+							<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
+							<option th:each="region : ${regions}" 
+								th:value="${region.id}" 
+								th:text="${region.name}" 
+								th:selected="${region.id==idRegion}"></option>
+						</select>
+						<label for="idRegion" th:text="#{entrance.region}">region</label>
+					</div>
+				</form>
+             </div>
+         </div>
+         <div class="col-3">
+             <div class="card" style="text-align: center">
+                	<!-- comm2co -->
+					<form th:action="@{/mvc/entrance/commDeCo}" th:object="${editEntrance}" method="post" onchange="submit();">
+					<fieldset id="fsComm2co" disabled="disabled">
+						<div class="form-floating">
+							<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+								<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
+								<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+							</select>
+							<label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
+							<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						</div>
+					</fieldset>
+					</form>
+             </div>
+         </div>
+         <div class="col-6">
+             <div class="card" style="text-align: center">
+             	<!-- commune -->
+				<form id="formSelectCity" th:action="@{/mvc/entrance/city}" method="POST" th:object="${editEntrance}">
+				<fieldset id="fsCity" disabled="disabled">
+					<div class="form-floating">
+	
+	
+						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
+						<datalist id="communes" class="form-label">
+							<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
+						</datalist>
+						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+					</div>
+				</fieldset>
+				</form>
+             </div>
+         </div>
+     </div>
+     <div class="row">
+         <div class="col-6">
+             <div class="card" style="text-align: center">
+				<!-- garden -->
+				<form id="formSelectPark" th:action="@{/mvc/entrance/park}" method="POST" th:object="${editEntrance}">
+				<fieldset id="fsPark" disabled="disabled">
+					<div class="form-floating">
+						<input class="form-select" list="parks" id="idPark-filter" name="idPark-filter" />
+						<label for="idPark-filter" th:text="#{entrance.park}">parc</label>
+						<datalist id="parks" class="form-label">
+							<option th:each="park : ${parks}" 
+								th:value="${park.name}" 
+								th:attr="data-value=${park.id}" 
+								th:label="${park.name}"></option>
+						</datalist>
+						<input type="hidden" id="idPark" name="idPark" th:field="*{idPark}" />
+						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+					</div>
+				</fieldset>
+				</form>
+             </div>
+         </div>
+         <div class="col-6">
+             <div class="card" style="text-align: center">
+				<!-- entree -->
+				<form th:action="@{/mvc/entrance/entrance}" th:object="${editEntrance}" method="POST" onchange="submit();">
+				<fieldset id="fsEntrance" disabled="disabled">
+					<div class="form-floating">
+						<select class="form-select" id="idEntrance" name="idEntrance" th:field="*{idEntrance}">
+							<option value="" selected disabled th:text="#{entrance.parkEntrance.placeholder}">Choose here</option>
+							<option th:each="parkEntrance : ${parkEntrances}" 
+								th:value="${parkEntrance.id}" th:text="${parkEntrance.description}" 
+								th:attr="data-lng=${parkEntrance.entryLng},data-lat=${parkEntrance.entryLat}"
+								th:selected="${parkEntrance.id==idEntrance}"></option>
+						</select>
+						<label for="idPark" th:text="#{entrance.parkEntrance}">parc</label>
+						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+						<input type="hidden" id="idPark" name="idPark" th:field="*{idPark}" />
+                        <input type="hidden" id="areaId" name="areaId" th:field="*{areaId}" />
+					</div>
+				</fieldset>
+				</form>
+             </div>
+         </div>
+     </div>
+     
+    <div class="col-6">
+    	<form th:action="@{/mvc/entrance/editPark}" th:object="${editEntrance.parcEtJardin}" method="post">
+        <fieldset id="fsEditPark" disabled="disabled">
+        <div class="row">
+			<div class="container-fluid px-4">
+				<h4 class="mt-12" th:text="#{entrance.park.title}">title</h4>
+			</div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="name" name="name" th:field="*{name}"  disabled="disabled"/>
+						<label class="form-label" for="name" th:text="#{entrance.park}">parc</label>
+					</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="quartier" name="quartier" th:field="*{quartier}"  disabled="disabled"/>
+						<label class="form-label" for="quartier" th:text="#{entrance.park.block}">block</label>
+					</div>
+                </div>
+            </div>
+        </div>
+        </fieldset>
+        </form>
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="mapLatitude" name="mapLatitude" th:field="*{editEntrance.mapLat}" disabled="disabled"/>
+						<label class="form-label" for="mapLatitude" th:text="#{entrance.park.point.lat}">latitude</label>
+					</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="mapLongitude" name="mapLongitude" th:field="*{editEntrance.mapLng}"  disabled="disabled"/>
+						<label class="form-label" for="mapLongitude"th:text="#{entrance.park.point.lng}">longitude</label>
+					</div>
+                </div>
+            </div>
+        </div>
+        
+         <div class="row">
+	         <div class="col container-fluid px-4">
+				<h4 class="mt-12" id="editEntranceTitle" th:text="#{entrance.edit.title}">title </h4>
+			</div>
+			<div class="col">
+				<button class="btn btn-info" th:text="#{entrance.edit.mode}" onclick="switchMode(this)">mode</button>
+			</div>
+         </div>
+    <form id="editEntrance" th:action="@{/mvc/entrance/editEntrance}" th:object="${parkEntranceDetail}" method="POST">
+    <fieldset id="fsEditEntrance" disabled="disabled">
+		<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+		<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+		<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+		<input type="hidden" id="idPark" name="idPark" th:field="*{idPark}" />
+		<input type="hidden" id="idEntrance" name="idEntrance" th:field="*{idEntrance}" />
+		<input type="hidden" id="entranceId" name="entranceId" th:field="*{entranceId}"/>
+		<input type="hidden" id="areadId" name="areadId" th:field="*{areaId}"/>
+		<input type="hidden" id="mode" name="mode" th:field="*{mode}"/>
+       <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+               		<div class="form-floating">
+						<input class="form-control" type="text" id="description" name="description" th:field="*{description}" />
+						<label class="form-label" for="description" th:text="#{entrance.edit.description}">description</label>
+					</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+			        <div class="form-floating">
+						<input class="form-control" type="text" id="entranceLink" name="entranceLink" th:field="*{entranceLink}" />
+						<label class="form-label" for="entranceLink" th:text="#{entrance.edit.entranceLink}">lien</label>
+					</div>
+                </div>
+            </div>
+        </div>		
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="entranceLat" name="entranceLat" th:field="*{entranceLat}" />
+						<label class="form-label" for="entranceLat" th:text="#{entrance.edit.entranceLat}">latitude</label>
+					</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="entranceLng" name="entranceLng" th:field="*{entranceLng}" />
+						<label class="form-label" for="entranceLng" th:text="#{entrance.edit.entranceLng}">longitude</label>
+					</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="entrancePolygon" name="entrancePolygon" th:field="*{entrancePolygon}" />
+						<label class="form-label" for="entrancePolygon" th:text="#{entrance.edit.polygon}">polygon</label>
+					</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<button type="submit" class="btn btn-secondary" th:text="#{entrance.edit.submit}">validate</button>
+					</div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+    </form>
+    </div>
+    
+    <div class="col-6">
+		<div class="container-fluid px-4">
+			<h2 class="mt-12" th:text="#{entrance.map.title}">title</h2>
+		</div>
+    	<div class="row">
+            <div class="col-4">
+                <div class="card border" style="text-align: center">
+					<button id="switch-layers" type="button" class="btn btn-secondary" th:text="#{entrance.map.satellite}" onclick="switchLayer(this)">fond de carte</button>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border" style="text-align: center">
+					<button type="button" class="btn btn-secondary" th:text="#{entrance.map.marker.clear}" onclick="removeTempMarker(this)">locate me</button>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border" style="text-align: center">
+					<button type="button" class="btn btn-secondary" th:text="#{entrance.map.locateMe}" onclick="locateMe()">locate me</button>
+                </div>
+            </div>
+        </div>
+        <div class="row h-100 ">
+            <div class="col-12">
+                <div class="card h-100 border" style="text-align: center">
+                    <div id="mapid" style="width: 100%; height: 600px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+								
+				</div>
+			</main>
+		</div> <!-- layoutSidenav_content -->
+	</div> <!-- layoutSidenav -->
+	
+
+	<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+
+	<div th:insert="~{fragments/fragment-jslibs :: appMap}"></div>
+
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+	<script th:inline="javascript">
+	
+	/* manage correct ID for COMMUNNE SELECTION */
+	// th-field broke the datalist work
+	document.querySelector('#idCommune-filter').value=[[${editEntrance.nameCommune}]];
+	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
+	    var input = e.target,
+	        list = input.getAttribute('list'),
+	        options = document.querySelectorAll('#' + list + ' option'),
+	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+	        inputValue = input.value;
+		    
+	    	hiddenInput.value = inputValue;
+		    
+		    for(var i = 0; i < options.length; i++) {
+		        var option = options[i];
+		        if(option.value === inputValue) {
+		        	hiddenInput.value = option.getAttribute('data-value');
+		        	document.querySelector("#formSelectCity").submit();
+		            break;
+		        }
+		    }
+	});
+	document.querySelector('#idCommune-filter').addEventListener('focusout', function(e) {
+	    var input = e.target,
+        list = input.getAttribute('list'),
+        options = document.querySelectorAll('#' + list + ' option'),
+        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+        inputValue = input.value;
+	    
+	    const regex = /[0-9]/g;
+	    const found = hiddenInput.match(regex);
+	    if (found) {
+	    	document.querySelector("#formSelectCity").submit();
+	    }
+	});
+
+	/* manage correct ID for PARK SELECTION */
+	// th-field broke the datalist work
+	document.querySelector('#idPark-filter').value=[[${editEntrance.namePark}]];
+	document.querySelector('#idPark-filter').addEventListener('input', function(e) {
+	    var input = e.target,
+	        list = input.getAttribute('list'),
+	        options = document.querySelectorAll('#' + list + ' option'),
+	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+	        inputValue = input.value;
+		    
+	    	hiddenInput.value = inputValue;
+		    
+		    for(var i = 0; i < options.length; i++) {
+		        var option = options[i];
+		        if(option.value === inputValue) {
+		        	hiddenInput.value = option.getAttribute('data-value');
+		        	document.querySelector("#formSelectPark").submit();
+		            break;
+		        }
+		    }
+	});
+	document.querySelector('#idPark-filter').addEventListener('focusout', function(e) {
+	    var input = e.target,
+        list = input.getAttribute('list'),
+        options = document.querySelectorAll('#' + list + ' option'),
+        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+        inputValue = input.value;
+	    
+	    const regex = /[0-9]/g;
+	    const found = hiddenInput.match(regex);
+	    if (found) {
+	    	document.querySelector("#formSelectPark").submit();
+	    }
+	});		
+		
+	// MAP MANAGEMENT
+	
+	// point icons
+	var entranceIcon = L.icon({
+	    iconUrl: [[@{/mvc/static/images/marker-icon-entrance-1x.png}]]
+	    ,iconAnchor:   [12, 41] // point of the icon which will correspond to marker's location
+	    ,popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
+	});
+	var editEntranceIcon = L.icon({
+	    iconUrl: [[@{/mvc/static/images/marker-icon-parkEdit-1x.png}]]
+	    ,iconAnchor:   [12, 41] // point of the icon which will correspond to marker's location
+	    ,popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
+	});
+
+
+	
+	
+	// map layers
+	var mapMinZoom=10;
+	var mapMaxZoom=20;
+	var layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+	        attribution: 'Aut MEL',
+	        maxZoom: mapMaxZoom,
+            minZoom: mapMinZoom
+	    });
+	var layerStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	        attribution: 'Aut MEL',
+	        maxZoom: mapMaxZoom,
+            minZoom: mapMinZoom
+	    });
+	
+    // Add an object to save markers
+    var markers = {};
+    
+    // custom location on load
+    var locateWorkPlace= L.latLng(50.626419,3.0719121);
+    var mLng = document.getElementById("mapLongitude").value;
+    var mLat = document.getElementById("mapLatitude").value;
+    if (mLng!="" && mLat!="") {
+        locateWorkPlace = L.latLng(mLat, mLng);
+    }
+    
+    var isMap = L.map('mapid').setView(locateWorkPlace, 16);
+    layerStreetMap.addTo(isMap);
+    L.control.scale().addTo(isMap);
+    //isMap.on('click', addMarker);
+	// remove added markers
+	function removeTempMarker(e) {
+		isMap.removeLayer(newMarker);
+	}
+
+    var newMarker = null;
+    function addMarker(e){
+        //markers["new1"] 
+        if (newMarker===null) {
+	        // Add marker to map at click location; add popup window
+	        newMarker = new L.marker(e.latlng, {draggable:true,icon: entranceIcon})
+	                        .addTo(isMap);
+	        //console.log(e.latlng);
+	        document.getElementById("entranceLat").value = e.latlng.lat;
+	        document.getElementById("entranceLng").value = e.latlng.lng;
+	    
+	        newMarker.on('dragend', function (e) {
+	            console.log(newMarker.getLatLng());
+	            document.getElementById("entranceLat").value = newMarker.getLatLng().lat;
+	            document.getElementById("entranceLng").value = newMarker.getLatLng().lng;
+	        });
+        }
+    }
+
+	
+	
+	/* switch layer between map and satellite */
+	function switchLayer(e) {
+		if (isMap.hasLayer(layerStreetMap)) {
+	    	isMap.addLayer(layerSatellite);
+	    	isMap.removeLayer(layerStreetMap);
+	    	e.innerText= [[#{entrance.map.satellite}]];
+	    	
+	    } else {
+	    	isMap.addLayer(layerStreetMap);
+	    	isMap.removeLayer(layerSatellite);
+	    	e.innerText= [[#{entrance.map.street}]];
+	    }
+	}
+
+	/* switch between map and satellite view */
+	function switchMode(e) {
+		var mode = document.getElementById("mode").value;
+		//console.log(document.getElementById("editEntranceTitle").innerText);
+		if (mode==="upd") {
+			document.getElementById("mode").value="add";
+			e.innerText = [[#{entrance.edit.mode.add}]];
+			document.getElementById("editEntranceTitle").innerText = [[#{entrance.edit.title.add}]];
+			
+			document.getElementById("entranceId").value="";
+			//document.getElementById("areaId").value="";
+			document.getElementById("description").value="";
+			document.getElementById("entranceLink").value="";
+			document.getElementById("entranceLat").value="";
+			document.getElementById("entranceLng").value="";
+			document.getElementById("entrancePolygon").value="";
+			
+	        document.getElementById("fsEditPark").disabled = false;
+            document.getElementById("fsEditEntrance").disabled = false;
+			
+			isMap.on('click', addMarker);
+		}
+		/* else {
+			document.getElementById("mode").value="upd";
+			e.innerText = [[#{entrance.edit.mode}]];
+			document.getElementById("editEntranceTitle").innerText = [[#{entrance.edit.title}]];
+		}*/
+	}
+	
+    
+    // park MARKER
+    var mPark = document.getElementById("name").value;
+    if (mPark!="") {
+    	L.marker(locateWorkPlace).addTo(isMap)
+    		.bindPopup(mPark)
+    		.openPopup();
+    }
+    
+    // Entrance markers
+    var idPark = document.querySelector('#idPark').value;
+    var idEntrance = document.querySelector('#idEntrance').value;
+    const idParkRegex = /[0-9]/g;
+    const idParkFound = idPark.match(idParkRegex);
+    if (idParkFound) {
+    	options = document.querySelectorAll('#idEntrance option');
+        console.log("options:"+options);
+    	for(var i = 1; i < options.length; i++) {
+	        var option = options[i];
+	        
+	        lng = option.getAttribute('data-lng');
+	        lat = option.getAttribute('data-lat');
+	        txt = option.text;
+	        if (idEntrance==option.value) {
+		        var editMarker = L.marker(L.latLng(lat,lng), {icon:editEntranceIcon,draggable:true})
+		        	.addTo(isMap)
+		        	.bindPopup(txt).openPopup();
+		        editMarker.on('dragend', function(event) {
+		        	  var latlng = event.target.getLatLng();
+		        	  console.log(latlng.lat, latlng.lng)
+
+	        		  document.getElementById("entranceLng").value=latlng.lng;
+	        		  document.getElementById("entranceLat").value=latlng.lat;
+		        	});
+		        
+	        } else {
+		        L.marker(L.latLng(lat,lng), {icon:entranceIcon})
+		        	.addTo(isMap)
+		        	.bindPopup(txt);
+    		}
+	    }
+    }
+    
+
+
+    function showPosition(position) {
+      document.getElementById("mapLatitude").value =position.coords.latitude;
+      document.getElementById("mapLongitude").value =position.coords.longitude;
+      
+      urlLocate=window.location.protocol + "//" + window.location.host + [[@{/mvc/entrance/locateMe}]]+'?lng='+position.coords.longitude+'&lat='+position.coords.latitude;
+      alert(urlLocate)
+     //TODO window.document.href= urlLocate;
+    }
+    function locateMe() {
+	    if (navigator.geolocation) {
+	       navigator.geolocation.getCurrentPosition(showPosition);
+	       //TODO call server to preload alle
+	       
+	       
+	    }
+    }
+    
+    function remoteCall() {
+    	// https://stackabuse.com/bytes/how-to-make-an-ajax-call-without-jquery/
+    	let xhr = new XMLHttpRequest();
+    	xhr.open('GET', 'https://api.example.com/data', true);
+    	xhr.onreadystatechange = function() {
+    	  if (xhr.readyState == 4 && xhr.status == 200)
+    	    console.log(xhr.responseText);
+    	}
+    	xhr.send();
+    }
+    
+    manageDisabled();
+    function manageDisabled() {
+    	if (document.getElementById("idRegion").value!="") {
+    		document.getElementById("fsComm2co").disabled = false;
+    	}
+    	if (document.getElementById("idCommunauteDeCommunes").value!="") {
+    		document.getElementById("fsCity").disabled = false;
+    	}
+    	if (document.getElementById("idCommune").value!="") {
+    		document.getElementById("fsPark").disabled = false;
+    	}
+    	if (document.getElementById("idPark").value!="") {
+    		document.getElementById("fsEntrance").disabled = false;
+    	}
+    	if (document.getElementById("entranceId").value!="" ||
+    		document.getElementById("idEntrance").value!="") {
+    		document.getElementById("fsEditPark").disabled = false;
+    		document.getElementById("fsEditEntrance").disabled = false;
+    	}
+    }
+</script>
+
+</body>
+</html>

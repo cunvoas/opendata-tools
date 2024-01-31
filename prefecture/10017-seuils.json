@@ -1,0 +1,61 @@
+{
+    "x": {
+        "filter": "none",
+        "vertical": false,
+        "data": [
+            [
+                "Pas d'espace vert urbain",
+                "Moins de 10m²",
+                "de 10 à 15 m²",
+                "de 15 à 25 m²",
+                "Plus de 25 m²"
+            ],
+            [
+                "5,5%",
+                "67,3%",
+                "10,9%",
+                "7,3%",
+                "9,1%"
+            ],
+            [
+                "7%",
+                "63%",
+                "7%",
+                "7%",
+                "17%"
+            ],
+            [
+                3,
+                37,
+                6,
+                4,
+                5
+            ],
+            [
+                3,
+                29,
+                3,
+                3,
+                8
+            ]
+        ],
+        "container": "<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Surface d'espace verts urbains<\/th>\n      <th>Ratio - Nord<\/th>\n      <th>Ratio - Reste HDF<\/th>\n      <th>Nombre de communes - Nord<\/th>\n      <th>Nombre de communes - Reste HDF<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>",
+        "options": {
+            "dom": "t",
+            "columnDefs": [
+                {
+                    "className": "dt-right",
+                    "targets": [
+                        3,
+                        4
+                    ]
+                }
+            ],
+            "order": [],
+            "autoWidth": false,
+            "orderClasses": false
+        }
+    },
+    "evals": [],
+    "jsHooks": []
+}

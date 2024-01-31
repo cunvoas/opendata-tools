@@ -1,0 +1,30 @@
+
+version: '3'
+
+services:
+  reverse-proxy:
+    container_name: "reverse-proxy"
+    hostname: "reverse-proxy"
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /tmp/acme_challenge:/tmp/acme_challenge
+      - ${VOLUMES_PATH}/log/nginx/:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - "autmel-vlan"
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test:  "curl --fail -k https://localhost/ -H 'User-Agent: Mozilla/5.0' || exit 1"
+
+
+networks:
+  autmel-vlan:
+    external: true
