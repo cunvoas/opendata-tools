@@ -68,7 +68,7 @@ server:
 # thymeleaf configuration
   thymeleaf:
     cache: false
-    enable-spring-el-compiler: true
+    enable-spring-el-compiler: false
     
     
 application:
@@ -87,6 +87,7 @@ application:
       densite: 1,2
   feature-flipping:
     parkAnalysisEnabled: true
+    sendEmail: false
     salaryAnalysisEnabled: false
     pollutionAnalysisEnabled: false
     isochrone-impl: ign-api

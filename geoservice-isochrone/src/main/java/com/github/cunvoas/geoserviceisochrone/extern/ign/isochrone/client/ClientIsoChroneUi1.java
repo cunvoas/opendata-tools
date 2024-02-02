@@ -17,7 +17,7 @@ import okhttp3.Response;
 @Deprecated
 @ConditionalOnProperty(
 	name="application.feature-flipping.isochrone-impl", 
-	havingValue="ign-reverse-ui1")
+	havingValue="ign-reverse-ui-v1")
 public class ClientIsoChroneUi1 implements IsoChroneClientService {
 	
 	//@Autowired

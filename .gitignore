@@ -51,6 +51,9 @@ Thumbs.db
 
 .env
 .env.*
+*.gz
+*.jar
+
 
 # Except this file
 !.env.template

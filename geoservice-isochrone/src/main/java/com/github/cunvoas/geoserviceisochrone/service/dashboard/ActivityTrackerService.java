@@ -84,6 +84,10 @@ public class ActivityTrackerService {
         }
         return dayActivityDashboard;
     }
+    
+    public List<ContributeurAction> getActivity() {
+    	return contributeurActionRepository.findLastDays(10);
+    }
 
     /**
      * @see com.github.cunvoas.iam.service.DashBoardMonitor#getActivityByHour()
