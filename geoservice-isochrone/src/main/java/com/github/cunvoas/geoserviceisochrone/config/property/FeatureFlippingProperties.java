@@ -30,5 +30,13 @@ public class FeatureFlippingProperties {
 	 */
 	private boolean pollutionAnalysisEnabled = false;
 	
+
+	/**
+	 * activate services sendEmail.
+	 */
+	private boolean sendEmail = false;
+	
+	
+	
 	
 }

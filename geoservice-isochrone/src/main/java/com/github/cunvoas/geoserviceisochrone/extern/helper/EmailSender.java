@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
@@ -30,7 +31,8 @@ public class EmailSender {
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	
-
+	@Value("${application.feature-flipping.sendEmail}")
+	private boolean toogleFeatureEmail=false;
 	
 	@Autowired
 	private MailjetSender mailjetSender;
@@ -39,6 +41,10 @@ public class EmailSender {
 	}
 
 	public void sendPassword(String email, String prenomNom, String password) {
+		if (!toogleFeatureEmail) {
+			log.warn("skip email sendPassword");
+			return;
+		}
 		try {
 			Map<String, String> values = new HashMap<String, String>(4);
 			values.put("@nom_prenom@", prenomNom);
@@ -69,6 +75,10 @@ public class EmailSender {
 	}
 	
 	public void sendWelcome(String email, String prenomNom, String login) {
+		if (!toogleFeatureEmail) {
+			log.warn("skip email sendWelcome");
+			return;
+		}
 		try {
 			Map<String, String> values = new HashMap<String, String>(4);
 			values.put("@nom_prenom@", prenomNom);

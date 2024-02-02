@@ -91,7 +91,9 @@ public class ContributeurControler {
 		if (ContributeurRole.ADMINISTRATOR.equals(contribConnected.getRole()))  {
 			model.addAttribute("assos", associationService.findAll());
 		} else {
-			model.addAttribute( "assos", (new ArrayList<Association>(1)).add(contrib.getAssociation()) );
+			List<Association> assos = new ArrayList<>(1);
+			assos.add(contrib.getAssociation());
+			model.addAttribute( "assos", assos );
 		}
 		
 		return formName;
@@ -104,19 +106,15 @@ public class ContributeurControler {
 	 */
 	@GetMapping
 	public String getMyForm(Model model) {
-
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication != null && authentication.getPrincipal() instanceof Contributeur) {
-			Contributeur contrib = (Contributeur) authentication.getPrincipal();
-
-			contrib = contributeurService.get(contrib.getId());
-			contrib.setPassword(null);
-			model.addAttribute(formName,  cloneToForm(contrib));
-			model.addAttribute( "assos", (new ArrayList<Association>(1)).add(contrib.getAssociation()) );
-		} else {
-			model.addAttribute(formName, new FormContributor());
-			model.addAttribute( "assos", associationService.findAll() );
-		}
+		
+		Contributeur contribConnected =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		
+		Contributeur contrib = contributeurService.get(contribConnected.getId());
+		model.addAttribute(formName, cloneToForm(contrib));
+		
+		List<Association> assos = new ArrayList<>(1);
+		assos.add(contrib.getAssociation());
+		model.addAttribute( "assos", assos );
 		
 		return formName;
 	}

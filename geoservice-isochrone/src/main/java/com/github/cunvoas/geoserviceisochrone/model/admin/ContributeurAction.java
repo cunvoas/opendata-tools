@@ -6,6 +6,7 @@ import java.util.Date;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,26 +20,49 @@ public class ContributeurAction {
 	@Column(name = "id")
 	private Long idContributor = 0L;
 	
+	@Transient
+	private String nomContributeur;
+	
 	private Long nbUserAdd = 0L;
 	private Long nbUserUpd = 0L;
 	private Long nbUserDel = 0L;
 	
+	public Long getUserActions() {
+		return nbUserAdd+nbUserUpd+nbUserDel;
+	}
+	
 	private Long nbAssoAdd = 0L;
 	private Long nbAssoUpd = 0L;
 	private Long nbAssoDel = 0L;
+	
+	public Long getAssoActions() {
+		return nbAssoAdd+nbAssoUpd+nbAssoDel;
+	}
 
 	private Long nbParkAdd = 0L;
 	private Long nbParkUpd = 0L;
 	private Long nbParkDel = 0L;
 	
+	public Long getParkActions() {
+		return nbParkAdd+nbParkUpd+nbParkDel;
+	}
+	
 	private Long nbEntranceAdd = 0L;
 	private Long nbEntranceUpd = 0L;
 	private Long nbEntranceDel= 0L;
+	
+	public Long getEntranceActions() {
+		return nbEntranceAdd+nbEntranceUpd+nbEntranceDel;
+	}
 	
 	private Long nbIsochroneComputed = 0L;
 	private Long nbIsochroneValidated = 0L;
 	private Long nbIsochronePublished = 0L;
 	private Long nbIsochroneAllCityPublished = 0L;
+	
+	public Long getIsochroneActions() {
+		return nbIsochroneComputed+nbIsochroneValidated+nbIsochronePublished+nbIsochroneAllCityPublished;
+	}
 	
 	private Date firstDate;
 	private Date lastDate;

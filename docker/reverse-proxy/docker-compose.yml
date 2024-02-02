@@ -22,7 +22,7 @@ services:
       interval: 60s
       timeout: 30s
       retries: 3
-      test:  "curl --fail -k https://localhost/ -H 'User-Agent: Mozilla/5.0' || exit 1"
+      test:  "curl --fail -k  -I  https://localhost/ -H 'User-Agent: Docker Health Tester' || exit 1"
 
 
 networks:
