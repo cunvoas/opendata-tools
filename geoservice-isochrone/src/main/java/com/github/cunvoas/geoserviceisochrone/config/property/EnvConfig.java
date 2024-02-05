@@ -6,7 +6,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.FileSystemResource;
 
-@Configuration
+//@Configuration
 public class EnvConfig {
 
 	@Bean

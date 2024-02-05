@@ -16,7 +16,10 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ContributeurService {
 	
 	@Autowired
@@ -104,14 +107,7 @@ public class ContributeurService {
 			
 			
 			// generate only in creation
-			if (pwdGenNeeded) {
-				newPassword=true;
-				String newPass = passwordService.generatePassword(16);
-				myPassword = newPass;
-				toBeSaved.setPassword(
-						passwordService.securizePassword(newPass)
-					);
-			} else {
+			if (!pwdGenNeeded) {
 				
 				if (!passwordService.isSafe(contributeur.getPassword())) {
 					throw new ExceptionAdmin(ExceptionAdmin.RG_PWD_NOT_SAFE);
@@ -122,6 +118,17 @@ public class ContributeurService {
 					);
 			}
 		}
+		
+		// generate in reset case
+		if (pwdGenNeeded) {
+			newPassword=true;
+			String newPass = passwordService.generatePassword(20);
+			myPassword = newPass;
+			toBeSaved.setPassword(
+					passwordService.securizePassword(newPass)
+				);
+		}
+		
 		toBeSaved.setUpdateDate(new Date());
 		toBeSaved.setNom(contributeur.getNom());
 		toBeSaved.setPrenom(contributeur.getPrenom());
@@ -141,6 +148,7 @@ public class ContributeurService {
 		}
 		
 		if (newPassword) {
+			log.error("send email with password");
 			emailSender.sendPassword(toBeSaved.getEmail(), toBeSaved.getFullName(), myPassword);
 		}
 		

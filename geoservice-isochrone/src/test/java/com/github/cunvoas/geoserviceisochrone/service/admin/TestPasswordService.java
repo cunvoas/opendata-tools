@@ -23,7 +23,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.AssociationRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 
 @SpringBootTest
-@ActiveProfiles({"prod"})
+@ActiveProfiles({"prod","dev"})
 //@TestPropertySource(locations = "classpath:application-secret.yml")
 class TestPasswordService {
 
@@ -41,19 +41,18 @@ class TestPasswordService {
 	// stand alone test
 	private PasswordEncoder tested;
 	
-//	@Value("${INIT_ADMINMAP_LOGIN}")
+	@Value("${INIT_ADMINMAP_LOGIN}")
 	private String initLOGIN;
 //	@Value("${INIT_ADMINMAP_EMAIL}")
 	private String initEmail;
-//	@Value("${INIT_ADMINMAP_PWORD}")
+	@Value("${INIT_ADMINMAP_PWORD}")
 	private String initPwd;
 	
 	
 	@Test
-	@Disabled
 	void adminUser() {
 		Contributeur contrib = null;
-		Optional<Contributeur> opt =contributeurRepository.findByLogin("adminAutmel");
+		Optional<Contributeur> opt =contributeurRepository.findByLogin(initLOGIN);
 		if (opt.isPresent()) {
 			contrib = opt.get();
 		} else {

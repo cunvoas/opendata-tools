@@ -129,6 +129,7 @@ public class AuthenticationConfig {
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		Integer saltLen = customProps.getSaltLen();
+		// check and log WARN if default values
 		if (saltLen == 10) {
 			log.warn("please custom application.security.passwordSaltLen");
 		}
