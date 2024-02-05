@@ -108,6 +108,18 @@
                         	<input class="btn btn-primary btn-block" type="submit" th:value="#{contributor.submit}"/>
                         </div>
                     </div>
+                    <div class="mt-4 mb-0">
+                        <div class="d-grid">
+                            <p></p>
+                        </div>
+                    </div>
+                   
+                    <div class="mt-4 mb-0" th:if="${#authentication.getPrincipal().getId()}==*{id}">
+                        <div class="d-grid">
+                            <p th:text="#{contributor.resetPasswpord.text}">reset pwd</p>
+                            <input class="btn btn-primary btn-block" type="button" th:value="#{contributor.resetPasswpord}" onclick="resetPwd()" />
+                        </div>
+                    </div>
                 </form>
             </div>
 
@@ -124,5 +136,15 @@
         <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
 
         <script th:src="@{/mvc/static/js/scripts.js}"></script>
+        
+<script th:inline="javascript">  
+   function resetPwd() {
+	   
+       if confirm([[#{contributor.resetPasswpord.text}]]) {
+           sUrl= window.location.protocol + "//" + window.location.host + [[@{/mvc/management/contrib/resetMyPassword}]];
+           document.location.href=sUrl;
+       }
+   }
+</script>
     </body>
 </html>

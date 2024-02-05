@@ -119,6 +119,44 @@ public class ContributeurControler {
 		return formName;
 	}
 
+	
+	
+	@GetMapping("/resetMyPassword")
+	public String resetMyPassword(Model model) {
+		Contributeur contribConnected =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Contributeur contrib = contributeurService.get(contribConnected.getId());
+		contrib = contributeurService.save(contrib,true);
+		
+		if (ContributeurRole.ADMINISTRATOR.equals(contrib.getRole()))  {
+			model.addAttribute("assos", associationService.findAll());
+		} else {
+			List<Association> assos = new ArrayList<>(1);
+			assos.add(contrib.getAssociation());
+			model.addAttribute( "assos", assos );
+		}
+		model.addAttribute(formName, cloneToForm(contrib));
+		return formName;
+	}
+	
+	@GetMapping("/resetPassword")
+	public String resetUserPassword(@RequestParam("id") Long id, Model model) {
+		
+		Contributeur contrib = contributeurService.get(id);
+		
+		model.addAttribute(formName, cloneToForm(contrib));
+		contrib = contributeurService.save(contrib,true);
+		
+		if (ContributeurRole.ADMINISTRATOR.equals(contrib.getRole()))  {
+			model.addAttribute("assos", associationService.findAll());
+		} else {
+			List<Association> assos = new ArrayList<>(1);
+			assos.add(contrib.getAssociation());
+			model.addAttribute( "assos", assos );
+		}
+		model.addAttribute(formName, cloneToForm(contrib));
+		return formName;
+	}
+	
 	@PostMapping("/edit")
 	public String save(@Valid @ModelAttribute(value = "editContributeur") FormContributor fContrib, 
 			final BindingResult bindingResult, final Model model)   {

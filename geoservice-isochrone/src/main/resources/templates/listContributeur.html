@@ -3,6 +3,16 @@
 <head th:insert="~{fragments/fragment-head :: head}"></head>
 
 <body class="sb-nav-fixed">
+    <script th:inline="javascript">
+       function resetPwd(uId) {
+           if ( confirm([[#{contributor.resetPasswpord.text}]]) ) {
+               sUrl= window.location.protocol + "//" + window.location.host + [[@{/mvc/management/contrib/resetPassword}]]+'?id='+uId;
+               document.location.href=sUrl;
+//alert("confirmed");
+           }
+       }
+   </script>
+   
 	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
 	<div id="layoutSidenav">
 		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
@@ -48,7 +58,9 @@
                         <td th:text="${contrib.role}" />
                         <td th:text="${contrib.association.nom}" />
                         <td>
-                            <a th:href="@{/mvc/management/contrib/edit?id={idContrib}(idContrib=${contrib.id})}" th:text="#{contributor.table.link}"></a>
+                            <a th:href="@{/mvc/management/contrib/edit?id={idContrib}(idContrib=${contrib.id})}" th:text="#{contributor.table.link}">#</a>
+
+                            <a href="#" th:onclick="'javascript:resetPwd(\''+ ${contrib.id} +'\');'" th:attr="userid=${contrib.id}" th:text="#{contributor.table.resetPwd}">#</a>
                         </td>
 			        </tr>
 			    </tbody>
@@ -86,7 +98,7 @@
 	            new simpleDatatables.DataTable(datatablesSimple);
 	        }
 	    });
-    </script>
+   </script>
 
 </body>
 </html>
