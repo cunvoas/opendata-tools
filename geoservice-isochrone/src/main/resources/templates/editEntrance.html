@@ -173,8 +173,12 @@
 			</div>
 			<div class="col">
 				<button class="btn btn-info" th:text="#{entrance.edit.mode}" onclick="switchMode(this)">mode</button>
-			</div>
+				<br />
+				 <input type="checkbox" id="showIsochrone" name="showIsochrone" onclick="toggleIsochrone()" />
+				<label for="showIsochrone" th:text="#{entrance.show.isochrone}"></label>
+            </div>
          </div>
+         
     <form id="editEntrance" th:action="@{/mvc/entrance/editEntrance}" th:object="${parkEntranceDetail}" method="POST">
     <fieldset id="fsEditEntrance" disabled="disabled">
 		<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
@@ -259,7 +263,7 @@
             </div>
             <div class="col-4">
                 <div class="card border" style="text-align: center">
-					<button type="button" class="btn btn-secondary" th:text="#{entrance.map.locateMe}" onclick="locateMe()">locate me</button>
+					<button type="button" class="btn btn-secondary" th:text="#{entrance.map.locateMe}" onclick="locateMe()"  style="display: none">locate me</button>
                 </div>
             </div>
         </div>
@@ -374,7 +378,7 @@
 
 
 	
-	
+	/////////////////////////////////////////////////////////////////////////
 	// map layers
 	var mapMinZoom=10;
 	var mapMaxZoom=20;
@@ -408,7 +412,61 @@
 	function removeTempMarker(e) {
 		isMap.removeLayer(newMarker);
 	}
-
+	
+	////////////////////////////////////////////////////////////////////////////
+    // isochrone
+    function fetchJSON(url) {
+	  return fetch(url)
+	    .then(function(response) {
+	      return response.json();
+	    });
+	}
+    function isEmpty(obj) {
+        return Object.keys(obj).length === 0;
+    }
+    function customOnEachFeature(feature, layer) {
+        // does this feature have a property named fillColor?
+        if (feature.properties) {
+        	if (feature.properties.fillColor) {
+        		 layer.setStyle(
+        				 {fillColor: feature.properties.fillColor},
+                         {fillOpacity: 0.60},
+                         {color: feature.properties.fillColor},
+        				 {opacity: 0.95}
+        		 );
+        	}
+            if (feature.properties.name) {
+            	layer.bindPopup(feature.properties.name);
+            }
+        }
+    }
+    
+    
+	var idPark = document.getElementById("idPark").value;
+	if (!isEmpty(idPark) && idPark!='') {
+		var sUrl= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones}]]+'?idPark='+idPark;
+		//var entranceGeoJson = fetchJSON(sUrl);
+		//L.GeoJson(entranceGeoJson).addTo(isMap);
+		
+		var geojsonLayer = new L.GeoJSON.AJAX(sUrl, {onEachFeature: customOnEachFeature});
+		//geojsonLayer.addTo(isMap) 
+		
+		
+		
+	}
+	
+	function toggleIsochrone() {
+		if (!isEmpty(idPark) && idPark!='') {
+			var showIso = document.getElementById("showIsochrone").checked;
+			if (showIso) {
+                isMap.addLayer(geojsonLayer);//For show
+			} else {
+                isMap.removeLayer(geojsonLayer);// For hide
+			}
+		}
+	}
+	
+	
     var newMarker = null;
     function addMarker(e){
         //markers["new1"] 
@@ -489,7 +547,7 @@
     const idParkFound = idPark.match(idParkRegex);
     if (idParkFound) {
     	options = document.querySelectorAll('#idEntrance option');
-        console.log("options:"+options);
+       // console.log("options:"+options);
     	for(var i = 1; i < options.length; i++) {
 	        var option = options[i];
 	        

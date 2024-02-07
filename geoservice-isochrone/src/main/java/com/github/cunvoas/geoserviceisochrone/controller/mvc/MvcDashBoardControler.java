@@ -31,6 +31,11 @@ public class MvcDashBoardControler {
 	@Autowired
 	private ContributeurService contributeurService;
 	
+	@GetMapping("/infos")
+    public String infos(Model model, ModelAndView modelAndView) {
+        return "infos";
+    }
+	
 	
 	@GetMapping("/dashboard")
     public String dashboard(Model model, ModelAndView modelAndView) {
