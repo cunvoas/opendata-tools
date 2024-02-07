@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head th:insert="~{fragments/fragment-head :: head}" />
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<!-- debut MAIN -->
+			<main>
+
+				<div class="container-fluid px-4">
+					<h3 class="mt-4" th:text="#{menu.abstract.info}">Info</h3>
+
+                    <div class="card mt-12">
+                        <div class="card-body col-md-12">
+                            <p>
+                                <code>Info CNIL</code>
+                                <br /> 
+                                <p>
+                                    Cette application n'utilise aucun cookie tier. Il y a un cookie de session pour assurer votre authentification.
+                                    <br /> <br />
+                                    La solution motomo (validée par la CNIL) sera utilisée à terme afin de mesurer l'usage.  <br />
+                                    Le serveur matomo sera auto-hébergé pour maitriser vos données.
+                                    
+                                </p>
+                            </p>
+                            <p>
+                                <code>Info Sécurité</code>
+                                <br />
+                                <p>
+                                  Les mots de passe doivent avoir des majuscules, minuscules, chiffres et caratères spéciaux.<br />
+                                  Vos mots de passe ne peuvent pas être récupérés, en cas de perte votre administrateur peut en générer un nouveau et il sera envoyé par email.<br />
+                                  Le choix du chiffrement a été fait de façon a être difficilement cassable, de par l'algorithme et de son paramétrage, de sa taille et complexité.<br />
+                                  Par ailleurs, un mécanisme de contrôle des tentatives existe et en cas de 5 échecs, l'accès sera bloqué 4h.<br />
+                                  
+                                  <br />
+                                  Enfin, une évolution est prévue pour exclure le top 20 millions des mots de passes les plus utilisés.
+                                
+                                  <br />
+                                  Il est conseillé de sauver ses mots de passe dans un coffre fort sécurisé.<br /> 
+                                  <a href="https://keepass.info/" target="_blank">Keepass</a> est une solution opensource certifiée par l'<b>ANSSI</b>.
+                                
+                                </p>
+                            </p>
+
+                        </div>
+                    </div>
+
+
+				</div>
+			</main>
+			<!-- fin MAIN -->
+
+			<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+		</div>
+
+	</div>
+
+	<div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+</body>
+</html>

@@ -21,6 +21,14 @@ class TestGeoMapService {
 	
 	GeoMapService tested=new GeoMapService();
 
+
+	@Test
+	void testColor() {
+		for (int i = 0; i < 20; i++) {
+			System.out.println(tested.getColor(i));
+		}
+	}
+	
 	@Test
 	void testFormatPopulation() {
 	}

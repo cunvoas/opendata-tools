@@ -34,6 +34,9 @@ public class ApplicationSecurityProperties {
   private Integer hashLen=20;
 
   @NotNull
+  private Integer nbThreads=1;
+  
+  @NotNull
   private Integer nbIters=2;
 	
   // large memory size limits GPU brute forcing

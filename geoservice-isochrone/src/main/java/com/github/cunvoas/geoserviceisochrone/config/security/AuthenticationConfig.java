@@ -126,24 +126,34 @@ public class AuthenticationConfig {
 		return config.getAuthenticationManager();
 	}
 
+	/**
+	 * @see https://www.ory.sh/choose-recommended-argon2-parameters-password-hashing/
+	 */
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		Integer saltLen = customProps.getSaltLen();
 		// check and log WARN if default values
 		if (saltLen == 10) {
 			log.warn("please custom application.security.passwordSaltLen");
+		} else if (saltLen == 10) {
+			log.error("too small application.security.passwordSaltLen");
 		}
+		
 		if (customProps.getHashLen() == 20) {
 			log.warn("please custom application.security.passwordHashLen");
+		} else if (customProps.getHashLen() < 64) {
+			log.error("too small application.security.passwordHashLen");
 		}
+		
 		if (customProps.getNbIters() <= 10) {
 			log.warn("please custom application.security.passwordNbIters");
 		}
 		if (customProps.getMemSizeInKb() <= 1 << 10) {
 			log.warn("please custom application.security.passwordMemSizeInKb");
 		}
-		return new Argon2PasswordEncoder(customProps.getSaltLen(), customProps.getHashLen(), 1,
-				customProps.getMemSizeInKb(), customProps.getNbIters());
+		return new Argon2PasswordEncoder(
+					customProps.getSaltLen(), customProps.getHashLen(), 
+					customProps.getNbThreads(), customProps.getMemSizeInKb(), customProps.getNbIters() );
 
 	}
 	

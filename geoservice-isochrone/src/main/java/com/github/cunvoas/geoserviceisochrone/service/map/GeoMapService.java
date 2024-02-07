@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,12 +16,14 @@ import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.CadastreView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.Carre200AndShapeView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.EntranceView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.ParkView;
 import com.github.cunvoas.geoserviceisochrone.extern.leaflet.Bound;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
@@ -28,6 +31,7 @@ import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mShape;
@@ -35,6 +39,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mShapeRepository;
@@ -46,7 +51,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@Log
 public class GeoMapService {
 	
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -59,6 +63,8 @@ public class GeoMapService {
     private InseeCarre200mShapeRepository inseeCarre200mShapeRepository;
     @Autowired
     private ParkAreaRepository parkAreaRepository;
+    @Autowired
+    private ParkEntranceRepository parkEntranceRepository;
     @Autowired
     private ParkAreaComputedRepository parkAreaComputedRepository;
     @Autowired
@@ -120,6 +126,56 @@ public class GeoMapService {
     	return this.findAllParkByArea(polygon);
     }
     
+    public String getColor(int index) {
+    	int start=240;
+    	int rawOffest=64;
+    	
+    	int red=start;
+    	int green=start;
+    	int blue=start;
+    	
+    	for (int i = 0; i <= index; i++) {
+			if ((index  ) % 3==0) red -= rawOffest;
+			if ((index+1) % 3==0) green -= rawOffest;
+			if ((index+2) % 3==0) blue -= rawOffest;
+		}
+		if (red<0) red+=255;
+		if (green<0) green+=255;
+		if (blue<0) blue+=255;
+		String color = String.format("#%02x%02x%02x", red, green, blue);
+		log.info(color);
+		return color;
+    }
+    
+    
+    
+    /**
+     * isochrone of each entrance
+     * @param idPark
+     * @return
+     */
+    public GeoJsonRoot findIsochroneParkEntrance(Long idPark) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		List<ParkEntrance> entrances = parkEntranceRepository.findByParkId(idPark);
+		if (!CollectionUtils.isEmpty(entrances)) {
+			int idx=0;
+			for (ParkEntrance parkEntrance : entrances) {
+				GeoJsonFeature feature = new GeoJsonFeature();
+				root.getFeatures().add(feature);
+				feature.setGeometry(parkEntrance.getPolygon());
+				
+				EntranceView view = new EntranceView();
+				view.setId(String.valueOf(parkEntrance.getId()));
+				view.setName(parkEntrance.getDescription());
+				view.setFillColor(getColor(idx));
+				feature.setProperties(view);
+				
+				idx++;
+			}
+		}
+    	return root;
+    }
+    
 	/**
 	 * @param polygon
 	 * @return
@@ -130,7 +186,7 @@ public class GeoMapService {
 
     	if (polygon!=null) {
 			List<ParkArea> parkAreas =  parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(polygon));
-			if (parkAreas!=null && parkAreas.size()>0) {
+			if (!CollectionUtils.isEmpty(parkAreas)) {
 				for (ParkArea parkArea : parkAreas) {
 					
 					
