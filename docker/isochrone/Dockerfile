@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y curl
 COPY geoservice-isochrone-*.?ar app.jar 
 COPY secret.env .env
 
+
+
 #RUN groupadd --gid 1000 node && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
 # Switch to 'appuser'
 #USER 1000

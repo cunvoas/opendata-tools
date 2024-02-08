@@ -51,6 +51,9 @@ public class ParkEntrance {
         @Column(name="entrance_point", columnDefinition = "geometry(Point,4326)")
         private Point entrancePoint;
 
+        /**
+         * IGN isochrine
+         */
         @Column(columnDefinition = "geometry(Polygon,4326)")
         private Polygon polygon;
 
