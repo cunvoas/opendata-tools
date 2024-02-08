@@ -3,10 +3,16 @@ package com.github.cunvoas.geoserviceisochrone.extern.helper;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.spi.FileSystemProvider;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +45,32 @@ public class EmailSender {
 	public void setMailjetSender(MailjetSender mailjetSender) {
 		this.mailjetSender = mailjetSender;
 	}
+	
+	/**
+	 * 
+	 * also get file from jar in prod.
+	 * @param file
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 */
+	protected Path getFilePath(String file) throws URISyntaxException, IOException {
+		URI uri = getClass().getClassLoader().getResource(file).toURI();
+
+		if("jar".equals(uri.getScheme())){
+		    for (FileSystemProvider provider: FileSystemProvider.installedProviders()) {
+		        if (provider.getScheme().equalsIgnoreCase("jar")) {
+		            try {
+		                provider.getFileSystem(uri);
+		            } catch (FileSystemNotFoundException e) {
+		                // in this case we need to initialize it first:
+		                provider.newFileSystem(uri, Collections.emptyMap());
+		            }
+		        }
+		    }
+		}
+		return  Paths.get(uri);
+	}
 
 	public void sendPassword(String email, String prenomNom, String password) {
 		if (!toogleFeatureEmail) {
@@ -53,9 +85,8 @@ public class EmailSender {
 			String tpl = readTemplate("password.htm");
 			String msg = applyData(tpl, values);
 			
-			File f = ResourceUtils.getFile("classpath:mailjet/logo-autmel.png");
+			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"mailjet/logo-autmel.png");
 			String logoFile = Paths.get(f.getAbsolutePath()).toString();
-			
 			
 			EmailToContributor toSend = new EmailToContributor();
 			toSend.setEmail(email);
@@ -66,10 +97,13 @@ public class EmailSender {
 			mailjetSender.send(toSend);
 			
 		} catch (FileNotFoundException e) {
+			log.error("logo not found");
 			throw new ExceptionAdmin("logo not found");
 		} catch (IOException e) {
-			throw new ExceptionAdmin("logo inaccessible");
+			log.error("logo not found");
+			throw new ExceptionAdmin("logo not found");
 		} catch (MailjetException e) {
+			log.error("MailjetException", e);
 			throw new ExceptionAdmin("Mailjet error: "+e.getMessage());
 		}
 	}
@@ -88,8 +122,8 @@ public class EmailSender {
 			
 			String tpl = readTemplate("welcome.htm");
 			String msg = applyData(tpl, values);
-			
-			File f = ResourceUtils.getFile("classpath:mailjet/logo-autmel.png");
+
+			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"mailjet/logo-autmel.png");
 			String logoFile = Paths.get(f.getAbsolutePath()).toString();
 			
 			
@@ -115,15 +149,23 @@ public class EmailSender {
 	
 	
 	private String readTemplate(String tpl) {
+		log.info("mailjet/"+tpl);
 		try {
-			File f = ResourceUtils.getFile("classpath:mailjet/"+tpl);
-			byte[] bytes = Files.readAllBytes(Paths.get(f.getAbsolutePath()));
+//			File f = ResourceUtils.getFile("classpath:mailjet/"+tpl);
+//			Path theTpl = Paths.get(f.getAbsolutePath();
+			
+			Path theTpl = this.getFilePath("mailjet/"+tpl);
+			
+			byte[] bytes = Files.readAllBytes(theTpl);
 			return new String(bytes, Charset.forName("UTF8"));
 			
 		} catch (FileNotFoundException e) {
 			log.error("template not found", e);
 			throw new ExceptionAdmin("ERR_EMAIL_ERROR");
 		} catch (IOException e) {
+			log.error("template not readable", e);
+			throw new ExceptionAdmin("ERR_EMAIL_ERROR");
+		} catch (URISyntaxException e) {
 			log.error("template not readable", e);
 			throw new ExceptionAdmin("ERR_EMAIL_ERROR");
 		}

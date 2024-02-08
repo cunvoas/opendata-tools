@@ -61,4 +61,8 @@ public class ParkArea {
 	@Column(name="updated")
 	private Date updated;
 
+	
+//	@Column(name="type_id")
+//	@ManyToOne
+//	private ParkType type;
 }

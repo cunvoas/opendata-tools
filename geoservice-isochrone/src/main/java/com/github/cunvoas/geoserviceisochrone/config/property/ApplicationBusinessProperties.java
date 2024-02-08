@@ -35,6 +35,11 @@ public class ApplicationBusinessProperties {
 	private String mailjetSenderEmail;
 	@Value("${application.mailjet.senderName}")
 	private String mailjetSenderName;
+	@Value("${application.mailjet.attachementPath}")
+	private String  mailjetAttachementPath;
+	
+	
+	
 	@Value("${ISOCHRONE_SITE_GESTION}")
 	private String siteGestion;
 	@Value("${ISOCHRONE_SITE_PUBLIQUE}")
