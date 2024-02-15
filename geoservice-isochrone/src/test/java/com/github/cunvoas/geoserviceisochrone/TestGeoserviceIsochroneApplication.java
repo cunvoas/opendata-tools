@@ -65,7 +65,7 @@ class TestGeoserviceIsochroneApplication {
 		try {
 			parkService.importIsoChroneEntrance(test);
 
-			parkService.mergeEntranceAreas();
+			parkService.mergeNullEntranceAreas();
 
 		} catch (IOException e) {
 			fail(e.getMessage());

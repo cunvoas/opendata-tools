@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head th:insert="~{fragments/fragment-head :: head}" />
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<!-- debut MAIN -->
+			<main>
+
+				<div class="container-fluid px-4">
+					<h3 class="mt-4" th:text="#{menu.abstract.infosecu}">Info</h3>
+
+                    <div class="card mt-12">
+                        <div class="card-body col-md-12">
+                            <p>
+                                <code>OMS et Santé</code>
+                                <br /> 
+                                <p>
+                                    Vous trouverez ci-dessous des articles qui font référence sur l'utilité des parcs et jardin pour la population.
+                                    <br /> <br />
+                                    <a href='https://www.un.org/fr/chronicle/article/les-espaces-verts-une-ressource-indispensable-pour-assurer-la-sante-dans-les-zones-urbaines'>Les espaces verts : Une ressource indispensable pour assurer la santé dans les zones urbaines</a>
+                                    <br />
+                                    
+                                    
+                                </p>
+                            </p>
+                            <p>
+                                <code>Etudes scientifiques</code>
+                                <br />
+                                <p>
+                                    xx
+                                    <br /> <br />
+                                
+                                </p>
+                            </p>
+
+                        </div>
+                    </div>
+
+
+				</div>
+			</main>
+			<!-- fin MAIN -->
+
+			<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+		</div>
+
+	</div>
+
+	<div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+</body>
+</html>

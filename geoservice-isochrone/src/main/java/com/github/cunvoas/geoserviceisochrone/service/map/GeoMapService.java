@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.CadastreView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.Carre200AndShapeView;
-import com.github.cunvoas.geoserviceisochrone.controller.geojson.EntranceView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.IsochroneView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.ParkView;
 import com.github.cunvoas.geoserviceisochrone.extern.leaflet.Bound;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
@@ -164,7 +164,7 @@ public class GeoMapService {
 				root.getFeatures().add(feature);
 				feature.setGeometry(parkEntrance.getPolygon());
 				
-				EntranceView view = new EntranceView();
+				IsochroneView view = new IsochroneView();
 				view.setId(String.valueOf(parkEntrance.getId()));
 				view.setName(parkEntrance.getDescription());
 				view.setFillColor(getColor(idx));
@@ -175,6 +175,26 @@ public class GeoMapService {
 		}
     	return root;
     }
+    public GeoJsonRoot findIsochronePark(Long idPark) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		ParkArea pa = parkAreaRepository.findByIdParcEtJardin(idPark);
+		
+		if (pa!=null) {
+			GeoJsonFeature feature = new GeoJsonFeature();
+			root.getFeatures().add(feature);
+			feature.setGeometry(pa.getPolygon());
+			
+			IsochroneView view = new IsochroneView();
+			view.setId(String.valueOf(pa.getId()));
+			view.setName(pa.getName());
+			feature.setProperties(view);
+				
+		}
+    	return root;
+    	
+    }
+    
+    
     
 	/**
 	 * @param polygon

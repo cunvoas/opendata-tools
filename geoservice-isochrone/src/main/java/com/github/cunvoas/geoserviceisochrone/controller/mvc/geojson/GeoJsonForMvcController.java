@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.controller.mvc;
+package com.github.cunvoas.geoserviceisochrone.controller.mvc.geojson;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +16,16 @@ public class GeoJsonForMvcController {
     @Autowired
     private GeoMapService geoMapService;
 	
-	@GetMapping("/isochrones")
-	public GeoJsonRoot getIsochrone(@RequestParam("idPark") Long idPark) {
+	@GetMapping("/isochrones/entrance")
+	public GeoJsonRoot getIsochroneEntrance(@RequestParam("idPark") Long idPark) {
 		GeoJsonRoot isochrones=geoMapService.findIsochroneParkEntrance(idPark);
+		return isochrones;
+	}
+
+	
+	@GetMapping("/isochrones/park")
+	public GeoJsonRoot getIsochronePark(@RequestParam("idPark") Long idPark) {
+		GeoJsonRoot isochrones=geoMapService.findIsochronePark(idPark);
 		return isochrones;
 	}
 }

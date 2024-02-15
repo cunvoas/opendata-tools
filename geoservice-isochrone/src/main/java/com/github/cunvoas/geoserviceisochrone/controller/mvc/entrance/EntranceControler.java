@@ -227,6 +227,19 @@ public class EntranceControler {
 		return getForm(form, model);
 	}
 	
+	@PostMapping("/mergeIsochrone")
+	public String pushIsochrone(@ModelAttribute FormParkEntranceDetail formDetail, Model model) {
+		// rebuild parent form context
+		FormParkEntrance form=new FormParkEntrance(formDetail);
+		
+		ParkArea pa = new ParkArea();
+		pa.setId(form.getAreaId());	
+		parkService.mergeParkAreaEntrance(pa);
+		
+		return getForm(form, model);
+	}
+	
+	
 	@PostMapping("/editEntrance")
 	public String saveEntrance(@ModelAttribute FormParkEntranceDetail formDetail, Model model) {
 		// rebuild parent form context

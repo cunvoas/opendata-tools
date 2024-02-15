@@ -36,6 +36,11 @@ public class MvcDashBoardControler {
         return "infos";
     }
 	
+	@GetMapping("/infosante")
+    public String infosante(Model model, ModelAndView modelAndView) {
+        return "infosante";
+    }
+	
 	
 	@GetMapping("/dashboard")
     public String dashboard(Model model, ModelAndView modelAndView) {

@@ -5,7 +5,7 @@ import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonProperty;
 import lombok.Data;
 
 @Data
-public class EntranceView extends GeoJsonProperty {
+public class IsochroneView extends GeoJsonProperty {
 
 	private String id;
 	private String name;
