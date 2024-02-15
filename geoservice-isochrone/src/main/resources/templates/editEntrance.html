@@ -174,7 +174,8 @@
 			<div class="col">
 				<button class="btn btn-info" th:text="#{entrance.edit.mode}" onclick="switchMode(this)">mode</button>
 				<br />
-				 <input type="checkbox" id="showIsochrone" name="showIsochrone" onclick="toggleIsochrone()" />
+				<input type="checkbox" id="showIsochrone" name="showIsochrone" onclick="toggleIsochrone()" />
+				<input type="checkbox" id="showEntrance" name="showEntrance"  onclick="toggleIsochrone()" checked="checked" />
 				<label for="showIsochrone" th:text="#{entrance.show.isochrone}"></label>
             </div>
          </div>
@@ -444,24 +445,30 @@
     
 	var idPark = document.getElementById("idPark").value;
 	if (!isEmpty(idPark) && idPark!='') {
-		var sUrl= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones}]]+'?idPark='+idPark;
-		//var entranceGeoJson = fetchJSON(sUrl);
-		//L.GeoJson(entranceGeoJson).addTo(isMap);
+		var sUrlGeoEntrance= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones/entrance}]]+'?idPark='+idPark;
+		var geojsonEntranceLayer = new L.GeoJSON.AJAX(sUrlGeoEntrance, {onEachFeature: customOnEachFeature});
 		
-		var geojsonLayer = new L.GeoJSON.AJAX(sUrl, {onEachFeature: customOnEachFeature});
-		//geojsonLayer.addTo(isMap) 
-		
-		
+        var sUrlGeoPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones/park}]]+'?idPark='+idPark;
+        var geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoPark, {onEachFeature: customOnEachFeature});
 		
 	}
 	
 	function toggleIsochrone() {
 		if (!isEmpty(idPark) && idPark!='') {
 			var showIso = document.getElementById("showIsochrone").checked;
+            var showEntrance = document.getElementById("showEntrance").checked;
+			
 			if (showIso) {
-                isMap.addLayer(geojsonLayer);//For show
+				if (showEntrance) {
+					isMap.removeLayer(geojsonParkLayer);// For hide
+				    isMap.addLayer(geojsonEntranceLayer);//For show entrance
+				} else {
+					isMap.removeLayer(geojsonEntranceLayer);// For hide
+					isMap.addLayer(geojsonParkLayer);//For show park
+				}
 			} else {
-                isMap.removeLayer(geojsonLayer);// For hide
+                isMap.removeLayer(geojsonEntranceLayer);// For hide
+                isMap.removeLayer(geojsonParkLayer);// For hide
 			}
 		}
 	}

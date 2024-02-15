@@ -19,6 +19,12 @@ public interface ParkAreaRepository extends JpaRepository<ParkArea, Long>{
 	
 	ParkArea findByName(String name);
 	
+	@Query(nativeQuery = true, 
+			   value = "SELECT DISTINCT pa.* FROM park_area pa "
+			   		+ " INNER JOIN park_entrance pe on pa.id=pe.area_id"
+			   		+ " WHERE pe.updated>pa.update_date")
+	List<ParkArea> polygonToUpdate();
+	
 	
 	public static final String FIND_POLYGONS = 
 	  "SELECT ca.id,ca.id_inspire,ca.idk, ca.ind_c, cs.geo_point_2d,cs.geo_shape, cs.commune,cs.departement,cs.region, pa.description, pa.polygon "

@@ -141,6 +141,7 @@ public class ContributeurService {
 		toBeSaved.setEmail(contributeur.getEmail());
 		toBeSaved.setAssociation(contributeur.getAssociation());
 		
+		log.warn(""+toBeSaved.getPassword().length());
 		toBeSaved = contributeurRepository.save(toBeSaved);
 		
 		if (newAccount) {

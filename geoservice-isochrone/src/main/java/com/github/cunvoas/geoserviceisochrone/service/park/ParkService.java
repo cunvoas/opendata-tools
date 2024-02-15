@@ -259,42 +259,54 @@ public class ParkService {
 	}	
 		
 	
+	private void mergeEntranceAreas(ParkArea parkArea) {
+		List<ParkEntrance> entances = parkEntranceRepository.findByParkArea(parkArea);
+		log.info("merge {}", parkArea.getName());
+		
+		Polygon merged=null;
+		for (ParkEntrance entance : entances) {
+			log.info("\tprocess {}", entance.getParkArea().getName());
+			Polygon p =entance.getPolygon();
+			
+			if (merged==null) {
+				merged = factory.createPolygon(p.getCoordinates());
+				
+			} else {
+				Geometry geomMerged = merged.union(p);
+				
+				if (geomMerged instanceof Polygon) {
+					merged = (Polygon) geomMerged;
+				} else {
+					log.error("Entrances not mergeable {}{}", parkArea.getName(), entance.getDescription());
+				}
+			}
+		}
+		parkArea.setPolygon(merged);
+		log.info("\tMerged is {}", merged);
+		
+	}
+	
+	
+	public ParkArea mergeParkAreaEntrance(ParkArea parkArea) {
+		this.mergeEntranceAreas(parkArea);
+		return parkAreaRepository.save(parkArea);
+	}
+	
+	public void mergeUpdatedEntranceAreas() {
+		List<ParkArea> areas = parkAreaRepository.polygonToUpdate();
+		for (ParkArea parkArea : areas) {
+			this.mergeEntranceAreas(parkArea);
+		}
+		parkAreaRepository.saveAll(areas);
+	}
+	
 	/**
 	 * merge all entrances for one park to compute park isochrone.
 	 */
-	public void mergeEntranceAreas() {
+	public void mergeNullEntranceAreas() {
 		List<ParkArea> areas = parkAreaRepository.polygonNull();
-		//List<ParkArea> areas = parkAreaRepository.findAll();
 		for (ParkArea parkArea : areas) {
-			List<ParkEntrance> entances = parkEntranceRepository.findByParkArea(parkArea);
-			
-			
-			Polygon merged=null;
-			for (ParkEntrance entance : entances) {
-
-				log.info(entance.getParkArea().getName());
-				Polygon p =entance.getPolygon();
-				
-				
-				if (merged==null) {
-					merged = factory.createPolygon(p.getCoordinates());
-					
-				} else {
-					Geometry geomMerged = merged.union(p);
-					
-					if (geomMerged instanceof Polygon) {
-						merged = (Polygon) geomMerged;
-					} else {
-						log.error("Entrances not mergeable {}", entance.getDescription());
-//						merged = null;
-//						break;
-					}
-				}
-			}
-			
-			parkArea.setPolygon(merged);
-			log.error("Merged is {}", merged);
-			
+			this.mergeEntranceAreas(parkArea);
 		}
 		parkAreaRepository.saveAll(areas);
 	}
