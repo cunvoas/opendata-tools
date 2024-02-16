@@ -232,8 +232,8 @@ public class EntranceControler {
 		// rebuild parent form context
 		FormParkEntrance form=new FormParkEntrance(formDetail);
 		
-		ParkArea pa = new ParkArea();
-		pa.setId(form.getAreaId());	
+		ParkArea pa = serviceReadReferences.getParkAreaById(form.getAreaId());
+		//TODO to test
 		parkService.mergeParkAreaEntrance(pa);
 		
 		return getForm(form, model);

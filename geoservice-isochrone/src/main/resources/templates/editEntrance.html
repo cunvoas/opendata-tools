@@ -226,6 +226,7 @@
                 </div>
             </div>
         </div>
+        
         <div class="row">
             <div class="col">
                 <div class="card border" style="text-align: center">
@@ -240,6 +241,23 @@
 					<div class="form-floating">
 						<button type="submit" class="btn btn-secondary" th:text="#{entrance.edit.submit}">validate</button>
 					</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <button type="submit" class="btn btn-dark" th:text="#{entrance.edit.submit.isochrone}" th:formaction="@{/mvc/entrance/mergeIsochrone}">validate</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        &nbsp;
+                    </div>
                 </div>
             </div>
         </div>
@@ -338,6 +356,11 @@
 	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
 	        inputValue = input.value;
 		    
+
+        console.log("idPark-filter input event");
+        console.log(inputValue);
+        console.log(hiddenInput);
+        
 	    	hiddenInput.value = inputValue;
 		    
 		    for(var i = 0; i < options.length; i++) {
@@ -356,6 +379,11 @@
         hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
         inputValue = input.value;
 	    
+        console.log("idPark-filter focusout event");
+        console.log(inputValue);
+        console.log(hiddenInput);
+        
+        
 	    const regex = /[0-9]/g;
 	    const found = hiddenInput.match(regex);
 	    if (found) {
