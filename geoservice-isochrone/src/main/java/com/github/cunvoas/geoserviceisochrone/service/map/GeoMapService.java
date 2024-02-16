@@ -126,6 +126,11 @@ public class GeoMapService {
     	return this.findAllParkByArea(polygon);
     }
     
+    /**
+     * shuffle color of polygons.
+     * @param index
+     * @return
+     */
     public String getColor(int index) {
     	int start=240;
     	int rawOffest=64;
