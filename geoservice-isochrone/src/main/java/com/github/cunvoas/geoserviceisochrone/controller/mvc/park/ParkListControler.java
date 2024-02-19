@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkList;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkListItem;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
@@ -28,6 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
+import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
 
 
 @Controller
@@ -38,6 +38,10 @@ public class ParkListControler {
 
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
+	
+	@Autowired
+	private ParkTypeService parkTypeService;
+	
 	
 
 	@PostMapping("/region")
@@ -79,6 +83,11 @@ public class ParkListControler {
 		return getForm(form, model);
 	}
 	
+	@PostMapping("/case")
+	public String changeCase(@ModelAttribute FormParkList form, Model model) {
+		return getForm(form, model);
+	}
+	
 	
 	@GetMapping
 	public String getForm(@ModelAttribute FormParkList form, Model model) {
@@ -89,9 +98,11 @@ public class ParkListControler {
 		model.addAttribute("communautesDeCommunes", form.getCommunautesDeCommunes());
 		model.addAttribute("communes", form.getCommunes());
 		
+		model.addAttribute("parkTypes", parkTypeService.findAll());
+		
 		if (form.getIdCommune()!=null) {
 			Pageable p = PageRequest.of(form.getPage()-1, form.getSize());
-			Page<FormParkListItem> page = populateTableList(form.getIdCommune(), p);
+			Page<FormParkListItem> page = populateTableList(form.getIdCommune(), form.getParkCase(), p);
 			model.addAttribute("formParkListItems", page);
 		}
 		
@@ -132,10 +143,11 @@ public class ParkListControler {
 		return form;
 	}
 		
-	private Page<FormParkListItem> populateTableList(Long idCity, Pageable page) {
+	private Page<FormParkListItem> populateTableList(Long idCity, String parkCase, Pageable page) {
 		City city = serviceReadReferences.getCityById(idCity);
 		
-		Page<ParcEtJardin> pgPj = serviceReadReferences.getParcEtJardinByCityId(idCity, page);
+		Page<ParcEtJardin> pgPj = serviceReadReferences.getParcEtJardinByCityId(idCity, parkCase, page);
+		
 		
 		List<FormParkListItem> lstItems = new ArrayList<>();
 		for (ParcEtJardin pj : pgPj) {
@@ -159,6 +171,10 @@ public class ParkListControler {
 				
 				item.setIdArea(pa.getId());
 				item.setLastIsochroneUpdate(pa.getUpdated());
+				
+				item.setOms(pa.getType().getOms());
+				parkTypeService.setLabel(pa.getType());
+				item.setType(pa.getType().getLabel());
 				
 				if(!CollectionUtils.isEmpty(pa.getEntrances())) {
 					Date maxDate=null;

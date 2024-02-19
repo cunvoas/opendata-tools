@@ -2,11 +2,11 @@ package com.github.cunvoas.geoserviceisochrone.service.park;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
-import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -17,6 +17,7 @@ import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionExtract;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvParkEntranceParser;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvParkLine;
+import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.UrlPointParser;
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.MapperIsoChrone;
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.DtoIsoChroneParser;
@@ -32,8 +33,6 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
-import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
-import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapService;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
 import lombok.extern.java.Log;
@@ -269,19 +268,24 @@ public class ParkService {
 			Polygon p =entance.getPolygon();
 			
 			if (merged==null) {
+				// clone the fist one
 				merged = factory.createPolygon(p.getCoordinates());
 				
 			} else {
-				Geometry geomMerged = merged.union(p);
+				//process merge
+				merged = GeoShapeHelper.mergePolygonsWithoutHoles(merged, p);
 				
-				if (geomMerged instanceof Polygon) {
-					merged = (Polygon) geomMerged;
-				} else {
-					log.error("Entrances not mergeable {}{}", parkArea.getName(), entance.getDescription());
-				}
+//				Geometry geomMerged = merged.union(p);
+//				
+//				if (geomMerged instanceof Polygon) {
+//					merged = (Polygon) geomMerged;
+//				} else {
+//					log.error("Entrances not mergeable {}{}", parkArea.getName(), entance.getDescription());
+//				}
 			}
 		}
 		parkArea.setPolygon(merged);
+		parkArea.setUpdated(new Date());
 		log.info("\tMerged is {}", merged);
 		
 	}

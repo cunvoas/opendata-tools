@@ -107,6 +107,16 @@ public class ServiceReadReferences {
 		return parkJardinRepository.findByCityId(id, pageable);
 	}
 	
+	public Page<ParcEtJardin> getParcEtJardinByCityId(Long id, String parkCase, Pageable pageable) {
+		if ("merge".equalsIgnoreCase(parkCase)) {
+			return parkJardinRepository.findByCityIdToMerge(id, pageable);
+		} else if ("compute".equalsIgnoreCase(parkCase)) {
+			return parkJardinRepository.findByCityIdToCompute(id, pageable);
+		} else {
+			return parkJardinRepository.findByCityId(id, pageable);
+		}
+	}
+	
 	public ParcEtJardin getParcEtJardinById(Long id) {
 		Optional<ParcEtJardin> opt=parkJardinRepository.findById(id);
 		if (opt.isPresent()) {

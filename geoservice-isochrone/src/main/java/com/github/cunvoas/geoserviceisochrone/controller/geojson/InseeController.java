@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.controller.map;
+package com.github.cunvoas.geoserviceisochrone.controller.geojson;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -146,6 +146,25 @@
                 </div>
             </div>
         </div>
+         <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="sousType" name="sousType" th:field="*{sousType}"  disabled="disabled"/>
+                        <label class="form-label" for="sousType" th:text="#{entrance.sousType}">sousType</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="surface" name="surface" th:field="*{surface}" disabled="disabled"
+                                                                        th:value="${#numbers.formatDecimal(editEntrance.parcEtJardin.surface,1,0)}" />
+                        <label class="form-label" for="surface" th:text="#{entrance.surface}">surface</label>
+                    </div>
+                </div>
+            </div>
+         </div>
         </fieldset>
         </form>
         <div class="row">
@@ -230,10 +249,9 @@
         <div class="row">
             <div class="col">
                 <div class="card border" style="text-align: center">
-					<div class="form-floating">
-						<input class="form-control" type="text" id="entrancePolygon" name="entrancePolygon" th:field="*{entrancePolygon}" />
-						<label class="form-label" for="entrancePolygon" th:text="#{entrance.edit.polygon}">polygon</label>
-					</div>
+                    <div class="form-floating">
+                        <button type="submit" class="btn btn-dark" th:text="#{entrance.edit.submit.isochrone}" th:formaction="@{/mvc/entrance/mergeIsochrone}">validate</button>
+                    </div>
                 </div>
             </div>
             <div class="col">
@@ -249,7 +267,7 @@
             <div class="col">
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
-                        <button type="submit" class="btn btn-dark" th:text="#{entrance.edit.submit.isochrone}" th:formaction="@{/mvc/entrance/mergeIsochrone}">validate</button>
+					    <input type="text" class="form-control getdate" th:field="*{updateDate}" />
                     </div>
                 </div>
             </div>
@@ -552,7 +570,6 @@
 			document.getElementById("entranceLink").value="";
 			document.getElementById("entranceLat").value="";
 			document.getElementById("entranceLng").value="";
-			document.getElementById("entrancePolygon").value="";
 			
 	        document.getElementById("fsEditPark").disabled = false;
             document.getElementById("fsEditEntrance").disabled = false;

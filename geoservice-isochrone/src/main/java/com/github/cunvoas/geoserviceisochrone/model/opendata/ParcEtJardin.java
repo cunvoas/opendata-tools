@@ -1,6 +1,8 @@
 package com.github.cunvoas.geoserviceisochrone.model.opendata;
 
 import org.locationtech.jts.geom.Point;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.NumberFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,6 +11,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.Data;
 
 @Data
@@ -42,7 +46,8 @@ public class ParcEtJardin {
 	
 	@Column(name = "adresse", length = 100)
 	private String adresse;
-	
+
+	@NumberFormat(pattern = "#,##0")
 	@Column(name = "surface")
 	private Double surface;
 	

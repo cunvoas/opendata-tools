@@ -14,6 +14,7 @@ public class ParkAreaComputed {
 
 	// same as ParkArea
 	@Id
+	@Column(name = "id")
 	private long id;
 
 	@Column(name = "oms")

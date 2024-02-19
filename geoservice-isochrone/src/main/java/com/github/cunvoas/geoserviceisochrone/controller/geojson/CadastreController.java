@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.controller.map;
+package com.github.cunvoas.geoserviceisochrone.controller.geojson;
 
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;

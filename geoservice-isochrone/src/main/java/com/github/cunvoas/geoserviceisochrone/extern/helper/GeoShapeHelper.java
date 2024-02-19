@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -98,5 +99,29 @@ public class GeoShapeHelper {
 		}
 		
 		return polygon;
+	}
+	
+	/**
+	 * Merge polygons and remove holes inside.
+	 * @param poly1
+	 * @param poly2
+	 * @return Polygon without hole.
+	 */
+	public static Polygon mergePolygonsWithoutHoles(Polygon poly1, Polygon poly2) {
+		
+		if (poly1==null && poly2!=null) {
+			return poly2;
+		} else if (poly1!=null && poly2==null) {
+			return poly1;
+		} else if (poly1==null &&  poly2==null){
+			return null;
+		}
+		
+		Polygon ret = (Polygon)poly1.union(poly2);
+		if (ret.getNumInteriorRing()>0) {
+			LinearRing ext = ret.getExteriorRing();
+			ret = factory.createPolygon(ext.getCoordinates());
+		}
+		return ret;
 	}
 }

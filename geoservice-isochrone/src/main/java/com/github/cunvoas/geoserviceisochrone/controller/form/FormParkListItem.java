@@ -20,6 +20,7 @@ public class FormParkListItem {
 	private String namePark;
 
 	private Boolean oms = Boolean.TRUE;
+	private String type;
 	private Date lastEntranceUpdate;
 	private Date lastIsochroneUpdate;
 	
