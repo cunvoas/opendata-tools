@@ -20,7 +20,7 @@ public class ParkTypeService {
 	@Autowired
 	private ResourceBundleMessageSource messageSource;
 	
-	List<ParkType> findAll() {
+	public List<ParkType> findAll() {
 		Locale locale = LocaleContextHolder.getLocale();
 		
 		List<ParkType> types = parkTypeRepository.findAll();
@@ -30,6 +30,12 @@ public class ParkTypeService {
 		}
 		
 		return types;
+	}
+	
+	public void setLabel(ParkType parkType) {
+		Locale locale = LocaleContextHolder.getLocale();
+		String trad = messageSource.getMessage(parkType.getI18n(), null, locale);
+		parkType.setLabel(trad);
 	}
 
 }

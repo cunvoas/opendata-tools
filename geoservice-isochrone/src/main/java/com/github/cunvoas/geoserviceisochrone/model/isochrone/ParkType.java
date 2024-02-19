@@ -21,7 +21,7 @@ public class ParkType {
     private String i18n;
     
     @Column(name="oms")
-    private boolean oms;
+    private Boolean oms;
     
     @Transient
     private String label;

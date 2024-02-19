@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.controller.geojson;
+package com.github.cunvoas.geoserviceisochrone.controller.geojson.view;
 
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonProperty;
 

@@ -40,7 +40,7 @@ public class AopSaveTracker {
         activityTrackerService.incrementNbEntranceActivity(ca);
     }
 
-    @After("execution( * com.github.cunvoas.geoserviceisochrone.controller.mvc.process.*.save*(..) )")
+    @After("execution( * com.github.cunvoas.geoserviceisochrone.controller.mvc.*.*Controler.mergeIsochrone(..) )")
     public void trackMethodAfterIsochrone(JoinPoint joinPoint) {
     	ContributeurAction ca = extractArg(joinPoint);
         activityTrackerService.incrementNbIsochroneActivity(ca);;

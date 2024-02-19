@@ -28,6 +28,23 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 			countQuery="select count(1) from parc_jardin pj where pj.id_city=:id")
 	Page<ParcEtJardin> findByCityId(Long id, Pageable pageable);
 	
+	@Query(nativeQuery = true,
+			value="select distinct pj.* from parc_jardin pj "
+					+ "inner join park_area pa on pj.identifiant=pa.id_parc_jardin "
+					+ "inner join park_entrance pe on pa.id=pe.area_id "
+					+ "where pj.id_city=:id "
+					+ "and (pe.update_date>pa.updated or pa.updated isnull)"
+			)
+	Page<ParcEtJardin> findByCityIdToMerge(Long id, Pageable pageable);
+	
+	@Query(nativeQuery = true,
+			value="select distinct pj.* from parc_jardin pj "
+					+ "inner join park_area pa on pj.identifiant=pa.id_parc_jardin "
+					+ "inner join park_area_computed pac on pa.id=pac.id "
+					+ "where pj.id_city=:id "
+					+ "and (pa.updated>pac.updated or pac.updated isnull)"
+			)
+	Page<ParcEtJardin> findByCityIdToCompute(Long id, Pageable pageable);
 	
 	@Query(value="SELECT * from parc_jardin where ST_Distance(coordonnee, :p) < :distanceM order by ST_Distance(coordonnee, :p) asc", nativeQuery = true)
 	List<ParcEtJardin> findNearWithinDistance(Point p, double distanceM);

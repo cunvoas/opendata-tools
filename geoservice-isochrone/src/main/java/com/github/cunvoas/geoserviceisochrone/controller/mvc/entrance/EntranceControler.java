@@ -228,12 +228,12 @@ public class EntranceControler {
 	}
 	
 	@PostMapping("/mergeIsochrone")
-	public String pushIsochrone(@ModelAttribute FormParkEntranceDetail formDetail, Model model) {
+	public String mergeIsochrone(@ModelAttribute FormParkEntranceDetail formDetail, Model model) {
 		// rebuild parent form context
 		FormParkEntrance form=new FormParkEntrance(formDetail);
 		
 		ParkArea pa = serviceReadReferences.getParkAreaById(form.getAreaId());
-		//TODO to test
+
 		parkService.mergeParkAreaEntrance(pa);
 		
 		return getForm(form, model);

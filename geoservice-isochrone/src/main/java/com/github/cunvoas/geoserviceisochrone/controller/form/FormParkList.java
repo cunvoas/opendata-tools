@@ -14,6 +14,8 @@ public class FormParkList {
 	private Long idRegion;
 	private Long idCommunauteDeCommunes;
 	private Long idCommune;
+	private Long idParkType;
+	private String parkCase="all";
 
 	private String nameRegion;
 	private String nameCommunauteDeCommunes;

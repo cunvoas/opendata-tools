@@ -2,8 +2,12 @@ package com.github.cunvoas.geoserviceisochrone.controller.form;
 
 import java.util.Date;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.Data;
 
 @Data
@@ -57,6 +61,8 @@ public class FormParkEntranceDetail {
 	private Long areaId;
 	private String description;
 	private Date ignDate;
+	@Temporal(TemporalType.DATE)
+	@DateTimeFormat (pattern="dd-MM-YYYY hh:mm:ss")
 	private Date updateDate;
 	private String entranceLink;
 	private Double entranceLat;

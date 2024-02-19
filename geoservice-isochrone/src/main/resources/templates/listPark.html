@@ -12,123 +12,167 @@
 
 				<div class="container">
 
-<div class="row row-cols-1 row-cols-md-12 g-2 ">
-	<div class="container-fluid px-4">
-		<h1 class="mt-12" th:text="#{park.title}">title</h1>
-	</div>
-     <div class="row">
-         <div class="col-3">
-             <div class="card" style="text-align: center">
-               	<!-- region -->
-				<form th:action="@{/mvc/park/region}" th:object="${formParkList}" method="post" onchange="submit();">
-					<div class="form-floating">
-						<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
-							<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
-							<option th:each="region : ${regions}" 
-								th:value="${region.id}" 
-								th:text="${region.name}" 
-								th:selected="${region.id==idRegion}"></option>
-						</select>
-						<label for="idRegion" th:text="#{entrance.region}">region</label>
-					</div>
-				</form>
-             </div>
-         </div>
-         <div class="col-3">
-             <div class="card" style="text-align: center">
-                	<!-- comm2co -->
-					<form th:action="@{/mvc/park/commDeCo}" th:object="${formParkList}" method="post" onchange="submit();">
-					<fieldset id="fsComm2co" disabled="disabled">
+    <div class="row row-cols-1 row-cols-md-12 g-2 ">
+		<div class="container-fluid px-4">
+			<h1 class="mt-12" th:text="#{park.title}">title</h1>
+		</div>
+	     <div class="row">
+	         <div class="col-3">
+	             <div class="card" style="text-align: center">
+	               	<!-- region -->
+					<form th:action="@{/mvc/park/region}" th:object="${formParkList}" method="post" onchange="submit();">
 						<div class="form-floating">
-							<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
-								<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
-								<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+							<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+								<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
+								<option th:each="region : ${regions}" 
+									th:value="${region.id}" 
+									th:text="${region.name}" 
+									th:selected="${region.id==idRegion}"></option>
 							</select>
-							<label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
+							<label for="idRegion" th:text="#{entrance.region}">region</label>
+							<input type="hidden" id="parkCase" name="parkCase" th:field="*{parkCase}" />
+						</div>
+					</form>
+	             </div>
+	         </div>
+	         <div class="col-3">
+	             <div class="card" style="text-align: center">
+	                	<!-- comm2co -->
+						<form th:action="@{/mvc/park/commDeCo}" th:object="${formParkList}" method="post" onchange="submit();">
+						<fieldset id="fsComm2co" disabled="disabled">
+							<div class="form-floating">
+								<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+									<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
+									<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+								</select>
+								<label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
+								<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+								<input type="hidden" id="parkCase" name="parkCase" th:field="*{parkCase}" />
+							</div>
+						</fieldset>
+						</form>
+	             </div>
+	         </div>
+	         <div class="col-6">
+	             <div class="card" style="text-align: center">
+	             	<!-- commune -->
+					<form id="formSelectCity" th:action="@{/mvc/park/city}" method="POST" th:object="${formParkList}">
+					<fieldset id="fsCity" disabled="disabled">
+						<div class="form-floating">
+		
+							<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" />
+							<label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
+							<datalist id="communes" class="form-label">
+								<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
+							</datalist>
+							<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
 							<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+							<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+							<input type="hidden" id="parkCase" name="parkCase" th:field="*{parkCase}" />
 						</div>
 					</fieldset>
 					</form>
+	             </div>
+	         </div>
+	     </div>
+     
+     
+     
+         <div class="row">
+             <div class="col-3">
+                 <div class="card" style="text-align: center">
+                   <div class="form-floating">
+                    <!-- RADIOS -->
+                    <form th:action="@{/mvc/park/case}" th:object="${formParkList}" method="post" onchange="submit();">
+                    
+                                <input type="radio" id="caseAll" name="caseAll" value="all" class="form-check-input" th:field="*{parkCase}" />
+                                <label for="caseAll" th:text="#{park.case.all}" >all</label>
+                                
+                                <input type="radio" id="caseMerge" name="caseMerge"  value="merge" class="form-check-input" th:field="*{parkCase}"  />
+                                <label for="caseMerge" th:text="#{park.case.merge}" >mergr</label>
+                               
+                                <input type="radio" id="caseCompute"name="caseCompute" value="compute" class="form-check-input" th:field="*{parkCase}" />
+                                <label for="caseCompute" th:text="#{park.case.compute}" >compute</label>
+                                
+                            <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+                            <input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+                            <input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+                     
+                    </form>
+                       </div>
+                 </div>
              </div>
+             <div class="col-3">
+                 <div class="card" style="text-align: center">
+                        &nbsp;
+                 </div>
+             </div>
+             <div class="col-6">
+                 <div class="card" style="text-align: center">
+                        &nbsp;
+                 </div>
+             </div>
+             
          </div>
-         <div class="col-6">
-             <div class="card" style="text-align: center">
-             	<!-- commune -->
-				<form id="formSelectCity" th:action="@{/mvc/park/city}" method="POST" th:object="${formParkList}">
-				<fieldset id="fsCity" disabled="disabled">
-					<div class="form-floating">
+        
+         
+     
+     
+	     
+	     <div class="row"> 
+	     <!-- table here -->
+	         <div class="col-12">
+	             <div class="card" style="text-align: left">
+	                <div class="card-header">
+	                    <i class="fas fa-table me-1"></i>
+	                    <txt th:text="#{park.table.title}"></txt>
+	                </div>
+	                <div class="card-body">
 	
-	
-						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
-						<datalist id="communes" class="form-label">
-							<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
-						</datalist>
-						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
-						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
-						<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+						<table border="1"id="datatablesSimple">
+						    <thead>
+						        <tr>
+						            <th th:text="#{park.table.nameCommune}" />
+			                        <th th:text="#{park.table.block}" />
+						            <th th:text="#{park.table.namePark}" />
+			                        <th th:text="#{park.table.type}" />
+			                        <th th:text="#{park.table.oms}" />
+			                        <th th:text="#{park.table.lastEntranceUpdate}" />
+			                        <th th:text="#{park.table.lastIsochroneUpdate}" />
+			                        <th th:text="#{park.table.link}" />
+						        </tr>
+						    </thead>
+						    <tbody>
+						        <tr th:each="park : ${formParkListItems}" >
+						            <td th:text="${park.nameCommune}" />
+			                        <td th:text="${park.nameQuartier}" />
+			                        <td th:text="${park.namePark}" />
+			                        <td th:text="${park.type}" />
+			                        <td th:text="${park.oms}" />
+			                        <td th:text="${park.lastEntranceUpdate}" />
+			                        <td th:text="${park.lastIsochroneUpdate}" />
+			                        <td>
+			                            <a th:href="@{/mvc/park/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkPark}"></a>
+			                            &nbsp;
+			                            <a th:href="@{/mvc/entrance/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkEtrance}"></a>
+			                        </td>
+			                        
+			
+						        </tr>
+						    </tbody>
+						</table>
+			
 					</div>
-				</fieldset>
-				</form>
-             </div>
-         </div>
-     </div>
-     
-     
-     <div class="row">
-         <div class="col-12">
-             <div class="card" style="text-align: left">
-                <div class="card-header">
-                    <i class="fas fa-table me-1"></i>
-                    <txt th:text="#{park.table.title}"></txt>
-                </div>
-                <div class="card-body">
-
-<!-- table here -->
-
-			<table border="1"id="datatablesSimple">
-			    <thead>
-			        <tr>
-			            <th th:text="#{park.table.nameCommune}" />
-                        <th th:text="#{park.table.block}" />
-			            <th th:text="#{park.table.namePark}" />
-                        <th th:text="#{park.table.oms}" />
-                        <th th:text="#{park.table.lastEntranceUpdate}" />
-                        <th th:text="#{park.table.lastIsochroneUpdate}" />
-                        <th th:text="#{park.table.link}" />
-			        </tr>
-			    </thead>
-			    <tbody>
-			        <tr th:each="park : ${formParkListItems}" >
-			            <td th:text="${park.nameCommune}" />
-                        <td th:text="${park.nameQuartier}" />
-                        <td th:text="${park.namePark}" />
-                        <td th:text="${park.oms}" />
-                        <td th:text="${park.lastEntranceUpdate}" />
-                        <td th:text="${park.lastIsochroneUpdate}" />
-                        <td>
-                            <a th:href="@{/mvc/park/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkPark}"></a>
-                            &nbsp;
-                            <a th:href="@{/mvc/entrance/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkEtrance}"></a>
-                        </td>
-                        
-
-			        </tr>
-			    </tbody>
-			</table>
-
-			</div>
+	
+	
+	             </div>
+	         </div>
+	     </div>
+	     
 
 
-             </div>
-         </div>
-     </div>
-     
 
-    </div>
-    
-</div>
-
-							
+				</div>			
 			</main>
 		</div> <!-- layoutSidenav_content -->
 	</div> <!-- layoutSidenav -->
