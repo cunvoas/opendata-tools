@@ -102,8 +102,14 @@ public class ParkListControler {
 		
 		if (form.getIdCommune()!=null) {
 			Pageable p = PageRequest.of(form.getPage()-1, form.getSize());
-			Page<FormParkListItem> page = populateTableList(form.getIdCommune(), form.getParkCase(), p);
+			Page<FormParkListItem> page = populateTableList(form.getIdCommune(), form.getParkCase(), "commune", p);
 			model.addAttribute("formParkListItems", page);
+			
+		} else if (form.getIdCommunauteDeCommunes()!=null) {
+			Pageable p = PageRequest.of(form.getPage()-1, form.getSize());
+			Page<FormParkListItem> page = populateTableList(form.getIdCommunauteDeCommunes(), form.getParkCase(), "comm2co", p);
+			model.addAttribute("formParkListItems", page);
+			
 		}
 		
 		return formName;
@@ -143,15 +149,30 @@ public class ParkListControler {
 		return form;
 	}
 		
-	private Page<FormParkListItem> populateTableList(Long idCity, String parkCase, Pageable page) {
-		City city = serviceReadReferences.getCityById(idCity);
+	private Page<FormParkListItem> populateTableList(Long idCity, String parkCase, String type, Pageable page) {
+		City city = null;
+		boolean onCity=false;
 		
-		Page<ParcEtJardin> pgPj = serviceReadReferences.getParcEtJardinByCityId(idCity, parkCase, page);
-		
+		Page<ParcEtJardin> pgPj = null;
+		if ("commune".equals(type)) {
+			city = serviceReadReferences.getCityById(idCity);
+			pgPj = serviceReadReferences.getParcEtJardinByCityId(idCity, parkCase, page);
+			onCity=true;
+			
+		} else if ("comm2co".equals(type)) {
+			pgPj = serviceReadReferences.getParcEtJardinByComm2coId(idCity, parkCase, page);
+		}
 		
 		List<FormParkListItem> lstItems = new ArrayList<>();
 		for (ParcEtJardin pj : pgPj) {
 			FormParkListItem item = new FormParkListItem();
+			
+			if (onCity) {
+				item.setIdCommune(idCity);
+			} else {
+				city = pj.getCommune();
+				item.setIdCommune(city.getId());
+			}
 			if (city.getRegion()!=null) {
 				item.setIdRegion(city.getRegion().getId());
 				item.setNameRegion(city.getRegion().getName());
@@ -160,8 +181,8 @@ public class ParkListControler {
 				item.setIdCommunauteDeCommunes(city.getCommunauteCommune().getId());
 				item.setNameCommunauteDeCommunes(city.getCommunauteCommune().getName());
 			}
-			item.setIdCommune(idCity);
 			item.setNameCommune(city.getName());
+			
 			item.setIdPark(pj.getId());
 			item.setNameQuartier(pj.getQuartier());
 			item.setNamePark(pj.getName());

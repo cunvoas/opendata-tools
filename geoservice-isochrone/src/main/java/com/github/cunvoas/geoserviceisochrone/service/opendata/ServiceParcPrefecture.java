@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.service.opendata;
 
 import java.text.Normalizer;
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
@@ -33,11 +34,23 @@ public class ServiceParcPrefecture {
 	public void update() {
 		List<ParcPrefecture> pps = parcPrefectureRepository.findAll();
 		for (ParcPrefecture pp : pps) {
-			update(pp);
+			computeAndUpdate(pp);
 		}
 	}
 	
+	public ParcPrefecture getById(Long id) {
+		Optional<ParcPrefecture> opt = parcPrefectureRepository.findById(id);
+		if (opt.isPresent()) {
+			return opt.get();
+		}
+		return null;
+	}
+	
 	public ParcPrefecture update(ParcPrefecture pp) {
+		return parcPrefectureRepository.save(pp);
+	}
+	
+	public ParcPrefecture computeAndUpdate(ParcPrefecture pp) {
 		boolean updated=false;
 		
 		// surface update
@@ -47,6 +60,7 @@ public class ServiceParcPrefecture {
 			updated=true;
 		}
 		
+
 		if (pp.getParcEtJardin()==null ) { //&& pp.getCommune().getId()==2878) {
 			List<ParcEtJardin> pjs=inseeCarre200mService.findAround(pp.getPoint(), 0.07);
 			if (pjs!=null && !pjs.isEmpty()) {
@@ -90,7 +104,7 @@ public class ServiceParcPrefecture {
 		}
 		
 		pp = parcPrefectureRepository.save(pp);
-		update(pp);
+		computeAndUpdate(pp);
 		return pp;
 	}
 	

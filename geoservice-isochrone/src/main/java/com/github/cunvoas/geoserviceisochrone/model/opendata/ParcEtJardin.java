@@ -54,6 +54,25 @@ public class ParcEtJardin {
 	@Column(name = "coordonnee")
 	private Point coordonnee;
 	
+	public String getLat() {
+		if (coordonnee!=null) {
+			return  String.valueOf(coordonnee.getCoordinate().y);
+		}
+		return "";
+	}
+	public String getLng() {
+		if (coordonnee!=null) {
+			return  String.valueOf(coordonnee.getCoordinate().x);
+		}
+		return "";
+	}
+	public String getLatLng() {
+		if (coordonnee!=null) {
+			return  String.valueOf(coordonnee.getCoordinate().y)+","+String.valueOf(coordonnee.getCoordinate().x);
+		}
+		return "";
+	}
+	
 
 	@ManyToOne
 	@JoinColumn(name="id_city", nullable=true)

@@ -28,4 +28,15 @@ public class GeoJsonForMvcController {
 		GeoJsonRoot isochrones=geoMapService.findIsochronePark(idPark);
 		return isochrones;
 	}
+	
+	@GetMapping("/parkPrefectureByCorner")
+    public GeoJsonRoot getParkPrefectureByArea(
+    			@RequestParam("swLat") Double swLat,
+    			@RequestParam("swLng") Double swLng,
+    			@RequestParam("neLat") Double neLat,
+    			@RequestParam("neLng") Double neLng
+    		) {
+        return geoMapService.findParkPrefectureByArea(swLat, swLng, neLat, neLng);
+    }
+	
 }

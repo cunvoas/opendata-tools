@@ -1,6 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.park;
 
-import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,22 +12,35 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkEdit;
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
+import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceParcPrefecture;
+import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
+
+import lombok.extern.slf4j.Slf4j;
 
 
 @Controller
 @RequestMapping("/mvc/park")
+@Slf4j
 public class ParkEditControler {
 	
 	private String formName = "editPark";
 
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
+	@Autowired
+	private ServiceParcPrefecture serviceParcPrefecture;
 	
+	@Autowired
+	private ParkTypeService parkTypeService;
+
 	@GetMapping("/edit")
-	public String gotoEntrance(
+	public String editPark(
 			@RequestParam("idRegion") Long idRegion, 
 			@RequestParam("idComm2Co")Long idComm2Co, 
 			@RequestParam("idCommune") Long idCommune, 
@@ -39,55 +52,90 @@ public class ParkEditControler {
 			form = new FormParkEdit();
 		}
 		form.setIdRegion(idRegion);
-		form.setIdComm2Co(idComm2Co);
+		form.setIdCommunauteDeCommunes(idComm2Co);
 		form.setIdCommune(idCommune);
 		form.setIdPark(idPark);
 		
 		return populateForm(form, model);
 	}
 	
+	
 	@PostMapping("/edit")
-	public String gotoEntrance(
-			@ModelAttribute FormParkEdit form,
-			Model model) {
+	public String savePark( @ModelAttribute FormParkEdit form, Model model) {
 		
-		// TODO
+		ParcPrefecture pf = form.getParcPrefecture();
 		
+		ParcPrefecture parcPref = serviceParcPrefecture.getById( pf.getId() );
+		if (parcPref!=null) {
+			log.error("Processed: "+ pf.getProcessed());
+			parcPref.setProcessed(pf.getProcessed());
+			parcPref = serviceParcPrefecture.update(parcPref);
+		}
+		
+		// hotfix
+		form.setIdRegion(pf.getIdRegion());
+		form.setIdCommunauteDeCommunes(pf.getIdCommunauteDeCommunes());
+		form.setIdCommune(pf.getIdCommune());
+		form.setIdPark(pf.getIdPark());
 		
 		return populateForm(form, model);
 	}
 	
 	
-
-	
 	protected String populateForm( FormParkEdit form, Model model) {
+		
+		List<Region> regions = serviceReadReferences.getRegion();
+		List<CommunauteCommune> com2cos = serviceReadReferences.getCommunauteByRegionId(form.getIdRegion());
+		List<City> cities = serviceReadReferences.getCityByCommunauteCommuneId(form.getIdCommunauteDeCommunes());
+		
+		model.addAttribute("listParkTypes", parkTypeService.findAll());
+		
 
+		form.setRegions(regions);
+		form.setCommunautesDeCommunes(com2cos);
+		form.setCommunes(cities);
+		
+		
 		if (form.getIdCommune()!=null) {
 			City city = serviceReadReferences.getCityById(form.getIdCommune());
 			form.setNameCommune(city!=null?city.getName():"");
 		}
+
+		model.addAttribute(formName, form);
 		
 		// populate business
-		form.setParcEtJardin(serviceReadReferences.getParcEtJardinById(form.getIdPark()));
-		model.addAttribute("ParcEtJardin", form.getParcEtJardin());
-		form.setParkArea(serviceReadReferences.getParkAreaById(form.getIdPark()));
-		model.addAttribute("ParkArea", form.getParkArea());
-		form.setParkAreaComputed(serviceReadReferences.getParkAreaComputedById(form.getIdPark()));
-		model.addAttribute("ParkAreaComputed", form.getParkAreaComputed());
-		form.setParkEntrances(serviceReadReferences.getEntranceByParkId(form.getIdPark()));
-		model.addAttribute("ParkEntrances", form.getParkEntrances());
-		
-		// check if update required
-		if (form.getParkEntrances()!=null && !form.getParkEntrances().isEmpty()) {
-			Date upd = form.getParkArea().getUpdated();
-			for (ParkEntrance pe : form.getParkEntrances()) {
-				if (upd.before(pe.getUpdateDate())) {
-					form.setComputeNeeded(Boolean.TRUE);
-					break;
-				}
-			}
+		ParcEtJardin petj = serviceReadReferences.getParcEtJardinById(form.getIdPark());
+		if (petj!=null) {
+			form.setParcEtJardin(petj);
+			model.addAttribute("parcLatLng", petj.getLatLng());
+			
+			ParcPrefecture pPref = serviceReadReferences.getParcPrefectureByParcEtJardinId(form.getIdPark());
+			form.setParcPrefecture(pPref);
+			model.addAttribute("parcPrefecture", pPref);
+			
+			// hotfix
+			pPref.setIdRegion(form.getIdRegion());
+			pPref.setIdCommunauteDeCommunes(form.getIdCommunauteDeCommunes());
+			pPref.setIdCommune(form.getIdCommune());
+			pPref.setIdPark(form.getIdPark());
+			
+		} else {
+			// default on Lille
+			model.addAttribute("parcLatLng", "50.628040512635025,3.0682105159282456");
 		}
+		model.addAttribute("ParcEtJardin", form.getParcEtJardin());
 		
+		form.setParkArea(serviceReadReferences.getByIdParcEtJardin(form.getIdPark()));
+		if (form.getParkArea()!=null) {
+			model.addAttribute("ParkArea", form.getParkArea());
+			
+			form.setParkAreaComputed(serviceReadReferences.getParkAreaComputedById(form.getParkArea().getId()));
+			model.addAttribute("ParkAreaComputed", form.getParkAreaComputed());
+		}
+		// populate lists
+		model.addAttribute("regions", regions);
+		model.addAttribute("communautesDeCommunes", com2cos);
+		model.addAttribute("communes", form.getCommunes());
 		
 		return formName;
 	}

@@ -1,5 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.service.entrance;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
@@ -15,12 +17,14 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
 
@@ -44,6 +48,8 @@ public class ServiceReadReferences {
 	private ParkAreaComputedRepository parkAreaComputedRepository;
 	@Autowired
 	private ParkEntranceRepository parkEntranceRepository;
+	@Autowired
+	private ParcPrefectureRepository parcPrefectureRepository;
 	
 	public List<Region> getRegion() {
 		return regionRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
@@ -103,10 +109,23 @@ public class ServiceReadReferences {
 	public List<ParcEtJardin> getParcEtJardinByCityId(Long id) {
 		return parkJardinRepository.findByCityId(id);
 	}
-	public Page<ParcEtJardin> getParcEtJardinByCityId(Long id, Pageable pageable) {
-		return parkJardinRepository.findByCityId(id, pageable);
+	public Page<ParcEtJardin> getParcEtJardinByCityId(Long idCommune, Pageable pageable) {
+		return parkJardinRepository.findByCityId(idCommune, pageable);
 	}
 	
+	public Page<ParcEtJardin> getParcEtJardinByComm2coId(Long idComm2co, String parkCase, Pageable pageable) {
+		Page<ParcEtJardin> rets = null;
+		
+		if ("merge".equalsIgnoreCase(parkCase)) {
+			rets = parkJardinRepository.findByComm2CoIdToMerge(idComm2co, pageable);
+		} else if ("compute".equalsIgnoreCase(parkCase)) {
+			rets = parkJardinRepository.findByComm2CoIdToCompute(idComm2co, pageable);
+		} else {
+			rets = parkJardinRepository.findByComm2CoId(idComm2co, pageable);
+		}
+		
+		return rets;
+	}
 	public Page<ParcEtJardin> getParcEtJardinByCityId(Long id, String parkCase, Pageable pageable) {
 		if ("merge".equalsIgnoreCase(parkCase)) {
 			return parkJardinRepository.findByCityIdToMerge(id, pageable);
@@ -121,6 +140,15 @@ public class ServiceReadReferences {
 		Optional<ParcEtJardin> opt=parkJardinRepository.findById(id);
 		if (opt.isPresent()) {
 			return opt.get();
+		}
+		return null;
+	}
+
+	
+	public ParcPrefecture getParcPrefectureByParcEtJardinId(Long id) {
+		List<ParcPrefecture> lst=parcPrefectureRepository.findByParcEtJardinId(id);
+		if (!CollectionUtils.isEmpty(lst)) {
+			return lst.get(0);
 		}
 		return null;
 	}

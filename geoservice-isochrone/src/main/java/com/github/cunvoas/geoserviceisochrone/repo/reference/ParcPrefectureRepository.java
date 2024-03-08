@@ -34,6 +34,12 @@ public interface ParcPrefectureRepository extends JpaRepository<ParcPrefecture, 
 			   value = "SELECT pp.* FROM parc_prefecture pp WHERE ST_Intersects(area, :searchArea")
 	List<ParcPrefecture> findByArea(Polygon searchArea);
 	
+	@Query(nativeQuery = true, 
+			   value = "SELECT pp.* FROM parc_prefecture pp WHERE ST_Intersects(pp.area, ?1)")
+	List<ParcPrefecture> findByArea(String searchArea);
 	
+	@Query(nativeQuery = true, 
+			   value = "SELECT pp.* FROM parc_prefecture pp WHERE pp.id_parc=? limit 2")
+	List<ParcPrefecture> findByParcEtJardinId(Long id);
 	
 }

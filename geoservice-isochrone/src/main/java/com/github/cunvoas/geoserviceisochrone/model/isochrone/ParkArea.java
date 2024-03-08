@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -59,10 +60,9 @@ public class ParkArea {
 	@Column(columnDefinition = "geometry(Polygon,4326)")
 	private Polygon polygon;
 	
-
+	@DateTimeFormat
 	@Column(name="updated")
 	private Date updated;
-
 	
 	@ManyToOne
 	@JoinColumn( name="type_id", nullable = true)

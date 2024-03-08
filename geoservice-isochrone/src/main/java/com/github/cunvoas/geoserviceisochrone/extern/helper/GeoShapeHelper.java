@@ -1,17 +1,29 @@
 package com.github.cunvoas.geoserviceisochrone.extern.helper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.operation.polygonize.Polygonizer;
 
+import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
+
+/**
+ * 
+ */
 public class GeoShapeHelper {
 
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -101,13 +113,49 @@ public class GeoShapeHelper {
 		return polygon;
 	}
 	
+	public static Polygon mergePolygonsWithoutHoles(Polygon poly1, Polygon poly2) {
+
+		if (poly1==null && poly2!=null) {
+			return poly2;
+		} else if (poly1!=null && poly2==null) {
+			return poly1;
+		} else if (poly1==null &&  poly2==null){
+			return null;
+		}
+
+		
+		Polygon ret;
+		try {
+			Geometry geo = poly1.union(poly2);
+			ret = null;
+			if (geo instanceof Polygon) {
+				ret = (Polygon) geo;
+				// remove holes
+				if (ret.getNumInteriorRing()>0) {
+					LinearRing ext = ret.getExteriorRing();
+					ret = factory.createPolygon(ext.getCoordinates());
+				}
+			} else if (geo instanceof MultiPolygon) {
+				Coordinate[] coords = geo.getBoundary().getCoordinates();
+				int size = coords.length;
+				coords = Arrays.copyOf(coords, size + 1);
+				coords[size] = coords[0];
+				ret = factory.createPolygon(coords);
+			}
+		} catch (Exception mergeErr) {
+			ret = mergePolygonsWithoutHolesConvex(poly1, poly2);
+		}
+		return ret;
+		
+	}
+	
 	/**
 	 * Merge polygons and remove holes inside.
 	 * @param poly1
 	 * @param poly2
 	 * @return Polygon without hole.
 	 */
-	public static Polygon mergePolygonsWithoutHoles(Polygon poly1, Polygon poly2) {
+	protected static Polygon mergePolygonsWithoutHolesConvex(Polygon poly1, Polygon poly2) {
 		
 		if (poly1==null && poly2!=null) {
 			return poly2;
@@ -116,12 +164,131 @@ public class GeoShapeHelper {
 		} else if (poly1==null &&  poly2==null){
 			return null;
 		}
+
+		// transform to a convec poly to prevent holes
+		Geometry geom1 = validate(poly1.convexHull());
+		Geometry geom2 = validate(poly2.convexHull());
+		if (geom1 instanceof Polygon) {
+			poly1 = (Polygon)geom1;
+		}
+		if (geom2 instanceof Polygon) {
+			poly2 = (Polygon)geom2;
+		}
 		
-		Polygon ret = (Polygon)poly1.union(poly2);
-		if (ret.getNumInteriorRing()>0) {
-			LinearRing ext = ret.getExteriorRing();
-			ret = factory.createPolygon(ext.getCoordinates());
+		Geometry geo = poly1.union(poly2);
+		Polygon ret = null;
+		if (geo instanceof Polygon) {
+			ret = (Polygon) geo;
+
+			// remove holes
+			if (ret.getNumInteriorRing()>0) {
+				LinearRing ext = ret.getExteriorRing();
+				ret = factory.createPolygon(ext.getCoordinates());
+			}
+		} else if (geo instanceof MultiPolygon) {
+			Coordinate[] coords = geo.getBoundary().getCoordinates();
+			int size = coords.length;
+			coords = Arrays.copyOf(coords, size + 1);
+			coords[size] = coords[0];
+			
+			ret = factory.createPolygon(coords);
+			
+		} else {
+			throw new ExceptionGeo(ExceptionGeo.MERGE);
 		}
 		return ret;
+	}
+	
+	
+	
+	//https://stackoverflow.com/questions/31473553/is-there-a-way-to-convert-a-self-intersecting-polygon-to-a-multipolygon-in-jts
+	
+	/**
+	 * Get / create a valid version of the geometry given. If the geometry is a polygon or multi polygon, self intersections /
+	 * inconsistencies are fixed. Otherwise the geometry is returned.
+	 * 
+	 * @param geom
+	 * @return a geometry 
+	 */
+	@SuppressWarnings("unchecked")
+	public static Geometry validate(Geometry geom){
+	    if(geom instanceof Polygon){
+	        if(geom.isValid()){
+	            geom.normalize(); // validate does not pick up rings in the wrong order - this will fix that
+	            return geom; // If the polygon is valid just return it
+	        }
+	        Polygonizer polygonizer = new Polygonizer();
+	        addPolygon((Polygon)geom, polygonizer);
+	        return toPolygonGeometry(polygonizer.getPolygons(), geom.getFactory());
+	    }else if(geom instanceof MultiPolygon){
+	        if(geom.isValid()){
+	            geom.normalize(); // validate does not pick up rings in the wrong order - this will fix that
+	            return geom; // If the multipolygon is valid just return it
+	        }
+	        Polygonizer polygonizer = new Polygonizer();
+	        for(int n = geom.getNumGeometries(); n-- > 0;){
+	            addPolygon((Polygon)geom.getGeometryN(n), polygonizer);
+	        }
+	        return toPolygonGeometry(polygonizer.getPolygons(), geom.getFactory());
+	    }else{
+	        return geom; // In my case, I only care about polygon / multipolygon geometries
+	    }
+	}
+
+	/**
+	 * Add all line strings from the polygon given to the polygonizer given
+	 * 
+	 * @param polygon polygon from which to extract line strings
+	 * @param polygonizer polygonizer
+	 */
+	static void addPolygon(Polygon polygon, Polygonizer polygonizer){
+	    addLineString(polygon.getExteriorRing(), polygonizer);
+	    for(int n = polygon.getNumInteriorRing(); n-- > 0;){
+	        addLineString(polygon.getInteriorRingN(n), polygonizer);
+	    }
+	}
+
+	/**
+	 * Add the linestring given to the polygonizer
+	 * 
+	 * @param linestring line string
+	 * @param polygonizer polygonizer
+	 */
+	static void addLineString(LineString lineString, Polygonizer polygonizer){
+
+	    if(lineString instanceof LinearRing){ // LinearRings are treated differently to line strings : we need a LineString NOT a LinearRing
+	        lineString = lineString.getFactory().createLineString(lineString.getCoordinateSequence());
+	    }
+
+	    // unioning the linestring with the point makes any self intersections explicit.
+	    Point point = lineString.getFactory().createPoint(lineString.getCoordinateN(0));
+	    Geometry toAdd = lineString.union(point); 
+
+	    //Add result to polygonizer
+	    polygonizer.add(toAdd);
+	}
+
+	/**
+	 * Get a geometry from a collection of polygons.
+	 * 
+	 * @param polygons collection
+	 * @param factory factory to generate MultiPolygon if required
+	 * @return null if there were no polygons, the polygon if there was only one, or a MultiPolygon containing all polygons otherwise
+	 */
+	static Geometry toPolygonGeometry(Collection<Polygon> polygons, GeometryFactory factory){
+	    switch(polygons.size()){
+	        case 0:
+	            return null; // No valid polygons!
+	        case 1:
+	            return polygons.iterator().next(); // single polygon - no need to wrap
+	        default:
+	            //polygons may still overlap! Need to sym difference them
+	            Iterator<Polygon> iter = polygons.iterator();
+	            Geometry ret = iter.next();
+	            while(iter.hasNext()){
+	                ret = ret.symDifference(iter.next());
+	            }
+	            return ret;
+	    }
 	}
 }
