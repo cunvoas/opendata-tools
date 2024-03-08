@@ -3,6 +3,8 @@ package com.github.cunvoas.geoserviceisochrone.model.isochrone;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -29,6 +31,7 @@ public class ParkAreaComputed {
 	@Column(name = "surface_population", precision = 10, scale =2)
 	private BigDecimal surfacePerInhabitant;
 
+	@DateTimeFormat
 	@Column(name="updated")
 	private Date updated;
 

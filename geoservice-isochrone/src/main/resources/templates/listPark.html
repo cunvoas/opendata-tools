@@ -152,9 +152,9 @@
 			                        <td th:text="${park.lastEntranceUpdate}" />
 			                        <td th:text="${park.lastIsochroneUpdate}" />
 			                        <td>
-			                            <a th:href="@{/mvc/park/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkPark}"></a>
+			                            <a th:href="@{/mvc/park/edit?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkPark}"></a>
 			                            &nbsp;
-			                            <a th:href="@{/mvc/entrance/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkEtrance}"></a>
+			                            <a th:href="@{/mvc/entrance/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkEntrance}"></a>
 			                        </td>
 			                        
 			

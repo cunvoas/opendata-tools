@@ -5,7 +5,6 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.CadastreView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.Carre200AndShapeView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.IsochroneView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkPrefView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkView;
 import com.github.cunvoas.geoserviceisochrone.extern.leaflet.Bound;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
@@ -35,6 +35,7 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mShape;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
@@ -43,10 +44,10 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.google.common.math.BigDecimalMath;
 
 import io.micrometer.common.util.StringUtils;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -69,6 +70,8 @@ public class GeoMapService {
     private ParkAreaComputedRepository parkAreaComputedRepository;
     @Autowired
     private CadastreRepository cadastreRepository;
+    @Autowired
+    private ParcPrefectureRepository parcPrefectureRepository;
 	
     @Value("${application.business.oms.urban.area_min}")
     private Double minUrbSquareMeterPerCapita;
@@ -125,6 +128,12 @@ public class GeoMapService {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllParkByArea(polygon);
     }
+    
+    public GeoJsonRoot findParkPrefectureByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
+    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	return this.findParkPrefectureByArea(polygon);
+    }
+    
     
     /**
      * shuffle color of polygons.
@@ -237,6 +246,46 @@ public class GeoMapService {
     	}
 		return root;
 	}
+	
+	public GeoJsonRoot findParkPrefectureByArea(Polygon polygon) {
+		GeoJsonRoot root = new GeoJsonRoot();
+
+    	if (polygon!=null) {
+			List<ParcPrefecture> parkPrefs =  parcPrefectureRepository.findByArea(GeometryQueryHelper.toText(polygon));
+			if (!CollectionUtils.isEmpty(parkPrefs)) {
+				for (ParcPrefecture parkPref : parkPrefs) {
+					
+					
+					
+					GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					feature.setGeometry(parkPref.getArea());
+					
+					ParkPrefView pv = new ParkPrefView();
+					pv.setId(String.valueOf(parkPref.getId()));
+					pv.setName(parkPref.getName());
+					pv.setNamePrefecture(parkPref.getNamePrefecture());
+					pv.setProcessed(parkPref.getProcessed());
+					pv.setSurface(parkPref.getSurface());
+					
+					if (parkPref.getParcEtJardin()!=null) {
+						pv.setIdParcJardin(parkPref.getParcEtJardin().getId());
+						pv.setNameParcJardin(parkPref.getParcEtJardin().getName());
+					}
+					
+					if (Boolean.TRUE.equals(parkPref.getProcessed())) {
+						pv.setFillColor("#85f04c");
+					} else {
+						pv.setFillColor("#f96161");
+					}
+					
+					feature.setProperties(pv);
+				}
+			}
+    	}
+		return root;
+	}
+	
 	
 	
 	/**

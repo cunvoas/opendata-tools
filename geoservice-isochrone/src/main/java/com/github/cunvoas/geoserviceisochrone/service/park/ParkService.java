@@ -259,6 +259,9 @@ public class ParkService {
 		
 	
 	private void mergeEntranceAreas(ParkArea parkArea) {
+		
+//		Point p = parkArea.getPoint();
+		
 		List<ParkEntrance> entances = parkEntranceRepository.findByParkArea(parkArea);
 		log.info("merge {}", parkArea.getName());
 		
