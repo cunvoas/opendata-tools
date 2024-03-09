@@ -41,7 +41,7 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 			+ " inner join park_area pa on pj.identifiant=pa.id_parc_jardin "
 			+ " inner join park_entrance pe on pa.id=pe.area_id "
 			+ " where c2c.id=:id"
-			+ " and (pe.update_date>pa.updated or pa.updated isnull")
+			+ " and (pe.update_date>pa.updated or pa.updated isnull)")
 	Page<ParcEtJardin> findByComm2CoIdToMerge(Long id, Pageable pageable);
 	
 	@Query(nativeQuery = true,
