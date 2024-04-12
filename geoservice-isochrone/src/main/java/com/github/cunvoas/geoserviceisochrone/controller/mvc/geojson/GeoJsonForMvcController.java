@@ -39,4 +39,14 @@ public class GeoJsonForMvcController {
         return geoMapService.findParkPrefectureByArea(swLat, swLng, neLat, neLng);
     }
 	
+	@GetMapping("/parkGardenByCorner")
+    public GeoJsonRoot getParcJardinPyArea(
+    			@RequestParam("swLat") Double swLat,
+    			@RequestParam("swLng") Double swLng,
+    			@RequestParam("neLat") Double neLat,
+    			@RequestParam("neLng") Double neLng
+    		) {
+        return geoMapService.findParcEtJardinByArea(swLat, swLng, neLat, neLng);
+    }
+	
 }

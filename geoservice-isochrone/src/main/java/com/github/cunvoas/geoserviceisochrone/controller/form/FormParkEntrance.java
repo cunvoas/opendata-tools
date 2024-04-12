@@ -15,16 +15,16 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import lombok.Data;
 
 @Data
-public class FormParkEntrance {
+public class FormParkEntrance extends AbstractFormLocate {
 	
 	public FormParkEntrance() {
 		super();
 	}
 	public FormParkEntrance(FormParkEntranceDetail detail) {
 		super();
-		this.idRegion=detail.getIdRegion();
-		this.idCommunauteDeCommunes=detail.getIdCommunauteDeCommunes();
-		this.idCommune=detail.getIdCommune();
+		super.idRegion=detail.getIdRegion();
+		super.idCommunauteDeCommunes=detail.getIdCommunauteDeCommunes();
+		super.idCommune=detail.getIdCommune();
 		this.idPark=detail.getIdPark();
 		this.areaId=detail.getAreaId();
 		this.idEntrance=detail.getIdEntrance();
@@ -32,17 +32,10 @@ public class FormParkEntrance {
 	}
 
 	// parcs preselection
-	private List<Region> regions;
-	private List<CommunauteCommune> communautesDeCommunes;
-	private List<City> communes;
 	private List<ParcEtJardin> parks;
 	private List<ParkEntrance> parkEntrances;
 	
 	// select id
-	private Long idRegion;
-	private Long idCommunauteDeCommunes;
-	private Long idCommune;
-	private String nameCommune;
 	private Long idPark; //ParcEtJardin
 	private String namePark;
 	private Long idEntrance;

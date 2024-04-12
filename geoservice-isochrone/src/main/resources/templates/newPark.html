@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:insert="~{fragments/fragment-head :: head}"></head>
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<main>
+
+				<div class="container">
+
+<div class="row row-cols-1 row-cols-md-12 g-2 ">
+	<div class="container-fluid px-4">
+		<h1 class="mt-12" th:text="#{park.title}">title</h1>
+	</div>
+     <div class="row">
+         <div class="col-3">
+             <div class="card" style="text-align: center">
+               	<!-- region -->
+				<form th:action="@{/mvc/park/new/region}" th:object="${newPark}" method="post" onchange="submit();">
+					<div class="form-floating">
+						<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+							<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
+							<option th:each="region : ${regions}" 
+								th:value="${region.id}" 
+								th:text="${region.name}" 
+								th:selected="${region.id==idRegion}"></option>
+						</select>
+						<label for="idRegion" th:text="#{entrance.region}">region</label>
+					</div>
+				</form>
+             </div>
+         </div>
+         <div class="col-3">
+             <div class="card" style="text-align: center">
+                	<!-- comm2co -->
+					<form th:action="@{/mvc/park/new/commDeCo}" th:object="${newPark}" method="post" onchange="submit();">
+					<fieldset id="fsComm2co" disabled="disabled">
+						<div class="form-floating">
+							<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+								<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
+								<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+							</select>
+							<label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
+							<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						</div>
+					</fieldset>
+					</form>
+             </div>
+         </div>
+         <div class="col-6">
+             <div class="card" style="text-align: center">
+             	<!-- commune -->
+				<form id="formSelectCity" th:action="@{/mvc/park/new/city}" method="POST" th:object="${newPark}">
+				<fieldset id="fsCity" disabled="disabled">
+					<div class="form-floating">
+	
+	
+						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
+						<datalist id="communes" class="form-label">
+							<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
+						</datalist>
+						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+					</div>
+				</fieldset>
+				</form>
+             </div>
+         </div>
+     </div>
+     
+<!-- TODO --------------------------- -->
+
+
+    <div class="col-3">
+        <form th:action="@{/mvc/park/new}" th:object="${newPark}" method="post">
+        <fieldset id="fsEditPark" disabled="disabled">
+        <input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+        <input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+        <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+        <input type="hidden" id="idPark" name="idPark" th:field="*{idPark}" />
+        <input type="hidden" id="id" name="id" th:field="*{id}" />
+         <input type="hidden" id="etat" />
+        
+        <div class="row">
+            <div class="container-fluid px-4">
+                <h4 class="mt-12" th:text="#{entrance.park.title}">title</h4>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="name" name="name" th:field="*{name}" />
+                        <label class="form-label" for="name" th:text="#{entrance.park}">parc</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+         <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="quartier" name="quartier" th:field="*{quartier}"  />
+                        <label class="form-label" for="quartier" th:text="#{entrance.park.block}">block</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+         <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="type" name="type" th:field="*{type}"  disabled="disabled"/>
+                        <label class="form-label" for="type" th:text="#{entrance.type}">type</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+         <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="sousType" name="sousType" th:field="*{sousType}"  disabled="disabled"/>
+                        <label class="form-label" for="sousType" th:text="#{entrance.sousType}">sousType</label>
+                    </div>
+                </div>
+            </div>
+         </div>
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="surface" name="surface" th:field="*{surface}" disabled="disabled"  />
+                        <label class="form-label" for="surface" th:text="#{entrance.surface}">surface</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="source" name="source" th:field="*{source}"  />
+                        <label class="form-label" for="source" th:text="#{park.source}">source</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="status" name="status" th:field="*{status}" disabled="disabled"  />
+                        <label class="form-label" for="status" th:text="#{park.status}">status</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="status" name="status" th:field="*{status}"  />
+                        <label class="form-label" for="status" th:text="#{park.status}">idPark</label>
+                        <!-- TODO parkTypes -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                  
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <button type="submit" class="btn btn-secondary" th:text="#{entrance.edit.submit}">validate</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </fieldset>
+    </form>
+    </div>
+    
+    <div class="col-9">
+        <div class="container-fluid px-4">
+            <h4 class="mt-12" th:text="#{entrance.map.title}">title</h4>
+        </div>
+        <div class="row">
+            <div class="col-4">
+                <div class="card border" style="text-align: center">
+                    <button id="switch-layers" type="button" class="btn btn-secondary"  onclick="switchLayer(this)"><span class="fa-solid fa-satellite" aria-hidden="true"></span>&nbsp;<span th:text="#{entrance.map.satellite}"></span></button>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border" style="text-align: center">
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border" style="text-align: center">
+                </div>
+            </div>
+        </div>
+        <div class="row h-100 ">
+            <div class="col-12">
+                <div class="card h-100 border" style="text-align: center">
+                    <div id="mapid" style="width: 100%; height: 500px;"></div>
+                    <div class="display: none;" id="mapType"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+<!-- --------------------------- -->
+     
+
+    
+</div>
+
+							
+			</main>
+		</div> <!-- layoutSidenav_content -->
+	</div> <!-- layoutSidenav -->
+	
+	<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+    <div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+
+	<script th:inline="javascript">
+	
+	/* manage correct ID for COMMUNNE SELECTION */
+	// th-field broke the datalist work
+	document.querySelector('#idCommune-filter').value=[[${newPark.nameCommune}]];
+	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
+	    var input = e.target,
+	        list = input.getAttribute('list'),
+	        options = document.querySelectorAll('#' + list + ' option'),
+	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+	        inputValue = input.value;
+		    
+	    	hiddenInput.value = inputValue;
+		    
+		    for(var i = 0; i < options.length; i++) {
+		        var option = options[i];
+		        if(option.value === inputValue) {
+		        	hiddenInput.value = option.getAttribute('data-value');
+		        	document.querySelector("#formSelectCity").submit();
+		            break;
+		        }
+		    }
+	});
+	document.querySelector('#idCommune-filter').addEventListener('focusout', function(e) {
+	    var input = e.target,
+        list = input.getAttribute('list'),
+        options = document.querySelectorAll('#' + list + ' option'),
+        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+        inputValue = input.value;
+	    
+	    const regex = /[0-9]/g;
+	    const found = hiddenInput.match(regex);
+	    if (found) {
+	    	document.querySelector("#formSelectCity").submit();
+	    }
+	});
+
+    manageDisabled();
+    function manageDisabled() {
+    	if (document.getElementById("idRegion").value!="") {
+    		document.getElementById("fsComm2co").disabled = false;
+    	}
+    	if (document.getElementById("idCommunauteDeCommunes").value!="") {
+    		document.getElementById("fsCity").disabled = false;
+    	}
+    }
+
+    
+    
+    /////////////////////////////////////////////////////////////////////////
+    // map layers
+    var mapMinZoom=8;
+    var mapMaxZoom=20;
+    // https://leaflet-extras.github.io/leaflet-providers/preview/
+    
+    var layerEsriWorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    	attribution: 'Aut MEL (Esri)'
+    });
+    
+    var layerStadiaOutdoors = L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.{ext}', {
+        minZoom: 0,
+        maxZoom: 20,
+        attribution: 'Aut MEL (Stadia Maps)',
+        ext: 'png'
+    });
+    
+    
+     var layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Aut MEL (ArcGIS)',
+            maxZoom: mapMaxZoom,
+            minZoom: mapMinZoom
+        });
+    var layerStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Aut MEL (OpenStreetMap)',
+            maxZoom: mapMaxZoom,
+            minZoom: mapMinZoom
+        });
+    
+    
+    // custom location on load
+    var locateWorkPlace= L.latLng(50.626419,3.0719121);
+    
+    var isMap = L.map('mapid').setView(locateWorkPlace, 16);
+    layerStreetMap.addTo(isMap);
+    isMap.addLayer(layerStreetMap);
+    document.getElementById("mapType").value="layerStreetMap";
+    
+    L.control.scale().addTo(isMap);
+    
+    function isEmpty(obj) {
+        return Object.keys(obj).length === 0;
+    }
+    
+    // event on clicjk
+    // https://stackoverflow.com/questions/11421127/how-to-trigger-events-on-leaflet-map-polygons
+    
+    
+    function customOnEachFeaturePref(feature, layer) {
+        // does this feature have a property named fillColor?
+        if (feature.properties) {
+            if (feature.properties.fillColor) {
+                 layer.setStyle(
+                         {fillColor: feature.properties.fillColor},
+                         {fillOpacity: 0.60},
+                         {color: feature.properties.fillColor},
+                         {opacity: 0.95}
+                 );
+            }
+
+            nom ="inconnu";
+            if (feature.properties.namePrefecture) {
+                nom = feature.properties.namePrefecture;
+            }
+            if (feature.properties.name) {
+                nom=nom+"<br />"+feature.properties.name;
+            }
+            layer.bindPopup(nom);
+            
+        }
+    }
+    
+    function customOnEachFeatureParc(feature, layer) {
+        // does this feature have a property named fillColor?
+        if (feature.properties) {
+            if (feature.properties.name) {
+                layer.bindPopup(feature.properties.name);
+            }
+        }
+    }
+    
+
+    /* switch layer between map and satellite */
+    function switchLayer(e) {
+    	mapType = document.getElementById("mapType").value;
+       // if (isMap.hasLayer(layerStreetMap)) {
+        if (mapType==="layerStreetMap") {
+        	txtSat = document.getElementById("lblSat").innerHTML;
+        	
+            isMap.addLayer(layerSatellite);
+            document.getElementById("mapType").value="layerSatellite";
+            isMap.removeLayer(layerStreetMap);
+            //e.innerText= [[#{entrance.map.satellite}]];
+            e.innerHTML= txtSat;
+            
+        } else {
+            txtMap = document.getElementById("lblMap").innerHTML;
+            isMap.addLayer(layerStreetMap);
+            document.getElementById("mapType").value="layerStreetMap";
+            isMap.removeLayer(layerSatellite);
+            //e.innerText= [[#{entrance.map.street}]];
+            e.innerHTML= txtMap;
+        }
+    }
+    
+    function fnParkPrefClicked(props) {
+    	
+    	document.getElementById("etat").value="pref";
+        document.getElementById("id").value = props.id;
+    	document.getElementById("idPark").value = props.idParcJardin;
+        document.getElementById("name").value = props.name;
+        document.getElementById("surface").value = props.surface;
+        document.getElementById("quartier").value = props.quartier;
+        document.getElementById("type").value = props.type;
+        document.getElementById("sousType").value = props.sousType;
+        document.getElementById("status").value = props.status;
+        document.getElementById("source").value = props.source;
+        
+        document.getElementById('name').style.color = 'black';
+        document.getElementById('name').style.fontWeight  = 'normal';
+        
+    }
+    
+    function fnParkGardenClicked(props) {
+    	if (document.getElementById("etat").value!=='pref') {
+    		// cleanUp
+            document.getElementById("id").value = "";
+            document.getElementById("idPark").value = "";
+            document.getElementById("name").value = "";
+            document.getElementById("surface").value = "";
+            document.getElementById("quartier").value = "";
+            document.getElementById("type").value = "";
+            document.getElementById("sousType").value = "";
+            document.getElementById("status").value = "";
+            document.getElementById("source").value = "";
+    	}
+    	
+        document.getElementById("idPark").value = props.id;
+        document.getElementById("name").value = props.name;
+        document.getElementById("source").value = props.source;
+        document.getElementById("surface").value = props.surface;
+
+        document.getElementById('name').style.color = 'green';
+        document.getElementById('name').style.fontWeight  = 'bold';
+        
+        document.getElementById("etat").value="p&j";
+        
+    }
+
+    
+    var geojsonPrefLayer = null;
+    var geojsonParkLayer = null;
+    // relead parks with map fit
+    function loadPrefParks() {
+        if (geojsonPrefLayer!==null) {
+            isMap.removeLayer(geojsonPrefLayer);
+            delete geojsonPrefLayer ;
+        }
+        swLat=isMap.getBounds().getSouthWest().lat;
+        swLng=isMap.getBounds().getSouthWest().lng;
+        neLat=isMap.getBounds().getNorthEast().lat;
+        neLng=isMap.getBounds().getNorthEast().lng;
+        sPos="swLat="+ swLat +"&swLng="+swLng +"&neLat="+neLat +"&neLng="+neLng;
+        // parc prefecture
+        var sUrlGeoPref= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkPrefectureByCorner}]]+'?'+sPos;
+        geojsonPrefLayer = new L.GeoJSON.AJAX(sUrlGeoPref, {onEachFeature: customOnEachFeaturePref});
+        isMap.addLayer(geojsonPrefLayer);
+        
+        // works! used when affect
+        geojsonPrefLayer.on('click', function(e){
+            console.log("click ");
+            console.log(e.sourceTarget.feature);
+        	fnParkPrefClicked(e.sourceTarget.feature.properties)
+        });
+        
+        // works! used when delete
+        geojsonPrefLayer.on("pm:remove", (e) => {
+            console.log("pm:remove");
+        	 console.log(e.layer.feature);
+          });
+
+        
+        isMap.on('pm:create', ({ layer}) => {  
+            console.log("pm:create");
+        	  layer.on('pm:edit', e => {
+                  console.log("pm:edit");
+        	    console.log(e);
+
+                self_drawn = isMap.pm.getGeomanDrawLayers(true);
+                var strPoly = JSON.stringify(self_drawn.toGeoJSON());
+                console.log(strPoly);
+        	    
+        	    //var strPoly = JSON.stringify(e.layers.toGeoJSON());
+        	  });
+        	});
+
+        
+        
+        // works! event after add poly
+        isMap.on('pm:drawend', function (e) {
+            console.log("pm:drawend");
+            console.log(e);
+
+            self_drawn = isMap.pm.getGeomanDrawLayers(true);
+            var strPoly = JSON.stringify(self_drawn.toGeoJSON());
+            console.log(strPoly);
+            
+            
+              //want to check here whether the layerToDraw is valid
+              //features.addLayer(layerToDraw);
+            });
+        
+        // works! event after modify pref poly
+        geojsonPrefLayer.on('pm:change', function (e) {
+            console.log("pm:change ");
+              var layerToDraw = e.layer;   
+              console.log(layerToDraw);
+              //want to check here whether the layerToDraw is valid
+              //features.addLayer(layerToDraw);
+            });
+        
+        
+    
+        
+        
+
+        // parc opendata + created
+        var sUrlGeoParc= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenByCorner}]]+'?'+sPos;
+        geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoParc, {onEachFeature: customOnEachFeatureParc});
+        isMap.addLayer(geojsonParkLayer);
+        
+        // used when affect
+        geojsonParkLayer.on('click', function(e){
+            console.log(e.sourceTarget.feature);
+            fnParkGardenClicked(e.sourceTarget.feature.properties)
+        });
+        
+    }
+    loadPrefParks();
+    isMap.on('zoomend',loadPrefParks);
+    isMap.on('moveend',loadPrefParks);
+
+    
+    //geoman
+    isMap.pm.setLang("fr");
+    isMap.pm.setGlobalOptions({
+   	  allowSelfIntersection: false
+   	});
+    isMap.pm.addControls({  
+	  position: 'topleft',  
+	  drawControls: true,
+	  editControls: true,
+	  optionsControls: true,
+	  customControls: true,
+	  oneBlock: true,
+	  
+	  drawMarker: false,
+	  drawPolyline: false,
+	  drawRectangle: false,
+	  drawPolygon: true,
+	  drawCircle: false,
+	  drawCircleMarker: false,
+	  drawText: false,
+	  editMode: true,
+	  dragMode: false,
+	  cutPolygon: false,
+	  removalMode: true,
+	  rotateMode: false,
+	}); 
+    
+    //alert(calcCrow(59.3293371,13.4877472,59.3225525,13.4619422).toFixed(1));
+
+
+
+    //This function takes in latitude and longitude of two location and returns the distance between them as the crow flies (in km)
+    function calcCrow(lat1, lon1, lat2, lon2) 
+    {
+      var R = 6371; // km
+      var dLat = toRad(lat2-lat1);
+      var dLon = toRad(lon2-lon1);
+      var lat1 = toRad(lat1);
+      var lat2 = toRad(lat2);
+
+      var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+      var d = R * c;
+      return d;
+    }
+
+    // Converts numeric degrees to radians
+    function toRad(Value) {
+        return Value * Math.PI / 180;
+    }
+    
+    function presave() {
+    	var strPoly = JSON.stringify(L.PM.Utils.findLayers(map)[0].toGeoJSON());
+    }
+    
+    //https://gis.stackexchange.com/questions/439672/checking-whether-a-polygon-drawn-with-leaflet-geoman-plugin-is-valid
+    
+    
+</script>
+               <div class="display: none;" id="lblSat"><span class="fa-solid fa-satellite" aria-hidden="true"></span>&nbsp;<span th:text="#{entrance.map.satellite}"></span></div>
+               <div class="display: none;" id="lblMap"><span class="fa-solid fa-map" aria-hidden="true"></span>&nbsp;<span th:text="#{entrance.map.street}"></span></div>
+
+</body>
+</html>

@@ -10,11 +10,19 @@ public class ParkPrefView extends GeoJsonProperty {
 	private String id;
 	private String name;
 	private String namePrefecture;
-	private Long idParcJardin;
-	private String nameParcJardin;
+	private Long idCommune;
 	private Long surface;
 	private Boolean processed=Boolean.FALSE;
+	private String status;
+	private String source;
 	
 	private String fillColor="#2f23a4";
+	
+
+	private Long idParcJardin;
+	private String nameParcJardin;
+	private String quartier;
+	private String type;
+	private String sousType;
 	
 }

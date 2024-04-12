@@ -112,9 +112,7 @@ public class ParkPrefControler {
 		
 		if (form==null || form.getIdRegion()==null) {
 			form = new FormParkList();
-			// FIXME process with User Preferences
-			form.setIdRegion(9L);
-			form.setIdCommunauteDeCommunes(1L);
+			form.autoLocate();
 		}
 		
 		// Populate Selection List
@@ -138,15 +136,15 @@ public class ParkPrefControler {
 			City city = serviceReadReferences.getCityById(form.getIdCommune());
 			form.setNameCommune(city!=null?city.getName():"");
 		}
+		
+		
+		form.setListTypePark(parkTypeService.findAll());
 		return form;
 	}
 		
 
 	private Page<FormParkListItem> populateTableList(Long idCity, Pageable page) {
 		City city = serviceReadReferences.getCityById(idCity);
-		
-		
-		
 		
 		Page<ParcEtJardin> pgPj = serviceReadReferences.getParcEtJardinByCityId(idCity, page);
 		

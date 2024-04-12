@@ -47,7 +47,7 @@ public class FormParkEdit {
 	//edit fields
 	//parkArea
 	private String description;
-	private Long idParkType;
+	private Long idParkType;	//ParkType
 	
 	//parkAreaCompute
 	private Boolean oms;

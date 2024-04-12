@@ -23,12 +23,30 @@ public class UrlPointParser {
 		} else if (genericUrl.toLowerCase().indexOf("geoportail.gouv.fr")>0) {
 			coord = parseGeoportail(genericUrl);
 			
+		} else if (genericUrl.matches("[0-9.,]+")) {
+			coord = parseLatLng(genericUrl);
+			
 		} else {
 			String sub = genericUrl.substring(20);
 			throw new ExceptionParseUrl("Unsupported Site: "+sub);
 		}
 		
 		return coord;
+	}
+	
+	protected Coordinate parseLatLng (String latLng) {
+		Coordinate coord=null;
+		
+		Matcher m = pattern.matcher(latLng);
+		if (m.find()) {
+			String y = m.group(1);
+			String x = m.group(2);
+			
+			coord = new Coordinate(Double.parseDouble(x), Double.parseDouble(y));
+	    }
+		
+		return coord;
+		
 	}
 	
 	/**

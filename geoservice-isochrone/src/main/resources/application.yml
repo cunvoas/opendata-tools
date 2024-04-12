@@ -2,7 +2,8 @@
 
 server:
   port: ${APP_PORT:8980}
-  
+
+spring:
   application.name: isochrone
   
   # Hardening
@@ -73,16 +74,18 @@ server:
     
 application:
   business:
+    # https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrones/documentation-du-service-de-calcul-disochrones#2500
     oms:
       urban:
-        distance: 300
-        area: 12
+        duration: 300
+        area_reco: 12
         area_min: 10
       suburban:
-        distance: 1200
-        area: 45
+        duration: 1200
+        area_reco: 45
         area_min: 25
-# InseeDensiteCommune: IDs denses
+        
+    # InseeDensiteCommune: IDs denses https://www.insee.fr/fr/information/6439600
     insee:
       densite: 1,2
   feature-flipping:

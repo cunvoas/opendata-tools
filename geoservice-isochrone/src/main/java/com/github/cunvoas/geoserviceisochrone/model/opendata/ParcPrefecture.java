@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.model.opendata;
 
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.springframework.format.annotation.NumberFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,6 +50,7 @@ public class ParcPrefecture {
 	
 	// computed from Polygon
 	@Column(name="surface")
+	@NumberFormat(pattern = "#0")
 	private Long surface;
 	
 
@@ -69,8 +71,17 @@ public class ParcPrefecture {
 	// set by user after check
 	@Column(name="processed")
 	private Boolean processed=Boolean.FALSE;
+
+	@Column(name="status", length=15)
+	private ParcStatusPrefEnum status = ParcStatusPrefEnum.TO_QUALIFY;
 	
-	
+
+	public String getLatLng() {
+		if (point!=null) {
+			return  String.valueOf(point.getCoordinate().y)+","+String.valueOf(point.getCoordinate().x);
+		}
+		return "";
+	}
 	
 	// quick and dirty hotfix
 	@Transient

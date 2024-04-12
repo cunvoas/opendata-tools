@@ -15,12 +15,12 @@
                        <span sec:authorize="hasAuthority('ADMINISTRATOR')">
                             <div class="sb-sidenav-menu-heading" th:text="#{menu.management}">group 2</div>
                             
-                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayout1" aria-expanded="false" aria-controls="collapseLayouts">
                                 <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
                                 <div th:text="#{menu.management.members}">group2-1</div>
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <div class="collapse" id="collapseLayout1" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
                                 	<a class="nav-link" th:href="@{/mvc/management/asso/list}" th:text="#{menu.management.association}">g2-1 t1</a>
                                     <a class="nav-link" th:href="@{/mvc/management/contrib/list}" th:text="#{menu.management.contributor}">g2-1 t2</a>
@@ -28,24 +28,46 @@
                             </div>
                        </span>
                             
-                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayout2" aria-expanded="false" aria-controls="collapseLayouts">
                                 <div class="sb-nav-link-icon"><i class="fas fa-database"></i></div>
                                  <div th:text="#{menu.management.opendata}">group2-2</div>
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <div class="collapse" id="collapseLayout2" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
                                 	<a class="nav-link" th:href="@{/mvc/cityGroup}" th:text="#{menu.management.cityGroups}">g2-1 t1</a>
                                     <a class="nav-link" th:href="@{/mvc/city}" th:text="#{menu.management.cities}">g2-1 t2</a>
                                 </nav>
                             </div>
                             
-                        
+                            
+                            
+                            
+                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayout3" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="fas fa-tree-city"></i></div>
+                                 <div th:text="#{menu.management.parks}">group2-2</div>
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayout3" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" th:href="@{/mvc/park/new}" th:text="#{menu.maps.parks.new}">g2-1 t1</a>
+                                    <a class="nav-link" th:href="@{/mvc/park}" th:text="#{menu.maps.parks}">g2-1 t2</a>
+                                </nav>
+                            </div>
+                            
+<!-- 
                             <div class="sb-sidenav-menu-heading" th:text="#{menu.maps}">group 3</div>
+                            <a class="nav-link" th:href="@{/mvc/park/new}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-tree-city"></i></div>
+                                <div th:text="#{menu.maps.parks.new}">g3 t1</div>
+                            </a>
                             <a class="nav-link" th:href="@{/mvc/park}">
                                 <div class="sb-nav-link-icon"><i class="fas fa-tree-city"></i></div>
                                 <div th:text="#{menu.maps.parks}">g3 t1</div>
                             </a>
+ -->        
+                            
+                            
                             <a class="nav-link" th:href="@{/mvc/entrance}">
                                 <div class="sb-nav-link-icon"><i class="fas fa-map-location-dot"></i></div>
                                 <div th:text="#{menu.maps.entances}">g3 t1</div>

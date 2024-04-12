@@ -28,8 +28,9 @@ import com.github.cunvoas.geoserviceisochrone.service.map.InseeCarre200mService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ComputeService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
+
 @SpringBootTest
-@ActiveProfiles("secret")
+@ActiveProfiles({"prod","dev"})
 class TestGeoserviceIsochroneApplication {
 	@Autowired
 	private ComputeService computeService;
@@ -53,13 +54,14 @@ class TestGeoserviceIsochroneApplication {
 	private ParkAreaRepository parkAreaRepository;
 
 	@Test
+	@Disabled
 	@Order(0)
 	void contextLoads() {
 	}
 
 	@Test
-	@Order(10)
 	@Disabled
+	@Order(10)
 	void loadParks() {
 		File test = new File("/home/cus/Téléchargements/IsoChrone des Parcs - entrées (9).csv");
 		try {
@@ -68,26 +70,33 @@ class TestGeoserviceIsochroneApplication {
 			parkService.mergeNullEntranceAreas();
 
 		} catch (IOException e) {
+			System.err.println(e);
 			fail(e.getMessage());
 		}
 	}
 
 	@Test
+//	@Disabled
 	@Order(20)
-	@Disabled
 	void computeFix() {
 
 		try {
-			computeService.computeByInseeCode("59350");
+			computeService.computeCarreByInseeCode("59350");
+			
+			System.out.println("bla");
 		} catch (Exception e) {
+			System.err.println(e);
 			fail(e.getMessage());
 		}
 			
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	@Test
-	@Order(11)
 	@Disabled
+	@Order(11)
 	void compute() {
 		try {
 			List<ParkArea> parks =  new ArrayList<>();
@@ -102,12 +111,15 @@ class TestGeoserviceIsochroneApplication {
 					List<InseeCarre200m> carreShape = inseeCare200mRepository .getAllCarreInMap(GeometryQueryHelper.toText(parkArea.getPolygon()));
 
 					for (InseeCarre200m carre : carreShape) {
-						carreService.computeCarre(carre.getId());
+						//FIXME
+//						carreService.computeCarre(carre.getId());
+						
 
 					}
 				}
 
-				carreService.computePark(parkArea);
+				//FIXME
+//				carreService.computeParkArea(parkArea);
 			}
 
 		} catch (Exception e) {

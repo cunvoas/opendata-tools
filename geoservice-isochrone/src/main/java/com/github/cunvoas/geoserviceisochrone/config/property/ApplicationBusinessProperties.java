@@ -10,18 +10,18 @@ import lombok.Data;
 @Data
 public class ApplicationBusinessProperties {
 
-	@Value("${application.business.oms.urban.distance}")
+	@Value("${application.business.oms.urban.duration}")
 	private String omsUrbanDistance;
 	@Value("${application.business.oms.urban.area_min}")
 	private Double minUrbSquareMeterPerCapita;
-	@Value("${application.business.oms.urban.area}")
+	@Value("${application.business.oms.urban.area_reco}")
 	private Double recoUrbSquareMeterPerCapita;
 
-	@Value("${application.business.oms.suburban.distance}")
+	@Value("${application.business.oms.suburban.duration}")
 	private String omsSubUrbanDistance;
 	@Value("${application.business.oms.suburban.area_min}")
 	private Double minSubUrbSquareMeterPerCapita;
-	@Value("${application.business.oms.suburban.area}")
+	@Value("${application.business.oms.suburban.area_reco}")
 	private Double recoSubUrbSquareMeterPerCapita;
 
 	@Value("${application.business.insee.densite}")

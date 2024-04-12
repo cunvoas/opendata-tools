@@ -89,9 +89,7 @@ public class EntranceControler {
 	protected FormParkEntrance populateForm( FormParkEntrance form) {
 		if (form==null || form.getIdRegion()==null) {
 			form = new FormParkEntrance();
-			// FIXME process with User Preferences
-			form.setIdRegion(9L);
-			form.setIdCommunauteDeCommunes(1L);
+			form.autoLocate();
 		}
 		
 		// Populate Selection List

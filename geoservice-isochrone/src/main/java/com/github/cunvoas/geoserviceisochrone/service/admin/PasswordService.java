@@ -31,7 +31,7 @@ public class PasswordService {
 		if (newPass.matches(CHECK_REGEX)) {
 			ret = Boolean.TRUE;
 			
-			//TODO call service about RockYou pass exists in.
+			//TODO MoSCoW:Could call service about RockYou pass exists in.
 			
 		}
 		return ret;

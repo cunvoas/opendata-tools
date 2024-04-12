@@ -64,18 +64,18 @@
     </encoder>
   </appender> -->
 
-  <logger name="com.github.cunvoas.geoserviceisochrone" level="error"/>
+  <logger name="com.github.cunvoas.geoserviceisochrone" level="info"/>
   <logger name="com.github.cunvoas.geoserviceisochrone.GeoserviceIsochroneApplication" level="info"/>
 
   <!-- deployed environments -->
   <springProfile name="uat,prep,prod,pi">
-    <root level="ERROR">
+    <root level="WARN">
       <appender-ref ref="LOG_FILE"/>
     </root>
   </springProfile>
 
   <!-- Local & CI environment (local-custom is a reference to application-local-custom.yml -> see : .gitignore) -->
-  <springProfile name="local,compose,secret,prod,pi">
+  <springProfile name="local,compose,secret,dev,prod,pi">
     <root level="INFO">
       <appender-ref ref="CONSOLE"/>
     </root>

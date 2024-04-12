@@ -14,7 +14,10 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRe
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeDensiteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ServiceOpenData {
 
 	@Autowired
@@ -38,6 +41,29 @@ public class ServiceOpenData {
 			}
 		}
 		return ret;
+	}
+	
+	/**
+	 * @param idInsee
+	 * @return
+	 */
+	public Boolean isDistanceDense(String idInsee) {
+		Boolean isdense=Boolean.TRUE;
+		Optional<InseeDensiteCommune> idc = inseeDensiteCommuneRepository.findById(idInsee);
+		if (idc.isPresent()) {
+			String cd = idc.get().getCodeDensite();
+			if (applicationBusinessProperties.getInseeCodeDensite().indexOf(cd)==-1) {
+				isdense=Boolean.FALSE;
+			} else {
+				isdense=Boolean.TRUE;
+			}
+		} else {
+			log.warn("City not found, insee={}", idInsee);
+		}
+		return isdense;
+	}
+	public Boolean isDistanceDense(City city) {
+		return isDistanceDense(city.getInseeCode());
 	}
 
 	public Region save(Region region) {

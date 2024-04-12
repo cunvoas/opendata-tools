@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class CsvParkLine {
 
+
 	private String reserved1;
 	private String reserved2;
 	private String city;
