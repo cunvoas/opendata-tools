@@ -14,7 +14,5 @@ public class ExceptionAdmin extends RuntimeException {
 
 	public ExceptionAdmin(String message) {
 		super(message);
-		
-		//todo exception management.
 	}
 }

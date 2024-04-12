@@ -30,7 +30,10 @@ public class ParkAreaComputed {
 	
 	@Column(name = "surface_population", precision = 10, scale =2)
 	private BigDecimal surfacePerInhabitant;
-
+	
+	@Column(name = "dense")
+	private Boolean isDense = Boolean.TRUE;
+	
 	@DateTimeFormat
 	@Column(name="updated")
 	private Date updated;

@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.model.opendata;
 import java.util.Date;
 
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,4 +26,11 @@ public class Cadastre {
 	@Column(name="geo_shape", columnDefinition = "geometry(MultiPolygon,4326)")
     private Geometry geoShape;
 
+	public Point getCenter() {
+		if (geoShape!=null) {
+			return geoShape.getInteriorPoint();
+		} else {
+			return null;
+		}
+	}
 }

@@ -6,6 +6,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
 import lombok.Data;
 
+/**
+ * Type od park.
+ * translations are in messages.propoerties, key park.type.*
+ */
 @Data
 @Entity(name = "park_type")
 public class ParkType {
@@ -22,6 +26,8 @@ public class ParkType {
     
     @Column(name="oms")
     private Boolean oms;
+    @Column(name="strict")
+    private Boolean strict;
     
     @Transient
     private String label;

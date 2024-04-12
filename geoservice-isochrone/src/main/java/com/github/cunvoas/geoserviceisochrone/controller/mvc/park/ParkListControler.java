@@ -120,9 +120,7 @@ public class ParkListControler {
 		
 		if (form==null || form.getIdRegion()==null) {
 			form = new FormParkList();
-			// FIXME process with User Preferences
-			form.setIdRegion(9L);
-			form.setIdCommunauteDeCommunes(1L);
+			form.autoLocate();
 		}
 		
 		// Populate Selection List
@@ -193,7 +191,7 @@ public class ParkListControler {
 				item.setIdArea(pa.getId());
 				item.setLastIsochroneUpdate(pa.getUpdated());
 				
-				item.setOms(pa.getType().getOms());
+				item.setOms(pa.getType()!=null?pa.getType().getOms():null);
 				parkTypeService.setLabel(pa.getType());
 				item.setType(pa.getType().getLabel());
 				

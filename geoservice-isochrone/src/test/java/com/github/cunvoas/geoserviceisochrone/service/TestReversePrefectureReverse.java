@@ -22,7 +22,7 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceParcPrefec
 
 
 @SpringBootTest
-@ActiveProfiles("secret")
+@ActiveProfiles({"prod","dev"})
 class TestReversePrefectureReverse {
 
 	
@@ -31,14 +31,18 @@ class TestReversePrefectureReverse {
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 	
 
+	/**
+	 * Compute and affect parks from prefecture.
+	 * @throws Exception
+	 */
 	@Test
-	@Disabled
+//	@Disabled
 	void testUpdate() throws Exception {
 		serviceParcPrefecture.update();
 	}
 	
 	@Test
-//	@Disabled
+	@Disabled
 	void testImport() throws Exception {
 		String file ="/work/PERSO/github/opendata-tools/prefecture/20812-garden-prepared.json";
 		String text = new String(Files.readAllBytes(Paths.get(file)), StandardCharsets.UTF_8);

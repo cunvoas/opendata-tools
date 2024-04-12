@@ -110,14 +110,15 @@ public class ParkEditControler {
 			model.addAttribute("parcLatLng", petj.getLatLng());
 			
 			ParcPrefecture pPref = serviceReadReferences.getParcPrefectureByParcEtJardinId(form.getIdPark());
-			form.setParcPrefecture(pPref);
-			model.addAttribute("parcPrefecture", pPref);
-			
-			// hotfix
-			pPref.setIdRegion(form.getIdRegion());
-			pPref.setIdCommunauteDeCommunes(form.getIdCommunauteDeCommunes());
-			pPref.setIdCommune(form.getIdCommune());
-			pPref.setIdPark(form.getIdPark());
+			if (pPref!=null) {
+				form.setParcPrefecture(pPref);
+				model.addAttribute("parcPrefecture", pPref);
+				// hotfix
+				pPref.setIdRegion(form.getIdRegion());
+				pPref.setIdCommunauteDeCommunes(form.getIdCommunauteDeCommunes());
+				pPref.setIdCommune(form.getIdCommune());
+				pPref.setIdPark(form.getIdPark());
+			}
 			
 		} else {
 			// default on Lille

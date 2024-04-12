@@ -60,7 +60,9 @@ public class ClientIsoChroneApi implements IsoChroneClientService {
 		sb.append(coordinate.getLatitude()); //50.62485026020619
 		sb.append("&costValue=");
 		sb.append(duration);
-		sb.append("&resource=bdtopo-iso&distanceUnit=meter&costType=time&profile=pedestrian&direction=departure&geometryFormat=geojson&timeUnit=second&crs=EPSG%3A4326");
+		//resource=bdtopo-pgr
+		//resource=bdtopo-iso
+		sb.append("&resource=bdtopo-pgr&distanceUnit=meter&costType=time&profile=pedestrian&direction=departure&geometryFormat=geojson&timeUnit=second&crs=EPSG%3A4326");
 //		sb.append("&constraints=%7B%22constraintType%22%3A%22banned%22%2C%22key%22%3A%22wayType%22%2C%22operator%22%3A%22%3D%22%2C%22value%22%3A%22autoroute%22%7D");
 		
 		log.debug(sb.toString());;

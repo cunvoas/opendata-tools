@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,8 +19,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
+@ToString(onlyExplicitlyIncluded = true)
 @Entity(name = "park_area")
 @Table(indexes = {
 		  @Index(name = "idx_parkarea_point", columnList = "point"),
@@ -28,6 +31,7 @@ import lombok.Data;
 public class ParkArea {
 
 	@Id
+	@ToString.Include
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_park")
 	private Long id;
@@ -39,9 +43,11 @@ public class ParkArea {
 //        @JoinColumn(name="city_id", nullable=false)
 //        private City city;
 
-	@OneToMany(mappedBy = "parkArea")
+	@OneToMany(mappedBy = "parkArea", fetch = FetchType.EAGER)
+//	@OneToMany(mappedBy = "parkArea")
 	private List<ParkEntrance> entrances;
 
+	@ToString.Include
 	@Column(name = "name")
 	private String name;
 	
@@ -60,6 +66,7 @@ public class ParkArea {
 	@Column(columnDefinition = "geometry(Polygon,4326)")
 	private Polygon polygon;
 	
+    @ToString.Include
 	@DateTimeFormat
 	@Column(name="updated")
 	private Date updated;
@@ -67,4 +74,8 @@ public class ParkArea {
 	@ManyToOne
 	@JoinColumn( name="type_id", nullable = true)
 	private ParkType type;
+	
+
+	@Column(name = "oms_custom")
+	private Boolean omsCustom;
 }

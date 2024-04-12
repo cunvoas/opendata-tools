@@ -5,17 +5,11 @@ import java.util.Date;
 import lombok.Data;
 
 @Data
-public class FormParkListItem {
+public class FormParkListItem extends AbstractFormLocate{
 
-	private Long idRegion;
-	private Long idCommunauteDeCommunes;
-	private Long idCommune;
 	private Long idPark;
 	private Long idArea;
 
-	private String nameRegion;
-	private String nameCommunauteDeCommunes;
-	private String nameCommune;
 	private String nameQuartier;
 	private String namePark;
 

@@ -1,6 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.service.entrance;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +18,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
@@ -99,9 +100,10 @@ public class ServiceReadReferences {
 		return null;
 	}
 
-//	public List<City> getCityByCommunauteCommune(CommunauteCommune communauteCommune) {
-//		return this.getCityByCommunauteCommuneId(communauteCommune.getId());
-//	}
+	public City getCity(Long id) {
+		return cityRepository.getReferenceById(id);
+	}
+	
 	public List<City> getCityByCommunauteCommuneId(Long id) {
 		return cityRepository.findByCommunauteCommuneId(id);
 	}
@@ -163,5 +165,13 @@ public class ServiceReadReferences {
 		}
 		return null;
 		
+	}
+	
+	public List<ParcSourceEnum> getParcSource() {
+		List<ParcSourceEnum> l = new ArrayList<>();
+		l.add(ParcSourceEnum.OPENDATA);
+		l.add(ParcSourceEnum.PREFECTURE);
+		l.add(ParcSourceEnum.AUTMEL);
+		return l;
 	}
 }

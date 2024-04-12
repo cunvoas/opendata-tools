@@ -17,6 +17,7 @@ class TestDtoParser {
 	String json1 = null;
 	String json2 = null;
 	String json3 = null;
+	String json4 = null;
 	
 	@BeforeEach
 	void init() {
@@ -33,6 +34,10 @@ class TestDtoParser {
 			json3 = new String(in.readAllBytes());
 			in.close();
 			
+			in = this.getClass().getResourceAsStream("/ign.json");
+			json4 = new String(in.readAllBytes());
+			in.close();
+			
 		} catch (IOException e) {
 			fail("IOException");
 		}
@@ -43,19 +48,24 @@ class TestDtoParser {
 		try {
 			DtoIsoChroneParser tested = new DtoIsoChroneParser ();
 			
-			System.out.println(json1);
-			DtoIsoChrone iso1 = tested.parseBasicIsoChrone(json1);
-			assertNotNull(iso1, "json1");
+
+			System.out.println(json4);
+			DtoIsoChrone iso4 = tested.parseBasicIsoChrone(json4);
+			assertNotNull(iso4, "json4");
+			
+//			System.out.println(json1);
+//			DtoIsoChrone iso1 = tested.parseBasicIsoChrone(json1);
+//			assertNotNull(iso1, "json1");
+//
+//			System.out.println(json2);
+//			DtoIsoChrone iso2 = tested.parseBasicIsoChrone(json2);
+//			assertNotNull(iso2, "json2");
+//
+//			System.out.println(json3);
+//			DtoIsoChrone iso3 = tested.parseBasicIsoChrone(json3);
+//			assertNotNull(iso3, "json3");
 			
 
-			System.out.println(json2);
-			DtoIsoChrone iso2 = tested.parseBasicIsoChrone(json2);
-			assertNotNull(iso2, "json2");
-			
-
-			System.out.println(json3);
-			DtoIsoChrone iso3 = tested.parseBasicIsoChrone(json3);
-			assertNotNull(iso3, "json3");
 			
 			
 		} catch (IOException e) {

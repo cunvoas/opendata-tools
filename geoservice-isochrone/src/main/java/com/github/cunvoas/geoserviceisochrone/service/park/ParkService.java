@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.service.park;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -12,9 +13,11 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionExtract;
+import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvMassUpdatePivot;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvParkEntranceParser;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvParkLine;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
@@ -29,12 +32,15 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,8 +53,6 @@ public class ParkService {
 
 	@Autowired
 	private ServiceOpenData serviceOpenData;
-	
-    
 
 	@Autowired
 	private CsvParkEntranceParser csvParkEntranceParser;
@@ -119,7 +123,7 @@ public class ParkService {
 			}
 		}
 		
-		//TODO presave parkArea  //ERREUR ICI
+		// presave parkArea  //ERREUR ICI
 		ParkArea pa = parkAreaRepository.save(parkEntrance.getParkArea());
 		parkEntrance.setParkArea(pa);
 		
@@ -137,7 +141,6 @@ public class ParkService {
 		
 		//check area
 		if (parkEntrance.getParkArea()==null || parkEntrance.getParkArea().getId()==null) {
-			
 			
 			Optional<ParcEtJardin> opt = parkJardinRepository.findById(gardenId);
 			if (opt.isPresent()) {
@@ -165,6 +168,8 @@ public class ParkService {
 			}
 			
 			try {
+				log.warn("parkEntrance {]", parkEntrance);
+				
 				Coordinate coord = new Coordinate(
 						parkEntrance.getEntrancePoint().getX(),
 						parkEntrance.getEntrancePoint().getY());
@@ -185,6 +190,99 @@ public class ParkService {
 	}
 	
 	/**
+	 * @param pivot
+	 * @throws IOException
+	 */
+	@Transactional
+	public void importIsoChroneEntrance(CsvMassUpdatePivot pivot) throws IOException {
+		log.warn("Process {}", pivot.getParcEtJardin());
+		
+		City city = null;
+		if (pivot.getCommune()!=null) {
+			city = cityRepository.findById(pivot.getCommune().getId()).get();
+		}
+		
+		// existing one
+		ParcEtJardin pj = null;
+		ParcEtJardin pivotPj = pivot.getParcEtJardin();
+		if (pivotPj!=null && pivotPj.getId()!=null) {
+			Optional<ParcEtJardin> optPj = parkJardinRepository.findById(pivotPj.getId());
+			if (!optPj.isEmpty()) {
+				pj = optPj.get();
+			} else {
+				pj = parkJardinRepository.findByName(pivotPj.getName());
+			}
+			
+			if (pj==null) {
+				// not found but shoulds => SKIP
+				return;
+			} else if (ParcStatusEnum.VALIDATED.equals(pj.getStatus())) {
+				// skip already valid
+				return;
+			}
+		} else {
+			// new park
+			pj = new ParcEtJardin();
+			pj.setName(pivotPj.getName());
+			pj.setSource(ParcSourceEnum.AUTMEL);
+		}
+		pj.setSurface(pivotPj.getSurface());
+		pj.setStatus(ParcStatusEnum.VALIDATED);
+		pj.setCommune(city);
+		pj = parkJardinRepository.save(pj);
+		
+		
+		// already processed?
+		ParkArea parkArea = parkAreaRepository.findByIdParcEtJardin(pj.getId());
+		if (parkArea==null) {
+			parkArea = new ParkArea();
+			parkArea.setIdParcEtJardin(pj.getId());
+			parkArea.setName(pj.getName());
+		}
+		parkArea = parkAreaRepository.save(parkArea);
+		
+		if (!CollectionUtils.isEmpty(pivot.getEntrances())) {
+			if (!CollectionUtils.isEmpty(parkArea.getEntrances())) {
+				for (ParkEntrance parkEntrance : parkArea.getEntrances()) {
+					parkEntranceRepository.delete(parkEntrance);
+				}
+				parkArea.getEntrances().clear();	
+			} else {
+				parkArea.setEntrances(new ArrayList<>());
+			}
+			
+			
+			// refresh
+			parkArea = parkAreaRepository.findByIdParcEtJardin(pj.getId());
+			for (ParkEntrance pe : pivot.getEntrances()) {
+				parkArea.getEntrances().add(pe);
+				pe.setParkArea(parkArea);
+				this.saveEdited(pe, true, pj.getId(), pivot.getCommune().getId());
+			}
+			
+			//parkArea = parkAreaRepository.findById(parkArea.getId()).get();
+		}
+		parkArea = parkAreaRepository.save(parkArea);
+		
+		// refresh
+		//parkArea = parkAreaRepository.findByIdParcEtJardin(pj.getId());
+		this.mergeEntranceAreas(parkArea);
+		parkArea = parkAreaRepository.save(parkArea);
+		
+	}
+	
+	
+	/**
+	 * @param listCsvMassUpdatePivot
+	 * @throws IOException
+	 */
+	public void importIsoChroneEntrance(List<CsvMassUpdatePivot> listCsvMassUpdatePivot) throws IOException {
+		for (CsvMassUpdatePivot pivot : listCsvMassUpdatePivot) {
+			this.importIsoChroneEntrance(pivot);
+		}
+	}
+	
+	/**
 	 * Import CSV file and generate iso-chrone.
 	 * @param file
 	 * @throws IOException
@@ -194,7 +292,6 @@ public class ParkService {
 		List<CsvParkLine> csvLines = csvParkEntranceParser.parseParkEntrance(file);
 		
 		for (CsvParkLine csvParkLine : csvLines) {
-			
 			// get opendata
 			ParcEtJardin parcEtJardin = parkJardinRepository.findByName(csvParkLine.getPark());
 			
@@ -229,8 +326,6 @@ public class ParkService {
 					entrance = mapperIsoChrone.map(entrance, dtoIsoChone);
 					entrance.setIgnReponse(isoChroneResponse);
 					entrance.setEntranceLink(csvParkLine.getUrl());
-					
-
 					entrance.setParkArea(parkArea);
 					entrance.setDescription(csvParkLine.getEntrance());
 					
@@ -260,8 +355,6 @@ public class ParkService {
 	
 	private void mergeEntranceAreas(ParkArea parkArea) {
 		
-//		Point p = parkArea.getPoint();
-		
 		List<ParkEntrance> entances = parkEntranceRepository.findByParkArea(parkArea);
 		log.info("merge {}", parkArea.getName());
 		
@@ -277,20 +370,11 @@ public class ParkService {
 			} else {
 				//process merge
 				merged = GeoShapeHelper.mergePolygonsWithoutHoles(merged, p);
-				
-//				Geometry geomMerged = merged.union(p);
-//				
-//				if (geomMerged instanceof Polygon) {
-//					merged = (Polygon) geomMerged;
-//				} else {
-//					log.error("Entrances not mergeable {}{}", parkArea.getName(), entance.getDescription());
-//				}
 			}
 		}
 		parkArea.setPolygon(merged);
 		parkArea.setUpdated(new Date());
 		log.info("\tMerged is {}", merged);
-		
 	}
 	
 	

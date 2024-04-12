@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.repo.reference;
 import java.util.List;
 
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 
 @Repository
 public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> {
@@ -81,8 +83,9 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 	
 	
 	
-	
-	
+	@Query(nativeQuery = true, 
+			   value = "SELECT pj.* FROM parc_jardin pj WHERE ST_Intersects(pj.coordonnee, :searchArea)")
+	List<ParcEtJardin> findByArea(String searchArea);
 	
 	
 	

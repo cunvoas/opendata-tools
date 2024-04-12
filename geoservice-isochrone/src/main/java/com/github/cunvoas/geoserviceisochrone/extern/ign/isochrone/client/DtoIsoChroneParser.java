@@ -15,7 +15,10 @@ import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.Dt
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoCoordinate;
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoIsoChrone;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class DtoIsoChroneParser {
 
 	private ObjectMapper objectMapper = new ObjectMapper();
@@ -57,21 +60,54 @@ public class DtoIsoChroneParser {
 		JSONObject geometry = isochrone.getJSONObject("geometry");
 		dto.getGeometry().setType(geometry.getString("type"));
 
-		JSONArray coordinates = geometry.getJSONArray("coordinates");
-		for (int i = 0; i < coordinates.length(); i++) {
+		
+		try {
+			JSONArray coordinates = geometry.getJSONArray("coordinates");
+			for (int i = 0; i < coordinates.length(); i++) {
 
-			JSONArray sub = (JSONArray) coordinates.get(i);
-			for (int j = 0; j < sub.length(); j++) {
-				try {
-					JSONArray coord = (JSONArray) sub.get(j);
-					DtoCoordinate dtoCoord = new DtoCoordinate(coord.getDouble(0), coord.getDouble(1));
-					dto.getGeometry().getCoordinates().add(dtoCoord);
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				JSONArray sub = (JSONArray) coordinates.get(i);
+				for (int j = 0; j < sub.length(); j++) {
+					try {
+						JSONArray coord = (JSONArray) sub.get(j);
+						DtoCoordinate dtoCoord = new DtoCoordinate(coord.getDouble(0), coord.getDouble(1));
+						dto.getGeometry().getCoordinates().add(dtoCoord);
+					} catch (JSONException e) {
+						log.debug("parse coords", e);
+					}
 				}
 			}
+		} catch (JSONException retry) {
+			log.info("multi geometries", retry );
+			
+			// try to pase collections of geometries
+			try {
+				JSONArray geometries = geometry.getJSONArray("geometries");
+				for (int i = 0; i < geometries.length(); i++) {
+
+					JSONObject geoms = (JSONObject) geometries.get(i);
+					if ("Polygon".equals(geoms.get("type"))) {
+						JSONArray coordinates = geoms.getJSONArray("coordinates");
+						for (int ii = 0; ii < coordinates.length(); ii++) {
+
+							JSONArray sub = (JSONArray) coordinates.get(ii);
+							for (int j = 0; j < sub.length(); j++) {
+								try {
+									JSONArray coord = (JSONArray) sub.get(j);
+									DtoCoordinate dtoCoord = new DtoCoordinate(coord.getDouble(0), coord.getDouble(1));
+									dto.getGeometry().getCoordinates().add(dtoCoord);
+								} catch (JSONException e) {
+									log.debug("parse coords", e);
+								}
+							}
+						}
+					}
+				}
+			} catch (JSONException ignore2) {
+				log.info("multi geometries fails",ignore2);
+			}
 		}
+
+		
 
 		JSONArray constraints = isochrone.getJSONArray("constraints");
 		if (constraints != null) {

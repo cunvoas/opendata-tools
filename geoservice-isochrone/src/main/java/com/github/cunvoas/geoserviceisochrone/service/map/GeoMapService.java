@@ -20,9 +20,11 @@ import org.springframework.util.CollectionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.CadastreView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.Carre200AndShapeView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.IsochroneView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkGardenView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkPrefView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkView;
 import com.github.cunvoas.geoserviceisochrone.extern.leaflet.Bound;
@@ -35,7 +37,10 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mShape;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
@@ -45,6 +50,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.google.common.math.BigDecimalMath;
 
 import io.micrometer.common.util.StringUtils;
@@ -53,6 +59,33 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class GeoMapService {
+	
+	// https://htmlcolorcodes.com/
+	public String COLOR_TO_QUALIFY="#ff7070";
+	public String COLOR_CANCEL="#997e94";
+	public String COLOR_PROCESSED="#5afffa";
+	public String COLOR_VALID="#6efffa";
+
+	/**
+	 * park surface per capita > OMS reco
+	 */
+	public String THRESHOLD_PERFECT="#1a9900";
+	/**
+	 *  park surface per capita > OMS mini
+	 */
+	public String THRESHOLD_CORRECT="#9ee88f";
+	/**
+	 *  park surface per capita < OMS mini
+	 */
+	public String THRESHOLD_BAD="#df6463";
+	/**
+	 * this park in greenwashed
+	 */
+	public String THRESHOLD_GREEWASHED="#f1e2e2";
+	
+	public String THRESHOLD_NOT_COMPUTED="#4944f5";
+	
+	
 	
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -72,18 +105,22 @@ public class GeoMapService {
     private CadastreRepository cadastreRepository;
     @Autowired
     private ParcPrefectureRepository parcPrefectureRepository;
+    @Autowired
+    private ParkJardinRepository parkJardinRepository;
+	@Autowired
+	private ApplicationBusinessProperties applicationBusinessProperties;
 	
-    @Value("${application.business.oms.urban.area_min}")
-    private Double minUrbSquareMeterPerCapita;
-    
-    @Value("${application.business.oms.urban.area}")
-    private Double recoUrbSquareMeterPerCapita;
-
-    @Value("${application.business.oms.suburban.area_min}")
-    private Double minSubUrbSquareMeterPerCapita;
-    
-    @Value("${application.business.oms.suburban.area}")
-    private Double recoSubUrbSquareMeterPerCapita;
+//    @Value("${application.business.oms.urban.area_min}")
+//    private Double minUrbSquareMeterPerCapita;
+//    
+//    @Value("${application.business.oms.urban.area_reco}")
+//    private Double recoUrbSquareMeterPerCapita;
+//
+//    @Value("${application.business.oms.suburban.area_min}")
+//    private Double minSubUrbSquareMeterPerCapita;
+//    
+//    @Value("${application.business.oms.suburban.area_reco}")
+//    private Double recoSubUrbSquareMeterPerCapita;
 
     
     /**
@@ -132,6 +169,11 @@ public class GeoMapService {
     public GeoJsonRoot findParkPrefectureByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findParkPrefectureByArea(polygon);
+    }
+    
+    public GeoJsonRoot findParcEtJardinByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
+    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	return this.findParcEtJardinByArea(polygon);
     }
     
     
@@ -233,6 +275,7 @@ public class GeoMapService {
 					pv.setName(parkArea.getName());
 					pv.setQuartier(parkArea.getBlock());
 					
+					
 
 					Optional<ParkAreaComputed> cpu = parkAreaComputedRepository.findById(parkArea.getId());
 					if (cpu.isPresent()) {
@@ -247,6 +290,39 @@ public class GeoMapService {
 		return root;
 	}
 	
+	
+	
+	public GeoJsonRoot findParcEtJardinByArea(Polygon polygon) {
+		GeoJsonRoot root = new GeoJsonRoot();
+
+    	if (polygon!=null) {
+    		List<ParcEtJardin> parkPrefs =  parkJardinRepository.findByArea(GeometryQueryHelper.toText(polygon));
+			if (!CollectionUtils.isEmpty(parkPrefs)) {
+				for (ParcEtJardin parcJardin : parkPrefs) {
+					
+					GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					feature.setGeometry(parcJardin.getCoordonnee());
+					
+					ParkGardenView pv = new ParkGardenView();
+					pv.setId(String.valueOf(parcJardin.getId()));
+					pv.setName(parcJardin.getName());
+					pv.setSurface(parcJardin.getSurface());
+					
+					if (parcJardin.getSource()!=null) {
+						pv.setSource(parcJardin.getSource().toString());
+					} else {
+						pv.setSource(ParcSourceEnum.OPENDATA.toString());
+					}
+					
+					feature.setProperties(pv);
+				}
+			}
+    	}
+		return root;
+		
+	}
+	
 	public GeoJsonRoot findParkPrefectureByArea(Polygon polygon) {
 		GeoJsonRoot root = new GeoJsonRoot();
 
@@ -254,8 +330,6 @@ public class GeoMapService {
 			List<ParcPrefecture> parkPrefs =  parcPrefectureRepository.findByArea(GeometryQueryHelper.toText(polygon));
 			if (!CollectionUtils.isEmpty(parkPrefs)) {
 				for (ParcPrefecture parkPref : parkPrefs) {
-					
-					
 					
 					GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
@@ -267,16 +341,46 @@ public class GeoMapService {
 					pv.setNamePrefecture(parkPref.getNamePrefecture());
 					pv.setProcessed(parkPref.getProcessed());
 					pv.setSurface(parkPref.getSurface());
+					if (parkPref.getStatus()!=null) {
+						pv.setStatus(parkPref.getStatus().toString());
+					} else {
+						pv.setStatus(ParcStatusPrefEnum.TO_QUALIFY.toString());
+					}
 					
 					if (parkPref.getParcEtJardin()!=null) {
 						pv.setIdParcJardin(parkPref.getParcEtJardin().getId());
 						pv.setNameParcJardin(parkPref.getParcEtJardin().getName());
+						pv.setQuartier(parkPref.getParcEtJardin().getQuartier());
+						pv.setType(parkPref.getParcEtJardin().getType());
+						pv.setSousType(parkPref.getParcEtJardin().getSousType());
+						if (parkPref.getParcEtJardin().getSource()!=null) {
+							pv.setSource(parkPref.getParcEtJardin().getSource().toString());
+						} else {
+							pv.setSource(ParcSourceEnum.OPENDATA.toString());
+						}
+					}
+					
+					
+					if (ParcStatusPrefEnum.VALID.equals(parkPref.getStatus())) {
+						pv.setFillColor(COLOR_VALID);
+						
+					} else if (ParcStatusPrefEnum.PROCESSED.equals(parkPref.getStatus())) {
+						pv.setFillColor(COLOR_PROCESSED);
+						
+					} else if (ParcStatusPrefEnum.CANCEL.equals(parkPref.getStatus())) {
+						pv.setFillColor(COLOR_CANCEL);
+						
+					} else if (ParcStatusPrefEnum.TO_QUALIFY.equals(parkPref.getStatus())) {
+						pv.setFillColor(COLOR_TO_QUALIFY);
+						
+					} else {
+						pv.setFillColor(COLOR_TO_QUALIFY);
 					}
 					
 					if (Boolean.TRUE.equals(parkPref.getProcessed())) {
-						pv.setFillColor("#85f04c");
+						pv.setFillColor(COLOR_VALID);
 					} else {
-						pv.setFillColor("#f96161");
+						pv.setFillColor(COLOR_TO_QUALIFY);
 					}
 					
 					feature.setProperties(pv);
@@ -285,67 +389,105 @@ public class GeoMapService {
     	}
 		return root;
 	}
-	
-	
+
+	/**
+	 * @param pv
+	 * @param areaCputed
+	 * @return color of an isochrone park.
+	 */
+	public String getFillColorPark(ParkView pv, ParkAreaComputed areaCputed) {
+		String color = THRESHOLD_GREEWASHED;
+
+		if (areaCputed.getOms()) {
+			if (areaCputed.getSurfacePerInhabitant()==null) {
+				pv.setAreaPerPeople("-");
+				return THRESHOLD_NOT_COMPUTED;
+			}
+			
+			double thresholdReco = 12;
+			double thresholdMin = 10;
+			if (areaCputed.getIsDense()) {
+				 thresholdReco = applicationBusinessProperties.getRecoUrbSquareMeterPerCapita();
+				 thresholdMin = applicationBusinessProperties.getMinUrbSquareMeterPerCapita();
+			} else {
+				 thresholdReco = applicationBusinessProperties.getRecoSubUrbSquareMeterPerCapita();
+				 thresholdMin = applicationBusinessProperties.getMinSubUrbSquareMeterPerCapita();
+			}
+
+			pv.setAreaPerPeople(areaCputed.getSurfacePerInhabitant().toPlainString());
+			Double sph = BigDecimalMath.roundToDouble(areaCputed.getSurfacePerInhabitant(), RoundingMode.HALF_EVEN);
+			if (sph>thresholdReco) {
+				color = THRESHOLD_PERFECT;
+			} else if (sph>thresholdMin) {
+				color = THRESHOLD_CORRECT;
+			} else {
+				color = THRESHOLD_BAD;
+			}
+		}
+		
+		return color;
+	}
 	
 	/**
 	 * @param pv
 	 * @param cpu
 	 */
 	public void extraFeature(ParkView pv, ParkAreaComputed cpu) {
-		double hightThreshold = recoUrbSquareMeterPerCapita;
-		double minThreshold = minUrbSquareMeterPerCapita;
-		double lessMidThreshold = minUrbSquareMeterPerCapita*0.8d;
-		
 		
 		NumberFormat nf = new DecimalFormat("# ##0");
 		if (cpu!=null) {
 			pv.setPeople(nf.format(cpu.getPopulation()));
 			pv.setArea(nf.format(cpu.getSurface()));
-			
 			pv.setOms(cpu.getOms());
+			pv.setDense(cpu.getIsDense());
 			
-			if (!cpu.getOms()) {
-				pv.setFillColor("#2B100D");
-				
-			} else {
-				if (cpu.getSurfacePerInhabitant()!=null) {
-					pv.setAreaPerPeople(cpu.getSurfacePerInhabitant().toPlainString());
-					
-					Double sph = BigDecimalMath.roundToDouble(cpu.getSurfacePerInhabitant(), RoundingMode.HALF_EVEN);
-					
-					if (sph>hightThreshold) {
-						// vert "parc"
-						pv.setFillColor("#58D83E");
-					} else if(hightThreshold>=sph && sph>minThreshold) {
-						// < recomendation && > minimum
-						pv.setFillColor("#D8C13E");
-						
-					} else if(minThreshold>=sph && sph>lessMidThreshold) {
-						// < minimum && > 80% minimum
-						pv.setFillColor("#D8783E");
-						
-					} else {
-						// <80M mini
-						pv.setFillColor("#D84E3E");
-					}
-					
-				} else {
-					pv.setAreaPerPeople("-");
-					
-					pv.setFillColor("#D84E3E");
-				}
-				
-			}
+			pv.setFillColor(this.getFillColorPark(pv, cpu));
 		}
 	}
+	
 
 	BigDecimal fromDouble(Double d) {
 		NumberFormat formatter = new DecimalFormat("#0");     
 		return new BigDecimal(formatter.format(d));
 	}
 	
-	 
+	public String getFillColorCarre(Carre200AndShapeView v, InseeCarre200mComputed cpuEd) {
+		String color = THRESHOLD_GREEWASHED;
+
+		if (cpuEd.getUpdated()!=null) {
+			if (cpuEd.getPopAll()==null) {
+				v.setAreaPerPeople("-");
+				return THRESHOLD_NOT_COMPUTED;
+			}
+			
+			double thresholdReco = 12;
+			double thresholdMin = 10;
+			if (Boolean.FALSE.equals(cpuEd.getIsDense())) {
+				 thresholdReco = applicationBusinessProperties.getRecoSubUrbSquareMeterPerCapita();
+				 thresholdMin = applicationBusinessProperties.getMinSubUrbSquareMeterPerCapita();
+			} else {
+				 thresholdReco = applicationBusinessProperties.getRecoUrbSquareMeterPerCapita();
+				 thresholdMin = applicationBusinessProperties.getMinUrbSquareMeterPerCapita();
+			}
+
+			
+			Double sph = BigDecimalMath.roundToDouble(cpuEd.getSurfaceParkPerCapitaOms(), RoundingMode.HALF_EVEN);
+			
+			Boolean allInhabitant = cpuEd.getPopAll()!=null?cpuEd.getPopAll().equals(cpuEd.getPopIncludedOms()):Boolean.FALSE;
+			
+			if (sph>thresholdReco && allInhabitant) {
+				color = THRESHOLD_PERFECT;
+			} else if (sph>thresholdMin && allInhabitant) {
+				color = THRESHOLD_CORRECT;
+			} else {
+				color = THRESHOLD_BAD;
+			}
+		}
+		
+		return color;
+	
+		
+	}
     /**
      * GET ALL IRIS in the map.
      * @param polygon
@@ -355,18 +497,16 @@ public class GeoMapService {
     	GeoJsonRoot root = new GeoJsonRoot();
     	
     	if (polygon!=null) {
-    	List<InseeCarre200m> carreShape = inseeCarre200mRepository.getAllCarreInMap(GeometryQueryHelper.toText(polygon));
+    	List<InseeCarre200m> carres = inseeCarre200mRepository.getAllCarreInMap(GeometryQueryHelper.toText(polygon));
     	
-    	if (carreShape!=null && carreShape.size()>0) {
-    		for (InseeCarre200m c : carreShape) {
-    			InseeCarre200mShape s= inseeCarre200mShapeRepository.findByIdInspire(c.getIdInspire());
-				
-    			
+    	if (carres!=null && carres.size()>0) {
+    		for (InseeCarre200m c : carres) {
+    			InseeCarre200mShape carreShape= inseeCarre200mShapeRepository.findByIdInspire(c.getIdInspire());
     			Optional<InseeCarre200mComputed> optCputed = inseeCarre200mComputedRepository.findById(c.getId());
     		
     			GeoJsonFeature feature = new GeoJsonFeature();
 				root.getFeatures().add(feature);
-				feature.setGeometry(s.getGeoShape());
+				feature.setGeometry(carreShape.getGeoShape());
 
     			Carre200AndShapeView v = new Carre200AndShapeView();
 				feature.setProperties(v);
@@ -377,39 +517,27 @@ public class GeoMapService {
     			
     			if (optCputed.isPresent()) {
     				InseeCarre200mComputed cputed=optCputed.get();
+    				
+    				// declared by public organisation (^possible greenwashing)
     				v.setPopParkExcluded(String.valueOf(cputed.getPopExcluded()));
     				v.setPopParkIncluded(String.valueOf(cputed.getPopIncluded()));
+    				v.setPopSquareShare(String.valueOf(cputed.getPopulationInIsochrone()));
+    				v.setSquareMtePerCapita(String.valueOf(cputed.getSurfaceParkPerCapita()));
+
+    				// check by Aut'MEL from OMS prerequisit
+    				v.setPopParkExcludedOms(String.valueOf(cputed.getPopExcludedOms()));
+    				v.setPopParkIncludedOms(String.valueOf(cputed.getPopIncludedOms()));
+    				v.setPopSquareShareOms(String.valueOf(cputed.getPopulationInIsochroneOms()));
+    				v.setSquareMtePerCapitaOms(String.valueOf(cputed.getSurfaceParkPerCapitaOms()));
     				
-    				if(BigDecimal.ZERO.compareTo(cputed.getPopAll())==0) {
-    					v.setFillColor("#7F00FF");
-    				} else {
-	    				// ratio of people able to access a park
-	    				BigDecimal ratio = cputed.getPopIncluded().divide(cputed.getPopAll(), RoundingMode.FLOOR);
-	    				
-	    				BigDecimal p98 = new BigDecimal(0.98);
-	    				BigDecimal p80 = new BigDecimal(0.80);
-	    				BigDecimal p20 = new BigDecimal(0.20);
-	    				
-	    				if (ratio.compareTo(p20)<0) { // < 25%
-	    					v.setFillColor("#D84E3E");
-	
-	    				} else if (ratio.compareTo(p80)<0) { // < 50%
-	    					v.setFillColor("#D8783E");
-	    					
-	    				} else if(ratio.compareTo(p98)<0) { // < 75%
-	    					v.setFillColor("#D8C13E");
-	    					
-	    				} else { //
-	    					v.setFillColor("#58D83E");
-	    				}
-    				}
+    				v.setFillColor(this.getFillColorCarre(v, cputed));
     				
     			} else {
     				v.setPopParkExcluded("n/a");
     				v.setPopParkIncluded("n/a");
     			}
     			
-    			v.setCommune(s.getCommune());
+    			v.setCommune(carreShape.getCommune());
 			}
     	}
     	}
