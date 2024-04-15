@@ -215,6 +215,225 @@ public class ComputeService {
 		return dto;
 	}
 
+	
+	
+	protected void computeCarreShapeV2(InseeCarre200mShape carreShape, Boolean isDense) {
+		log.warn(">> InseeCarre200mShape {}", carreShape.getIdCarreHab());
+		
+		boolean withSkip=false;
+		
+		// get already computed square results
+		InseeCarre200mComputed computed = null;
+		Optional<InseeCarre200mComputed> opt = inseeCarre200mComputedRepository.findById(carreShape.getIdCarreHab());
+		if (opt.isPresent()) {
+			computed = opt.get();
+			
+			Date currentDate = new Date();  
+		    Date yesterdayDate = new Date(currentDate.getTime() - (1000 * 60 * 60 * 24));  
+		    
+			if (withSkip && computed.getUpdated().compareTo(yesterdayDate)>0) {
+				return;
+			}
+			
+//			if (!"LAEA200M_N15399E19170".equals(carreShape.getIdCarreHab())) {
+//				continue;
+//			}
+			
+		} else {
+			// or create it
+			computed = new InseeCarre200mComputed();
+			computed.setIdCarre200(carreShape.getIdCarreHab());
+		} 
+		computed.setIsDense(isDense);
+		
+		if (carreShape.getGeoShape()==null) {
+			int pause=0;// LAEA200M_N15402E19165
+			log.error("getGeoShape is null");
+		}
+		
+		// get insee data for the square
+		InseeCarre200m carre = inseeCare200mRepository.findById(carreShape.getIdCarreHab()).get();
+		
+		// find parks in square shape
+		List<ParkArea> parkAreas = parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(carreShape.getGeoShape()));
+		parkTypeService.populate(parkAreas);
+		
+		// compute all surface of isochrone of parks 
+		BigDecimal surfaceParkAreas=BigDecimal.ZERO;
+		Geometry polygonPark = null;
+
+		BigDecimal surfaceParkAreasOms=BigDecimal.ZERO;
+		Geometry polygonParkOms = null;
+		
+		
+		int checkOms=parkAreas.size();
+		Boolean allAreOms = Boolean.FALSE;
+		for (ParkArea parkArea : parkAreas) {
+			log.warn("\tcompose {}", parkArea);
+			
+			ParkAreaComputed pac;
+			Optional<ParkAreaComputed> Opac = parkAreaComputedRepository.findById(parkArea.getId());
+			if (Opac.isPresent()) {
+				pac = Opac.get();
+			} else {
+				pac = this.computeParkAreaV2(parkArea);
+			}
+			
+			//decrement for all
+			checkOms--;
+			// prepare ALL
+			surfaceParkAreas = surfaceParkAreas.add(pac.getSurface());
+			
+			if (polygonPark == null) {
+				polygonPark = parkArea.getPolygon();
+			} else {
+				// merge areas for parks
+				polygonPark = polygonPark.union(parkArea.getPolygon());
+			}
+			
+			// prepare with OMS compliance
+			if (pac.getOms()) {
+				//increment for oms
+				checkOms++;
+				surfaceParkAreasOms = surfaceParkAreasOms.add(pac.getSurface());
+				
+				if (polygonParkOms == null) {
+					polygonParkOms = parkArea.getPolygon();
+				} else {
+					// merge areas for parks
+					polygonParkOms = polygonParkOms.union(parkArea.getPolygon());
+				}
+			}
+		}  // end merge
+		
+		// all parks are OMS compliant
+		allAreOms = checkOms==parkAreas.size();
+		
+		
+		if (StringUtils.isNotBlank(carre.getPopulation())) {
+			// remove insee posibble decimal value
+			Double inhabitant = Double.valueOf(carre.getPopulation());
+			computed.setPopAll(BigDecimal.valueOf(Math.round(inhabitant)));
+		} else {
+			computed.setPopAll(BigDecimal.ZERO);
+		}
+		
+		if ( polygonPark!=null ) {
+			log.warn("\tprocess merge isochrone");
+			//Compute all the population which is present in the isochrones of the current square.
+			// and the park surface of these isochrones.
+			// then, I compute the surface per capita (m²/inhabitant)
+			
+			ComputeDto dto = this.computePopAndDensity(polygonPark, surfaceParkAreas);
+			computed.setSurfaceParkPerCapita(dto.getSurfacePerCapitaForIsochroneOnSquare());
+			computed.setSurfaceTotalPark(surfaceParkAreas);
+			computed.setPopulationInIsochrone(dto.getPopulationInIsochrone());
+			
+			// Do the same but only with OMS compliant parks
+			if (allAreOms) {
+				// this is unusual to recompute
+				computed.setSurfaceParkPerCapitaOms(dto.getSurfacePerCapitaForIsochroneOnSquare());
+				computed.setSurfaceTotalParkOms(surfaceParkAreas);
+				computed.setPopulationInIsochroneOms(dto.getPopulationInIsochrone());
+				
+			} else {
+				if (surfaceParkAreasOms!=null && !BigDecimal.ZERO.equals(surfaceParkAreasOms)) {
+					dto = this.computePopAndDensity(polygonParkOms, surfaceParkAreasOms);
+					computed.setSurfaceParkPerCapitaOms(dto.getSurfacePerCapitaForIsochroneOnSquare());
+					computed.setSurfaceTotalParkOms(surfaceParkAreasOms);
+					computed.setPopulationInIsochroneOms(dto.getPopulationInIsochrone());
+				} else {
+					computed.setSurfaceParkPerCapitaOms(BigDecimal.ZERO);
+					computed.setSurfaceTotalParkOms(BigDecimal.ZERO);
+					computed.setPopulationInIsochroneOms(BigDecimal.ZERO) ;
+				}
+			}
+			
+			
+			
+			// compute surface with accessible parks
+			Geometry parkOnCarre = carreShape.getGeoShape().intersection(polygonPark);
+			Long surfaceParkAccess = getSurface(parkOnCarre);
+			
+			Double inhabitant = computed.getPopAll().doubleValue();
+			if (StringUtils.isNotBlank(carre.getPopulation())) {
+				// protata des surfces pour habitants avec un parc
+				Long popIn = Math.round(inhabitant*surfaceParkAccess/SURFACE_CARRE);
+				computed.setPopIncluded(new BigDecimal(popIn));
+				computed.setPopExcluded(new BigDecimal(inhabitant-popIn));
+				
+
+				// same for OMS parks
+				if (allAreOms) {
+					computed.setPopIncludedOms(computed.getPopIncluded());
+					computed.setPopExcludedOms(computed.getPopExcluded());
+					
+				} else {
+					// OMS <> opendata
+					if (surfaceParkAreasOms!=null && !BigDecimal.ZERO.equals(surfaceParkAreasOms)) {
+						// compute surface with accessible parks
+						parkOnCarre = carreShape.getGeoShape().intersection(polygonParkOms);
+						surfaceParkAccess = getSurface(parkOnCarre);
+
+						// protata des surfaces pour habitants avec un parc
+						popIn = Math.round(inhabitant*surfaceParkAccess/SURFACE_CARRE);
+						computed.setPopIncludedOms(new BigDecimal(popIn));
+						computed.setPopExcludedOms(new BigDecimal(inhabitant-popIn));
+					} else {
+						computed.setPopIncludedOms(BigDecimal.ZERO);
+						computed.setPopExcludedOms(new BigDecimal(popIn));
+					}
+				}
+				
+			} else {
+				Long popIn = Math.round(inhabitant);
+				computed.setPopAll(new BigDecimal(popIn));
+				computed.setPopIncluded(BigDecimal.ZERO);
+				computed.setPopExcluded(new BigDecimal(popIn));
+				computed.setPopIncludedOms(BigDecimal.ZERO);
+				computed.setPopExcludedOms(new BigDecimal(popIn));
+			}
+			
+
+			
+		} else {
+
+			// no parks is accesible
+			computed.setPopIncluded(BigDecimal.ZERO);
+			computed.setPopExcluded(computed.getPopAll());
+			computed.setSurfaceTotalPark(BigDecimal.ZERO);
+			computed.setSurfaceParkPerCapita(BigDecimal.ZERO);
+		}
+		log.warn("\tsave computed {}\n", computed.getIdCarre200());
+		computed.setUpdated(new Date());
+		inseeCarre200mComputedRepository.save(computed);
+		
+	}
+	
+	/**
+	 * @param cadastre
+	 */
+	public void computeCarreByParkV2(ParkArea parkArea) {
+		log.warn(">> computeCarreByParkV2");
+		
+		Boolean isDense = Boolean.TRUE;
+		Optional<ParcEtJardin> opj = parkJardinRepository.findById(parkArea.getIdParcEtJardin());
+		if (opj.isPresent()) {
+			isDense = serviceOpenData.isDistanceDense(opj.get().getCommune().getInseeCode());
+		}
+
+		// find all square in city area
+		List<InseeCarre200mShape> shapes = inseeCarre200mShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(parkArea.getPolygon()));
+		
+
+		// iterate on each
+		for (InseeCarre200mShape carreShape : shapes) {
+			computeCarreShapeV2(carreShape, isDense);
+		}	
+		log.warn("<< computeCarreByParkV2");
+		
+	}
+	
 	/**
 	 * Computes population that can access a park at once.
 	 * @param cadastre
@@ -226,7 +445,7 @@ public class ComputeService {
 	 */
 	@Transactional
 	public void computeCarreByCadastreV2(Cadastre cadastre) {
-		boolean withSkip=false;
+		
 		log.warn(">> computeCarreByCadastreV2");
 		
 		Boolean isDense = serviceOpenData.isDistanceDense(cadastre.getIdInsee());
@@ -236,182 +455,7 @@ public class ComputeService {
 		
 		// iterate on each
 		for (InseeCarre200mShape carreShape : shapes) {
-			log.warn(">> InseeCarre200mShape {}", carreShape.getIdCarreHab());
-			
-			// get already computed square results
-			InseeCarre200mComputed computed = null;
-			Optional<InseeCarre200mComputed> opt = inseeCarre200mComputedRepository.findById(carreShape.getIdCarreHab());
-			if (opt.isPresent()) {
-				computed = opt.get();
-				
-				Date currentDate = new Date();  
-			    Date yesterdayDate = new Date(currentDate.getTime() - (1000 * 60 * 60 * 24));  
-			    
-				if (withSkip && computed.getUpdated().compareTo(yesterdayDate)>0) {
-					continue;
-				}
-			} else {
-				// or create it
-				computed = new InseeCarre200mComputed();
-				computed.setIdCarre200(carreShape.getIdCarreHab());
-			} 
-			computed.setIsDense(isDense);
-			
-			if (carreShape.getGeoShape()==null) {
-				int pause=0;// LAEA200M_N15402E19165
-				log.error("getGeoShape is null");
-			}
-			
-			// get insee data for the square
-			InseeCarre200m carre = inseeCare200mRepository.findById(carreShape.getIdCarreHab()).get();
-			
-			// find parks in square shape
-			List<ParkArea> parkAreas = parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(carreShape.getGeoShape()));
-			parkTypeService.populate(parkAreas);
-			
-			// compute all surface of isochrone of parks 
-			BigDecimal surfaceParkAreas=BigDecimal.ZERO;
-			Geometry polygonPark = null;
-			
-
-			BigDecimal surfaceParkAreasOms=BigDecimal.ZERO;
-			Geometry polygonParkOms = null;
-			
-			
-			int check=parkAreas.size();
-			Boolean allAreOms = Boolean.FALSE;
-			for (ParkArea parkArea : parkAreas) {
-				log.warn("\tcompose {}", parkArea);
-				
-				ParkAreaComputed pac;
-				Optional<ParkAreaComputed> Opac = parkAreaComputedRepository.findById(parkArea.getId());
-				if (Opac.isPresent()) {
-					pac = Opac.get();
-				} else {
-					pac = this.computeParkAreaV2(parkArea);
-				}
-				
-				//decrement for all
-				check--;
-				// prepare ALL
-				surfaceParkAreas = surfaceParkAreas.add(pac.getSurface());
-				
-				if (polygonPark == null) {
-					polygonPark = parkArea.getPolygon();
-				} else {
-					// merge areas for parks
-					polygonPark = polygonPark.union(parkArea.getPolygon());
-				}
-				
-				// prepare with OMS compliance
-				if (pac.getOms()) {
-					//increment for oms
-					check++;
-					surfaceParkAreasOms = surfaceParkAreasOms.add(pac.getSurface());
-					
-					if (polygonParkOms == null) {
-						polygonParkOms = parkArea.getPolygon();
-					} else {
-						// merge areas for parks
-						polygonParkOms = polygonParkOms.union(parkArea.getPolygon());
-					}
-				}
-			}
-			
-			// all parks are OMS compliant
-			allAreOms = check==parkAreas.size();
-			
-			
-			if (StringUtils.isNotBlank(carre.getPopulation())) {
-				Double inhabitant = Double.valueOf(carre.getPopulation());
-				computed.setPopAll(BigDecimal.valueOf(Math.round(inhabitant)));
-			}
-			
-			if ( polygonPark!=null ) {
-				log.warn("\tprocess isochrone");
-				//Compute all the population which is present in the isochrones of the current square.
-				// and the park surface of these isochrones.
-				// then, I compute the surface per capita (m²/inhabitant)
-				
-				ComputeDto dto = this.computePopAndDensity(polygonPark, surfaceParkAreas);
-				computed.setSurfaceParkPerCapita(dto.getSurfacePerCapitaForIsochroneOnSquare());
-				computed.setSurfaceTotalPark(surfaceParkAreas);
-				computed.setPopulationInIsochrone(dto.getPopulationInIsochrone());
-				
-				// Do the same but only with OMS compliant parks
-				if (allAreOms) {
-					// this is unusual to recompute
-					computed.setSurfaceParkPerCapitaOms(dto.getSurfacePerCapitaForIsochroneOnSquare());
-					computed.setSurfaceTotalParkOms(dto.getPopulationInIsochrone());
-					computed.setSurfaceTotalParkOms(surfaceParkAreasOms);
-					
-				} else {
-					if (surfaceParkAreasOms!=null && !BigDecimal.ZERO.equals(surfaceParkAreasOms)) {
-						dto = this.computePopAndDensity(polygonParkOms, surfaceParkAreasOms);
-						computed.setSurfaceParkPerCapitaOms(dto.getSurfacePerCapitaForIsochroneOnSquare());
-						computed.setPopulationInIsochroneOms(dto.getPopulationInIsochrone()) ;
-						computed.setSurfaceTotalParkOms(surfaceParkAreasOms);
-					}
-				}
-				
-				
-				
-				// compute surface with accessible parks
-				Geometry parkOnCarre = carreShape.getGeoShape().intersection(polygonPark);
-				Long surfaceParkAccess = getSurface(parkOnCarre);
-				
-				if (StringUtils.isNotBlank(carre.getPopulation())) {
-					// protata des surfces pour habitants avec un parc
-					Double inhabitant = computed.getPopAll().doubleValue();
-					Long popIn = Math.round(inhabitant*surfaceParkAccess/SURFACE_CARRE);
-					computed.setPopIncluded(new BigDecimal(popIn));
-					computed.setPopExcluded(new BigDecimal(inhabitant-popIn));
-					
-
-					// same for OMS parks
-					if (allAreOms) {
-						computed.setPopIncludedOms(computed.getPopIncluded());
-						computed.setPopExcludedOms(computed.getPopExcluded());
-						
-					} else {
-						inhabitant = computed.getPopAll().doubleValue();
-						if (surfaceParkAreasOms!=null && !BigDecimal.ZERO.equals(surfaceParkAreasOms)) {
-							// compute surface with accessible parks
-							parkOnCarre = carreShape.getGeoShape().intersection(polygonParkOms);
-							surfaceParkAccess = getSurface(parkOnCarre);
-	
-							// protata des surfces pour habitants avec un parc
-							popIn = Math.round(inhabitant*surfaceParkAccess/SURFACE_CARRE);
-							computed.setPopIncluded(new BigDecimal(popIn));
-							computed.setPopExcluded(new BigDecimal(inhabitant-popIn));
-						} else {
-							computed.setPopIncludedOms(BigDecimal.ZERO);
-							computed.setPopExcludedOms(new BigDecimal(popIn));
-						}
-					}
-					
-				} else {
-					computed.setPopAll(BigDecimal.ZERO);
-					computed.setPopIncluded(BigDecimal.ZERO);
-					computed.setPopExcluded(BigDecimal.ZERO);
-					computed.setPopIncludedOms(BigDecimal.ZERO);
-					computed.setPopExcludedOms(BigDecimal.ZERO);
-				}
-				
-
-				
-			} else {
-
-				// no parks is accesible
-				computed.setPopIncluded(BigDecimal.ZERO);
-				computed.setPopExcluded(computed.getPopAll());
-				computed.setSurfaceTotalPark(BigDecimal.ZERO);
-				computed.setSurfaceParkPerCapita(BigDecimal.ZERO);
-			}
-			log.warn("\tsave computed {}\n", computed.getIdCarre200());
-			computed.setUpdated(new Date());
-			inseeCarre200mComputedRepository.save(computed);
-		
+			computeCarreShapeV2(carreShape, isDense);
 		}	
 
 		log.warn("<< computeCarreByCadastreV2");

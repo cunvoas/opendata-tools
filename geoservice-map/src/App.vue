@@ -5,6 +5,14 @@
           <b-col>
             <img
               alt="Deul'Air"
+              src="./assets/logo-autmel.png"
+              height="100px"
+              style="border: 2px"
+            />
+            </b-col>
+          <b-col>
+            <img
+              alt="Deul'Air"
               src="./assets/logo-deulair.png"
               height="100px"
               style="border: 2px"
@@ -30,29 +38,26 @@
     <span id="legend">
       <table class="legend" border="1px">
         <tr>
-            <th style="color:#000000;">Légende Isochone </th>
-            <th style="color:#000000;">Pourcentage de population avec un parc</th>
+            <th style="color:#000000;">Légende Isochone (Valide OMS)</th>
         </tr>
       <tbody>
         <tr>
-          <td style="background-color:#2B100D;">OMS: n'est pas un parc</td>
-          <td>n/a</td>
+          <td style="background-color:#1a9900;">&gt; 12 m²/habitant en ville (45 m²/hab à la campagne)</td>
         </tr>
         <tr>
-          <td style="background-color:#58D83E;">&gt; 12 m²/habitant (100%)</td>
-          <td style="background-color:#58D83E;">&gt;= 98% à &lt;=100%</td>
+          <td style="background-color:#9ee88f;">10 &lt; m²/habitant &lt;= 12 (entre 25 et 45 m²/hab à la campagne)</td>
         </tr>
         <tr>
-          <td style="background-color:#D8C13E;">6 &lt; m²/habitant &lt;= 12 (&lt;>50%)</td>
-          <td style="background-color:#D8C13E;">&gt;= 80% et &lt;98%</td>
+          <td style="background-color:#d8973e;">&gt; 10 m²/habitant en ville (25 m²/hab à la campagne) mais dont une partie de la population est exclue.</td>
         </tr>
         <tr>
-          <td style="background-color:#D8783E;">3 &lt; m²/habitant &lt;= 6 (&lt;25%)</td>
-          <td style="background-color:#D8783E;">&gt;= 20% et &lt;80%</td>
+          <td style="background-color:#e17372;">&lt; 10 m²/habitant (&lt; 25 m²/hab à la campagne)</td>
         </tr>
         <tr>
-          <td style="background-color:#D84E3E;">&lt;= 3 m²/habitant (&gt;25%)</td>
-          <td style="background-color:#D84E3E;">&lt;20%</td>
+          <td style="background-color:#f1e2e2;">N'est pas un parc</td>
+        </tr>
+        <tr>
+          <td style="background-color:#4944f5;">N'a pas été calculé'</td>
         </tr>
       </tbody>
       </table>

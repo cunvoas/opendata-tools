@@ -13,7 +13,6 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -70,14 +69,21 @@ public class GeoMapService {
 	 * park surface per capita > OMS reco
 	 */
 	public String THRESHOLD_PERFECT="#1a9900";
+	public String THRESHOLD_PERFECT_GW="#986e99";
 	/**
 	 *  park surface per capita > OMS mini
 	 */
 	public String THRESHOLD_CORRECT="#9ee88f";
+	public String THRESHOLD_CORRECT_GW="#977d97";
+	/**
+	 *  park surface per capita > OMS mini
+	 */
+	public String THRESHOLD_CORRECT_OR_CORRECT_INCOMPLETE="#d8973e";
 	/**
 	 *  park surface per capita < OMS mini
 	 */
 	public String THRESHOLD_BAD="#df6463";
+	public String THRESHOLD_BAD_GW="#765576";
 	/**
 	 * this park in greenwashed
 	 */
@@ -396,34 +402,47 @@ public class GeoMapService {
 	 * @return color of an isochrone park.
 	 */
 	public String getFillColorPark(ParkView pv, ParkAreaComputed areaCputed) {
-		String color = THRESHOLD_GREEWASHED;
+		String colorOms = THRESHOLD_GREEWASHED;
+		String colorGw = THRESHOLD_GREEWASHED;
+		String color= THRESHOLD_GREEWASHED;
 
+		double thresholdReco = 12;
+		double thresholdMin = 10;
+		if (areaCputed.getIsDense()!=null?areaCputed.getIsDense():Boolean.TRUE) {
+			 thresholdReco = applicationBusinessProperties.getRecoUrbSquareMeterPerCapita();
+			 thresholdMin = applicationBusinessProperties.getMinUrbSquareMeterPerCapita();
+		} else {
+			 thresholdReco = applicationBusinessProperties.getRecoSubUrbSquareMeterPerCapita();
+			 thresholdMin = applicationBusinessProperties.getMinSubUrbSquareMeterPerCapita();
+		}
+		
+		
 		if (areaCputed.getOms()) {
 			if (areaCputed.getSurfacePerInhabitant()==null) {
 				pv.setAreaPerPeople("-");
 				return THRESHOLD_NOT_COMPUTED;
 			}
-			
-			double thresholdReco = 12;
-			double thresholdMin = 10;
-			if (areaCputed.getIsDense()) {
-				 thresholdReco = applicationBusinessProperties.getRecoUrbSquareMeterPerCapita();
-				 thresholdMin = applicationBusinessProperties.getMinUrbSquareMeterPerCapita();
-			} else {
-				 thresholdReco = applicationBusinessProperties.getRecoSubUrbSquareMeterPerCapita();
-				 thresholdMin = applicationBusinessProperties.getMinSubUrbSquareMeterPerCapita();
-			}
 
 			pv.setAreaPerPeople(areaCputed.getSurfacePerInhabitant().toPlainString());
 			Double sph = BigDecimalMath.roundToDouble(areaCputed.getSurfacePerInhabitant(), RoundingMode.HALF_EVEN);
 			if (sph>thresholdReco) {
-				color = THRESHOLD_PERFECT;
+				colorOms = THRESHOLD_PERFECT;
+				colorGw = THRESHOLD_PERFECT_GW;
 			} else if (sph>thresholdMin) {
-				color = THRESHOLD_CORRECT;
+				colorOms = THRESHOLD_CORRECT;
+				colorGw = THRESHOLD_CORRECT_GW;
 			} else {
-				color = THRESHOLD_BAD;
+				colorOms = THRESHOLD_BAD;
+				colorGw = THRESHOLD_BAD;
 			}
 		}
+		
+		color = colorOms;
+//		if (areaCputed.getOms()) {
+//			color = colorOms;
+//		} else {
+//			color = colorGw;
+//		}
 		
 		return color;
 	}
@@ -469,16 +488,29 @@ public class GeoMapService {
 				 thresholdReco = applicationBusinessProperties.getRecoUrbSquareMeterPerCapita();
 				 thresholdMin = applicationBusinessProperties.getMinUrbSquareMeterPerCapita();
 			}
-
+			BigDecimal spc = cpuEd.getSurfaceParkPerCapitaOms();
+			if (spc==null) {
+				spc=BigDecimal.ZERO;
+			}
 			
-			Double sph = BigDecimalMath.roundToDouble(cpuEd.getSurfaceParkPerCapitaOms(), RoundingMode.HALF_EVEN);
+			Double sph = BigDecimalMath.roundToDouble(spc, RoundingMode.HALF_EVEN);
 			
 			Boolean allInhabitant = cpuEd.getPopAll()!=null?cpuEd.getPopAll().equals(cpuEd.getPopIncludedOms()):Boolean.FALSE;
 			
+			if ("LAEA200M_N15407E19138".equals(cpuEd.getIdCarre200())) {
+				int debug=0;
+			}
 			if (sph>thresholdReco && allInhabitant) {
 				color = THRESHOLD_PERFECT;
+			} else if (sph>thresholdReco && !allInhabitant) {
+				color = THRESHOLD_CORRECT_OR_CORRECT_INCOMPLETE;
+				
 			} else if (sph>thresholdMin && allInhabitant) {
 				color = THRESHOLD_CORRECT;
+				
+			} else if (sph>thresholdMin && !allInhabitant) {
+				color = THRESHOLD_CORRECT_OR_CORRECT_INCOMPLETE;
+				
 			} else {
 				color = THRESHOLD_BAD;
 			}
@@ -488,6 +520,25 @@ public class GeoMapService {
 	
 		
 	}
+	
+	
+	private static final NumberFormat DF_E = new DecimalFormat("#0");
+	private static final NumberFormat DF_S = new DecimalFormat("#0.00");
+	public String formatInt(BigDecimal v) {
+		if (v!=null) {
+			return  DF_E.format(v);
+		}
+		return "-";
+		
+	}
+	public String formatDec(BigDecimal v) {
+		if (v!=null) {
+			return  DF_S.format(v);
+		}
+		return "-";
+		
+	}
+	
     /**
      * GET ALL IRIS in the map.
      * @param polygon
@@ -519,16 +570,18 @@ public class GeoMapService {
     				InseeCarre200mComputed cputed=optCputed.get();
     				
     				// declared by public organisation (^possible greenwashing)
-    				v.setPopParkExcluded(String.valueOf(cputed.getPopExcluded()));
-    				v.setPopParkIncluded(String.valueOf(cputed.getPopIncluded()));
-    				v.setPopSquareShare(String.valueOf(cputed.getPopulationInIsochrone()));
-    				v.setSquareMtePerCapita(String.valueOf(cputed.getSurfaceParkPerCapita()));
+    				v.setSurfaceTotalPark(formatInt(cputed.getSurfaceTotalPark()));
+    				v.setPopParkExcluded(formatInt(cputed.getPopExcluded()));
+    				v.setPopParkIncluded(formatInt(cputed.getPopIncluded()));
+    				v.setPopSquareShare(formatInt(cputed.getPopulationInIsochrone()));
+    				v.setSquareMtePerCapita(formatDec(cputed.getSurfaceParkPerCapita()));
 
     				// check by Aut'MEL from OMS prerequisit
-    				v.setPopParkExcludedOms(String.valueOf(cputed.getPopExcludedOms()));
-    				v.setPopParkIncludedOms(String.valueOf(cputed.getPopIncludedOms()));
-    				v.setPopSquareShareOms(String.valueOf(cputed.getPopulationInIsochroneOms()));
-    				v.setSquareMtePerCapitaOms(String.valueOf(cputed.getSurfaceParkPerCapitaOms()));
+    				v.setSurfaceTotalParkOms(formatInt(cputed.getSurfaceTotalParkOms()));
+    				v.setPopParkExcludedOms(formatInt(cputed.getPopExcludedOms()));
+    				v.setPopParkIncludedOms(formatInt(cputed.getPopIncludedOms()));
+    				v.setPopSquareShareOms(formatInt(cputed.getPopulationInIsochroneOms()));
+    				v.setSquareMtePerCapitaOms(formatDec(cputed.getSurfaceParkPerCapitaOms()));
     				
     				v.setFillColor(this.getFillColorCarre(v, cputed));
     				

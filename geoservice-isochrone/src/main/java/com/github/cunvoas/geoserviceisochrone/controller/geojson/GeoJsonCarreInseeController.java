@@ -26,8 +26,8 @@ public class GeoJsonCarreInseeController {
     @Autowired
     private GeoMapService inseeCarre200mService;
 
-    @CrossOrigin(origins = "http://localhost:8080")
-    @GetMapping("/carre200m/corner")
+    @CrossOrigin(origins = {"http://localhost:8081", "https://autmel-maps.duckdns.org/"})
+    @GetMapping("/carre200m/area")
     public GeoJsonRoot getCarreByArea(
 			@RequestParam("swLat") Double swLat,
 			@RequestParam("swLng") Double swLng,

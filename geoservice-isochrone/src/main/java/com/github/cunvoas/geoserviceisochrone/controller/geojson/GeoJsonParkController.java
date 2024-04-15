@@ -29,8 +29,9 @@ public class GeoJsonParkController {
         return geoMapService.findAllParkByArea(polygon);
     }
     
-    @CrossOrigin(origins = {"http://localhost:8080", "https://autmel-maps.duckdns.org/"})
-    @GetMapping("/parkByCorner")
+    //FIXME use global conf
+    @CrossOrigin(origins = {"http://localhost:8081", "https://autmel-maps.duckdns.org/"})
+    @GetMapping("/area")
     public GeoJsonRoot getParkByArea(
     			@RequestParam("swLat") Double swLat,
     			@RequestParam("swLng") Double swLng,
