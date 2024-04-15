@@ -103,9 +103,9 @@
         geojsonIsochrone: null,
         geojsonCarre: null,
         geojsonCadastre: null,
-        restUrlCadastre: "http://localhost:8980/cadastre/area",
-        restUrlCarre: "http://localhost:8980/insee/carre200m/corner",
-        restUrlIsochrones: "http://localhost:8980/map/park/parkByCorner",
+        restUrlCadastre: "http://localhost:8980/isochrone/map/cadastre/area",
+        restUrlCarre: "http://localhost:8980/isochrone/map/insee/carre200m/area",
+        restUrlIsochrones: "http://localhost:8980/isochrone/map/park/area",
         fillColor: "#A0DCA0",
         url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> <a href="https://www.facebook.com/lmoxygene/">LM Oxygène</a> '
@@ -228,11 +228,12 @@
               " m²/h)</div>",
             { permanent: false, sticky: true }
           );
+          
           if (this.checkboxWithOMS && !feature.properties.oms) {
               layer.setStyle({
                 fillColor: feature.properties.fillColor,
-                opacity: 0.4,
-                fillOpacity: 0.2
+                opacity: 0.0,
+                fillOpacity: 0.0
               });
             
           } else {
@@ -241,18 +242,22 @@
                 fillOpacity: 0.6
               });
           }
+          
         }
       },
-      
+               
       onDetailCarre() {
         return (feature, layer) => {
           layer.bindTooltip(
             "<div>ID:" + feature.properties.id +
             "</div><div>Commune: " + feature.properties.commune +
             "</div><div>Population: " + feature.properties.people +
-            "</div><div>Dont parc: " + feature.properties.popParkIncluded +
-            "</div><div>Sans parc: " + feature.properties.popParkExcluded +
-            "</div>",
+            "</div><div>Dont parc: " + feature.properties.popParkIncludedOms +
+            "</div><div>Sans parc: " + feature.properties.popParkExcludedOms +
+            "</div><div>Parcs acessibles: " + feature.properties.surfaceTotalParkOms +
+            " m²</div><div>Partagés avec : " + feature.properties.popSquareShareOms +
+            " pers.</div><div>Soit : " + feature.properties.squareMtePerCapitaOms +
+            " m²/hab</div>",
             { permanent: false, sticky: true }
           );
           if ( feature.properties.popParkIncluded !=='n/a') {

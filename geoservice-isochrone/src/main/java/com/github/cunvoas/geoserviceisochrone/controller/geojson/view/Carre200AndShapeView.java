@@ -13,11 +13,13 @@ public class Carre200AndShapeView extends GeoJsonProperty {
 
 	private String people;
 	
+	private String surfaceTotalPark;
 	private String popParkIncluded;
 	private String popParkExcluded;
 	private String popSquareShare;
 	private String squareMtePerCapita;
 	
+	private String surfaceTotalParkOms;
 	private String popParkIncludedOms;
 	private String popParkExcludedOms;
 	private String popSquareShareOms;

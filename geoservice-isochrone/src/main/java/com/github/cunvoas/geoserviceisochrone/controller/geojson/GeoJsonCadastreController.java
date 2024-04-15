@@ -21,6 +21,7 @@ public class GeoJsonCadastreController {
     @Autowired
     private GeoMapService geoMapService;
     
+    @CrossOrigin(origins = {"http://localhost:8081", "https://autmel-maps.duckdns.org/"})
     @GetMapping("/area")
     public GeoJsonRoot getCadastreByArea(
 			@RequestParam("swLat") Double swLat,
