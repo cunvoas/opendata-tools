@@ -116,19 +116,6 @@ public class GeoMapService {
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	
-//    @Value("${application.business.oms.urban.area_min}")
-//    private Double minUrbSquareMeterPerCapita;
-//    
-//    @Value("${application.business.oms.urban.area_reco}")
-//    private Double recoUrbSquareMeterPerCapita;
-//
-//    @Value("${application.business.oms.suburban.area_min}")
-//    private Double minSubUrbSquareMeterPerCapita;
-//    
-//    @Value("${application.business.oms.suburban.area_reco}")
-//    private Double recoSubUrbSquareMeterPerCapita;
-
-    
     /**
      * @param swLat
      * @param swLng

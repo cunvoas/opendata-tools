@@ -4,7 +4,7 @@
         <b-row>
           <b-col>
             <img
-              alt="Deul'Air"
+              alt="Aut'MEL'"
               src="./assets/logo-autmel.png"
               height="100px"
               style="border: 2px"
@@ -54,10 +54,10 @@
           <td style="background-color:#e17372;">&lt; 10 m²/habitant (&lt; 25 m²/hab à la campagne)</td>
         </tr>
         <tr>
-          <td style="background-color:#f1e2e2;">N'est pas un parc</td>
+          <td style="background-color:#f1e2e2;color: black;">N'est pas un parc</td>
         </tr>
         <tr>
-          <td style="background-color:#4944f5;">N'a pas été calculé'</td>
+          <td style="background-color:#4944f5;">N'a pas été calculé</td>
         </tr>
       </tbody>
       </table>
@@ -88,10 +88,8 @@ export default {
 }
 table.legend td {
   color:#FFFFFF;
+  font-size: 12px;
   padding:2px
 }
-table.legend td {
-  color:#FFFFFF;
-  padding:2px
-}
+
 </style>
