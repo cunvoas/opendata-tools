@@ -1,47 +1,58 @@
 <template>
 
     <div>
-       
-        <span v-if="loading">Chargement...</span>
+       <button @click="layerIndex = 0">plan</button> <button @click="layerIndex = 1">satellite</button> 
 
-        <label for="checkbox">Isochrones</label>
+ <!--       <span v-if="loading">Chargement...</span>-->
+
+        <label for="checkbox"> | Isochrones</label>
         <input
           id="checkbox"
           v-model="showIsochrones"
           type="checkbox"
         >
-        <label for="checkboxWithOMS">Conforme OMS</label>
-        <input
-          id="checkboxWithOMS"
-          v-model="checkboxWithOMS"
-          type="checkbox"
-        >
         
-        <label for="cbCarre">Données carroyées</label>
+        <label for="cbCarre">| Données carroyées</label>
         <input
           id="cbCarre"
           v-model="showCarre"
           type="checkbox"
         >
         
-        <label for="cbCadastre">Cadastre</label>
+        <label for="cbCadastre">| Cadastre</label>
         <input
           id="cbCadastre"
           v-model="showCadastre"
           type="checkbox"
         >
+        
+        <label for="checkboxWithOMS">| Conforme OMS</label>
+        <input
+          id="checkboxWithOMS"
+          v-model="checkboxWithOMS"
+          type="checkbox"
+        >
+        
         <br />
 
+     
       <l-map
         :zoom="zoom"
         :center="center"
+        :min-zoom="minZoom"
+        :max-zoom="maxZoom"
         style="height: 700px; width: 95%"
         @update:bounds="boundsUpdated"
       >
-        <l-tile-layer
+      <!--  <l-tile-layer
           :url="url"
           :attribution="attribution"
-        />
+        />-->
+      <l-tile-layer
+        :url="layer.url"
+        :subdomains="layer.subdomains"
+        :attribution="layer.attribution"
+      />
         <l-geo-json
           v-if="showIsochrones"
           :geojson="geojsonIsochrone"
@@ -64,8 +75,8 @@
         
       </l-map>
 
-      <br />
-      <span>Bounds: {{ bounds }}</span>
+      <!--<br />-->
+      <!--<span>Bounds: {{ bounds }}</span>-->
     </div>
   </template>
   
@@ -93,7 +104,8 @@
         showCadastre: false,
         checkboxWithOMS: true,
         zoom: 14,
-        minZoom: 9,
+        minZoom: 10,
+        maxZoom: 18,
         center: [50.6349747,3.046428],
         bounds: null,
         boundSwLat: 0,
@@ -107,8 +119,17 @@
         restUrlCarre: "http://localhost:8980/isochrone/map/insee/carre200m/area",
         restUrlIsochrones: "http://localhost:8980/isochrone/map/park/area",
         fillColor: "#A0DCA0",
-        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> <a href="https://www.facebook.com/lmoxygene/">LM Oxygène</a> '
+        layerIndex: 0,
+        layers: [
+          { 
+            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> <a href="https://www.facebook.com/lmoxygene/">LM Oxygène</a> '
+          },
+          {
+            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            attribution: '&copy; <a href="https://www.arcgis.com/">ArcGisOnline</a> <a href="https://www.facebook.com/lmoxygene/">LM Oxygène</a> '
+          }
+      ]
       };
     },
     methods: {
@@ -140,7 +161,7 @@
           async callGeoJsonIsochrones(prms){
             // data isochrones
             console.log("callGeoJsonIsochrones");
-  //var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lilleParks.json"
+  // var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommePark.json"
             var base=this.restUrlIsochrones;
             const respIsochrone = await fetch(base+prms);
             const dataIsochrone = await respIsochrone.json();
@@ -149,7 +170,7 @@
           async callGeoJsonCarres(prms){
             // data carreau 20m
             console.log("callGeoJsonCarres");
-//            var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lilleCarre.json"
+//            var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCarre.json"
             var base=this.restUrlCarre;
             const respCarre= await fetch(base+prms);
             const dataCarre = await respCarre.json();
@@ -158,7 +179,7 @@
           async callGeoJsonCadastre(prms){
             // data Cadastre
             console.log("callGeoJsonCadastre");
- //           var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lilleCadastre.json"
+ //           var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCadastre.json"
             var base=this.restUrlCadastre;
             const respCadastre= await fetch(base+prms);
             const dataCadastre = await respCadastre.json();
@@ -166,6 +187,9 @@
           }
     },
     computed: {
+      layer () {
+          return this.layers[this.layerIndex]
+     },
       detailIsochrone() {
         return {
           onEachFeature: this.onDetailIsochrone
