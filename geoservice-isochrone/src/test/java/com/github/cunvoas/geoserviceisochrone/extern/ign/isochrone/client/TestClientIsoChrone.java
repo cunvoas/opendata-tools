@@ -13,7 +13,8 @@ import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 class TestClientIsoChrone {
 	
 	private IsoChroneClientService tested = new ClientIsoChroneUi1();
-	private IsoChroneClientService testedApi = new ClientIsoChroneApi();
+	private IsoChroneClientService testedApiV1 = new ClientIsoChroneApiV1();
+	private IsoChroneClientService testedApiV2 = new ClientIsoChroneApiV2();
 
 	@Test
 	@Disabled
@@ -28,10 +29,22 @@ class TestClientIsoChrone {
 	
 
 	@Test
+	void testGetIsoChronePh() {
+		
+		Coordinate coord = new Coordinate(3.0144703388214116,50.63679884038829);
+		String resp = testedApiV2.getIsoChrone(coord, "300");
+		assertNotNull(resp, "not null");
+		
+		System.out.println(resp);
+	}
+	
+
+	@Test
+	@Disabled
 	void testGetApiIsoChrone() {
 
 		Coordinate coord = new Coordinate(3.106738328933716,50.624763376155535);
-		String resp = testedApi.getIsoChrone(coord, "200");
+		String resp = testedApiV1.getIsoChrone(coord, "200");
 		assertNotNull(resp, "not null");
 		System.out.println(resp);
 		

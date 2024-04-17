@@ -51,6 +51,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mShape
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.google.common.math.BigDecimalMath;
+import com.google.common.primitives.Ints;
 
 import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -69,12 +70,11 @@ public class GeoMapService {
 	 * park surface per capita > OMS reco
 	 */
 	public String THRESHOLD_PERFECT="#1a9900";
-	public String THRESHOLD_PERFECT_GW="#986e99";
+	
 	/**
 	 *  park surface per capita > OMS mini
 	 */
 	public String THRESHOLD_CORRECT="#9ee88f";
-	public String THRESHOLD_CORRECT_GW="#977d97";
 	/**
 	 *  park surface per capita > OMS mini
 	 */
@@ -82,8 +82,7 @@ public class GeoMapService {
 	/**
 	 *  park surface per capita < OMS mini
 	 */
-	public String THRESHOLD_BAD="#df6463";
-	public String THRESHOLD_BAD_GW="#765576";
+	public String THRESHOLD_BAD="#EOEOEO";
 	/**
 	 * this park in greenwashed
 	 */
@@ -389,8 +388,6 @@ public class GeoMapService {
 	 * @return color of an isochrone park.
 	 */
 	public String getFillColorPark(ParkView pv, ParkAreaComputed areaCputed) {
-		String colorOms = THRESHOLD_GREEWASHED;
-		String colorGw = THRESHOLD_GREEWASHED;
 		String color= THRESHOLD_GREEWASHED;
 
 		double thresholdReco = 12;
@@ -413,23 +410,13 @@ public class GeoMapService {
 			pv.setAreaPerPeople(areaCputed.getSurfacePerInhabitant().toPlainString());
 			Double sph = BigDecimalMath.roundToDouble(areaCputed.getSurfacePerInhabitant(), RoundingMode.HALF_EVEN);
 			if (sph>thresholdReco) {
-				colorOms = THRESHOLD_PERFECT;
-				colorGw = THRESHOLD_PERFECT_GW;
+				color = THRESHOLD_PERFECT;
 			} else if (sph>thresholdMin) {
-				colorOms = THRESHOLD_CORRECT;
-				colorGw = THRESHOLD_CORRECT_GW;
+				color = THRESHOLD_CORRECT;
 			} else {
-				colorOms = THRESHOLD_BAD;
-				colorGw = THRESHOLD_BAD;
+				color =  getColorGrey(sph);
 			}
 		}
-		
-		color = colorOms;
-//		if (areaCputed.getOms()) {
-//			color = colorOms;
-//		} else {
-//			color = colorGw;
-//		}
 		
 		return color;
 	}
@@ -499,13 +486,22 @@ public class GeoMapService {
 				color = THRESHOLD_CORRECT_OR_CORRECT_INCOMPLETE;
 				
 			} else {
-				color = THRESHOLD_BAD;
+				color = getColorGrey(sph);
 			}
 		}
 		
 		return color;
 	
 		
+	}
+	
+	public String getColorGrey(Double sph) {
+		String color=THRESHOLD_BAD;
+		
+		Long v = Math.round(123+sph*10);
+		String s = Integer.toString(Ints.checkedCast(v), 16);
+		color = String.format("#%s%s%s", s, s, s);
+		return color;
 	}
 	
 	

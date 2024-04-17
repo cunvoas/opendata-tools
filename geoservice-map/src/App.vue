@@ -51,7 +51,7 @@
           <td style="background-color:#d8973e;">&gt; 10 m²/habitant en ville (25 m²/hab à la campagne) mais dont une partie de la population est exclue.</td>
         </tr>
         <tr>
-          <td style="background-color:#e17372;">&lt; 10 m²/habitant (&lt; 25 m²/hab à la campagne)</td>
+          <td style="background: linear-gradient(to right, #e0e0e0, #7c7c7c)">&lt; 10 m²/habitant (&lt; 25 m²/hab à la campagne)</td>
         </tr>
         <tr>
           <td style="background-color:#f1e2e2;color: black;">N'est pas un parc</td>

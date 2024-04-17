@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionExtract;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvMassUpdatePivot;
@@ -106,30 +108,30 @@ public class ParkService {
 	 * @return
 	 * @deprecated
 	 */
-	public ParkEntrance saveEdited(ParkEntrance parkEntrance, String distance, boolean withIgn) {
-		if (withIgn) {
-			try {
-				Coordinate coord = new Coordinate(
-						parkEntrance.getEntrancePoint().getX(),
-						parkEntrance.getEntrancePoint().getY());
-				
-				// 300 en zone dense, 1200 sinon
-				String ignResp = clientIsoChrone.getIsoChrone(coord, distance);
-				DtoIsoChrone dtoIsoChone = dtoIsoChroneParser.parseBasicIsoChrone(ignResp);
-				parkEntrance = mapperIsoChrone.map(parkEntrance, dtoIsoChone);
-				
-			} catch (Exception e) {
-				throw new ExceptionExtract("IGN_UPDATE");
-			}
-		}
-		
-		// presave parkArea  //ERREUR ICI
-		ParkArea pa = parkAreaRepository.save(parkEntrance.getParkArea());
-		parkEntrance.setParkArea(pa);
-		
-		parkEntrance = parkEntranceRepository.save(parkEntrance);
-		return parkEntrance;
-	}
+//	public ParkEntrance saveEdited(ParkEntrance parkEntrance, String distance, boolean withIgn) {
+//		if (withIgn) {
+//			try {
+//				Coordinate coord = new Coordinate(
+//						parkEntrance.getEntrancePoint().getX(),
+//						parkEntrance.getEntrancePoint().getY());
+//				
+//				// 300 en zone dense, 1200 sinon
+//				String ignResp = clientIsoChrone.getIsoChrone(coord, distance);
+//				DtoIsoChrone dtoIsoChone = dtoIsoChroneParser.parseBasicIsoChrone(ignResp);
+//				parkEntrance = mapperIsoChrone.map(parkEntrance, dtoIsoChone);
+//				
+//			} catch (Exception e) {
+//				throw new ExceptionExtract("IGN_UPDATE");
+//			}
+//		}
+//		
+//		// presave parkArea  //ERREUR ICI
+//		ParkArea pa = parkAreaRepository.save(parkEntrance.getParkArea());
+//		parkEntrance.setParkArea(pa);
+//		
+//		parkEntrance = parkEntranceRepository.save(parkEntrance);
+//		return parkEntrance;
+//	}
 	
 	/**
 	 * @param parkEntrance
@@ -167,27 +169,46 @@ public class ParkService {
 				distance = serviceOpenData.getDistanceDense(city);
 			}
 			
-			try {
-				log.warn("parkEntrance {]", parkEntrance);
-				
-				Coordinate coord = new Coordinate(
-						parkEntrance.getEntrancePoint().getX(),
-						parkEntrance.getEntrancePoint().getY());
-				
-				// 300 en zone dense, 1200 sinon
-				String ignResp = clientIsoChrone.getIsoChrone(coord, distance);
-				parkEntrance.setIgnReponse(ignResp);
-				
-				DtoIsoChrone dtoIsoChone = dtoIsoChroneParser.parseBasicIsoChrone(ignResp);
-				parkEntrance = mapperIsoChrone.map(parkEntrance, dtoIsoChone);
-				
-			} catch (Exception e) {
-				throw new ExceptionExtract("IGN_UPDATE");
-			}
+			this.refreshIsochrone(parkEntrance, distance);
+			
+		} else {
+			parkEntrance = parkEntranceRepository.save(parkEntrance);
 		}
-		parkEntrance = parkEntranceRepository.save(parkEntrance);
+		
 		return parkEntrance;
 	}
+	
+	
+	/**
+	 * refresh and save
+	 * @param parkEntrance
+	 * @param distance
+	 * @return
+	 */
+	public ParkEntrance refreshIsochrone(ParkEntrance parkEntrance, String distance) {
+		log.warn("refreshIsochrone {}", parkEntrance);
+		
+		try {
+			Coordinate coord = new Coordinate(
+					parkEntrance.getEntrancePoint().getX(),
+					parkEntrance.getEntrancePoint().getY());
+			
+			// 300 en zone dense, 1200 sinon
+			String ignResp = clientIsoChrone.getIsoChrone(coord, distance);
+			parkEntrance.setIgnReponse(ignResp);
+			
+			DtoIsoChrone dtoIsoChone = dtoIsoChroneParser.parseBasicIsoChrone(ignResp);
+			parkEntrance = mapperIsoChrone.map(parkEntrance, dtoIsoChone);
+			
+			parkEntrance = parkEntranceRepository.save(parkEntrance);
+		} catch (Exception e) {
+			log.error("IGN_UPDATE ("+parkEntrance.getId()+")", e);
+			throw new ExceptionExtract("IGN_UPDATE");
+		}
+		
+		return parkEntrance;
+	}
+	
 	
 	/**
 	 * @param pivot

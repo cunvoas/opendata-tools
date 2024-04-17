@@ -20,8 +20,8 @@ import okhttp3.Response;
 @Slf4j
 @ConditionalOnProperty(
 		name="application.feature-flipping.isochrone-impl", 
-		havingValue="ign-api")
-public class ClientIsoChroneApi implements IsoChroneClientService {
+		havingValue="ign-api-v1")
+public class ClientIsoChroneApiV1 implements IsoChroneClientService {
 	
 	private static final String URL = "https://wxs.ign.fr/calcul/geoportail/isochrone/rest/1.0.0/";
 	

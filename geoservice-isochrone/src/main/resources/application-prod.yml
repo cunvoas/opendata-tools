@@ -36,7 +36,7 @@ application:
     parkAnalysisEnabled: true
     salaryAnalysisEnabled: false
     pollutionAnalysisEnabled: false
-    isochrone-impl: ign-api
+    isochrone-impl: ign-api-v2
     
   admin:
     photo-path: /var/isochrone/photo

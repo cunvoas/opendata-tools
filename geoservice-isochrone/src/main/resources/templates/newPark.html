@@ -288,7 +288,8 @@
     /////////////////////////////////////////////////////////////////////////
     // map layers
     var mapMinZoom=8;
-    var mapMaxZoom=20;
+    var mapMaxZoom=19;
+    
     // https://leaflet-extras.github.io/leaflet-providers/preview/
     
     var layerEsriWorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
@@ -352,9 +353,16 @@
             if (feature.properties.name) {
                 nom=nom+"<br />"+feature.properties.name;
             }
-            layer.bindPopup(nom);
-            
+            layer.bindPopup(nom + getGMapLink(feature));
         }
+    }
+    
+    function getGMapLink(feature) {
+        //first point of the polygon
+        clkLat = feature.geometry.coordinates[0][0][1];
+        clkLng = feature.geometry.coordinates[0][0][0];
+        gUrl="https://www.google.com/maps/@"+clkLat+","+clkLng+",18.03z";
+        return "<br /><a href='"+gUrl+"' target='_blank'>GMap</a>";
     }
     
     function customOnEachFeatureParc(feature, layer) {
@@ -433,6 +441,7 @@
         document.getElementById("etat").value="p&j";
         
     }
+
 
     
     var geojsonPrefLayer = null;
