@@ -17,8 +17,10 @@ import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mShape;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Laposte;
@@ -28,6 +30,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedReposit
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.LaposteRepository;
@@ -35,7 +38,6 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
 import jakarta.transaction.Transactional;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -67,6 +69,10 @@ public class ComputeService {
 	private ParkTypeService parkTypeService;
 	@Autowired
 	private ServiceOpenData serviceOpenData;
+	@Autowired
+	private ParkService parkService;
+	@Autowired
+	private CityRepository cityRepository;
 	
 	
 	public void computeCarreByPostalCode(String postalCode) {
@@ -460,7 +466,39 @@ public class ComputeService {
 
 		log.warn("<< computeCarreByCadastreV2");
 	}
+
 	
+	/**
+	 *  Used for mass update and full recompute.
+	 *  @param inseeCode
+	 */
+	public void refreshParkEntrances(String inseeCode) {
+		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
+		refreshParkEntrances(cadastre);
+	}
+	
+	/**
+	 * Used for mass update and full recompute.
+	 * @param cadastre
+	 */
+	@Transactional
+	public void refreshParkEntrances(Cadastre cadastre) {
+		log.warn(">> refreshParkEntrances");
+
+		City city = cityRepository.findByInseeCode(cadastre.getIdInsee());
+		String distance = serviceOpenData.getDistanceDense(city);
+		
+		List<ParcEtJardin> pjs = parkJardinRepository.findByCityId(city.getId());
+		for (ParcEtJardin parcEtJardin : pjs) {
+			ParkArea pa = parkAreaRepository.findByIdParcEtJardin(parcEtJardin.getId());
+			
+			for (ParkEntrance pe : pa.getEntrances()) {
+				parkService.refreshIsochrone(pe, distance);
+			}
+			parkService.mergeParkAreaEntrance(pa);
+		}
+		log.warn("<< refreshParkEntrances");
+	}
 
 	/**
 	 * Compute ParkEntrance from ParkArea and List<ParkEntrance>.

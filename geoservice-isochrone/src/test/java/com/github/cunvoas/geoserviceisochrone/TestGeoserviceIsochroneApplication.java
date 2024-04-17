@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
@@ -76,12 +77,56 @@ class TestGeoserviceIsochroneApplication {
 	}
 
 	@Test
-//	@Disabled
-	@Order(20)
-	void computeFix() {
+	@Disabled
+	@Order(22)
+	void computeParkArea() {
 
 		try {
+			//lille
+			Optional<ParkArea> parkArea = parkAreaRepository.findById(56L);
+			if (parkArea.isPresent()) {
+				computeService.computeParkAreaV2(parkArea.get());
+			}
+			
+			System.out.println("bla");
+		} catch (Exception e) {
+			System.err.println(e);
+			fail(e.getMessage());
+		}
+			
+	}
+	
+	@Test
+//	@Disabled
+	@Order(21)
+	void computeCarreFix() {
+
+		try {
+			//lille
 			computeService.computeCarreByInseeCode("59350");
+
+//			computeService.computeCarreByInseeCode("59328");
+//			//Capinghem
+//			computeService.computeCarreByInseeCode("59128");
+			
+			System.out.println("bla");
+		} catch (Exception e) {
+			System.err.println(e);
+			fail(e.getMessage());
+		}
+			
+	}
+	
+
+	@Test
+	@Disabled
+	@Order(20)
+	void computeParkAreAndEntranceFix() {
+
+		try {
+			computeService.refreshParkEntrances("59350");
+			computeService.refreshParkEntrances("59328");
+			computeService.refreshParkEntrances("59128");
 			
 			System.out.println("bla");
 		} catch (Exception e) {

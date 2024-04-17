@@ -161,8 +161,8 @@
           async callGeoJsonIsochrones(prms){
             // data isochrones
             console.log("callGeoJsonIsochrones");
-  // var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommePark.json"
-            var base=this.restUrlIsochrones;
+   var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommePark.json"
+  //          var base=this.restUrlIsochrones;
             const respIsochrone = await fetch(base+prms);
             const dataIsochrone = await respIsochrone.json();
             this.geojsonIsochrone = dataIsochrone;
@@ -170,8 +170,8 @@
           async callGeoJsonCarres(prms){
             // data carreau 20m
             console.log("callGeoJsonCarres");
-//            var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCarre.json"
-            var base=this.restUrlCarre;
+            var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCarre.json"
+//            var base=this.restUrlCarre;
             const respCarre= await fetch(base+prms);
             const dataCarre = await respCarre.json();
             this.geojsonCarre = dataCarre;
@@ -179,8 +179,8 @@
           async callGeoJsonCadastre(prms){
             // data Cadastre
             console.log("callGeoJsonCadastre");
- //           var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCadastre.json"
-            var base=this.restUrlCadastre;
+            var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCadastre.json"
+ //           var base=this.restUrlCadastre;
             const respCadastre= await fetch(base+prms);
             const dataCadastre = await respCadastre.json();
             this.geojsonCadastre = dataCadastre;

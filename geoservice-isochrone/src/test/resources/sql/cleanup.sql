@@ -15,3 +15,11 @@ where pj.status=2
     --and id_city isnullteo
     
     order by pj.identifiant;
+    
+    
+DELETE FROM public.carre200_computed
+WHERE id in (
+    SELECT cs.id_carre_hab FROM carre200shape cs WHERE ST_Intersects(geo_shape, (SELECT geo_shape
+    FROM public.cadastre where id_insee = '59128'))
+)
+

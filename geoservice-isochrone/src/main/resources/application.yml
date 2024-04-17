@@ -93,7 +93,7 @@ application:
     sendEmail: false
     salaryAnalysisEnabled: false
     pollutionAnalysisEnabled: false
-    isochrone-impl: ign-api
+    isochrone-impl: ign-api-v2
   admin:
     photo-path: /work/demo/isochrone/photo_path
 

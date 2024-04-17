@@ -8,14 +8,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.locationtech.jts.geom.util.GeometryCombiner;
-
-import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapService;
 
 class TestGeoMapService {
 	
@@ -23,16 +21,28 @@ class TestGeoMapService {
 
 
 	@Test
+	@Disabled
 	void testColor() {
 		for (int i = 0; i < 20; i++) {
 			System.out.println(tested.getColor(i));
 		}
 	}
 	
-	@Test
-	void testFormatPopulation() {
-	}
 
+	@Test
+	void testColorGet() {
+		System.out.println("testColorGet");
+		for (Double i = 0.0; i < 10; i+=0.1) {
+//			
+//			Double iSph = 224-i*10;
+//			Long sph = Math.round(iSph);
+//			System.out.println( Integer.toString(Ints.checkedCast(sph), 16));
+			
+			System.out.println( tested.getColorGrey(i));
+			
+		}
+	}
+	
 	@Test
 	void testGetPolygonFromBounds() {
 		
