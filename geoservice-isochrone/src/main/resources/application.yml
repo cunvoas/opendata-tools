@@ -59,7 +59,7 @@ spring:
 #        dialect: org.hibernate.dialect.PostgreSQLDialect
         dialect: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
         jdbc:
-          batch_size:  10
+          batch_size:  100
         format_sql:    false
         order_inserts: true
         order_updates: false

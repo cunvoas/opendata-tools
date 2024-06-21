@@ -77,14 +77,18 @@
 
 
     <div class="col-3">
-        <form th:action="@{/mvc/park/new}" th:object="${newPark}" method="post">
+        <form th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">
         <fieldset id="fsEditPark" disabled="disabled">
         <input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
         <input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
         <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
         <input type="hidden" id="idPark" name="idPark" th:field="*{idPark}" />
         <input type="hidden" id="id" name="id" th:field="*{id}" />
-         <input type="hidden" id="etat" />
+        <input type="text" id="sGeometry" name="sGeometry" th:field="*{sGeometry}" />
+        <input type="text" id="etat" name="etat" th:field="*{etat}" />
+        <input type="text" id="etatAction" name="etatAction" th:field="*{etatAction}" />
+        
+        
         
         <div class="row">
             <div class="container-fluid px-4">
@@ -99,6 +103,8 @@
                 </div>
             </div>
         </div>
+        
+                                
          <div class="row">
             <div class="col">
                 <div class="card border" style="text-align: center">
@@ -191,21 +197,26 @@
     </div>
     
     <div class="col-9">
-        <div class="container-fluid px-4">
-            <h4 class="mt-12" th:text="#{entrance.map.title}">title</h4>
-        </div>
         <div class="row">
             <div class="col-4">
+                <h4 class="mt-12" th:text="#{entrance.map.title}">title</h4>
                 <div class="card border" style="text-align: center">
                     <button id="switch-layers" type="button" class="btn btn-secondary"  onclick="switchLayer(this)"><span class="fa-solid fa-satellite" aria-hidden="true"></span>&nbsp;<span th:text="#{entrance.map.satellite}"></span></button>
                 </div>
             </div>
-            <div class="col-4">
-                <div class="card border" style="text-align: center">
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="card border" style="text-align: center">
+            
+            <!-- TODO: make the filter later -->
+            <div class="col-8" style="display: none;"> 
+                <div  style="text-align: left">
+                 <h6 class="mt-12" th:text="#{park.filter}">title</h6>
+	             <input type="radio" id="filterValid" name="filterPark" value="VALID" class="form-check-input" onchange="filterChange('VALID');" />
+	             <label for="filterValid" th:text="#{park.filter.valid}" >VALID</label>
+	             
+	             <input type="radio" id="filterNoMatch" name="filterPark"  value="NO_MATCH" class="form-check-input"  onchange="filterChange('NO_MATCH');" checked="checked" />
+	             <label for="caseMerge" th:text="#{park.filter.noMatch}" >NO_MATCH</label>
+	            
+	             <input type="radio" id="filterReject" name="filterPark" value="REJECT" class="form-check-input" onchange="filterChange('REJECT');"  />
+	             <label for="filterReject" th:text="#{park.filter.reject}" >REJECT</label>
                 </div>
             </div>
         </div>
@@ -273,6 +284,10 @@
 	    }
 	});
 
+	
+	// TODO
+	//@@ filter les geometry selon le statuts de rapprochement préfecture
+	
     manageDisabled();
     function manageDisabled() {
     	if (document.getElementById("idRegion").value!="") {
@@ -304,6 +319,13 @@
     });
     
     
+    var Stadia_StamenTerrain = L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.{ext}', {
+        minZoom: 0,
+        maxZoom: 18,
+        attribution: 'Aut MEL (&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors)',
+        ext: 'png'
+    });
+    
      var layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Aut MEL (ArcGIS)',
             maxZoom: mapMaxZoom,
@@ -333,11 +355,28 @@
     // event on clicjk
     // https://stackoverflow.com/questions/11421127/how-to-trigger-events-on-leaflet-map-polygons
     
-    
+    function filterChange(filterType) {
+    	console.log(geojsonPrefLayer);
+    	//geojsonPrefLayer.redraw()
+    }
     function customOnEachFeaturePref(feature, layer) {
+    	var filter=document.querySelector('input[name="filterPark"]:checked').value;
+    	console.log('radio='+filter);
+    	
         // does this feature have a property named fillColor?
         if (feature.properties) {
-            if (feature.properties.fillColor) {
+        	if (feature.properties.status !== filterValid) {
+        		console.log("to invisible: feat>"+feature.properties.name+">"+feature.properties.status);
+        		layer.setStyle(
+        				{fillOpacity: 0},
+        				 {opacity: 0}
+        				);
+        		
+        	} else
+        		
+        		if (feature.properties.fillColor) {
+                console.log("to display: feat>"+feature.properties.name+">"+feature.properties.status);
+        		
                  layer.setStyle(
                          {fillColor: feature.properties.fillColor},
                          {fillOpacity: 0.60},
@@ -398,8 +437,15 @@
         }
     }
     
-    function fnParkPrefClicked(props) {
+    function fnParkPrefClicked(feat) {
+    	manageDisabled();
+    	props = feat.properties;
+    	geom = feat.geometry;
     	
+    	var strPoly = JSON.stringify(geom);
+        document.getElementById("sGeometry").value=strPoly;
+        document.getElementById("etatAction").value="add";
+         
     	document.getElementById("etat").value="pref";
         document.getElementById("id").value = props.id;
     	document.getElementById("idPark").value = props.idParcJardin;
@@ -416,6 +462,7 @@
         
     }
     
+    // manage click on geometry
     function fnParkGardenClicked(props) {
     	if (document.getElementById("etat").value!=='pref') {
     		// cleanUp
@@ -439,6 +486,7 @@
         document.getElementById('name').style.fontWeight  = 'bold';
         
         document.getElementById("etat").value="p&j";
+        document.getElementById("etatAction").value="edit";
         
     }
 
@@ -464,26 +512,33 @@
         
         // works! used when affect
         geojsonPrefLayer.on('click', function(e){
-            console.log("click ");
+            console.log("click pref");
             console.log(e.sourceTarget.feature);
-        	fnParkPrefClicked(e.sourceTarget.feature.properties)
+        	fnParkPrefClicked(e.sourceTarget.feature)
         });
         
         // works! used when delete
         geojsonPrefLayer.on("pm:remove", (e) => {
-            console.log("pm:remove");
+            console.log("pm:remove geom");
         	 console.log(e.layer.feature);
+        	 document.getElementById("etatAction").value="remove";
+        	 
           });
 
         
         isMap.on('pm:create', ({ layer}) => {  
-            console.log("pm:create");
+            console.log("pm:create geom");
+            document.getElementById("etatAction").value="create";
+            
         	  layer.on('pm:edit', e => {
-                  console.log("pm:edit");
+                console.log("pm:edit geom");
         	    console.log(e);
 
                 self_drawn = isMap.pm.getGeomanDrawLayers(true);
                 var strPoly = JSON.stringify(self_drawn.toGeoJSON());
+                document.getElementById("sGeometry").value=strPoly;
+                document.getElementById("etatAction").value="edit";
+                
                 console.log(strPoly);
         	    
         	    //var strPoly = JSON.stringify(e.layers.toGeoJSON());
@@ -496,11 +551,12 @@
         isMap.on('pm:drawend', function (e) {
             console.log("pm:drawend");
             console.log(e);
-
+            document.getElementById("etatAction").value="new";
+            
             self_drawn = isMap.pm.getGeomanDrawLayers(true);
             var strPoly = JSON.stringify(self_drawn.toGeoJSON());
             console.log(strPoly);
-            
+            document.getElementById("sGeometry").value=strPoly;
             
               //want to check here whether the layerToDraw is valid
               //features.addLayer(layerToDraw);
@@ -511,6 +567,10 @@
             console.log("pm:change ");
               var layerToDraw = e.layer;   
               console.log(layerToDraw);
+              document.getElementById("etatAction").value="change";
+              
+              var strPoly = JSON.stringify(layerToDraw.toGeoJSON());
+              document.getElementById("sGeometry").value=strPoly;
               //want to check here whether the layerToDraw is valid
               //features.addLayer(layerToDraw);
             });
@@ -542,7 +602,7 @@
     isMap.pm.setGlobalOptions({
    	  allowSelfIntersection: false
    	});
-    isMap.pm.addControls({  
+    isMap.pm.addControls({
 	  position: 'topleft',  
 	  drawControls: true,
 	  editControls: true,
@@ -564,7 +624,7 @@
 	  rotateMode: false,
 	}); 
     
-    //alert(calcCrow(59.3293371,13.4877472,59.3225525,13.4619422).toFixed(1));
+    // alert(calcCrow(59.3293371,13.4877472,59.3225525,13.4619422).toFixed(1));
 
 
 
@@ -592,6 +652,13 @@
     function presave() {
     	var strPoly = JSON.stringify(L.PM.Utils.findLayers(map)[0].toGeoJSON());
     }
+    
+
+    
+    function manageDisabled() {
+           document.getElementById("fsEditPark").disabled = false;
+    }
+    
     
     //https://gis.stackexchange.com/questions/439672/checking-whether-a-polygon-drawn-with-leaflet-geoman-plugin-is-valid
     

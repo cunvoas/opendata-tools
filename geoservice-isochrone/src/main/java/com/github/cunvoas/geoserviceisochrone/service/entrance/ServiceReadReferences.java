@@ -146,6 +146,10 @@ public class ServiceReadReferences {
 		return null;
 	}
 
+	public Optional<ParcPrefecture> getParcPrefectureById(Long id) {
+		Optional<ParcPrefecture> opt=parcPrefectureRepository.findById(id);
+		return opt;
+	}
 	
 	public ParcPrefecture getParcPrefectureByParcEtJardinId(Long id) {
 		List<ParcPrefecture> lst=parcPrefectureRepository.findByParcEtJardinId(id);

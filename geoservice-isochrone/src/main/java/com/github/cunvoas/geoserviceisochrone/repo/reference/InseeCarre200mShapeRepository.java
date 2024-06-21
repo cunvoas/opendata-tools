@@ -14,7 +14,7 @@ public interface InseeCarre200mShapeRepository extends JpaRepository<InseeCarre2
 	
 	InseeCarre200mShape findByIdInspire(String idsInspire);
 	
-	@Query(nativeQuery = true, value =  "SELECT * FROM carre200shape WHERE ST_Intersects(geo_shape, ?1)")
+	@Query(nativeQuery = true, value =  "SELECT * FROM carre200onlyshape WHERE ST_Intersects(geo_shape, ?1)")
 	List<InseeCarre200mShape> findCarreInMapArea(String polygon);
 
 	
@@ -25,4 +25,4 @@ public interface InseeCarre200mShapeRepository extends JpaRepository<InseeCarre2
 			"ORDER BY s.id_carre_hab";
 	@Query(value = FIND_PARK_AREAS, nativeQuery = true)
 	public List<Object[]> findAreasInMapArea(@Param("mapArea") String mapArea);
-}
+	}

@@ -1,9 +1,9 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.park;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,12 +13,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkList;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
+import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Controler for prefecture reverse and reintegration.
@@ -26,10 +30,14 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
  */
 @Controller
 @RequestMapping("/mvc/park/new")
+@Slf4j
 public class ParkNewControler {
 	
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
+	
+	@Autowired
+	private ServiceParcPrefecture serviceParcPrefecture;
 	
 	@Autowired
 	private ParkTypeService parkTypeService;
@@ -74,6 +82,83 @@ public class ParkNewControler {
 	public String changeCity(@ModelAttribute FormParkNew form, Model model) {
 		return getForm(form, model);
 	}
+	
+	
+	@PostMapping("/save")
+	public String save(@ModelAttribute FormParkNew form, Model model) {
+		log.warn("Generic save: {}", form);
+		
+		// create poly
+		if("new".equals(form.getEtatAction())) {
+			log.warn("NEW: {}", form);
+			this.addPark(form, model);
+			
+		} else if("add".equals(form.getEtatAction())) {
+			log.warn("ADD: {}", form);
+			this.addPark(form, model);
+			
+		} else if("edit".equals(form.getEtatAction())) {
+			log.warn("EDIT: {}", form);
+			this.updPark(form, model);
+			
+		// change poly
+		} else if("change".equals(form.getEtatAction())) {
+			log.warn("CHANGE: {}", form);
+			this.updPark(form, model);
+		
+		// remove poly
+		} else if("remove".equals(form.getEtatAction())) {
+			log.warn("REMOVE: {}", form);
+			this.delPark(form, model);
+			
+		} else {
+			//nothing todo
+			log.warn("Nothing to DO: {}", form);
+		}
+		
+		
+		return getForm(form, model);
+	}
+	
+	protected void addPark( FormParkNew form, Model model) {
+		//TODO
+		
+		 if("pref".equals(form.getEtat())) {
+			 
+			 
+		 } else if ("p&j".equals(form.getEtat())) {
+			 
+		 }
+		
+	}
+	
+	protected void updPark( FormParkNew form, Model model) {
+		//TODO
+		
+	}
+	
+	protected void delPark( FormParkNew form, Model model) {
+		//TODO
+		
+		 if("pref".equals(form.getEtat())) {
+			 Optional<ParcPrefecture> opt = serviceReadReferences.getParcPrefectureById( form.getId());
+			 if (opt.isPresent()) {
+				 ParcPrefecture pp = opt.get();
+				 // logical delete
+				 pp.setStatus(ParcStatusPrefEnum.CANCEL);
+				 serviceParcPrefecture.update(pp);
+			 }
+			 form.setId(null);
+			 form.setEtat(null);
+			 form.setEtatAction(null);
+			 
+			 
+		 } else if ("p&j".equals(form.getEtat())) {
+			 
+		 }
+		
+	}
+	
 	
 	
 	/**

@@ -236,6 +236,35 @@
             <scope>runtime</scope>
         </dependency>
 
+
+<dependency>
+    <groupId>org.geotools</groupId>
+    <artifactId>gt-shapefile</artifactId>
+    <version>29.5</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.geotools</groupId>
+    <artifactId>gt-geojson</artifactId>
+    <version>29.5</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.geotools</groupId>
+    <artifactId>gt-epsg-wkt</artifactId>
+     <version>29.5</version>
+    <scope>test</scope>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.geotools/gt-epsg-hsql -->
+<dependency>
+    <groupId>org.geotools</groupId>
+    <artifactId>gt-epsg-hsql</artifactId>
+    <version>29.2</version>
+    <scope>test</scope>
+</dependency>
+
+
 	</dependencies>
 	
 	
