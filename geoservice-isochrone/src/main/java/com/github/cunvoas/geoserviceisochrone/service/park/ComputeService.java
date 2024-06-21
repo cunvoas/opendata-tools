@@ -2,6 +2,8 @@ package com.github.cunvoas.geoserviceisochrone.service.park;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -274,8 +276,12 @@ public class ComputeService {
 		
 		int checkOms=parkAreas.size();
 		Boolean allAreOms = Boolean.FALSE;
+		List<String> parcNames = new ArrayList();
+		
 		for (ParkArea parkArea : parkAreas) {
 			log.warn("\tcompose {}", parkArea);
+			
+			
 			
 			ParkAreaComputed pac;
 			Optional<ParkAreaComputed> Opac = parkAreaComputedRepository.findById(parkArea.getId());
@@ -299,6 +305,8 @@ public class ComputeService {
 			
 			// prepare with OMS compliance
 			if (pac.getOms()) {
+				
+				parcNames.add(parkArea.getName());
 				//increment for oms
 				checkOms++;
 				surfaceParkAreasOms = surfaceParkAreasOms.add(pac.getSurface());
@@ -324,6 +332,21 @@ public class ComputeService {
 			computed.setPopAll(BigDecimal.ZERO);
 		}
 		
+		
+		StringBuilder sbParcName = new StringBuilder();
+		if (!parcNames.isEmpty()) {
+			Collections.sort(parcNames);
+			for (String name : parcNames) {
+				if (name!=null) {
+					if (sbParcName.length()>0) {
+						sbParcName.append("<br />");
+					}
+					sbParcName.append(" - ");
+					sbParcName.append(name);
+				}
+			}
+		}
+		
 		if ( polygonPark!=null ) {
 			log.warn("\tprocess merge isochrone");
 			//Compute all the population which is present in the isochrones of the current square.
@@ -335,12 +358,15 @@ public class ComputeService {
 			computed.setSurfaceTotalPark(surfaceParkAreas);
 			computed.setPopulationInIsochrone(dto.getPopulationInIsochrone());
 			
+			
+			
 			// Do the same but only with OMS compliant parks
 			if (allAreOms) {
 				// this is unusual to recompute
 				computed.setSurfaceParkPerCapitaOms(dto.getSurfacePerCapitaForIsochroneOnSquare());
 				computed.setSurfaceTotalParkOms(surfaceParkAreas);
 				computed.setPopulationInIsochroneOms(dto.getPopulationInIsochrone());
+				computed.setComments(sbParcName.toString());
 				
 			} else {
 				if (surfaceParkAreasOms!=null && !BigDecimal.ZERO.equals(surfaceParkAreasOms)) {
@@ -348,12 +374,14 @@ public class ComputeService {
 					computed.setSurfaceParkPerCapitaOms(dto.getSurfacePerCapitaForIsochroneOnSquare());
 					computed.setSurfaceTotalParkOms(surfaceParkAreasOms);
 					computed.setPopulationInIsochroneOms(dto.getPopulationInIsochrone());
+					computed.setComments(sbParcName.toString());
 				} else {
 					computed.setSurfaceParkPerCapitaOms(BigDecimal.ZERO);
 					computed.setSurfaceTotalParkOms(BigDecimal.ZERO);
 					computed.setPopulationInIsochroneOms(BigDecimal.ZERO) ;
 				}
 			}
+			
 			
 			
 			

@@ -7,22 +7,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mShape;
 
 @Repository
-public interface InseeCarre200mShapeRepository extends JpaRepository<InseeCarre200mShape, String>{
+public interface InseeCarre200mOnlyShapeRepository extends JpaRepository<InseeCarre200mOnlyShape, String>{
 	
-	InseeCarre200mShape findByIdInspire(String idsInspire);
 	
 	@Query(nativeQuery = true, value =  "SELECT * FROM carre200onlyshape WHERE ST_Intersects(geo_shape, ?1)")
-	List<InseeCarre200mShape> findCarreInMapArea(String polygon);
+	List<InseeCarre200mOnlyShape> findCarreInMapArea(String polygon);
 
 	
 	public static final String FIND_PARK_AREAS = 
-			"SELECT s.id_carre_hab, s.id_inspire, c.ind_c, s.geo_shape, p.polygon, p.name "+
-			"FROM park_area p, carre200shape s INNER JOIN carre200 c ON s.id_inspire=c.id_inspire " +
+			"SELECT s.id_inspire, s.id_carre_1km, c.geo_point_2d, s.geo_shape, p.code_insee, p.name "+
+			"FROM park_area p, carre200onlyshape s INNER JOIN carre200 c ON s.id_inspire=c.id_inspire " +
 			"WHERE ST_Intersects(s.geo_shape, :mapArea) AND ST_intersects(p.polygon, s.geo_shape) " +
 			"ORDER BY s.id_carre_hab";
 	@Query(value = FIND_PARK_AREAS, nativeQuery = true)
-	public List<Object[]> findAreasInMapArea(@Param("mapArea") String mapArea);
-	}
+	public List<Object[]> findAreasInMapArea(@Param("annee") Integer annee, @Param("mapArea") String mapArea);
+
+}

@@ -18,6 +18,7 @@ indexes = {
    }
 )
 public class InseeCarre200mShape {
+	
 	@Id
 	@Column(name="id_inspire", length=30)
 	private String idInspire;

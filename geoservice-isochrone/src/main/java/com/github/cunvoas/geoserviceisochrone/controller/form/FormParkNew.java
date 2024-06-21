@@ -54,6 +54,11 @@ public class FormParkNew extends AbstractFormLocate{
 	private String adresse;
 	private Double surface;
 	private Point coordonnee;
+	
+	private String sGeometry;
+	private String etatAction;
+	private String etat;
+	
 	private ParcSourceEnum source = ParcSourceEnum.OPENDATA;
 	
 	// prefecture
@@ -69,10 +74,10 @@ public class FormParkNew extends AbstractFormLocate{
 	 */
 	public FormParkNew(ParcEtJardin pj) {
 		super();
-		this.map(pj);
+		this.mapper(pj);
 	}
 	
-	private void map(ParcEtJardin pj) {
+	private void mapper(ParcEtJardin pj) {
 		this.idPark = pj.getId();
 		this.commune = pj.getCommune();
 		this.name = pj.getName();
@@ -88,7 +93,7 @@ public class FormParkNew extends AbstractFormLocate{
 		this.source =  pj.getSource();
 	}
 	
-	public ParcEtJardin map() {
+	public ParcEtJardin mapper() {
 		ParcEtJardin pj = new ParcEtJardin();
 		pj.setId(this.idPark);
 		pj.setCommune(this.commune);

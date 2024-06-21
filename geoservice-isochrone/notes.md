@@ -120,18 +120,6 @@ les PEFC
 
 
 
-https://georezo.net/forum/viewtopic.php?id=109874
-
-select idinspire, sum(d.sdev) as sdev_tot 
-from 
-    (select a.id, idinspire, hauteur, ("hauteur" * st_area( st_intersection (a.geom, b.geom) ) / 3 ) as sdev
-    from 
-    poleau.bati_q1000 as a, 
-    poleau.inseecar200_bv as b
-    where
-    ST_intersects (a.geom, b.geom)) as d
-GROUP BY idinspire order by sdev_tot
-
   
   
 WITH 
@@ -239,6 +227,32 @@ AND v.nom='LILLE'
 
 GROUP BY v.id_insee, v.nom
 
+=================
+Population ville
+WITH 
+ carre AS (
+    SELECT cs.geo_shape, c.*
+    FROM 
+        carre200shape cs  
+        INNER JOIN carre200 c 
+            ON cs.id_inspire=c.id_inspire
+    ),
+  ville AS (
+    SELECT c.nom, c.id_insee, c.geo_shape FROM cadastre c
+  )
+SELECT v.id_insee, v.nom, sum(CAST(c.ind_c AS DECIMAL))
+FROM carre c, ville v
+WHERE ST_intersects(c.geo_shape, v.geo_shape)
+AND v.nom='LILLE'
+
+group by v.id_insee, v.nom
+
+
+
+
+
+
+============
 
 
 #  JWT

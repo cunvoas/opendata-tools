@@ -4,8 +4,8 @@ import java.io.*;
 import com.linuxense.javadbf.*;
 
 public class ParseDbf {
-    static String dbf="/home/cus/Documents/Associations/DeulAir/200m-carreaux-metropole/IRIS_GEO_2018_FRTOT.dbf";
-    static String csv="/home/cus/Documents/Associations/DeulAir/200m-carreaux-metropole/IRIS_GEO_2018_FRTOT.csv";
+    static String dbf="/work/PERSO/ASSO/data/grille200m_metropole.dbf";
+    static String csv="/work/PERSO/ASSO/data/grille200m_metropole.csv";
 
 
 /**
