@@ -106,7 +106,6 @@
         showCadastre: false,
         checkboxWithOMS: true,
         zoom: 14,
-  //      dataDetail: "Lorem Ipsum",
         minZoom: 10,
         maxZoom: 18,
         center: [50.6349747,3.046428],
@@ -288,7 +287,8 @@
                
       onDetailCarre() {
         return (feature, layer) => {
-          var theComment2 = "<div>ID:" + feature.properties.id +
+            /*
+          var theComment = "<div>ID:" + feature.properties.id +
             "</div><div>Commune: " + feature.properties.commune +
             "</div><div>Population: " + feature.properties.people +
             "</div><div>Dont parc: " + feature.properties.popParkIncludedOms +
@@ -297,17 +297,13 @@
             " m²</div><div>Partagés avec : " + feature.properties.popSquareShareOms +
             " pers.</div><div>Soit : " + feature.properties.squareMtePerCapitaOms +
             " m²/hab</div>"; 
-            
-            
-         // layer.bindTooltip(
-         //   theComment, { permanent: false, sticky: true }
-         // );
+          layer.bindTooltip(
+            theComment, { permanent: false, sticky: true }
+          );
+          */
          
          
              layer.on('mouseover', function (e) {
-                    // assuming you have a getColor method defined
-                    console.log("mouseover");
-                    
                     
                var feature =      e.target.feature;
                const theComment = "<div>ID:" + feature.properties.id +
@@ -325,9 +321,7 @@
                     weight: 5
                 });
                 
-                
                 document.getElementById("dataDetail").innerHTML = theComment;
-               // this.dataDetail =  theComment;
             });
             
             layer.on('mouseout', function (e) {
@@ -341,6 +335,11 @@
             layer.setStyle({
               fillColor: feature.properties.fillColor,
               fillOpacity: 0.6
+            });
+          } else if ( feature.properties.surfaceTotalParkOms === null) {
+            layer.setStyle({
+              fillColor: '#4944f5',
+              fillOpacity: 0.2
             });
           }
         };
