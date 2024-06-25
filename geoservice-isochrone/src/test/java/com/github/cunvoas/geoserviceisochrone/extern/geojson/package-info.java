@@ -1,1 +1,0 @@
-package com.github.cunvoas.geoserviceisochrone.extern.geojson;
