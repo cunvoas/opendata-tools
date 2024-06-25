@@ -1,11 +1,6 @@
 <template>
-
     <div>
-       <button @click="layerIndex = 0">plan</button> <button @click="layerIndex = 1">satellite</button> 
-
- <!--       <span v-if="loading">Chargement...</span>-->
-
-        <label for="checkbox"> | Isochrones</label>
+        <label for="checkbox">Isochrones</label>
         <input
           id="checkbox"
           v-model="showIsochrones"
@@ -35,7 +30,6 @@
         
         <br />
 
-     
       <l-map
         :zoom="zoom"
         :center="center"
@@ -44,15 +38,16 @@
         style="height: 700px; width: 95%"
         @update:bounds="boundsUpdated"
       >
-      <!--  <l-tile-layer
-          :url="url"
-          :attribution="attribution"
-        />-->
+      
       <l-tile-layer
-        :url="layer.url"
-        :subdomains="layer.subdomains"
-        :attribution="layer.attribution"
-      />
+      v-for="tileProvider in tileProviders"
+      :key="tileProvider.name"
+      :name="tileProvider.name"
+      :visible="tileProvider.visible"
+      :url="tileProvider.url"
+      :attribution="tileProvider.attribution"
+      layer-type="base"/>
+      
         <l-geo-json
           v-if="showIsochrones"
           :geojson="geojsonIsochrone"
@@ -71,7 +66,12 @@
           :options="detailCadastre"
           :options-style="styleCadastreFunction"
         />
-        <l-control-scale position="topright" :imperial="false" :metric="true"></l-control-scale>
+        
+       <l-control position="bottomright" >
+            <p id="dataDetail" class="dataDetail">data Detail</p>
+       </l-control>
+       <l-control-layers position="topright"></l-control-layers>
+       <l-control-scale position="bottomleft" :imperial="false" :metric="true"></l-control-scale>
         
       </l-map>
 
@@ -82,7 +82,7 @@
   
   <script>
   import { latLng } from "leaflet";
-  import { LMap, LTileLayer, LGeoJson, LMarker, LIconDefault, LPolygon, LControlScale } from "vue2-leaflet";
+  import { LMap, LTileLayer, LControl, LControlLayers, LGeoJson, LMarker, LIconDefault, LPolygon, LControlScale } from "vue2-leaflet";
   
   export default {
 
@@ -92,18 +92,21 @@
       LIconDefault,
       LMarker,
       LTileLayer,
+      LControlLayers,
       LGeoJson,
       LPolygon,
+      LControl,
       LControlScale
     },
     data() {
       return {
         loading: false,
-        showIsochrones: true,
-        showCarre: false,
+        showIsochrones: false,
+        showCarre: true,
         showCadastre: false,
         checkboxWithOMS: true,
         zoom: 14,
+  //      dataDetail: "Lorem Ipsum",
         minZoom: 10,
         maxZoom: 18,
         center: [50.6349747,3.046428],
@@ -119,17 +122,33 @@
         restUrlCarre: "http://localhost:8980/isochrone/map/insee/carre200m/area",
         restUrlIsochrones: "http://localhost:8980/isochrone/map/park/area",
         fillColor: "#A0DCA0",
-        layerIndex: 0,
-        layers: [
-          { 
-            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> <a href="https://www.facebook.com/lmoxygene/">LM Oxygène</a> '
-          },
-          {
-            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            attribution: '&copy; <a href="https://www.arcgis.com/">ArcGisOnline</a> <a href="https://www.facebook.com/lmoxygene/">LM Oxygène</a> '
-          }
-      ]
+        tileProviders: [
+            {
+              name : 'Carte OpenStreetMap',
+              visible: true,
+              attribution:
+                '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+              url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            },
+            {
+              name: 'Carte WorldStreetMap',
+              visible: false,
+              url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+              attribution: 'ArcGIS World Street Map (Esri)'
+            },
+            {
+              name: 'Carte StadiaMaps',
+              visible: false,
+              url:  'https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png',
+              attribution: 'Stadia Maps (stamen_terrain)'
+            },
+            {
+              name: 'Satellite ArcGisOnline',
+              visible: false,
+              url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+              attribution: '&copy; <a href="https://www.arcgis.com/">ArcGisOnline</a> <a href="https://www.facebook.com/lmoxygene/">LM Oxygène</a> '
+            },
+        ],
       };
     },
     methods: {
@@ -158,11 +177,12 @@
                     this.callGeoJsonCadastre(qryPrms);
             }
           },
+
           async callGeoJsonIsochrones(prms){
             // data isochrones
             console.log("callGeoJsonIsochrones");
-  // var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommePark.json"
-            var base=this.restUrlIsochrones;
+   var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommePark.json"
+  //          var base=this.restUrlIsochrones;
             const respIsochrone = await fetch(base+prms);
             const dataIsochrone = await respIsochrone.json();
             this.geojsonIsochrone = dataIsochrone;
@@ -170,8 +190,8 @@
           async callGeoJsonCarres(prms){
             // data carreau 20m
             console.log("callGeoJsonCarres");
-//            var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCarre.json"
-            var base=this.restUrlCarre;
+            var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCarre.json"
+//            var base=this.restUrlCarre;
             const respCarre= await fetch(base+prms);
             const dataCarre = await respCarre.json();
             this.geojsonCarre = dataCarre;
@@ -179,17 +199,14 @@
           async callGeoJsonCadastre(prms){
             // data Cadastre
             console.log("callGeoJsonCadastre");
- //           var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCadastre.json"
-            var base=this.restUrlCadastre;
+            var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCadastre.json"
+ //           var base=this.restUrlCadastre;
             const respCadastre= await fetch(base+prms);
             const dataCadastre = await respCadastre.json();
             this.geojsonCadastre = dataCadastre;
           }
     },
     computed: {
-      layer () {
-          return this.layers[this.layerIndex]
-     },
       detailIsochrone() {
         return {
           onEachFeature: this.onDetailIsochrone
@@ -203,6 +220,7 @@
       detailCarre() {
         return {
           onEachFeature: this.onDetailCarre
+          
         };
       },
       styleIsochroneFunction() {
@@ -239,8 +257,6 @@
           };
         };
       },
-      
-      
       onDetailIsochrone() {
         return (feature, layer) => {
           layer.bindTooltip(
@@ -272,8 +288,7 @@
                
       onDetailCarre() {
         return (feature, layer) => {
-          layer.bindTooltip(
-            "<div>ID:" + feature.properties.id +
+          var theComment2 = "<div>ID:" + feature.properties.id +
             "</div><div>Commune: " + feature.properties.commune +
             "</div><div>Population: " + feature.properties.people +
             "</div><div>Dont parc: " + feature.properties.popParkIncludedOms +
@@ -281,9 +296,47 @@
             "</div><div>Parcs acessibles: " + feature.properties.surfaceTotalParkOms +
             " m²</div><div>Partagés avec : " + feature.properties.popSquareShareOms +
             " pers.</div><div>Soit : " + feature.properties.squareMtePerCapitaOms +
-            " m²/hab</div>",
-            { permanent: false, sticky: true }
-          );
+            " m²/hab</div>"; 
+            
+            
+         // layer.bindTooltip(
+         //   theComment, { permanent: false, sticky: true }
+         // );
+         
+         
+             layer.on('mouseover', function (e) {
+                    // assuming you have a getColor method defined
+                    console.log("mouseover");
+                    
+                    
+               var feature =      e.target.feature;
+               const theComment = "<div>ID:" + feature.properties.id +
+                    "</div><div>Commune: " + feature.properties.commune +
+                    "</div><div>Population: " + feature.properties.people +
+                    "</div><div>Dont parc: " + feature.properties.popParkIncludedOms +
+                    "</div><div>Sans parc: " + feature.properties.popParkExcludedOms +
+                    "</div><div>Parcs acessibles: " + feature.properties.surfaceTotalParkOms +
+                    " m²</div><div>Partagés avec : " + feature.properties.popSquareShareOms +
+                    " pers.</div><div>Soit : " + feature.properties.squareMtePerCapitaOms +
+                    " m²/hab</div>"; 
+                //console.log(theComment);
+                
+                e.target.setStyle({
+                    weight: 5
+                });
+                
+                
+                document.getElementById("dataDetail").innerHTML = theComment;
+               // this.dataDetail =  theComment;
+            });
+            
+            layer.on('mouseout', function (e) {
+                e.target.setStyle({
+                    weight: 2
+                });
+            });
+         
+          
           if ( feature.properties.popParkIncluded !=='n/a') {
             layer.setStyle({
               fillColor: feature.properties.fillColor,
