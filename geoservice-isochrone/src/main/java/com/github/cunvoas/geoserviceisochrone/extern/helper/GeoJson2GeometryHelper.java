@@ -59,21 +59,19 @@ public class GeoJson2GeometryHelper {
 			MultiPolygon mp = (MultiPolygon)geo;
 			Coordinate[] coords = mp.getCoordinates();
 			
-			if (coords.length==1) {
-				Polygon polygon = (Polygon)factory.createPolygon(coords).getEnvelope();
-				ret.geometry = polygon;
-			}
+			Polygon polygon = (Polygon)factory.createPolygon(coords).getEnvelope();
+			ret.geometry = polygon;
 			
-		}
-		
-		//JSonNode of idINSPIRE
-		JsonNode idInspireNode = rootNode.findValue("idINSPIRE");
-		ret.idInspire = idInspireNode.asText();
-		
 
-		//JSonNode of idINSPIRE
-		JsonNode id1kNode = rootNode.findValue("id_carr_1k");
-		ret.id1km = id1kNode.asText();
+			//JSonNode of idINSPIRE
+			JsonNode idInspireNode = rootNode.findValue("idINSPIRE");
+			ret.idInspire = idInspireNode.asText();
+			
+
+			//JSonNode of idINSPIRE
+			JsonNode id1kNode = rootNode.findValue("id_carr_1k");
+			ret.id1km = id1kNode.asText();
+		}
 		
 		return ret;
 	}
