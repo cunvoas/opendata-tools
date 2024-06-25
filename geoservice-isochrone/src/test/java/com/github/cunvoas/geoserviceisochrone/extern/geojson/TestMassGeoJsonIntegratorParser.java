@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.extern.geojson;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,8 +16,10 @@ class TestMassGeoJsonIntegratorParser {
 	private MassGeoJsonIntegratorParser tested;
 	
 	@Test
+	@Disabled
 	void test() {
 		
+//		String geoj = "/work/PERSO/ASSO/data/grilleFull_gps/grille200m.geojsonl.json";
 		String geoj = "/work/PERSO/ASSO/data/grilleFull_gps/test.json";
 		try {
 			tested.parseAndSave(geoj);
