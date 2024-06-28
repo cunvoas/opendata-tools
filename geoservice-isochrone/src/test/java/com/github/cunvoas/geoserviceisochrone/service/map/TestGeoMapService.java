@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,10 +16,42 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
+
+@SpringBootTest
+@ActiveProfiles({"prod","dev"})
 class TestGeoMapService {
 	
+	@Autowired
 	GeoMapService tested=new GeoMapService();
+
+	
+	private ObjectMapper mapper = new ObjectMapper();
+	
+	@Test 
+	void testCadastre() {
+		
+		for (Long i = 0L; i < 18L; i++) {
+			GeoJsonRoot r = tested.findAllCadastreByComm2Co(i);
+			
+			try {
+				mapper.writeValue(new File("./cadastre_c2c_"+i+".json"), r);
+			} catch (StreamWriteException e) {
+				fail(e);
+			} catch (DatabindException e) {
+				fail(e);
+			} catch (IOException e) {
+				fail(e);
+			}
+		}
+	}
 
 
 	@Test
