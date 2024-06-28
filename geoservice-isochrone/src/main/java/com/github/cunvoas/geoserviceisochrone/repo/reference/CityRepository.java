@@ -17,6 +17,8 @@ public interface CityRepository extends JpaRepository<City, Long>{
 	
 	City findByInseeCode(String insee);
 	
+	List<City> findByCommunauteCommune_Id(Long id);
+	
 	
 	@Query(	nativeQuery = true, 
 			value = "SELECT * FROM city where id_region=:id order by name",

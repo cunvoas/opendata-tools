@@ -68,7 +68,7 @@
         />
         
        <l-control position="bottomright" >
-            <p id="dataDetail" class="dataDetail">data Detail</p>
+            <div id="dataDetail" class="dataDetail"><h4>&nbsp;Détail des données&nbsp;</h4>&nbsp;<br />&nbsp;</div>
        </l-control>
        <l-control-layers position="topright"></l-control-layers>
        <l-control-scale position="bottomleft" :imperial="false" :metric="true"></l-control-scale>
@@ -124,7 +124,7 @@
         tileProviders: [
             {
               name : 'Carte OpenStreetMap',
-              visible: true,
+              visible: false,
               attribution:
                 '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
               url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -137,7 +137,7 @@
             },
             {
               name: 'Carte StadiaMaps',
-              visible: false,
+              visible: true,
               url:  'https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png',
               attribution: 'Stadia Maps (stamen_terrain)'
             },
@@ -198,7 +198,7 @@
           async callGeoJsonCadastre(prms){
             // data Cadastre
             console.log("callGeoJsonCadastre");
-            var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCadastre.json"
+            var base="https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/cadastre/cadastre_c2c_1.json"
  //           var base=this.restUrlCadastre;
             const respCadastre= await fetch(base+prms);
             const dataCadastre = await respCadastre.json();
@@ -287,41 +287,34 @@
                
       onDetailCarre() {
         return (feature, layer) => {
-            /*
-          var theComment = "<div>ID:" + feature.properties.id +
-            "</div><div>Commune: " + feature.properties.commune +
-            "</div><div>Population: " + feature.properties.people +
-            "</div><div>Dont parc: " + feature.properties.popParkIncludedOms +
-            "</div><div>Sans parc: " + feature.properties.popParkExcludedOms +
-            "</div><div>Parcs acessibles: " + feature.properties.surfaceTotalParkOms +
-            " m²</div><div>Partagés avec : " + feature.properties.popSquareShareOms +
-            " pers.</div><div>Soit : " + feature.properties.squareMtePerCapitaOms +
-            " m²/hab</div>"; 
-          layer.bindTooltip(
-            theComment, { permanent: false, sticky: true }
-          );
-          */
-         
-         
              layer.on('mouseover', function (e) {
                     
-               var feature =      e.target.feature;
-               const theComment = "<div>ID:" + feature.properties.id +
-                    "</div><div>Commune: " + feature.properties.commune +
-                    "</div><div>Population: " + feature.properties.people +
-                    "</div><div>Dont parc: " + feature.properties.popParkIncludedOms +
+               var feature = e.target.feature;
+               const theComment = "<h4>Données carroyées : Parc / Habitant</h4>"+
+                    "<div>id Inspire:" + feature.properties.id +
+                    "</div><div>Commune: <b>" + feature.properties.commune +
+                    "</b></div><div>Population: <b>" + feature.properties.people +
+                    "</b></div>";
+                    
+                var detailData="";
+                if ( feature.properties.surfaceTotalParkOms === null) {
+                     detailData =  "<div><b><i>Non calculé</i></b></div>";
+                } else {
+                   detailData =  
+                    "<div>Dont parc: " + feature.properties.popParkIncludedOms +
                     "</div><div>Sans parc: " + feature.properties.popParkExcludedOms +
-                    "</div><div>Parcs acessibles: " + feature.properties.surfaceTotalParkOms +
+                    "</div><div>Parcs accessibles: " + feature.properties.surfaceTotalParkOms +
                     " m²</div><div>Partagés avec : " + feature.properties.popSquareShareOms +
-                    " pers.</div><div>Soit : " + feature.properties.squareMtePerCapitaOms +
-                    " m²/hab</div>"; 
-                //console.log(theComment);
+                    " pers.</div><div>Soit : <b>" + feature.properties.squareMtePerCapitaOms +
+                    " m²/hab</b></div>"; 
+                }
+
                 
                 e.target.setStyle({
                     weight: 5
                 });
                 
-                document.getElementById("dataDetail").innerHTML = theComment;
+                document.getElementById("dataDetail").innerHTML = theComment+detailData;
             });
             
             layer.on('mouseout', function (e) {
@@ -336,6 +329,7 @@
               fillColor: feature.properties.fillColor,
               fillOpacity: 0.6
             });
+            // cas non calculé
           } else if ( feature.properties.surfaceTotalParkOms === null) {
             layer.setStyle({
               fillColor: '#4944f5',

@@ -9,5 +9,6 @@ public class CadastreView extends GeoJsonProperty {
 
 	private String idInsee;
 	private String nom;
+	private String communauteCommune;
 	
 }

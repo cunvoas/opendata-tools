@@ -34,6 +34,8 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mShape;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
@@ -46,6 +48,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
@@ -109,11 +113,60 @@ public class GeoMapService {
     @Autowired
     private CadastreRepository cadastreRepository;
     @Autowired
+    private CommunauteCommuneRepository communauteCommuneRepository;
+    @Autowired
+    private CityRepository cityRepository;
+    @Autowired
     private ParcPrefectureRepository parcPrefectureRepository;
     @Autowired
     private ParkJardinRepository parkJardinRepository;
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
+	
+	
+	/**
+	 * @param id
+	 * @return
+	 */
+	public GeoJsonRoot findAllCadastreByComm2Co(Long id) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
+		Optional<CommunauteCommune> com2co = communauteCommuneRepository.findById(id);
+		if (com2co.isPresent()) {
+			
+			List<String> ids = new ArrayList<>();
+			try {
+				for (City city : com2co.get().getCities()) {
+					ids.add(city.getInseeCode());
+				}
+			} catch (Exception e) {
+				List<City> cities = cityRepository.findByCommunauteCommune_Id(id);
+				for (City city : cities) {
+					ids.add(city.getInseeCode());
+				}
+			}
+			
+			
+			
+			List<Cadastre> cadastres = cadastreRepository.findAllById(ids);
+			if (cadastres!=null && cadastres.size()>0) {
+    			for (Cadastre cadastre : cadastres) {
+    			
+	    			GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					feature.setGeometry(cadastre.getGeoShape());
+					
+					CadastreView cv = new CadastreView();
+					cv.setIdInsee(cadastre.getIdInsee());
+					cv.setNom(cadastre.getNom());
+					cv.setCommunauteCommune(com2co.get().getName());
+					feature.setProperties(cv);
+				}
+    		}
+		}
+		return root;
+	}
+	
 	
     /**
      * @param swLat
