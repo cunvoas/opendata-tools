@@ -21,8 +21,9 @@
           type="checkbox"
         >
         
-        <label for="checkboxWithOMS">| Conforme OMS</label>
+        <label for="checkboxWithOMS" style="display: none;">| Conforme OMS</label>
         <input
+           style="display: none;"
           id="checkboxWithOMS"
           v-model="checkboxWithOMS"
           type="checkbox"
