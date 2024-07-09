@@ -17,6 +17,7 @@ indexes = {
    @Index(name = "idx_carre200shape_idcarre", columnList="id_carre_hab", unique = false)
    }
 )
+@Deprecated
 public class InseeCarre200mShape {
 	
 	@Id

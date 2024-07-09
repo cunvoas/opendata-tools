@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
-import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapService;
+import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
 @RestController
 @RequestMapping("/map/cadastre")
@@ -20,7 +20,7 @@ public class GeoJsonCadastreController {
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 	
     @Autowired
-    private GeoMapService geoMapService;
+    private GeoMapServiceV2 geoMapService;
     
     @CrossOrigin(origins = {"http://localhost:8081", "https://autmel-maps.duckdns.org/"})
     @GetMapping("/area")

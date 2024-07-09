@@ -11,14 +11,13 @@ import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
-import com.github.cunvoas.geoserviceisochrone.service.map.InseeCarre200mService;
-import com.github.cunvoas.geoserviceisochrone.service.park.ComputeService;
+import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV2;
 
 @Service
 public class ServiceParcPrefecture {
@@ -30,12 +29,11 @@ public class ServiceParcPrefecture {
 	private ParkJardinRepository parkJardinRepository;
 
 	@Autowired 
-	private ComputeService computeService;
+	private ComputeServiceV2 computeService;
 
 	@Autowired 
 	private CityService cityService;
 	@Autowired 
-	private InseeCarre200mService inseeCarre200mService;
 	
 	public void update() {
 		List<ParcPrefecture> pps = parcPrefectureRepository.findAll();
@@ -70,7 +68,6 @@ public class ServiceParcPrefecture {
 		if (pp.getParcEtJardin()==null ) { //&& pp.getCommune().getId()==2878) {
 			String s = GeometryQueryHelper.toText(pp.getArea());
 			List<ParcEtJardin> pjs=parkJardinRepository.findByArea(s);
-			//List<ParcEtJardin> pjs= inseeCarre200mService.findAround(pp.getPoint(), 0.07);
 			if (pjs!=null && !pjs.isEmpty()) {
 				if (pjs.size()==1) {
 					pp.setParcEtJardin(pjs.get(0));

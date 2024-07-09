@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
-import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapService;
+import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
 @RestController
 @RequestMapping("/map/park")
@@ -22,7 +22,7 @@ public class GeoJsonParkController {
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 	
     @Autowired
-    private GeoMapService geoMapService;
+    private GeoMapServiceV2 geoMapService;
 
     @GetMapping("/parkByPolygon")
     public GeoJsonRoot getParkByArea(@RequestParam("polygon") Polygon polygon) {
@@ -43,13 +43,13 @@ public class GeoJsonParkController {
     
     
 
-    /**
-     * @return get parks for Lille
-     */
-    @GetMapping("/lille")
-    public GeoJsonRoot getParksLille() {
-        return geoMapService.findAllParkByArea(GeoJsonCarreInseeController.makeLille());
-    }
+//    /**
+//     * @return get parks for Lille
+//     */
+//    @GetMapping("/lille")
+//    public GeoJsonRoot getParksLille() {
+//        return geoMapService.findAllParkByArea(GeoJsonCarreInseeController.makeLille());
+//    }
 
     @GetMapping("/parkByCoordsZoom")
     //https://gis.stackexchange.com/questions/284880/get-the-lat-lng-values-of-lines-polygons-drawn-by-leaflet-drawing-tools

@@ -6,27 +6,30 @@ import java.util.Date;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import lombok.Data;
 
 /**
  * 
  */
 @Data
-@Entity(name = "carre200_computed")
-@Deprecated
-public class InseeCarre200mComputed {
+@Entity(name = "carre200_computed_v2")
+@IdClass(InseeCarre200mComputedId.class)
+public class InseeCarre200mComputedV2 {
 	
+	/**
+	 * Année de la donnée.
+	 */
 	@Id
-	@Column(name="id",length=21)
-	private String idCarre200;
-
-
 	@Column(name="annee",length=4)
     private Integer annee;
 	
-	@Column(name="idInspire",length=31)
+	@Id
+	@Column(name="idInspire",length=30)
 	private String idInspire;
-	
+
+	@Column(name="id",length=21)
+	private String idCarre200;
 	
 	
 	/**
@@ -34,7 +37,6 @@ public class InseeCarre200mComputed {
 	 */
 	@Column(name="pop_all", precision = 12, scale = 2)
 	private BigDecimal popAll;
-	
 
 	
 	/**
