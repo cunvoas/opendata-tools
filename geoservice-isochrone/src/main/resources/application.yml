@@ -88,12 +88,14 @@ application:
     # InseeDensiteCommune: IDs denses https://www.insee.fr/fr/information/6439600
     insee:
       densite: 1,2
+      annees: 2015, 2017, 2019
   feature-flipping:
     parkAnalysisEnabled: true
     sendEmail: false
     salaryAnalysisEnabled: false
     pollutionAnalysisEnabled: false
     isochrone-impl: ign-api-v2
+    carre200m-impl: v2
   admin:
     photo-path: /work/demo/isochrone/photo_path
 

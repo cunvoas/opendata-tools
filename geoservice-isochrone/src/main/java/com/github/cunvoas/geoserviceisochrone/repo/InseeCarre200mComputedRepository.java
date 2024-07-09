@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputed;
 
 @Repository
+@Deprecated
 public interface InseeCarre200mComputedRepository extends JpaRepository<InseeCarre200mComputed, String>{
 
 }

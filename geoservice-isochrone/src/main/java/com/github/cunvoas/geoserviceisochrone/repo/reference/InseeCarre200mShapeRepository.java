@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mShape;
 
 @Repository
+@Deprecated
 public interface InseeCarre200mShapeRepository extends JpaRepository<InseeCarre200mShape, String>{
 	
 	InseeCarre200mShape findByIdInspire(String idsInspire);

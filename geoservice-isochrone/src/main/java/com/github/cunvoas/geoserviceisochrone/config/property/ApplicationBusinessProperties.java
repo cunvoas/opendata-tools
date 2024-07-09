@@ -1,7 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.config.property;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import lombok.Data;
@@ -27,6 +26,10 @@ public class ApplicationBusinessProperties {
 	@Value("${application.business.insee.densite}")
 	private String inseeCodeDensite;
 
+	@Value("${application.business.insee.annees}")
+	private Integer[] inseeAnnees;
+	
+	
 	@Value("${application.mailjet.apiToken}")
 	private String mailjetToken;
 	@Value("${application.mailjet.apiSecret}")
@@ -44,5 +47,7 @@ public class ApplicationBusinessProperties {
 	private String siteGestion;
 	@Value("${ISOCHRONE_SITE_PUBLIQUE}")
 	private String sitePublique;
+	
+
 
 }

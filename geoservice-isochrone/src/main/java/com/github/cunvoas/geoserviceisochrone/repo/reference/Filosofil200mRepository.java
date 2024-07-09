@@ -10,6 +10,9 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200mId;
 
+/**
+ * Repo for INSEE stats (population, ages, poor...)
+ */
 @Repository
 public interface Filosofil200mRepository extends JpaRepository< Filosofil200m,  Filosofil200mId>{
 	
@@ -28,7 +31,6 @@ public interface Filosofil200mRepository extends JpaRepository< Filosofil200m,  
 	List<Filosofil200m> getAllCarreInMap(String polygon, Integer annee);
 	
 	
-	@Query(nativeQuery = true,  value = "SELECT ST_Area(?1, true)")
-	Long getSurface(Geometry polygon);
+
 
 }

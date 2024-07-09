@@ -25,7 +25,6 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
-import com.github.cunvoas.geoserviceisochrone.service.map.InseeCarre200mService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ComputeService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
@@ -39,8 +38,6 @@ class TestGeoserviceIsochroneApplication {
 	@Autowired
 	private CsvCarre200ShapeParser csvParser;
 
-	@Autowired
-	private InseeCarre200mService carreService;
 	@Autowired
 	private InseeCarre200mShapeRepository repo;
 

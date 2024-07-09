@@ -18,6 +18,9 @@ public class ParkAreaComputed {
 	@Id
 	@Column(name = "id")
 	private long id;
+	
+	@Column(name = "annee")
+	private Integer annee;
 
 	@Column(name = "oms")
 	private Boolean oms;

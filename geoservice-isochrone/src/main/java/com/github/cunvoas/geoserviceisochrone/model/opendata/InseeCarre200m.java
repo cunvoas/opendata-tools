@@ -7,6 +7,7 @@ import lombok.Data;
 
 @Data
 @Entity(name = "carre200")
+@Deprecated
 public class InseeCarre200m {
 	
 	@Id

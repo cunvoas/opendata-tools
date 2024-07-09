@@ -1,6 +1,12 @@
 <template>
     <div>
-        <label for="checkbox">Isochrones</label>
+        <select id="annee" @change="onChange($event)" class="form-control" v-model="annee">
+           <option value="2019" selected="selected">2019</option>
+           <option value="2017">2017</option>
+           <option value="2015">2015</option>
+        </select>
+
+        <label for="checkbox">| Isochrones</label>
         <input
           id="checkbox"
           v-model="showIsochrones"
@@ -118,6 +124,7 @@
         geojsonIsochrone: null,
         geojsonCarre: null,
         geojsonCadastre: null,
+        annee: "2015",
         restUrlCadastre: "http://localhost:8980/isochrone/map/cadastre/area",
         restUrlCarre: "http://localhost:8980/isochrone/map/insee/carre200m/area",
         restUrlIsochrones: "http://localhost:8980/isochrone/map/park/area",

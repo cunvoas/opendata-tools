@@ -22,6 +22,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mShape
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */
 @Component
+@Deprecated
 public class CsvCarre200ShapeParser {
 	
 	/**

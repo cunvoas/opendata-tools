@@ -26,32 +26,33 @@ import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.IsochroneV
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkGardenView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkPrefView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkView;
+import com.github.cunvoas.geoserviceisochrone.extern.helper.DistanceHelper;
 import com.github.cunvoas.geoserviceisochrone.extern.leaflet.Bound;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputed;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200m;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mShape;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200m;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
-import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.google.common.math.BigDecimalMath;
@@ -62,7 +63,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class GeoMapService  {
+public class GeoMapServiceV2 {
 	
 	// https://htmlcolorcodes.com/
 	public String COLOR_TO_QUALIFY="#ff7070";
@@ -99,11 +100,11 @@ public class GeoMapService  {
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
     @Autowired
-    private InseeCarre200mRepository inseeCarre200mRepository;
+    private InseeCarre200mComputedV2Repository inseeCarre200mComputedV2Repository;
     @Autowired
-    private InseeCarre200mComputedRepository inseeCarre200mComputedRepository;
+    private InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;
     @Autowired
-    private InseeCarre200mShapeRepository inseeCarre200mShapeRepository;
+    private Filosofil200mRepository filosofil200mRepository;
     @Autowired
     private ParkAreaRepository parkAreaRepository;
     @Autowired
@@ -511,7 +512,7 @@ public class GeoMapService  {
 	}
 	
 	
-	public String getFillColorCarre(Carre200AndShapeView v, InseeCarre200mComputed cpuEd) {
+	public String getFillColorCarre(Carre200AndShapeView v, InseeCarre200mComputedV2 cpuEd) {
 		String color = THRESHOLD_GREEWASHED;
 
 		if (cpuEd.getUpdated()!=null) {
@@ -592,36 +593,49 @@ public class GeoMapService  {
 		
 	}
 	
+	
+	 /**
+	 * @param polygon
+	 * @return
+	 * @FIXME until final front permit to change year.
+	 */
+	
+	public GeoJsonRoot findAllCarreByArea(Polygon polygon) {
+		//FIXME until final front permit to change year
+		 return this.findAllCarreByArea(polygon, 2015);
+	 }
+	 
     /**
      * GET ALL IRIS in the map.
      * @param polygon
      * @return
      */
     
-	public GeoJsonRoot findAllCarreByArea(Polygon polygon) {
+	public GeoJsonRoot findAllCarreByArea(Polygon polygon, Integer annee) {
     	GeoJsonRoot root = new GeoJsonRoot();
     	
     	if (polygon!=null) {
-    	List<InseeCarre200m> carres = inseeCarre200mRepository.getAllCarreInMap(GeometryQueryHelper.toText(polygon));
+    	//List<InseeCarre200m> carres = inseeCarre200mRepository.getAllCarreInMap(GeometryQueryHelper.toText(polygon));
+    	List<InseeCarre200mOnlyShape> carres = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(polygon), Boolean.TRUE);
     	
     	if (carres!=null && carres.size()>0) {
-    		for (InseeCarre200m c : carres) {
-    			InseeCarre200mShape carreShape= inseeCarre200mShapeRepository.findByIdInspire(c.getIdInspire());
-    			Optional<InseeCarre200mComputed> optCputed = inseeCarre200mComputedRepository.findById(c.getId());
+    		for (InseeCarre200mOnlyShape c : carres) {
+    			
+    			InseeCarre200mComputedV2 cputed = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, c.getIdInspire());
     		
     			GeoJsonFeature feature = new GeoJsonFeature();
 				root.getFeatures().add(feature);
-				feature.setGeometry(carreShape.getGeoShape());
+				feature.setGeometry(c.getGeoShape());
 
     			Carre200AndShapeView v = new Carre200AndShapeView();
 				feature.setProperties(v);
-    			v.setId(c.getId());
+    			v.setId(c.getIdInspire());
     			v.setIdInspire(c.getIdInspire());
     			
-    			v.setPeople(formatPopulation(c.getPopulation()));
     			
-    			if (optCputed.isPresent()) {
-    				InseeCarre200mComputed cputed=optCputed.get();
+    			if (cputed!=null) {
+    				v.setPeople(formatInt(cputed.getPopAll()));
+    				
     				
     				// declared by public organisation (^possible greenwashing)
     				v.setSurfaceTotalPark(formatInt(cputed.getSurfaceTotalPark()));
@@ -640,11 +654,16 @@ public class GeoMapService  {
     				v.setFillColor(this.getFillColorCarre(v, cputed));
     				
     			} else {
+    				Filosofil200m carreData = filosofil200mRepository.findByAnneeAndIdInspire(annee, c.getIdInspire());
+    				v.setPeople(formatInt(carreData.getNbIndividus()));
+    				
+    				
+    				
     				v.setPopParkExcluded("n/a");
     				v.setPopParkIncluded("n/a");
     			}
-    			
-    			v.setCommune(carreShape.getCommune());
+    			City city = cityRepository.findByInseeCode(c.getCodeInsee());
+    			v.setCommune(city.getName());
 			}
     	}
     	}
@@ -652,10 +671,16 @@ public class GeoMapService  {
     	return root;
     }
     
-    
 	public GeoJsonRoot findAllCarreByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
+		// FIXME
+		Integer annee = 2015;
+		//Integer[] annee = applicationBusinessProperties.getInseeAnnees();
+    	return this.findAllCarreByArea(annee, swLat, swLng, neLat, neLng);
+    }
+    
+	public GeoJsonRoot findAllCarreByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
-    	return this.findAllCarreByArea(polygon);
+    	return this.findAllCarreByArea(polygon, annee);
     }
     
     
@@ -674,15 +699,6 @@ public class GeoMapService  {
     		} else {
     			ret = inssePop;
     		}
-    	}
-    	return ret;
-    }
-    
-    
-	public Double getPopulation(String inssePop) {
-    	Double ret = -1d;
-    	if (StringUtils.isNotBlank(inssePop)) {
-    		ret = Double.valueOf(inssePop.trim());
     	}
     	return ret;
     }
@@ -748,8 +764,16 @@ public class GeoMapService  {
      * @return
      */
     boolean checkDistance(Coordinate southWest, Coordinate northEast) {
-    	double dist = southWest.distance(northEast);
-    	return dist<0.80d;
+    	 
+    	Double d =  DistanceHelper.crowFlyDistance(
+	    				southWest.getY(), southWest.getX(),
+	    				northEast.getY(), northEast.getX()
+	    			);
+    	
+    	return d<50;
+    	
+//    	double dist = southWest.distance(northEast);
+//    	return dist<0.80d;
     }
     
     

@@ -7,14 +7,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
-import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapService;
+import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
 @RestController
 @RequestMapping("/mvc/geojson")
 public class GeoJsonForMvcController {
 
     @Autowired
-    private GeoMapService geoMapService;
+    private GeoMapServiceV2 geoMapService;
 	
 	@GetMapping("/isochrones/entrance")
 	public GeoJsonRoot getIsochroneEntrance(@RequestParam("idPark") Long idPark) {
