@@ -289,7 +289,7 @@ public class ComputeService {
 			
 			
 			ParkAreaComputed pac;
-			Optional<ParkAreaComputed> Opac = parkAreaComputedRepository.findById(parkArea.getId());
+			Optional<ParkAreaComputed> Opac = null;//parkAreaComputedRepository.findById(parkArea.getId());
 			if (Opac.isPresent()) {
 				pac = Opac.get();
 			} else {
@@ -552,7 +552,7 @@ public class ComputeService {
 		parkTypeService.populate(park);
 		
 		
-		Optional<ParkAreaComputed> parcCpuOpt = parkAreaComputedRepository.findById(park.getId());
+		Optional<ParkAreaComputed> parcCpuOpt = null;//parkAreaComputedRepository.findById(park.getId());
 		if (parcCpuOpt.isPresent()) {
 			parcCpu = parcCpuOpt.get();
 		} else {

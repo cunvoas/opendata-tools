@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
@@ -35,6 +36,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ServiceReadReferences {
 	
+
+	@Autowired
+	private ApplicationBusinessProperties applicationBusinessProperties;
+	
 	@Autowired
 	private RegionRepository regionRepository;
 	@Autowired
@@ -52,12 +57,27 @@ public class ServiceReadReferences {
 	@Autowired
 	private ParcPrefectureRepository parcPrefectureRepository;
 	
+	
+	public Integer getDerniereAnnee() {
+		List<Integer> annes = List.of(applicationBusinessProperties.getInseeAnnees());
+		Integer annee=null;
+		for (Integer i : annes) {
+			if (annee==null || annee<i) {
+				annee = i;
+			}
+		}
+		return annee;
+	}
+	
 	public List<Region> getRegion() {
 		return regionRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
 	}
 	
 	public ParkAreaComputed getParkAreaComputedById(Long id) {
-		Optional<ParkAreaComputed> opt = parkAreaComputedRepository.findById(id);
+		return this.getParkAreaComputedById(id, getDerniereAnnee());
+	}
+	public ParkAreaComputed getParkAreaComputedById(Long id, Integer annee) {
+		Optional<ParkAreaComputed> opt = parkAreaComputedRepository.findByIdAndAnnee(id, annee);
 		if (opt.isPresent()) {
 			return opt.get();
 		}

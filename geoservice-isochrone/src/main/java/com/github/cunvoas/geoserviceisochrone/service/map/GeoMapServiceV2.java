@@ -210,9 +210,9 @@ public class GeoMapServiceV2 {
      * @return
      */
     
-	public GeoJsonRoot findAllParkByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
+	public GeoJsonRoot findAllParkByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
-    	return this.findAllParkByArea(polygon);
+    	return this.findAllParkByArea(polygon, annee);
     }
     
     
@@ -311,7 +311,7 @@ public class GeoMapServiceV2 {
 	 * @return
 	 */
 	
-	public GeoJsonRoot findAllParkByArea(Polygon polygon) {
+	public GeoJsonRoot findAllParkByArea(Polygon polygon, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		
 
@@ -332,7 +332,7 @@ public class GeoMapServiceV2 {
 					
 					
 
-					Optional<ParkAreaComputed> cpu = parkAreaComputedRepository.findById(parkArea.getId());
+					Optional<ParkAreaComputed> cpu = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
 					if (cpu.isPresent()) {
 						extraFeature(pv, cpu.get());
 					}
@@ -655,9 +655,11 @@ public class GeoMapServiceV2 {
     				
     			} else {
     				Filosofil200m carreData = filosofil200mRepository.findByAnneeAndIdInspire(annee, c.getIdInspire());
-    				v.setPeople(formatInt(carreData.getNbIndividus()));
-    				
-    				
+    				if (carreData!=null) {
+    					v.setPeople(formatInt(carreData.getNbIndividus()));
+    				} else {
+    					v.setPeople("0");
+    				}
     				
     				v.setPopParkExcluded("n/a");
     				v.setPopParkIncluded("n/a");

@@ -8,19 +8,25 @@ import org.springframework.format.annotation.DateTimeFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity(name = "park_area_computed")
+@IdClass(ParkAreaComputedId.class)
+@EqualsAndHashCode(of = {"annee", "id"})
 public class ParkAreaComputed {
 
 	// same as ParkArea
 	@Id
 	@Column(name = "id")
-	private long id;
+	private Long id;
 	
+	@Id
 	@Column(name = "annee")
 	private Integer annee;
+	
 
 	@Column(name = "oms")
 	private Boolean oms;

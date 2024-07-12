@@ -12,11 +12,9 @@ import java.util.Set;
 
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
-import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
@@ -110,7 +108,7 @@ public class ComputeServiceV2 {
 	 * @param surfaceParkAreas
 	 * @return
 	 */
-	protected ComputeDto computePopAndDensity(Geometry polygonPark, BigDecimal surfaceParkAreas, Integer anne) {
+	protected ComputeDto computePopAndDensity(Geometry polygonPark, BigDecimal surfaceParkAreas, Integer annee) {
 		ComputeDto dto = new ComputeDto();
 
 		// serface per capita
@@ -123,15 +121,19 @@ public class ComputeServiceV2 {
 		// recherche des population sur l'ensembles des isochrones mergées
 		List<InseeCarre200mOnlyShape> shapesWithIso = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(polygonPark));
 		for (InseeCarre200mOnlyShape carreWithIso : shapesWithIso) {
-			Filosofil200m carreData = filosofil200mRepository.findByAnneeAndIdInspire(anne, carreWithIso.getIdInspire());
+			Filosofil200m carreData = filosofil200mRepository.findByAnneeAndIdInspire(annee, carreWithIso.getIdInspire());
 			
-			
-			//nb habitant au carre
-			Double nbHabCarre = carreData.getNbIndividus().doubleValue();
-			// proratisation à la surface intersection(carre, isochrne)
-			Geometry isoOnCarre = carreWithIso.getGeoShape().intersection(polygonPark);
-			Long surfaceIsoSurCarre = getSurface(isoOnCarre);
-			surfacePopulationIso += Math.round(nbHabCarre*surfaceIsoSurCarre/SURFACE_CARRE);
+			if (carreData!=null) {
+				log.error("Filosofil200m     found,{},{}", annee, carreWithIso.getIdInspire());
+				//nb habitant au carre
+				Double nbHabCarre = carreData.getNbIndividus().doubleValue();
+				// proratisation à la surface intersection(carre, isochrne)
+				Geometry isoOnCarre = carreWithIso.getGeoShape().intersection(polygonPark);
+				Long surfaceIsoSurCarre = getSurface(isoOnCarre);
+				surfacePopulationIso += Math.round(nbHabCarre*surfaceIsoSurCarre/SURFACE_CARRE);
+			} else {
+				log.error("Filosofil200m NOT FOUND,{},{}", annee, carreWithIso.getIdInspire());
+			}
 		}
 		if (surfacePopulationIso!=0L) {
 			surfaceParkPerCapita = surfaceParkAreas.divide(BigDecimal.valueOf(surfacePopulationIso), RoundingMode.HALF_EVEN);
@@ -151,11 +153,11 @@ public class ComputeServiceV2 {
 		
 		// get already computed square results
 		InseeCarre200mComputedV2 computed = null;
-		InseeCarre200mComputedId id = new InseeCarre200mComputedId();
-		id.setAnnee(annee);
-		id.setIdInspire(carreShape.getIdInspire());
+		InseeCarre200mComputedId idPk = new InseeCarre200mComputedId();
+		idPk.setAnnee(annee);
+		idPk.setIdInspire(carreShape.getIdInspire());
 		
-		Optional<InseeCarre200mComputedV2> opt = inseeCarre200mComputedV2Repository.findById(id);
+		Optional<InseeCarre200mComputedV2> opt = inseeCarre200mComputedV2Repository.findById(idPk);
 		if (opt.isPresent()) {
 			computed = opt.get();
 			
@@ -181,7 +183,6 @@ public class ComputeServiceV2 {
 		
 		// get insee data for the square
 		Filosofil200m carre = filosofil200mRepository.findByAnneeAndIdInspire(annee, carreShape.getIdInspire());
-//		InseeCarre200m carre = inseeCare200mRepository.findById(carreShape.getIdCarreHab()).get();
 		
 		// find parks in square shape
 		List<ParkArea> parkAreas = parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(carreShape.getGeoShape()));
@@ -203,9 +204,8 @@ public class ComputeServiceV2 {
 			log.warn("\tcompose {}", parkArea);
 			
 			
-			
 			ParkAreaComputed pac;
-			Optional<ParkAreaComputed> Opac = parkAreaComputedRepository.findById(parkArea.getId());
+			Optional<ParkAreaComputed> Opac = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
 			if (Opac.isPresent()) {
 				pac = Opac.get();
 			} else {
@@ -244,8 +244,11 @@ public class ComputeServiceV2 {
 		// all parks are OMS compliant
 		allAreOms = checkOms==parkAreas.size();
 		
-		computed.setPopAll(carre.getNbIndividus());
-		
+		if (carre!=null) {
+			computed.setPopAll(carre.getNbIndividus());
+		} else {
+			computed.setPopAll(BigDecimal.ZERO);
+		}
 		StringBuilder sbParcName = new StringBuilder();
 		if (!parcNames.isEmpty()) {
 			Collections.sort(parcNames);
@@ -342,7 +345,7 @@ public class ComputeServiceV2 {
 			computed.setSurfaceTotalPark(BigDecimal.ZERO);
 			computed.setSurfaceParkPerCapita(BigDecimal.ZERO);
 		}
-		log.warn("\tsave computed {}\n", computed.getIdCarre200());
+		log.warn("\tsave computed {}\n", computed.getIdInspire());
 		computed.setUpdated(new Date());
 		inseeCarre200mComputedV2Repository.save(computed);
 		
@@ -450,58 +453,65 @@ public class ComputeServiceV2 {
 		// skip un-precalculated park
 		if(park.getPolygon()==null) {
 			log.warn("please process {}-{}  first", park.getId(), park.getName());
-			throw new ExceptionGeo("park not merge"+park.toString());
+			return null;
+//			throw new ExceptionGeo("park not merge"+park.toString());
 		}
 		
 		// get type parameters
 		parkTypeService.populate(park);
 		
-		
-		Optional<ParkAreaComputed> parcCpuOpt = parkAreaComputedRepository.findById(park.getId());
-		if (parcCpuOpt.isPresent()) {
-			parcCpu = parcCpuOpt.get();
-		} else {
-			parcCpu = new ParkAreaComputed();
-			parcCpu.setId(park.getId());
-		}
-
-		// process OMS feature
-		ParkType type = park.getType();
-		if (type.getStrict()) {
-			parcCpu.setOms(type.getOms());
-		} else {
-			parcCpu.setOms(type.getOms());
-			
-			if (park.getOmsCustom()!=null) {
-				parcCpu.setOms(park.getOmsCustom());
-			}
-		}
-		
-		Optional<ParcEtJardin> pjOpt = parkJardinRepository.findById(park.getIdParcEtJardin());
-		if (pjOpt.isPresent()) {
-			ParcEtJardin pj = pjOpt.get();
-			parcCpu.setSurface(new BigDecimal(Math.round(pj.getSurface())));
-			
-			Boolean isDense = serviceOpenData.isDistanceDense(pj.getCommune());
-			parcCpu.setIsDense(isDense);
-		}
-		
-		
 		List<Integer> annees = List.of(applicationBusinessProperties.getInseeAnnees());
-		// surface intersection algorithm
-		BigDecimal population = BigDecimal.ZERO;
+		
+		
 		// find carre200m shapes that match the park
 		List<InseeCarre200mOnlyShape> shapes = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(park.getPolygon()));
 		
 		for (Integer annee : annees) {
+		
+			Optional<ParkAreaComputed> parcCpuOpt = parkAreaComputedRepository.findByIdAndAnnee(park.getId(), annee);
+			if (parcCpuOpt.isPresent()) {
+				parcCpu = parcCpuOpt.get();
+			} else {
+				parcCpu = new ParkAreaComputed();
+				parcCpu.setId(park.getId());
+				parcCpu.setAnnee(annee);
+			}
+	
+			// process OMS feature
+			ParkType type = park.getType();
+			if (type.getStrict()) {
+				parcCpu.setOms(type.getOms());
+			} else {
+				parcCpu.setOms(type.getOms());
+				
+				if (park.getOmsCustom()!=null) {
+					parcCpu.setOms(park.getOmsCustom());
+				}
+			}
+			
+			Optional<ParcEtJardin> pjOpt = parkJardinRepository.findById(park.getIdParcEtJardin());
+			if (pjOpt.isPresent()) {
+				ParcEtJardin pj = pjOpt.get();
+				parcCpu.setSurface(new BigDecimal(Math.round(pj.getSurface())));
+				
+				Boolean isDense = serviceOpenData.isDistanceDense(pj.getCommune());
+				parcCpu.setIsDense(isDense);
+			}
+			
+			
+			
+			// surface intersection algorithm
+			BigDecimal population = BigDecimal.ZERO;
 			for (InseeCarre200mOnlyShape carreShape : shapes) {
 				Geometry parkOnCarre = carreShape.getGeoShape().intersection(park.getPolygon());
 				Long surfIntersect = getSurface(parkOnCarre);
 				
 				//lookup for carre200m data
 				Filosofil200m carre = filosofil200mRepository.findByAnneeAndIdInspire(annee, carreShape.getIdInspire());
-				Long popCar =Math.round(carre.getNbIndividus().doubleValue());
-				
+				Long popCar = 0L;
+				if (carre!=null) {
+					popCar =Math.round(carre.getNbIndividus().doubleValue());
+				}
 				Long popIntersect = Math.round(popCar*surfIntersect/SURFACE_CARRE);
 				population = population.add(new BigDecimal(popIntersect));
 			}
@@ -511,7 +521,7 @@ public class ComputeServiceV2 {
 			}
 			parcCpu.setUpdated(new Date());
 			
-			log.warn("surface per inhabitant: {}", parcCpu.getSurfacePerInhabitant());
+			log.warn("surface per inhabitant: {}- {}", annee, parcCpu.getSurfacePerInhabitant());
 			parcCpu = parkAreaComputedRepository.save(parcCpu);
 		
 		}
