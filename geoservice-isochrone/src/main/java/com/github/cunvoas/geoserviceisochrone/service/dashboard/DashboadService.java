@@ -1,9 +1,15 @@
 package com.github.cunvoas.geoserviceisochrone.service.dashboard;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.model.dashboard.DashboardCache;
 import com.github.cunvoas.geoserviceisochrone.model.dashboard.DashboardSummary;
+import com.github.cunvoas.geoserviceisochrone.repo.DashboardCacheRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
@@ -17,12 +23,10 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 @Service
 public class DashboadService {
 	
-
 	@Autowired
 	private ContributeurRepository contributeurRepository;
 	@Autowired
 	private AssociationRepository associationRepository;
-	
 	@Autowired
 	private CadastreRepository cadastreRepository;
 	@Autowired
@@ -37,23 +41,55 @@ public class DashboadService {
 	private ParkAreaComputedRepository parkAreaComputedRepository;
 	@Autowired
 	private ParkEntranceRepository parkEntranceRepository;
+	@Autowired
+	private DashboardCacheRepository dashboardCacheRepository;
+	@Autowired
+	private ApplicationBusinessProperties applicationBusinessProperties;
 	
+	public void refresh() {
+		List<DashboardCache> cache = new ArrayList<>();
+		cache.add(new DashboardCache(DashboardCache.ANNES, applicationBusinessProperties.getInseeAnnees().length));
+		cache.add(new DashboardCache(DashboardCache.CARREAUX, inseeCarre200mRepository.count()));
+		cache.add(new DashboardCache(DashboardCache.ASSOS, associationRepository.count()));
+		cache.add(new DashboardCache(DashboardCache.CONTRIB, contributeurRepository.count()));
+		cache.add(new DashboardCache(DashboardCache.COM2CO, communauteCommuneRepository.count()));
+		cache.add(new DashboardCache(DashboardCache.COMMUNE, cadastreRepository.count()));
+		cache.add(new DashboardCache(DashboardCache.PARC_CALC, parkAreaComputedRepository.count()));
+		cache.add(new DashboardCache(DashboardCache.PARC_CHCK, parkAreaRepository.count()));
+		cache.add(new DashboardCache(DashboardCache.PARC_ENTREE, parkEntranceRepository.count()));
+		cache.add(new DashboardCache(DashboardCache.PARC_REF, parkJardinRepository.count()));
+		
+		dashboardCacheRepository.saveAll(cache);
+		
+	}
+
+	public DashboardSummary getDashboardAndRefresh() {
+		refresh();
+		return getDashboard();
+	}
 	
 	public DashboardSummary getDashboard() {
+		if (10!=dashboardCacheRepository.count()) {
+			refresh();
+		}
+		
+		
+		
 		DashboardSummary ret = new DashboardSummary();
 		
-		ret.setNbContributeur(contributeurRepository.count());
-		ret.setNbAssociation(associationRepository.count());
+		ret.setNbContributeur(dashboardCacheRepository.findById(DashboardCache.CONTRIB).get().getIndicator());
+		ret.setNbAssociation(dashboardCacheRepository.findById(DashboardCache.ASSOS).get().getIndicator());
 		
-		ret.setNbCarreau(inseeCarre200mRepository.count());
+		ret.setNbCarreau(dashboardCacheRepository.findById(DashboardCache.CARREAUX).get().getIndicator());
+		ret.setNbAnnee(dashboardCacheRepository.findById(DashboardCache.ANNES).get().getIndicator());
 
-		ret.setNbCommunauteCommune(communauteCommuneRepository.count());
-		ret.setNbCommune(cadastreRepository.count());
+		ret.setNbCommunauteCommune(dashboardCacheRepository.findById(DashboardCache.COM2CO).get().getIndicator());
+		ret.setNbCommune(dashboardCacheRepository.findById(DashboardCache.COMMUNE).get().getIndicator());
 		
-		ret.setNbParcReference(parkJardinRepository.count());
-		ret.setNbParc(parkAreaRepository.count());
-		ret.setNbParcIsochrone(parkAreaComputedRepository.count());
-		ret.setNbParcEntance(parkEntranceRepository.count());
+		ret.setNbParcReference(dashboardCacheRepository.findById(DashboardCache.PARC_REF).get().getIndicator());
+		ret.setNbParc(dashboardCacheRepository.findById(DashboardCache.PARC_CHCK).get().getIndicator());
+		ret.setNbParcIsochrone(dashboardCacheRepository.findById(DashboardCache.PARC_CALC).get().getIndicator());
+		ret.setNbParcEntance(dashboardCacheRepository.findById(DashboardCache.PARC_ENTREE).get().getIndicator());
 		
 		return ret;
 	}
