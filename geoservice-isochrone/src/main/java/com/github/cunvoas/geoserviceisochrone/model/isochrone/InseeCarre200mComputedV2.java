@@ -37,7 +37,6 @@ public class InseeCarre200mComputedV2 {
 	 */
 	@Column(name="pop_all", precision = 12, scale = 2)
 	private BigDecimal popAll;
-
 	
 	/**
 	 * population with park (prorata surface)

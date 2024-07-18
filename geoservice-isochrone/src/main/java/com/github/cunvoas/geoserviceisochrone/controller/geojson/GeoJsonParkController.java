@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
-import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
 @RestController
@@ -25,12 +25,12 @@ public class GeoJsonParkController {
     @Autowired
     private GeoMapServiceV2 geoMapService;
     @Autowired
-    private ServiceReadReferences serviceReadReferences;
+    private ApplicationBusinessProperties applicationBusinessProperties;
 
     @GetMapping("/parkByPolygon")
     public GeoJsonRoot getParkByArea(@RequestParam("polygon") Polygon polygon, @RequestParam("annee") Integer annee) {
     	if (annee==null) {
-    		annee=serviceReadReferences.getDerniereAnnee();
+    		annee=applicationBusinessProperties.getDerniereAnnee();
     	}
         return geoMapService.findAllParkByArea(polygon, annee);
     }
@@ -46,7 +46,7 @@ public class GeoJsonParkController {
     			@RequestParam("annee") Integer annee
     		) {
     	if (annee==null) {
-    		annee=serviceReadReferences.getDerniereAnnee();
+    		annee=applicationBusinessProperties.getDerniereAnnee();
     	}
         return geoMapService.findAllParkByArea(annee, swLat, swLng, neLat, neLng);
     }
@@ -61,7 +61,7 @@ public class GeoJsonParkController {
     		) {
     	
     	if (annee==null) {
-    		annee=serviceReadReferences.getDerniereAnnee();
+    		annee=applicationBusinessProperties.getDerniereAnnee();
     	}
     	Polygon polygon = factory.createPolygon();
     	//Lille 50, 3.

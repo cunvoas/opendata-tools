@@ -22,10 +22,10 @@ public interface InseeCarre200mOnlyShapeRepository extends JpaRepository<InseeCa
 	@Query(nativeQuery = true, value =  "SELECT * FROM carre200onlyshape WHERE ST_Intersects(geo_shape, ?1)")
 	List<InseeCarre200mOnlyShape> findCarreInMapArea(Geometry geometry);
 	
-	@Query(nativeQuery = true, value =  "SELECT * FROM carre200onlyshape WHERE ST_Intersects(geo_shape, ?1) and withPop=?2")
+	@Query(nativeQuery = true, value =  "SELECT * FROM carre200onlyshape WHERE ST_Intersects(geo_shape, ?1) and avec_pop=?2")
 	List<InseeCarre200mOnlyShape> findCarreInMapArea(String geometry, Boolean withPop);
 	
-	@Query(nativeQuery = true, value =  "SELECT * FROM carre200onlyshape WHERE ST_Intersects(geo_shape, ?1) and withPop=?2")
+	@Query(nativeQuery = true, value =  "SELECT * FROM carre200onlyshape WHERE ST_Intersects(geo_shape, ?1) and avec_pop=?2")
 	List<InseeCarre200mOnlyShape> findCarreInMapArea(Geometry geometry, Boolean withPop);
 
 	@Query(nativeQuery = true,  value = "SELECT ST_Area(?1, true)")

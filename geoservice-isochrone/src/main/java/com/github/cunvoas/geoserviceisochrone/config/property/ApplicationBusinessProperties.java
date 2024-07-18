@@ -1,5 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.config.property;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +30,9 @@ public class ApplicationBusinessProperties {
 
 	@Value("${application.business.insee.annees}")
 	private Integer[] inseeAnnees;
-	
+
+	@Value("${application.admin.export-path}")
+	private String exportPath;
 	
 	@Value("${application.mailjet.apiToken}")
 	private String mailjetToken;
@@ -49,5 +53,14 @@ public class ApplicationBusinessProperties {
 	private String sitePublique;
 	
 
-
+	public Integer getDerniereAnnee() {
+		List<Integer> annes = List.of(inseeAnnees);
+		Integer annee=null;
+		for (Integer i : annes) {
+			if (annee==null || annee<i) {
+				annee = i;
+			}
+		}
+		return annee;
+	}
 }

@@ -119,6 +119,11 @@ class TestGeoserviceIsochroneApplication {
 		try {
 			//lille
 			computeServiceV2.computeCarreByInseeCode("59350");
+			
+//			computeServiceV2.computeCarreByCarre200m("CRS3035RES200mN3079800E3834000");
+//			computeServiceV2.computeCarreByCarre200m("CRS3035RES200mN3081600E3829800");
+			
+			
 
 //			computeService.computeCarreByInseeCode("59328");
 //			//Capinghem

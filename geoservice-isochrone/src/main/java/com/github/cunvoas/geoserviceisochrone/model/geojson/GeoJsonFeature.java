@@ -1,5 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.model.geojson;
 
+import java.util.Objects;
+
 import org.locationtech.jts.geom.Geometry;
 
 import com.bedatadriven.jackson.datatype.jts.serialization.GeometryDeserializer;
@@ -23,4 +25,15 @@ public class GeoJsonFeature {
 	private Geometry geometry;
     
 	private GeoJsonProperty properties;
+	
+	@Override
+	public boolean equals(Object obj) {
+		return properties.equals(obj);
+	}
+	
+	@Override
+	public int hashCode() {
+		return properties.hashCode();
+	}
+	
 }

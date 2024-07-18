@@ -1,31 +1,35 @@
 <template>
     <div>
-        <!--
         <label for="annee">Année</label>
-        <select id="annee" @change="onChange($event)" class="form-control" v-model="annee">
-           <option value="2019" selected="selected">2019</option>
-           <option value="2017">2017</option>
-           <option value="2015">2015</option>
+        <select
+            id="annee"
+            @change="onAnnee"
+            class="form-control"
+            v-model="annee"
+        >
+            <option value="2019" selected="selected">2019</option>
+            <option value="2017">2017</option>
+            <option value="2015">2015</option>
         </select>
--->
-        <label for="checkbox">Isochrones</label>
+
+        <label for="checkbox"> | Isochrones</label>
         <input id="checkbox" v-model="showIsochrones" type="checkbox" />
 
-        <label for="cbCarre">| Données carroyées</label>
+        <label for="cbCarre"> | Données carroyées</label>
         <input id="cbCarre" v-model="showCarre" type="checkbox" />
 
-        <label for="cbCadastre">| Cadastre</label>
+        <label for="cbCadastre"> | Cadastre</label>
         <input id="cbCadastre" v-model="showCadastre" type="checkbox" />
 
-        <label for="checkboxWithOMS" style="display: none"
-            >| Conforme OMS</label
+        <!--        <label for="checkboxWithOMS" style="display: none"
+            > | Conforme OMS</label
         >
         <input
             style="display: none"
             id="checkboxWithOMS"
             v-model="checkboxWithOMS"
             type="checkbox"
-        />
+        />-->
 
         <br />
 
@@ -131,7 +135,7 @@ export default {
             geojsonIsochrone: null,
             geojsonCarre: null,
             geojsonCadastre: null,
-            annee: "2015",
+            annee: "2019",
             restUrlCadastre:
                 "http://localhost:8980/isochrone/map/cadastre/area",
             restUrlCarre:
@@ -141,7 +145,7 @@ export default {
             tileProviders: [
                 {
                     name: "Carte OpenStreetMap",
-                    visible: false,
+                    visible: true,
                     attribution:
                         '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -151,12 +155,6 @@ export default {
                     visible: false,
                     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
                     attribution: "ArcGIS World Street Map (Esri)",
-                },
-                {
-                    name: "Carte StadiaMaps",
-                    visible: true,
-                    url: "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png",
-                    attribution: "Stadia Maps (stamen_terrain)",
                 },
                 {
                     name: "Satellite ArcGisOnline",
@@ -169,6 +167,22 @@ export default {
         };
     },
     methods: {
+        onAnnee() {
+            // refresh GeoJsonIsochrones v-model = this.annee
+            var qryPrms =
+                "?swLat=" +
+                this.boundSwLat +
+                "&swLng=" +
+                this.boundSwLng +
+                "&neLat=" +
+                this.boundNeLat +
+                "&neLng=" +
+                this.boundNeLng +
+                "&annee=" +
+                this.annee;
+            console.log(qryPrms);
+            this.callGeoJsonIsochrones(qryPrms);
+        },
         boundsUpdated(bounds) {
             this.bounds = bounds;
 
@@ -192,7 +206,9 @@ export default {
                     "&neLat=" +
                     this.boundNeLat +
                     "&neLng=" +
-                    this.boundNeLng;
+                    this.boundNeLng +
+                    "&annee=" +
+                    this.annee;
                 console.log(qryPrms);
 
                 this.callGeoJsonIsochrones(qryPrms);
@@ -201,33 +217,37 @@ export default {
             }
         },
 
-        async callGeoJsonIsochrones(prms) {
+        async callGeoJsonIsochrones(qryPrms) {
             // data isochrones
-            console.log("callGeoJsonIsochrones");
             var base =
-                "https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommePark.json";
-            //          var base=this.restUrlIsochrones;
-            const respIsochrone = await fetch(base + prms);
+                "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/park/park_c2c_1_" +
+                this.annee +
+                ".json";
+            //var base = this.restUrlIsochrones;
+            console.log("callGeoJsonIsochrones" + base + qryPrms);
+            const respIsochrone = await fetch(base + qryPrms);
             const dataIsochrone = await respIsochrone.json();
             this.geojsonIsochrone = dataIsochrone;
         },
-        async callGeoJsonCarres(prms) {
+        async callGeoJsonCarres(qryPrms) {
             // data carreau 20m
-            console.log("callGeoJsonCarres");
             var base =
-                "https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/lommeCarre.json";
-            //            var base=this.restUrlCarre;
-            const respCarre = await fetch(base + prms);
+                "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/carre200m/carre200m_c2c_1_" +
+                this.annee +
+                ".json";
+            //var base = this.restUrlCarre;
+            console.log("callGeoJsonCarres" + base + qryPrms);
+            const respCarre = await fetch(base + qryPrms);
             const dataCarre = await respCarre.json();
             this.geojsonCarre = dataCarre;
         },
-        async callGeoJsonCadastre(prms) {
+        async callGeoJsonCadastre(qryPrms) {
             // data Cadastre
-            console.log("callGeoJsonCadastre");
             var base =
-                "https://raw.githubusercontent.com/cunvoas/opendata-tools/main/geoservice-map/src/assets/geojson/cadastre/cadastre_c2c_1.json";
-            //           var base=this.restUrlCadastre;
-            const respCadastre = await fetch(base + prms);
+                "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/cadastre/cadastre_c2c_1.json";
+            //var base = this.restUrlCadastre;
+            console.log("callGeoJsonCadastre" + base + qryPrms);
+            const respCadastre = await fetch(base + qryPrms);
             const dataCadastre = await respCadastre.json();
             this.geojsonCadastre = dataCadastre;
         },
@@ -323,29 +343,45 @@ export default {
                     const theComment =
                         "<h4>Données carroyées : Parc / Habitant</h4>" +
                         "<div>id Inspire:" +
-                        feature.properties.id +
-                        "</div><div>Commune: <b>" +
+                        feature.properties.idInspire +
+                        "</div>" +
+                        "<div>Commune: <b>" +
                         feature.properties.commune +
-                        "</b></div><div>Population: <b>" +
+                        "</b>" +
+                        ", pop.: <b>" +
                         feature.properties.people +
                         "</b></div>";
 
                     var detailData = "";
-                    if (feature.properties.surfaceTotalParkOms === null) {
-                        detailData = "<div><b><i>Non calculé</i></b></div>";
+                    if (
+                        feature.properties.surfaceTotalParkOms === null ||
+                        feature.properties.surfaceTotalParkOms === ""
+                    ) {
+                        detailData =
+                            "<div style='text-align: center'><b><i>Non calculé</i></b></div>";
                     } else {
                         detailData =
-                            "<div>Dont parc: " +
+                            "<div>ont accès: " +
                             feature.properties.popParkIncludedOms +
-                            "</div><div>Sans parc: " +
+                            " pers. (sans: " +
                             feature.properties.popParkExcludedOms +
-                            "</div><div>Parcs accessibles: " +
+                            ")</div>" +
+                            "<div>Surface parcs: " +
                             feature.properties.surfaceTotalParkOms +
-                            " m²</div><div>Partagés avec : " +
+                            " m²</div>" +
+                            "<div>Partagés avec : " +
                             feature.properties.popSquareShareOms +
-                            " pers.</div><div>Soit : <b>" +
+                            " pers.</div>" +
+                            "<div>Soit : <b>" +
                             feature.properties.squareMtePerCapitaOms +
-                            " m²/hab</b></div>";
+                            " m²/hab</b></div>" +
+                            "<div style='padding-top: 1em;'><i><u>Parcs accessibles:</u><br />";
+                        if (feature.properties.commentParks !== "") {
+                            detailData +=
+                                feature.properties.commentParks + "</i></div>";
+                        } else {
+                            detailData += "Aucun</i></div>";
+                        }
                     }
 
                     e.target.setStyle({
@@ -368,7 +404,10 @@ export default {
                         fillOpacity: 0.6,
                     });
                     // cas non calculé
-                } else if (feature.properties.surfaceTotalParkOms === null) {
+                } else if (
+                    feature.properties.surfaceTotalParkOms === null ||
+                    feature.properties.surfaceTotalParkOms === ""
+                ) {
                     layer.setStyle({
                         fillColor: "#4944f5",
                         fillOpacity: 0.2,

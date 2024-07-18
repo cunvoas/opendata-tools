@@ -223,8 +223,8 @@ public class ComputeService {
 			surfaceParkPerCapita = surfaceParkAreas.divide(BigDecimal.valueOf(surfacePopulationIso), RoundingMode.HALF_EVEN);
 		}
 		
-		dto.setSurfacePerCapitaForIsochroneOnSquare(surfaceParkPerCapita);
-		dto.setPopulationInIsochrone(BigDecimal.valueOf(surfacePopulationIso));
+		dto.result.surfaceParkPerCapita = surfaceParkPerCapita;
+		dto.result.populationInIsochrone = BigDecimal.valueOf(surfacePopulationIso);
 		return dto;
 	}
 
@@ -359,26 +359,26 @@ public class ComputeService {
 			// then, I compute the surface per capita (m²/inhabitant)
 			
 			ComputeDto dto = this.computePopAndDensity(polygonPark, surfaceParkAreas);
-			computed.setSurfaceParkPerCapita(dto.getSurfacePerCapitaForIsochroneOnSquare());
+			computed.setSurfaceParkPerCapita(dto.result.surfaceParkPerCapita);
 			computed.setSurfaceTotalPark(surfaceParkAreas);
-			computed.setPopulationInIsochrone(dto.getPopulationInIsochrone());
+			computed.setPopulationInIsochrone(dto.result.populationInIsochrone);
 			
 			
 			
 			// Do the same but only with OMS compliant parks
 			if (allAreOms) {
 				// this is unusual to recompute
-				computed.setSurfaceParkPerCapitaOms(dto.getSurfacePerCapitaForIsochroneOnSquare());
+				computed.setSurfaceParkPerCapitaOms(dto.resultOms.surfaceParkPerCapita);
 				computed.setSurfaceTotalParkOms(surfaceParkAreas);
-				computed.setPopulationInIsochroneOms(dto.getPopulationInIsochrone());
+				computed.setPopulationInIsochroneOms(dto.resultOms.populationInIsochrone);
 				computed.setComments(sbParcName.toString());
 				
 			} else {
 				if (surfaceParkAreasOms!=null && !BigDecimal.ZERO.equals(surfaceParkAreasOms)) {
 					dto = this.computePopAndDensity(polygonParkOms, surfaceParkAreasOms);
-					computed.setSurfaceParkPerCapitaOms(dto.getSurfacePerCapitaForIsochroneOnSquare());
+					computed.setSurfaceParkPerCapitaOms(dto.resultOms.surfaceParkPerCapita);
 					computed.setSurfaceTotalParkOms(surfaceParkAreasOms);
-					computed.setPopulationInIsochroneOms(dto.getPopulationInIsochrone());
+					computed.setPopulationInIsochroneOms(dto.resultOms.populationInIsochrone);
 					computed.setComments(sbParcName.toString());
 				} else {
 					computed.setSurfaceParkPerCapitaOms(BigDecimal.ZERO);

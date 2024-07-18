@@ -58,23 +58,13 @@ public class ServiceReadReferences {
 	private ParcPrefectureRepository parcPrefectureRepository;
 	
 	
-	public Integer getDerniereAnnee() {
-		List<Integer> annes = List.of(applicationBusinessProperties.getInseeAnnees());
-		Integer annee=null;
-		for (Integer i : annes) {
-			if (annee==null || annee<i) {
-				annee = i;
-			}
-		}
-		return annee;
-	}
 	
 	public List<Region> getRegion() {
 		return regionRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
 	}
 	
 	public ParkAreaComputed getParkAreaComputedById(Long id) {
-		return this.getParkAreaComputedById(id, getDerniereAnnee());
+		return this.getParkAreaComputedById(id, applicationBusinessProperties.getDerniereAnnee());
 	}
 	public ParkAreaComputed getParkAreaComputedById(Long id, Integer annee) {
 		Optional<ParkAreaComputed> opt = parkAreaComputedRepository.findByIdAndAnnee(id, annee);
