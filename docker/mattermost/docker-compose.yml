@@ -1,0 +1,48 @@
+#
+# Aut'MEL
+# mattermost
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+version: '2'
+services:
+  mattermost:
+    env_file:
+      - secret.env
+      - .env
+    image: rheens/mattermost-app:v9.9.0
+    build:
+      args:
+        - MM_VERSION=v9.8.1
+        - GOOS=linux
+        - GOARCH=arm64
+    restart: unless-stopped
+    volumes:
+      - ${VOLUMES_PATH}/mattermost/config:/mattermost/config:rw
+      - ${VOLUMES_PATH}/mattermost/data:/mattermost/data:rw
+      - ${VOLUMES_PATH}/mattermost/logs:/mattermost/logs:rw
+      - ${VOLUMES_PATH}/mattermost/plugins:/mattermost/plugins:rw
+      - ${VOLUMES_PATH}/mattermost/client-plugins:/mattermost/client/plugins:rw
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - autmel-vlan
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "curl --fail -I 'http://mattermost:8000/static/icon_152x152.png' -H 'User-Agent: Docker Health Tester' || exit 1"
+
+
+networks:
+  autmel-vlan:
+    external: true
