@@ -30,7 +30,7 @@ import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 class TestGeoMapService {
 	
 	@Autowired
-	GeoMapService tested=new GeoMapService();
+	GeoMapServiceV2 tested=new GeoMapServiceV2();
 
 	
 	private ObjectMapper mapper = new ObjectMapper();

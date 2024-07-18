@@ -1,19 +1,8 @@
 package com.github.cunvoas.geoserviceisochrone.service.park;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Paths;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.ResourceUtils;
-
-import com.github.cunvoas.geoserviceisochrone.service.park.ComputeService;
 
 class TestComputeServiceV2 {
 

@@ -11,7 +11,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.AssociationRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
 @Service
@@ -28,7 +28,7 @@ public class DashboadService {
 	@Autowired
 	private CommunauteCommuneRepository communauteCommuneRepository;
 	@Autowired
-	private InseeCarre200mRepository inseeCarre200mRepository;
+	private InseeCarre200mOnlyShapeRepository inseeCarre200mRepository;
 	@Autowired
 	private ParkJardinRepository parkJardinRepository;
 	@Autowired
