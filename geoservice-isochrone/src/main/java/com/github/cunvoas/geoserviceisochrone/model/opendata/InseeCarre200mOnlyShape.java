@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity(name = "carre200onlyshape")
@@ -17,6 +18,7 @@ indexes = {
    @Index(name = "idx_carre200onlyshape_idcarre", columnList="id_inspire", unique = false)
    }
 )
+@EqualsAndHashCode(of = {"idInspire"})
 public class InseeCarre200mOnlyShape {
 	
 	@Id

@@ -209,9 +209,9 @@ public class GeoMapService  {
      * @return
      */
     
-	public GeoJsonRoot findAllParkByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
+	public GeoJsonRoot findAllParkByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
-    	return this.findAllParkByArea(polygon);
+    	return this.findAllParkByArea(polygon, annee);
     }
     
     
@@ -310,7 +310,7 @@ public class GeoMapService  {
 	 * @return
 	 */
 	
-	public GeoJsonRoot findAllParkByArea(Polygon polygon) {
+	public GeoJsonRoot findAllParkByArea(Polygon polygon, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		
 
@@ -331,7 +331,7 @@ public class GeoMapService  {
 					
 					
 
-					Optional<ParkAreaComputed> cpu = parkAreaComputedRepository.findById(parkArea.getId());
+					Optional<ParkAreaComputed> cpu = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
 					if (cpu.isPresent()) {
 						extraFeature(pv, cpu.get());
 					}

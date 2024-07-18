@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mRepos
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ComputeService;
+import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV2;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
 
@@ -34,6 +36,8 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 class TestGeoserviceIsochroneApplication {
 	@Autowired
 	private ComputeService computeService;
+	@Autowired
+	private ComputeServiceV2 computeServiceV2;
 
 	@Autowired
 	private CsvCarre200ShapeParser csvParser;
@@ -73,19 +77,30 @@ class TestGeoserviceIsochroneApplication {
 		}
 	}
 
+	/**
+	 * calul des aires et densité pour chaque parc (carte isochrone)
+	 */
 	@Test
 	@Disabled
-	@Order(22)
+	@Order(10)
 	void computeParkArea() {
 
 		try {
-			//lille
-			Optional<ParkArea> parkArea = parkAreaRepository.findById(56L);
-			if (parkArea.isPresent()) {
-				computeService.computeParkAreaV2(parkArea.get());
-			}
+			List<ParkArea> ll = parkAreaRepository.findAll();
 			
-			System.out.println("bla");
+			for (Iterator<ParkArea> iterator = ll.iterator(); iterator.hasNext();) {
+				ParkArea parkArea = iterator.next();
+				computeServiceV2.computeParkAreaV2(parkArea);
+			}	
+			
+			
+		
+//			//lille
+//			Optional<ParkArea> parkArea = parkAreaRepository.findById(parkArea);
+//			if (parkArea.isPresent()) {
+//				computeService.computeParkAreaV2(parkArea.get());
+		
+			
 		} catch (Exception e) {
 			System.err.println(e);
 			fail(e.getMessage());
@@ -93,6 +108,9 @@ class TestGeoserviceIsochroneApplication {
 			
 	}
 	
+	/**
+	 * calcule des carre vs aire des parcs
+	 */
 	@Test
 //	@Disabled
 	@Order(21)
@@ -100,7 +118,12 @@ class TestGeoserviceIsochroneApplication {
 
 		try {
 			//lille
-			computeService.computeCarreByInseeCode("59350");
+			computeServiceV2.computeCarreByInseeCode("59350");
+			
+//			computeServiceV2.computeCarreByCarre200m("CRS3035RES200mN3079800E3834000");
+//			computeServiceV2.computeCarreByCarre200m("CRS3035RES200mN3081600E3829800");
+			
+			
 
 //			computeService.computeCarreByInseeCode("59328");
 //			//Capinghem

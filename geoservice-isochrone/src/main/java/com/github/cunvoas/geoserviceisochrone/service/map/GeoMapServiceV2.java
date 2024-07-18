@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
@@ -58,7 +59,6 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 import com.google.common.math.BigDecimalMath;
 import com.google.common.primitives.Ints;
 
-import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -177,7 +177,6 @@ public class GeoMapServiceV2 {
      * @param neLng
      * @return
      */
-    
 	public GeoJsonRoot findAllCadastreByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
 		GeoJsonRoot root = new GeoJsonRoot();
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
@@ -210,9 +209,9 @@ public class GeoMapServiceV2 {
      * @return
      */
     
-	public GeoJsonRoot findAllParkByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
+	public GeoJsonRoot findAllParkByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
-    	return this.findAllParkByArea(polygon);
+    	return this.findAllParkByArea(polygon, annee);
     }
     
     
@@ -311,7 +310,7 @@ public class GeoMapServiceV2 {
 	 * @return
 	 */
 	
-	public GeoJsonRoot findAllParkByArea(Polygon polygon) {
+	public GeoJsonRoot findAllParkByArea(Polygon polygon, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		
 
@@ -332,7 +331,7 @@ public class GeoMapServiceV2 {
 					
 					
 
-					Optional<ParkAreaComputed> cpu = parkAreaComputedRepository.findById(parkArea.getId());
+					Optional<ParkAreaComputed> cpu = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
 					if (cpu.isPresent()) {
 						extraFeature(pv, cpu.get());
 					}
@@ -602,7 +601,8 @@ public class GeoMapServiceV2 {
 	
 	public GeoJsonRoot findAllCarreByArea(Polygon polygon) {
 		//FIXME until final front permit to change year
-		 return this.findAllCarreByArea(polygon, 2015);
+		log.error("FIXME findAllCarreByArea(Polygon polygon)");
+		 return this.findAllCarreByArea(polygon, 2019);
 	 }
 	 
     /**
@@ -612,6 +612,7 @@ public class GeoMapServiceV2 {
      */
     
 	public GeoJsonRoot findAllCarreByArea(Polygon polygon, Integer annee) {
+		log.error("findAllCarreByArea(Polygon polygon, Integer annee {})", annee);
     	GeoJsonRoot root = new GeoJsonRoot();
     	
     	if (polygon!=null) {
@@ -621,7 +622,7 @@ public class GeoMapServiceV2 {
     	if (carres!=null && carres.size()>0) {
     		for (InseeCarre200mOnlyShape c : carres) {
     			
-    			InseeCarre200mComputedV2 cputed = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, c.getIdInspire());
+    			Optional<InseeCarre200mComputedV2> ocputed = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, c.getIdInspire());
     		
     			GeoJsonFeature feature = new GeoJsonFeature();
 				root.getFeatures().add(feature);
@@ -630,12 +631,19 @@ public class GeoMapServiceV2 {
     			Carre200AndShapeView v = new Carre200AndShapeView();
 				feature.setProperties(v);
     			v.setId(c.getIdInspire());
-    			v.setIdInspire(c.getIdInspire());
+    			
+    			StringBuilder sb = new StringBuilder();
+    			sb.append( StringUtils.left(c.getIdInspire(), 14) );
+    			sb.append("<br />");
+    			sb.append( StringUtils.substring(c.getIdInspire(), 14) );
+    			
+    			v.setIdInspire(sb.toString());
     			
     			
-    			if (cputed!=null) {
-    				v.setPeople(formatInt(cputed.getPopAll()));
+    			if (ocputed.isPresent()) {
+    				InseeCarre200mComputedV2 cputed = ocputed.get();
     				
+    				v.setPeople(formatInt(cputed.getPopAll()));
     				
     				// declared by public organisation (^possible greenwashing)
     				v.setSurfaceTotalPark(formatInt(cputed.getSurfaceTotalPark()));
@@ -653,17 +661,25 @@ public class GeoMapServiceV2 {
     				
     				v.setFillColor(this.getFillColorCarre(v, cputed));
     				
+    				if (cputed.getComments()!=null) {
+    					v.setCommentParks(cputed.getComments());
+    				}
+    				
     			} else {
     				Filosofil200m carreData = filosofil200mRepository.findByAnneeAndIdInspire(annee, c.getIdInspire());
-    				v.setPeople(formatInt(carreData.getNbIndividus()));
-    				
-    				
+    				if (carreData!=null) {
+    					v.setPeople(formatInt(carreData.getNbIndividus()));
+    				} else {
+    					v.setPeople("0");
+    				}
     				
     				v.setPopParkExcluded("n/a");
     				v.setPopParkIncluded("n/a");
     			}
     			City city = cityRepository.findByInseeCode(c.getCodeInsee());
-    			v.setCommune(city.getName());
+    			if (city!=null) {
+    				v.setCommune(city.getName());
+    			}
 			}
     	}
     	}
@@ -672,9 +688,7 @@ public class GeoMapServiceV2 {
     }
     
 	public GeoJsonRoot findAllCarreByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
-		// FIXME
-		Integer annee = 2015;
-		//Integer[] annee = applicationBusinessProperties.getInseeAnnees();
+		Integer annee = applicationBusinessProperties.getDerniereAnnee();
     	return this.findAllCarreByArea(annee, swLat, swLng, neLat, neLng);
     }
     

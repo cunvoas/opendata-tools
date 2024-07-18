@@ -223,8 +223,8 @@ public class ComputeService {
 			surfaceParkPerCapita = surfaceParkAreas.divide(BigDecimal.valueOf(surfacePopulationIso), RoundingMode.HALF_EVEN);
 		}
 		
-		dto.setSurfacePerCapitaForIsochroneOnSquare(surfaceParkPerCapita);
-		dto.setPopulationInIsochrone(BigDecimal.valueOf(surfacePopulationIso));
+		dto.result.surfaceParkPerCapita = surfaceParkPerCapita;
+		dto.result.populationInIsochrone = BigDecimal.valueOf(surfacePopulationIso);
 		return dto;
 	}
 
@@ -289,7 +289,7 @@ public class ComputeService {
 			
 			
 			ParkAreaComputed pac;
-			Optional<ParkAreaComputed> Opac = parkAreaComputedRepository.findById(parkArea.getId());
+			Optional<ParkAreaComputed> Opac = null;//parkAreaComputedRepository.findById(parkArea.getId());
 			if (Opac.isPresent()) {
 				pac = Opac.get();
 			} else {
@@ -359,26 +359,26 @@ public class ComputeService {
 			// then, I compute the surface per capita (m²/inhabitant)
 			
 			ComputeDto dto = this.computePopAndDensity(polygonPark, surfaceParkAreas);
-			computed.setSurfaceParkPerCapita(dto.getSurfacePerCapitaForIsochroneOnSquare());
+			computed.setSurfaceParkPerCapita(dto.result.surfaceParkPerCapita);
 			computed.setSurfaceTotalPark(surfaceParkAreas);
-			computed.setPopulationInIsochrone(dto.getPopulationInIsochrone());
+			computed.setPopulationInIsochrone(dto.result.populationInIsochrone);
 			
 			
 			
 			// Do the same but only with OMS compliant parks
 			if (allAreOms) {
 				// this is unusual to recompute
-				computed.setSurfaceParkPerCapitaOms(dto.getSurfacePerCapitaForIsochroneOnSquare());
+				computed.setSurfaceParkPerCapitaOms(dto.resultOms.surfaceParkPerCapita);
 				computed.setSurfaceTotalParkOms(surfaceParkAreas);
-				computed.setPopulationInIsochroneOms(dto.getPopulationInIsochrone());
+				computed.setPopulationInIsochroneOms(dto.resultOms.populationInIsochrone);
 				computed.setComments(sbParcName.toString());
 				
 			} else {
 				if (surfaceParkAreasOms!=null && !BigDecimal.ZERO.equals(surfaceParkAreasOms)) {
 					dto = this.computePopAndDensity(polygonParkOms, surfaceParkAreasOms);
-					computed.setSurfaceParkPerCapitaOms(dto.getSurfacePerCapitaForIsochroneOnSquare());
+					computed.setSurfaceParkPerCapitaOms(dto.resultOms.surfaceParkPerCapita);
 					computed.setSurfaceTotalParkOms(surfaceParkAreasOms);
-					computed.setPopulationInIsochroneOms(dto.getPopulationInIsochrone());
+					computed.setPopulationInIsochroneOms(dto.resultOms.populationInIsochrone);
 					computed.setComments(sbParcName.toString());
 				} else {
 					computed.setSurfaceParkPerCapitaOms(BigDecimal.ZERO);
@@ -552,7 +552,7 @@ public class ComputeService {
 		parkTypeService.populate(park);
 		
 		
-		Optional<ParkAreaComputed> parcCpuOpt = parkAreaComputedRepository.findById(park.getId());
+		Optional<ParkAreaComputed> parcCpuOpt = null;//parkAreaComputedRepository.findById(park.getId());
 		if (parcCpuOpt.isPresent()) {
 			parcCpu = parcCpuOpt.get();
 		} else {

@@ -3,8 +3,10 @@ package com.github.cunvoas.geoserviceisochrone.model.isochrone;
 import java.io.Serializable;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(of = {"annee", "idInspire"})
 public class InseeCarre200mComputedId implements Serializable {
 	
 	/**
