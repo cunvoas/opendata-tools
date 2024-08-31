@@ -1,17 +1,33 @@
 <template>
-    <div id="app">
-        <HeaderAsso></HeaderAsso>
+    <div id="appCarte" valign="top" align="left">
+
+        <span style="border: 2px">
+            <div
+                id="map"
+                align="center"
+                valign="middle"
+                style="position: relative, z-index: 10;"
+            >
+                <Isochrone msg="Cartographie des parcs" />
+            </div>
+        </span>
+
+        <LegendeCarte></LegendeCarte>
+    
     </div>
 </template>
-       
 
 <script>
 import HeaderAsso from "../components/HeaderAsso.vue";
+import Isochrone from "../components/Isochrone.vue";
+import LegendeCarte from "../components/LegendeCarte.vue";
 
 export default {
-    name: "app",
+    name: "AppCarte",
     components: {
-    HeaderAsso
+    HeaderAsso,
+    Isochrone,
+    LegendeCarte
 },
 };
 </script>
@@ -46,5 +62,16 @@ table.legend td {
     margin: 0 0 5px;
     color: #777;
 }
-
+.legend {
+    text-align: left;
+    line-height: 18px;
+    color: #555;
+}
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
 </style>

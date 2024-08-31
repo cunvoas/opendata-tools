@@ -14,4 +14,4 @@ COPY secret.env .env
 #USER 1000
 
 
-ENTRYPOINT ["java", "-Dspring.profiles.active=prod,pi", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xms256M ", "-Xmx384M", "-Dspring.profiles.active=prod,pi", "-jar", "app.jar"]

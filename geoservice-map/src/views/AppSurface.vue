@@ -1,17 +1,29 @@
 <template>
-    <div id="app">
-        <HeaderAsso></HeaderAsso>
+    <div id="appSurface" valign="top" align="left">
+        
+        <span style="border: 2px">
+            <div
+                id="surface"
+                align="center"
+                valign="middle"
+                style="position: relative, z-index: 10;"
+            >
+                <BarGraph msg="Surface par habitants" />
+            </div>
+        </span>
+    
     </div>
 </template>
-       
 
 <script>
 import HeaderAsso from "../components/HeaderAsso.vue";
+import BarGraph from "../components/BarGraph.vue";
 
 export default {
-    name: "app",
+    name: "AppSurface",
     components: {
-    HeaderAsso
+    HeaderAsso,
+    BarGraph
 },
 };
 </script>
