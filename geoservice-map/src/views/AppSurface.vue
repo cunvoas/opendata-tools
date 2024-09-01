@@ -11,7 +11,7 @@
                 <BarGraph msg="Barre surface par habitants" />
             </div>
             
-            <!--
+            
             <div
                 id="surfacePie"
                 align="center"
@@ -20,7 +20,7 @@
             >
                 <PieGraph msg="camenbert surface par habitants" />
             </div>
-            -->
+            
         </span>
     
     </div>
@@ -29,14 +29,14 @@
 <script>
 import HeaderAsso from "../components/HeaderAsso.vue";
 import BarGraph from "../components/BarGraph.vue";
-//import PieGraph from "../components/PieGraph.vue";
+import PieGraph from "../components/PieGraph.vue";
 
 export default {
     name: "AppSurface",
     components: {
     HeaderAsso,
     BarGraph,
-//    PieGraph,
+    PieGraph,
     },
 };
 </script>

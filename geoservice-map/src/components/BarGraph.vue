@@ -47,7 +47,7 @@ export default {
         key: 'surface',
         values: ['habitants'],
         axis: {
-          yTicks: 6
+          yTicks: 6,
         },
         color: {
           key: ['barColor'],

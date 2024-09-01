@@ -1,7 +1,7 @@
 <template>
   <div class="my-app">
     
-    <!-- chart -->
+    <!-- chart  -->
     <D3PieChart
         :config="chart_config"
         :datum="chart_data"
@@ -25,7 +25,7 @@ export default {
 
   data() {
     return {
-      chart_title: 'Distribution des surfaces de parc par habitant',
+      chart_title: 'Proportion des habitants selon les critères OMS',
       chart_data: [
         {surface: '>0 <=1', habitants: 32543, annee: '2019', barColor: '#7c7c7c'},
         {surface: '>1 <=2', habitants: 37190, annee: '2019', barColor: '#7c7c7c'},
@@ -45,24 +45,23 @@ export default {
         {surface: '>25 <=45', habitants: 13443, annee: '2019', barColor: '#1a9900'},
         {surface: '>45 <=200', habitants: 11123, annee: '2019', barColor: '#1a9900'}
       ],
+      
       chart_config: {
         key: 'surface',
-        values: ['habitants'],
-        axis: {
-          yTicks: 6
-        },
-        color: {
-          key: ['barColor'],
-          current: '#4944f5'
-        }
+        value: 'habitants',
+        color: { key: ['barColor'],},
+        radius: {inner: 33}
+      },
+      count: 1
+      
       }
     }
   }
-};
+
 </script>
 
 <style lang="scss">
-@import '../styles';
+//@import '../styles';
 
 .chart--piechart {
   .chart__line {
