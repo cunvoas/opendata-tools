@@ -2,25 +2,27 @@
   <div class="my-app">
     
     <!-- chart -->
-    <D3BarChart
-      :config="chart_config"
-      :datum="chart_data"
-      :title="chart_title"
-    ></D3BarChart>
+    <D3PieChart
+        :config="chart_config"
+        :datum="chart_data"
+        :title="chart_title"
+    >
+    </D3PieChart>
 
   </div>
 </template>
 
-<script>
-// https://saigesp.github.io/vue-d3-charts/#/barchart
 
-import { D3BarChart } from 'vue-d3-charts';
+<script>
+import { D3PieChart } from 'vue-d3-charts';
 
 
 export default {
   components: {
-    D3BarChart,
+    D3PieChart,
   },
+  
+
   data() {
     return {
       chart_title: 'Distribution des surfaces de parc par habitant',
@@ -51,12 +53,21 @@ export default {
         },
         color: {
           key: ['barColor'],
-          current: 'yellow',
-          default: 'orange'
+          current: '#4944f5'
         }
       }
     }
   }
-}
-
+};
 </script>
+
+<style lang="scss">
+@import '../styles';
+
+.chart--piechart {
+  .chart__line {
+    fill: none;
+    stroke: black;
+  }
+}
+</style>

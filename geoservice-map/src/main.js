@@ -1,8 +1,8 @@
 import Vue from 'vue'
 //import App from './App.vue'
 import HeaderAsso from './components/HeaderAsso.vue'
-import AppCarte from './views/AppCarte.vue'
-import AppSurface from './views/AppSurface.vue'
+//import AppCarte from './views/AppCarte.vue'
+//import AppSurface from './views/AppSurface.vue'
 import 'leaflet/dist/leaflet.css';
 import router from './router';
 

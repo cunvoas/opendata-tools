@@ -3,13 +3,24 @@
         
         <span style="border: 2px">
             <div
-                id="surface"
+                id="surfaceBar"
                 align="center"
                 valign="middle"
                 style="position: relative, z-index: 10;"
             >
-                <BarGraph msg="Surface par habitants" />
+                <BarGraph msg="Barre surface par habitants" />
             </div>
+            
+            <!--
+            <div
+                id="surfacePie"
+                align="center"
+                valign="middle"
+                style="position: relative, z-index: 10;"
+            >
+                <PieGraph msg="camenbert surface par habitants" />
+            </div>
+            -->
         </span>
     
     </div>
@@ -18,13 +29,15 @@
 <script>
 import HeaderAsso from "../components/HeaderAsso.vue";
 import BarGraph from "../components/BarGraph.vue";
+//import PieGraph from "../components/PieGraph.vue";
 
 export default {
     name: "AppSurface",
     components: {
     HeaderAsso,
-    BarGraph
-},
+    BarGraph,
+//    PieGraph,
+    },
 };
 </script>
 

@@ -1,12 +1,13 @@
 
 <template>
-    <b-container>
-           <b-row style="align: center;">
-                <b-col style="vertical-align: top;">
-                        <router-link to="/carte">Carte</router-link>
-                        <br />
-                        <router-link to="/surface">Surface</router-link>
-                </b-col>
+    <b-container name="bContainer">
+           <b-row name="bNav" style="align: center;">
+               
+            <b-col style="vertical-align: top;">
+                    <router-link to="/carte">Carte</router-link>
+                    <br />
+                    <router-link to="/surface">Surface</router-link>
+            </b-col>
             
             <b-col>
                 <a
@@ -42,9 +43,9 @@
                 /></a>
             </b-col>
         </b-row>
-        <b-row>
+        <b-row name="bView">
             <b-col>
-                        <router-view></router-view>
+                   <router-view></router-view>
             </b-col>
         </b-row>
     </b-container>
