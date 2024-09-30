@@ -11,7 +11,7 @@ import lombok.Data;
  * @see https://www.baeldung.com/spring-thymeleaf-error-messages
  */
 @Data
-public class FormContributor {
+public class FormContributor extends AbstractFormLocate {
 
 
 	private Long id;
@@ -42,5 +42,6 @@ public class FormContributor {
 	
 //	@Size(min = 1, message = "User's name cannot be empty.")
 	private Long idAsso;
+
 
 }

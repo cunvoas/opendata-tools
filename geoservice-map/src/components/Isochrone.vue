@@ -79,8 +79,10 @@
       ></l-control-scale>
     </l-map>
 
-    <!--<br />-->
-    <!--<span>Bounds: {{ bounds }}</span>-->
+<!--
+    <br />
+    <span>Bounds: {{ bounds }}</span>
+-->
   </div>
 </template>
 
@@ -97,6 +99,8 @@ import {
   LPolygon,
   LControlScale,
 } from "vue2-leaflet";
+
+function getCenter(idInspire) {}
 
 export default {
   name: "Isochrone",

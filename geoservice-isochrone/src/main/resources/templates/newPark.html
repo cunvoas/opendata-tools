@@ -288,15 +288,6 @@
 	// TODO
 	//@@ filter les geometry selon le statuts de rapprochement préfecture
 	
-    manageDisabled();
-    function manageDisabled() {
-    	if (document.getElementById("idRegion").value!="") {
-    		document.getElementById("fsComm2co").disabled = false;
-    	}
-    	if (document.getElementById("idCommunauteDeCommunes").value!="") {
-    		document.getElementById("fsCity").disabled = false;
-    	}
-    }
 
     
     
@@ -656,8 +647,17 @@
 
     
     function manageDisabled() {
-           document.getElementById("fsEditPark").disabled = false;
+        console.log(document.getElementById("idRegion").value);
+        
+        if (document.getElementById("idRegion").value!="") {
+            document.getElementById("fsComm2co").disabled = false;
+        }
+        if (document.getElementById("idCommunauteDeCommunes").value!="") {
+            document.getElementById("fsCity").disabled = false;
+        }
     }
+    manageDisabled();
+
     
     
     //https://gis.stackexchange.com/questions/439672/checking-whether-a-polygon-drawn-with-leaflet-geoman-plugin-is-valid

@@ -1,23 +1,37 @@
 <template>
-    <div id="app">
-        <HeaderAsso></HeaderAsso>
+    <div id="appMethodo" valign="top" align="left">
+        
+        <span style="border: 2px">
+            <div
+                id="surfaceBar"
+                align="center"
+                valign="middle"
+                style="position: relative, z-index: 10;"
+            >
+                <BarGraph msg="Barre surface par habitants" />
+            </div>
+            
+            
+        
+        </span>
+    
     </div>
 </template>
-       
 
 <script>
 import HeaderAsso from "../components/HeaderAsso.vue";
+import BarGraph from "../components/BarGraph.vue";
+import PieGraph from "../components/PieGraph.vue";
 
 export default {
-    name: "app",
+    name: "AppMethodo",
     components: {
     HeaderAsso
-},
+    },
 };
 </script>
 
 <style>
-
 #app {
     font-family: Avenir, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -46,22 +60,6 @@ table.legend td {
 .dataDetail h4 {
     margin: 0 0 5px;
     color: #777;
-}
-nav a:link {color:#000000;}
-nav a:visited {color:#000000;}
-nav a:hover {color:#000000;}
-nav a:active {color:#000000;}
-
-#router-links {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-    a:link {color:#000000;};   
-    a:visited {color:#000000;};
-    a:hover {color:#000000;};   
-    a:active {color:#000000;};  
 }
 
 </style>

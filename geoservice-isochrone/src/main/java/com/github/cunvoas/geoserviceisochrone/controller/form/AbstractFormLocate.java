@@ -2,6 +2,10 @@ package com.github.cunvoas.geoserviceisochrone.controller.form;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
@@ -23,9 +27,23 @@ public abstract class AbstractFormLocate {
 	private String nameCommunauteDeCommunes;
 	private String nameCommune;
 	
-	// FIXME process with User Preferences
+	
 	public void autoLocate() {
-		this.setIdRegion(9L);
-		this.setIdCommunauteDeCommunes(1L);
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication.getPrincipal() instanceof Contributeur) {
+			Contributeur contributeur = (Contributeur)authentication;
+			this.idRegion = contributeur.getIdRegion();
+			this.idCommunauteDeCommunes = contributeur.getIdCommunauteCommune();
+			this.idCommune = contributeur.getIdCommune();
+			
+		} else {
+			
+			// FIXME process with User Preferences 
+			// TODO remove after test 
+			this.setIdRegion(9L);
+			this.setIdCommunauteDeCommunes(1L);
+		}
+		
 	}
 }

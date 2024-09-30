@@ -87,6 +87,46 @@
                         <p th:if="${#fields.hasErrors('idAsso')}" th:class="${#fields.hasErrors('idAsso')}? error:invisibleError" th:errors="*{idAsso}">Error</p>
                     </div>
                     
+
+
+   <div class="row  mb-3"> <!-- row commune -->
+         
+       <div class="col-3">
+           <div class="card" style="text-align: center">
+              <!-- region -->
+                  <div class="form-floating">
+                      <select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+                          <option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
+                          <option th:each="region : ${regions}" 
+                              th:value="${region.id}" 
+                              th:text="${region.name}" 
+                              th:selected="${region.id==idRegion}"></option>
+                      </select>
+                      <label for="idRegion" th:text="#{entrance.region}">region</label>
+                  </div>
+              </div>
+       </div>
+       <div class="col-3">
+           <div class="card" style="text-align: center">
+                  <!-- comm2co -->
+                  <div class="form-floating">
+                     <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}"> </select>
+                     <label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
+                  </div>
+           </div>
+       </div>
+       <div class="col-6">
+           <div class="card" style="text-align: center">
+              <!-- commune -->
+                  <div class="form-floating">
+                      <select class="form-select" id="idCommune" name="idCommune" th:field="*{idCommune}"> </select>
+                      <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
+               </div>
+           </div>
+       </div>
+   </div> <!-- row commune -->
+
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="form-floating mb-3 mb-md-0">
@@ -120,6 +160,11 @@
                             <input class="btn btn-primary btn-block" type="button" th:value="#{contributor.resetPasswpord}" onclick="resetPwd()" />
                         </div>
                     </div>
+                    
+                    
+                    
+      
+      
                 </form>
             </div>
 
@@ -140,11 +185,62 @@
 <script th:inline="javascript">  
    function resetPwd() {
 	   
-       if confirm([[#{contributor.resetPasswpord.text}]]) {
+       if (confirm([[#{contributor.resetPasswpord.text}]])) {
            sUrl= window.location.protocol + "//" + window.location.host + [[@{/mvc/management/contrib/resetMyPassword}]];
            document.location.href=sUrl;
        }
    }
+   
+   $(document).ready(function(){
+	    $('#idRegion').on('change', function() {
+	    	console.log("change region");
+	    	var idRegion=document.getElementById('idRegion');
+	    	var r = idRegion.options[idRegion.selectedIndex].value;
+	        var label = $(this).val();
+	        console.log();
+	        if(r){
+	            $.ajax({
+	                type:'GET',
+	                url: [[@{/mvc/management/contrib/search_c2c}]],
+	                data:'r='+r ,  //+"&q="+label,
+	                success:function(jsonResp){
+                        $.each(jsonResp, function(i, val) {
+                            $("#idCommunauteDeCommunes").append(
+                                    "<option value=" + val.id + ">" + val.text+ "</option>");
+                        });
+	                    $('#idCommune').html('<option value="">Sélectionner la communauté de communes en premier.</option>'); 
+	                }
+	            }); 
+	        }else{
+	        	$('#idCommunauteDeCommunes').html('<option value="">Sélectionner la région en premier.</option>'); 
+	        	$('#idCommune').html('<option value="">Sélectionner la communauté de communes en premier.</option>'); 
+	        }
+	    });
+	    
+	    $('#idCommunauteDeCommunes').on('change', function(){
+            console.log("change CommunauteDeCommunes");
+            
+            var idCommunauteDeCommunes=document.getElementById('idCommunauteDeCommunes');
+            var c = idCommunauteDeCommunes.options[idCommunauteDeCommunes.selectedIndex].value;
+            var label = $(this).val();
+	        if(c){
+	            $.ajax({
+	                type:'GET',
+	                url: [[@{/mvc/management/contrib/search_city}]],
+                    data:'c='+c,//+"&q="+label,
+	                success : function(jsonResp) {
+	                    $.each(jsonResp, function(i, val) {
+	                        $("#idCommune").append(
+	                                "<option value=" + val.id + ">" + val.text+ "</option>");
+	                    });
+	                }
+	            }); 
+	        }else{
+	            $('#idCommune').html('<option value="">Sélectionner la communauté de communes en premier.</option>'); 
+	        }
+	    });
+	});
+
 </script>
     </body>
 </html>

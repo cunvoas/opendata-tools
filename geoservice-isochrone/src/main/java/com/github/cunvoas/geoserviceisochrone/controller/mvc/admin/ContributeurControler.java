@@ -1,14 +1,15 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.admin;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,10 +21,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormContributor;
+import com.github.cunvoas.geoserviceisochrone.controller.form.SearchListDto;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Association;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
 import com.github.cunvoas.geoserviceisochrone.service.admin.AssociationService;
 import com.github.cunvoas.geoserviceisochrone.service.admin.ContributeurService;
 
@@ -41,6 +48,12 @@ public class ContributeurControler {
 	@Autowired
 	private ContributeurService contributeurService;
 	@Autowired
+	private RegionRepository regionRepository;
+	@Autowired
+	private CommunauteCommuneRepository communauteCommuneRepository;
+	@Autowired
+	private CityRepository cityRepository;
+	@Autowired
 	private AssociationService associationService;
 
 	private String formName = "editContributeur";
@@ -48,7 +61,7 @@ public class ContributeurControler {
 	
 	
 	
-	private static final Long ID_AUTMEL=1L;
+//	private static final Long ID_AUTMEL=1L;
 
 	@GetMapping("/list")
 	public String getList(Model model) {
@@ -82,14 +95,14 @@ public class ContributeurControler {
 	@GetMapping("/edit")
 	public String getForm(@RequestParam("id") Long id, Model model) {
 		
-		
 		Contributeur contrib = contributeurService.get(id);
 		model.addAttribute(formName, cloneToForm(contrib));
-		
+		model.addAttribute("regions", regionRepository.findAll());
 
 		Contributeur contribConnected =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		if (ContributeurRole.ADMINISTRATOR.equals(contribConnected.getRole()))  {
 			model.addAttribute("assos", associationService.findAll());
+			
 		} else {
 			List<Association> assos = new ArrayList<>(1);
 			assos.add(contrib.getAssociation());
@@ -205,6 +218,19 @@ public class ContributeurControler {
 		clone.setAvatar(in.getAvatar());
 		clone.setRole(in.getRole());
 		clone.setIdAsso(in.getAssociation().getId());
+		
+		clone.setIdRegion(in.getIdRegion());
+		clone.setIdCommunauteDeCommunes(in.getIdCommunauteCommune());
+		clone.setIdCommune(in.getIdCommune());
+		
+		clone.setRegions(regionRepository.findAllOrderByName());
+		if (in.getIdRegion()!=null) {
+			clone.setCommunautesDeCommunes(communauteCommuneRepository.findByRegionId(in.getIdRegion()));
+		}
+//		if (in.getIdCommunauteCommune()!=null) {
+//			clone.setCommunes(cityRepository.findByCommunauteCommuneId(in.getIdCommunauteCommune()));
+//		}
+		
 		return clone;
 	}
 	
@@ -225,6 +251,6 @@ public class ContributeurControler {
 		return clone;
 	}
 	
-
+	
 
 }

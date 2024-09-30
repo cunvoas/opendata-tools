@@ -1,12 +1,14 @@
 
 <template>
     <b-container name="bContainer">
+         
            <b-row name="bNav" style="align: center;">
-               
-            <b-col style="vertical-align: top;">
-                    <router-link to="/carte">Carte</router-link>
+          
+            <b-col style="vertical-align: top;" id="router-links"><nav>  
+                    <router-link class="router-links" to="/carte">Carte</router-link>
                     <br />
-                    <router-link to="/surface">Surface</router-link>
+                    <router-link class="router-links" to="/surface">Surface</router-link>
+                    </nav>
             </b-col>
             
             <b-col>

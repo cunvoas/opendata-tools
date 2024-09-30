@@ -8,7 +8,7 @@
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title><%= htmlWebpackPlugin.options.title %></title>
 
-<!-- Matomo -->
+<!-- Matomo 
 <script>
 var _paq = window._paq = window._paq || [];
 /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
@@ -22,7 +22,33 @@ var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[
 g.async=true; g.src='//cdn.matomo.cloud/geoservice.matomo.cloud/matomo.js'; s.parentNode.insertBefore(g,s);
 })();
 </script>
-<!-- End Matomo Code -->
+ End Matomo Code -->
+
+<!-- Piwik -->
+<script type="text/javascript">
+
+    var _paq = _paq || [];
+    _paq.push(["trackPageView"]);
+    _paq.push(["enableLinkTracking"]);
+
+    (function() {
+
+        var u = "https://autmel.piwik.pro/";
+        _paq.push(["setTrackerUrl", u + "ppms.php"]);
+        _paq.push(["setSiteId", "f948682b-11fe-4d25-ab02-fcfe606a7397"]);
+
+        var d = document,
+            g = d.createElement("script"),
+            s = d.getElementsByTagName("script")[0];
+
+        g.type = "text/javascript";
+        g.async = true;
+        g.defer = true;
+        g.src = u + "ppms.js";
+        s.parentNode.insertBefore(g, s);
+    })();
+
+</script>
 
   </head>
   <body>

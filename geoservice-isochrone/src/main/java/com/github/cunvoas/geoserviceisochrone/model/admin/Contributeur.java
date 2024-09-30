@@ -59,6 +59,14 @@ public class Contributeur implements UserDetails {
     @ManyToOne
     @JoinColumn(name="asso_id", nullable=true)
     private Association association;
+    
+    // preference
+    @Column
+    private Long idRegion;
+    @Column
+    private Long idCommunauteCommune;
+    @Column
+    private Long idCommune;
 
     
 	@Override

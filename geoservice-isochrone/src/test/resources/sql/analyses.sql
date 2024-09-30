@@ -37,8 +37,7 @@ order by surface_park_pcapita_oms
 
 
 
----
- bar graph OMS + pauvres
+---  bar graph OMS + pauvres
  
  WITH series AS (
     SELECT generate_series(0, 11, 1) AS surface_min
@@ -79,7 +78,16 @@ SELECT surface_min, surface_max
         ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
     WHERE cc.annee=2019     AND f.lcog_geo like '%59350%'
     AND surface_park_pcapita_oms BETWEEN surface_min AND surface_max
-) as menage
+) as menage,
+(
+    select getColorDensite(cc.is_dense, surface_min)
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    WHERE cc.annee=2019     AND f.lcog_geo like '%59350%'
+    AND surface_park_pcapita BETWEEN surface_min AND surface_max
+    group by is_dense
+) as couleur
 
 FROM range
 order by surface_min;
@@ -111,7 +119,16 @@ SELECT surface_min, surface_max
         ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
     WHERE cc.annee=2019     AND f.lcog_geo like '%59350%'
     AND surface_park_pcapita_oms BETWEEN surface_min AND surface_max
-) as population
+) as population,
+(
+    select getColorDensite(cc.is_dense, surface_min)
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    WHERE cc.annee=2019     AND f.lcog_geo like '%59350%'
+    AND surface_park_pcapita BETWEEN surface_min AND surface_max
+    group by is_dense
+) as couleur
 
 FROM range
 order by surface_min;
@@ -143,7 +160,16 @@ SELECT surface_min, surface_max
         ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
     WHERE cc.annee=2019     AND f.lcog_geo like '%59350%'
     AND surface_park_pcapita BETWEEN surface_min AND surface_max
-) as population
+) as population,
+(
+    select getColorDensite(cc.is_dense, surface_min)
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    WHERE cc.annee=2019     AND f.lcog_geo like '%59350%'
+    AND surface_park_pcapita BETWEEN surface_min AND surface_max
+    group by is_dense
+) as couleur
 
 FROM range
 order by surface_min;
