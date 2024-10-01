@@ -2,14 +2,8 @@
 <template>
     <b-container name="bContainer">
          
-           <b-row name="bNav" style="align: center;">
+           <b-row  style="align: center;text-align: center;" >
           
-            <b-col style="vertical-align: top;" id="router-links"><nav>  
-                    <router-link class="router-links" to="/carte">Carte</router-link>
-                    <br />
-                    <router-link class="router-links" to="/surface">Surface</router-link>
-                    </nav>
-            </b-col>
             
             <b-col>
                 <a
@@ -44,7 +38,15 @@
                         style="border: 2px"
                 /></a>
             </b-col>
+        
+            <b-col name="bNav" style="vertical-align: top;" id="router-links"><nav>  
+                    <router-link class="router-links" to="/carte">Carte</router-link>
+                    &nbsp;
+                    <router-link class="router-links" to="/surface">Surface</router-link>
+                    </nav>
+            </b-col>
         </b-row>
+            
         <b-row name="bView">
             <b-col>
                    <router-view></router-view>
@@ -52,3 +54,22 @@
         </b-row>
     </b-container>
 </template>
+
+
+<style scoped>
+a {
+  text-decoration: none; /* Remove default underlines */
+  color: #222222;
+  font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
+a.router-link-exact-active {
+  color: #000000;
+  background-color: #fffff2; /* Example styling */
+}
+
+a.router-link-active {
+  color: #000000; /* Example styling for nested routes */
+  font-weight: bold;
+}
+</style>
