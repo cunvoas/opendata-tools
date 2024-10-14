@@ -15,10 +15,12 @@ import lombok.Data;
 @Data
 public abstract class AbstractFormLocate {
 
+	// preset select of the user
 	protected Long idRegion;
 	protected Long idCommunauteDeCommunes;
 	protected Long idCommune;
 
+	// list of dropdown
 	protected List<Region> regions;
 	protected List<CommunauteCommune> communautesDeCommunes;
 	protected List<City> communes;
@@ -26,7 +28,10 @@ public abstract class AbstractFormLocate {
 	private String nameRegion;
 	private String nameCommunauteDeCommunes;
 	private String nameCommune;
-	
+
+	// locate on map
+	private String mapLat;
+	private String mapLng;
 	
 	public void autoLocate() {
 		

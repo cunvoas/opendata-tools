@@ -100,7 +100,7 @@ class TestGeoserviceIsochroneApplication {
 	 * calcule des carre vs aire des parcs
 	 */
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(21)
 	void computeCarreFix() {
 

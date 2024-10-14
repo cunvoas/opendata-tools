@@ -88,6 +88,9 @@
                     </div>
                     
 
+	<div class="row">
+	    <div class="col-12"> <p th:text="#{contributor.preset.location}" /></div>
+	</div>
 
    <div class="row  mb-3"> <!-- row commune -->
          
@@ -270,7 +273,7 @@
 
 	    });
 	    
- 
+ // https://select2.org/data-sources/ajax
     $("#idCommune").select2({
     	ajax: {
     		delay: 300,

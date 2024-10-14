@@ -1,7 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.admin;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -114,10 +113,11 @@ public class ContributeurRestControler {
 
 		}
 		
-		SearchListDto src = SearchListDto.builder().id(2878L).text("LILLE").build();
-		//if (Collections.binarySearch(ret, src)>0){
-		if (ret.contains(src)){	
-			log.error("found {}", src);
+		if (log.isDebugEnabled()) {
+			SearchListDto src = SearchListDto.builder().id(2878L).text("LILLE").build();
+			if (ret.contains(src)){	
+				log.debug("found {}", src);
+			}
 		}
  		return ret;
 
