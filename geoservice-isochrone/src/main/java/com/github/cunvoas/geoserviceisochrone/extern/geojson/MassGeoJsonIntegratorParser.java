@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
  *  Import très lent: 17000 lignes/h, soit 33j d'import.
  *  
  *  Optimisation > direct en base
+ *  @deprecated
  *  @see massImportCarreau200mSeuls.sql
  */
 @Component

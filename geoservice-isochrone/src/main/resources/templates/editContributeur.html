@@ -87,6 +87,63 @@
                         <p th:if="${#fields.hasErrors('idAsso')}" th:class="${#fields.hasErrors('idAsso')}? error:invisibleError" th:errors="*{idAsso}">Error</p>
                     </div>
                     
+
+	<div class="row">
+	    <div class="col-12"> <p th:text="#{contributor.preset.location}" /></div>
+	</div>
+
+   <div class="row  mb-3"> <!-- row commune -->
+         
+       <div class="col-3">
+           <div class="card" style="text-align: center">
+              <!-- region -->
+                  <div class="form-floating">
+                      <select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+                          <option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
+                          <option th:each="region : ${regions}" 
+                              th:value="${region.id}" 
+                              th:text="${region.name}" 
+                              th:selected="${region.id==idRegion}"></option>
+                      </select>
+                      <label for="idRegion" th:text="#{entrance.region}">region</label>
+                  </div>
+              </div>
+       </div>
+       <div class="col-3">
+           <div class="card" style="text-align: center">
+                  <!-- comm2co -->
+                  <div class="form-floating">
+                     <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+                          <option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
+                          <option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+                     </select>
+                     <label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
+                  </div>
+                  
+           </div>
+       </div>
+       <div class="col-6">
+           <div class="card" style="text-align: center">
+                 <!-- commune  
+                  <div class="form-floating" style="display:none">
+                      <select class="form-select select2-single" id="idCommune" name="idCommune" th:field="*{idCommune}">
+                           <option th:each="commune : ${communes}" th:value="${commune.id}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
+                      </select>
+                      <label for="idCommune" th:text="#{entrance.commune}">ville</label>
+                 </div>
+                -->
+                 
+                   <div class="">
+                      <select class="form-select select2-single" id="idCommune" name="idCommune" th:field="*{idCommune}">
+                      <option th:each="commune : ${communes}" th:value="${commune.id}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
+                      </select>
+                      <label for="idCommune" th:text="#{entrance.commune}">ville</label>
+                 </div> 
+           </div>
+       </div>
+   </div> <!-- row commune -->
+
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="form-floating mb-3 mb-md-0">
@@ -120,6 +177,11 @@
                             <input class="btn btn-primary btn-block" type="button" th:value="#{contributor.resetPasswpord}" onclick="resetPwd()" />
                         </div>
                     </div>
+                    
+                    
+                    
+      
+      
                 </form>
             </div>
 
@@ -139,12 +201,107 @@
         
 <script th:inline="javascript">  
    function resetPwd() {
-	   
-       if confirm([[#{contributor.resetPasswpord.text}]]) {
+       if (confirm([[#{contributor.resetPasswpord.text}]])) {
            sUrl= window.location.protocol + "//" + window.location.host + [[@{/mvc/management/contrib/resetMyPassword}]];
            document.location.href=sUrl;
        }
    }
+   
+   $(document).ready(function(){
+	   function formatOutput (item) {
+		    var $state = $(item.element).data('id') + ' ' + item.data('text');
+		    return $state;
+		};
+		
+	    $('#idRegion').on('change', function() {
+	    	console.log("change region");
+	    	var idRegion=document.getElementById('idRegion');
+	    	var r = idRegion.options[idRegion.selectedIndex].value;
+	        if(r){
+	            $.ajax({
+	                type:'GET',
+	                url: [[@{/mvc/ajax/dropdown/search_c2c}]],
+	                data:'mode=reg&r='+r ,  //+"&q="+label,
+	                success:function(jsonResp){
+	                	var data = $.map(jsonResp, function (obj) {
+	                		  obj.text = obj.text || obj.name; // replace name with the property used for the text
+
+	                		  return obj;
+	                		});
+	                	$("#idCommunauteDeCommunes").empty();
+	                	$("#idCommunauteDeCommunes").append("<option value=\"\">&nbsp;</option>");
+                        $.each(jsonResp, function(i, val) {
+                            $("#idCommunauteDeCommunes").append(
+                                    "<option value=" + val.id + ">" + val.text+ "</option>");
+                        });
+                        $("#idCommune").empty();
+	                    //$('#idCommune').html('<option value="">Sélectionner la communauté de communes en premier.</option>'); 
+	                }
+	            }); 
+	        }else{
+	        	$('#idCommunauteDeCommunes').html('<option value="">Sélectionner la région en premier.</option>'); 
+	        	$("#idCommune").empty();
+	        	//$('#idCommune').html('<option value="">Sélectionner la communauté de communes en premier.</option>'); 
+	        }
+	    });  // on idRegion
+	    
+	    
+	    $('#idCommunauteDeCommunes').on('change', function(){
+            console.log("change CommunauteDeCommunes");
+
+            var idCommunauteDeCommunes=document.getElementById('idCommunauteDeCommunes');
+            var c = idCommunauteDeCommunes.options[idCommunauteDeCommunes.selectedIndex].value;
+            var label = $(this).val();
+	        if(c){
+	        	console.log("mode:c2c,c:"+c);
+	        	/*
+	            $.ajax({
+	                type:'GET',
+	                url: [[@{/mvc/ajax/dropdown/search_city}]],
+                    data:'mode=c2c&c='+c,//+"&q="+label,
+	                success : function(jsonResp) {
+	                    $.each(jsonResp, function(i, val) {
+	                        $("#idCommune").append("<option value=" + val.id + ">" + val.text+ "</option>");
+	                    });
+	                }
+	            }); 
+	        	*/
+	        }else{
+	        	$("#idCommune").empty();
+	           // $('#idCommune').html('<option value="">Sélectionner la communauté de communes en premier.</option>'); 
+	        }
+
+	    });
+	    
+ // https://select2.org/data-sources/ajax
+    $("#idCommune").select2({
+    	ajax: {
+    		delay: 300,
+    		language: "fr"
+    		placeholder: 'Choisir une commune',
+	   		 minimumInputLength: 2,
+	         url: function (params) {
+	             console.log("change Commune select2");
+	             var idRegion=document.getElementById('idRegion');
+	             var r = idRegion.options[idRegion.selectedIndex].value;
+	             var idCommunauteDeCommunes=document.getElementById('idCommunauteDeCommunes');
+	             var c = idCommunauteDeCommunes.options[idCommunauteDeCommunes.selectedIndex].value;
+	             console.log('search ?mode=city&r='+r +'&c='+c  +'&q='+ params.term);
+	             //console.log(params.term);
+	             return  [[@{/mvc/ajax/dropdown/search_city}]] +'?mode=city&r='+r +'&c='+c+'&q1='+ params.term;
+	           },
+	           
+            dataType: 'json' ,
+            processResults: function (data) {
+           	return {
+                    "results":data
+                  };  
+            }
+        }
+
+    }); // select2 commune
+    
+   });  // ready
 </script>
     </body>
 </html>

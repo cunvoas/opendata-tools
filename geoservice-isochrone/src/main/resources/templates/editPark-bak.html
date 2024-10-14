@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:insert="~{fragments/fragment-head :: head}"></head>
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+		<div id="layoutSidenav_content">
+		<main>
+		<div class="container">
+
+<div class="row row-cols-1 row-cols-md-12 g-2 ">
+	<div class="container-fluid px-4">
+		<h1 class="mt-12" th:text="#{park.edit.title}">title</h1>
+	</div>
+	
+    
+    <form th:action="@{/mvc/park/edit}" th:object="${editPark}" method="post" onchange="submit();">
+    <fieldset id="fsCity" disabled="disabled">      
+     <div class="row"> <!-- row commune -->
+           
+         <div class="col-3">
+             <div class="card" style="text-align: center">
+               	<!-- region -->
+                    <div class="form-floating">
+						<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+							<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
+							<option th:each="region : ${regions}" 
+								th:value="${region.id}" 
+								th:text="${region.name}" 
+								th:selected="${region.id==idRegion}"></option>
+						</select>
+						<label for="idRegion" th:text="#{entrance.region}">region</label>
+					</div>
+				</div>
+         </div>
+         <div class="col-3">
+             <div class="card" style="text-align: center">
+                	<!-- comm2co -->
+						<div class="form-floating">
+							<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+								<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
+								<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+							</select>
+							<label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
+							<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						</div>
+             </div>
+         </div>
+         <div class="col-6">
+             <div class="card" style="text-align: center">
+             	<!-- commune -->
+					<div class="form-floating">
+	
+						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
+						<datalist id="communes" class="form-label">
+							<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
+						</datalist>
+						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+	             </div>
+	         </div>
+	     </div>
+       </div> <!-- row commune -->
+       
+       </fieldset>
+       </form>
+       
+       
+        <form th:action="@{/mvc/park/edit}" th:object="${editPark.parcEtJardin}" method="post" onchange="submit();">
+        <fieldset id="fsPark" disabled="disabled">     
+        <div class="row"><!-- row park --> 
+    
+            <div class="container-fluid px-4">
+                <h4 class="mt-12" th:text="#{park.edit.opendata}">title</h4>
+            </div>
+            <div class="col-3">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="name" name="name" th:field="*{name}"  disabled="disabled"/>
+                        <label class="form-label" for="name" th:text="#{entrance.park}">parc</label>
+                         <input type="hidden" id="lat" name="lat" th:field="*{lat}" />
+                         <input type="hidden" id="lng" name="lng" th:field="*{lng}" />
+                         <input type="hidden" id="idPark" name="idPark" th:field="*{id}" />
+                         
+                         
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="quartier" name="quartier" th:field="*{quartier}"  disabled="disabled"/>
+                        <label class="form-label" for="quartier" th:text="#{entrance.park.block}">block</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="sousType" name="sousType" th:field="*{sousType}"  disabled="disabled"/>
+                        <label class="form-label" for="sousType" th:text="#{entrance.sousType}">sousType</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="surface" name="surface" th:field="*{surface}" disabled="disabled"  />
+                        <label class="form-label" for="surface" th:text="#{entrance.surface}">surface</label>
+                    </div>
+                </div>
+            </div>
+         </div>
+	    </fieldset>
+	    </form>
+       <!-- row parcEtJardin -->
+    
+
+        <form th:action="@{/mvc/park/edit}" th:object="${editPark.parkArea}" method="post" onchange="submit();">
+        <fieldset id="fsParkArea" disabled="disabled">      
+        <div class="row"><!-- row parkArea -->
+
+            <div class="col-3">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <select class="form-select" required="required"  id="id" name="id" th:field="*{type.id}" disabled="disabled">
+                            <option value="-1" selected disabled th:text="#{park.edit.type}">Choose here</option>
+                            <option th:each="parkType : ${listParkTypes}" 
+                                th:value="${parkType.id}" th:text="${parkType.label}" 
+                                th:selected="${parkType.id==id}"></option>
+                        </select>
+                        
+                        
+                        <label class="form-label" for="type" th:text="#{park.edit.type}">type</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input type="text" class="form-control getdate" id="updated" name="updated"  th:field="*{updated}" />
+                        <label class="form-label" for="updated" th:text="#{park.edit.updateDateA}">updated</label>
+                    </div>
+                </div>
+            </div>
+         </div>
+        </fieldset>
+        </form>
+       <!-- row parkArea -->
+       
+
+
+        <form th:action="@{/mvc/park/edit}" th:object="${editPark.parkAreaComputed}" method="post" onchange="submit();">
+        <fieldset id="fsParkAreaComputed" disabled="disabled">      
+        <div class="row"><!-- row parkAreaComputed -->
+    
+            <div class="col-3">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="population" name="population" th:field="*{population}" disabled="disabled"  />
+                        <label class="form-label" for="type" th:text="#{park.edit.population}">population</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="surfacePerInhabitant" name="surfacePerInhabitant" th:field="*{surfacePerInhabitant}" disabled="disabled"  />
+                        <label class="form-label" for="type" th:text="#{park.edit.surfacePerInhabitant}">surfacePerInhabitant</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="oms" name="oms" th:field="*{oms}"  disabled="disabled"/>
+                        <label class="form-label" for="name" th:text="#{park.edit.oms}">oms</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input type="text" class="form-control getdate" th:field="*{updated}" />
+                        <label class="form-label" for="updated" th:text="#{park.edit.updateDateP}">updated</label>
+                    </div>
+                </div>
+            </div>
+         </div>
+        </fieldset>
+        </form>
+       <!-- row parkAreaComputed -->
+       
+       
+       
+<!-- PREF+MAP DEBUT --> 
+<!-- DATA Colonne -->
+    <div class="col-6">
+<form th:action="@{/mvc/park/edit}" th:object="${editPark.parcPrefecture}" method="post">
+<fieldset id="fsParkPrefecture" disabled="disabled">     
+
+        <div class="row">
+            <div class="container-fluid px-4">
+                <h4 class="mt-12" th:text="#{park.edit.prefecture}">title</h4>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+					    <input type="hidden"  th:field="*{idRegion}" />
+					    <input type="hidden"  th:field="*{idCommunauteDeCommunes}" />
+					    <input type="hidden"  th:field="*{idCommune}" />
+					    <input type="hidden"  th:field="*{idPark}" />
+                        <input type="hidden" id="id" name="id" th:field="*{id}" />
+                        <input class="form-control" type="text" id="namePrefecture" name="namePrefecture" th:field="*{namePrefecture}"  disabled="disabled"/>
+                        <label class="form-label" for="namePrefecture" th:text="#{park.edit.namePrefecture}">namePrefecture</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="parcEtJardinName" name="parcEtJardinName" th:field="*{parcEtJardin.name}" disabled="disabled" />
+                        <label class="form-label" for="surface" th:text="#{park.edit.nameRapproche}">nameRapproche</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="surface" name="surface" th:field="*{surface}" disabled="disabled" />
+                        <label class="form-label" for="surface" th:text="#{park.edit.surface}">surface</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="communeName" name="communeName" th:field="*{commune.name}" disabled="disabled" />
+                        <label class="form-label" for="surface" th:text="#{park.edit.communeName}">communeName</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+				        <input type="checkbox" id="processed" th:field="*{processed}" th:value="true" />
+				        <t class="form-label" for="processed" th:text="#{park.edit.processed}">processed</t>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <button type="submit" class="btn btn-secondary">Valider</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+</fieldset>
+</form>
+    </div>
+    
+    <div class="col-6"> <!-- MAP Colonne -->
+        <div class="container-fluid px-4">
+           <h5 class="mt-12">Carte de contrôle</h5>
+        </div>
+        <div class="row">
+            <div class="col-4">
+                <div class="card border" style="text-align: center">
+                    <button id="switch-layers" type="button" class="btn btn-secondary" onclick="switchLayer(this)">Vue satellite</button>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border" style="text-align: center">
+                    
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border" style="text-align: center">
+                   <button id="switch-parks" type="button" class="btn btn-secondary" onclick="toggleParc(this)">Masquer les parcs</button>
+                </div>
+            </div>
+        </div>
+        <div class="row h-100 ">
+            <div class="col-12">
+                <div class="card h-100 border" style="text-align: center">
+                    <div id="mapid" style="width: 100%; height: 250px;"></div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+			
+<!--  PREF+MAP FIN -->			  
+</div>		
+		</div><!-- container -->
+		</main>
+		</div> <!-- layoutSidenav_content -->
+	</div> <!-- layoutSidenav -->
+	
+
+	<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+
+	<div th:insert="~{fragments/fragment-jslibs :: appMap}"></div>
+
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+	<script th:inline="javascript">
+	
+	/* manage correct ID for COMMUNNE SELECTION */
+	// th-field broke the datalist work
+	document.querySelector('#idCommune-filter').value=[[${editPark.nameCommune}]];
+	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
+	    var input = e.target,
+	        list = input.getAttribute('list'),
+	        options = document.querySelectorAll('#' + list + ' option'),
+	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+	        inputValue = input.value;
+		    
+	    	hiddenInput.value = inputValue;
+		    
+		    for(var i = 0; i < options.length; i++) {
+		        var option = options[i];
+		        if(option.value === inputValue) {
+		        	hiddenInput.value = option.getAttribute('data-value');
+		        	document.querySelector("#formSelectCity").submit();
+		            break;
+		        }
+		    }
+	});
+	document.querySelector('#idCommune-filter').addEventListener('focusout', function(e) {
+	    var input = e.target,
+        list = input.getAttribute('list'),
+        options = document.querySelectorAll('#' + list + ' option'),
+        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+        inputValue = input.value;
+	    
+	    const regex = /[0-9]/g;
+	    const found = hiddenInput.match(regex);
+	    if (found) {
+	    	document.querySelector("#formSelectCity").submit();
+	    }
+	});
+
+	
+	// MAP MANAGEMENT
+	
+	// map layers
+	var mapMinZoom=10;
+	var mapMaxZoom=20;
+	var layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+	        attribution: 'Aut MEL',
+	        maxZoom: mapMaxZoom,
+            minZoom: mapMinZoom
+	    });
+	var layerStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	        attribution: 'Aut MEL',
+	        maxZoom: mapMaxZoom,
+            minZoom: mapMinZoom
+	    });
+	
+    // Add an object to save markers
+    var markers = {};
+    
+    // custom location on load
+    
+    lat = document.querySelector('#lat').value;
+    lng = document.querySelector('#lng').value;
+    var locateWorkPlace= L.latLng(lat,lng);
+    
+    var isMap = L.map('mapid').setView(locateWorkPlace, 16);
+    layerStreetMap.addTo(isMap);
+    L.control.scale().addTo(isMap);
+    
+    ParcMarker = new L.marker(locateWorkPlace).addTo(isMap);
+    
+   
+    
+	
+	////////////////////////////////////////////////////////////////////////////
+    // isochrone
+    function fetchJSON(url) {
+	  return fetch(url)
+	    .then(function(response) {
+	      return response.json();
+	    });
+	}
+    function isEmpty(obj) {
+        return Object.keys(obj).length === 0;
+    }
+    function customOnEachFeature(feature, layer) {
+        // does this feature have a property named fillColor?
+        if (feature.properties) {
+        	if (feature.properties.fillColor) {
+        		 layer.setStyle(
+        				 {fillColor: feature.properties.fillColor},
+                         {fillOpacity: 0.1},
+                         {color: feature.properties.fillColor},
+        				 {opacity: 0.40}
+        		 );
+        	}
+        	txt = "<span>";
+            if (feature.properties.name) {
+            	txt = "<b>nom catégorisé:</b> "+ feature.properties.name;
+            }
+            if (feature.properties.namePrefecture) {
+                txt += "<br /><b>libellé préfecture:</b> "+ feature.properties.namePrefecture;
+            }
+            if (feature.properties.nameParcJardin) {
+                txt += "<br /><b>Nom Carto:</b> "+ feature.properties.nameParcJardin;
+            }
+            if (feature.properties.surface) {
+                txt += "<br /><b>surface (calculée):</b> "+ feature.properties.surface+" m²";
+            }
+            txt+="</span>";
+            
+            layer.bindPopup(txt);
+        }
+    }
+    
+    var geojsonPrefLayer = null;
+	// relead parks with map fit
+	function loadPrefParks() {
+		if (geojsonPrefLayer!==null) {
+			isMap.removeLayer(geojsonPrefLayer);
+			delete geojsonPrefLayer ;
+		}
+        swLat=isMap.getBounds().getSouthWest().lat;
+        swLng=isMap.getBounds().getSouthWest().lng;
+        neLat=isMap.getBounds().getNorthEast().lat;
+        neLng=isMap.getBounds().getNorthEast().lng;
+        sPos="swLat="+ swLat +"&swLng="+swLng +"&neLat="+neLat +"&neLng="+neLng;
+        var sUrlGeoPref= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkPrefectureByCorner}]]+'?'+sPos;
+        geojsonPrefLayer = new L.GeoJSON.AJAX(sUrlGeoPref, {onEachFeature: customOnEachFeature});
+        isMap.addLayer(geojsonPrefLayer);
+	}
+	loadPrefParks();
+	isMap.on('zoomend',loadPrefParks);
+    isMap.on('moveend',loadPrefParks);
+	
+    
+	// https://leafletjs.com/reference.html#map-event
+	
+	function toggleParc(e) {
+       bEnable = e.innerText === [[#{park.toggle.parkEnable}]];
+	    	   
+        if (!bEnable) {
+            isMap.removeLayer(geojsonPrefLayer);
+            e.innerText= [[#{park.toggle.parkEnable}]];
+        } else {
+        	isMap.addLayer(geojsonPrefLayer);
+            e.innerText= [[#{park.toggle.parkDisable}]];
+        }
+	}
+	
+	
+	
+	/* switch layer between map and satellite */
+	function switchLayer(e) {
+	
+		if (isMap.hasLayer(layerStreetMap)) {
+	    	isMap.addLayer(layerSatellite);
+	    	isMap.removeLayer(layerStreetMap);
+	    	e.innerText= [[#{entrance.map.satellite}]];
+	    	
+	    } else {
+	    	isMap.addLayer(layerStreetMap);
+	    	isMap.removeLayer(layerSatellite);
+	    	e.innerText= [[#{entrance.map.street}]];
+	    }
+	}
+	
+	// di
+    function manageDisabled() {
+        if (document.getElementById("namePrefecture").value!="") {
+            document.getElementById("fsParkPrefecture").disabled = false;
+        }
+    }
+    manageDisabled();
+	
+</script>
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+{
+	"type": "FeatureCollection",
+	"version": "draft",
+	"features": [
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					3.015595,
+					50.639719
+				]
+			},
+			"properties": {
+				"label": "Rue Jean Jaurés (Lomme) 59000 Lille",
+				"score": 0.8941154545454545,
+				"id": "59350_1x5oy3",
+				"name": "Rue Jean Jaurés (Lomme)",
+				"postcode": "59000",
+				"citycode": "59350",
+				"oldcitycode": "59355",
+				"x": 701105.07,
+				"y": 7060307.36,
+				"city": "Lille",
+				"oldcity": "Lomme",
+				"context": "59, Nord, Hauts-de-France",
+				"type": "street",
+				"importance": 0.83527,
+				"street": "Rue Jean Jaurés (Lomme)"
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					3.075794,
+					50.620154
+				]
+			},
+			"properties": {
+				"label": "Rue Jean Jaurés (Hellemmes-Lille) 59000 Lille",
+				"score": 0.8895218181818182,
+				"id": "59350_4931",
+				"name": "Rue Jean Jaurés (Hellemmes-Lille)",
+				"postcode": "59000",
+				"citycode": "59350",
+				"oldcitycode": "59298",
+				"x": 705372.88,
+				"y": 7058129.71,
+				"city": "Lille",
+				"oldcity": "Hellemmes-Lille",
+				"context": "59, Nord, Hauts-de-France",
+				"type": "street",
+				"importance": 0.78474,
+				"street": "Rue Jean Jaurés (Hellemmes-Lille)"
+			}
+		}
+	],
+	"attribution": "BAN",
+	"licence": "ETALAB-2.0",
+	"query": "rue jean jaures",
+	"filters": {
+		"citycode": "59350"
+	},
+	"limit": 5
+}

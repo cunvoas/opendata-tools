@@ -26,6 +26,9 @@ node_modules
 *.launch
 .settings/
 *.sublime-workspace
+.factorypath
+.idea/
+
 
 # IDE - VSCode
 .vscode/*
@@ -63,3 +66,4 @@ apps/**/test/coverage/**
 apps/**/test-integ/coverage/**
 libs/**/test/coverage/**
 libs/**/test-integ/coverage/**
+/newvue/

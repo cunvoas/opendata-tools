@@ -7,28 +7,16 @@ import org.springframework.web.multipart.MultipartFile;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 
 import lombok.Data;
 
 @Data
-public class FormParkEdit {
+public class FormParkEdit extends AbstractFormLocate {
 
-	private Long idRegion;
-	private Long idCommunauteDeCommunes; 
-	private Long idCommune; 
 	private Long idPark;//parcEtJardin
-	private String nameCommune;
 
-	// parcs preselection
-	private List<Region> regions;
-	private List<CommunauteCommune> communautesDeCommunes;
-	private List<City> communes;
-	
 	// data from DB
 	private ParcEtJardin parcEtJardin;
 	private ParcPrefecture parcPrefecture;

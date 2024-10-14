@@ -1,7 +1,5 @@
 package com.github.cunvoas.geoserviceisochrone.model.geojson;
 
-import java.util.Objects;
-
 import org.locationtech.jts.geom.Geometry;
 
 import com.bedatadriven.jackson.datatype.jts.serialization.GeometryDeserializer;

@@ -21,10 +21,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
-import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
-
-import jakarta.transaction.Transactional;
 
 
 
