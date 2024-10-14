@@ -21,7 +21,7 @@ public class City implements Comparator<City> {
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_city")
-	private long id;
+	private Long id;
 
 	@Column(name = "name")
 	private String name;

@@ -26,11 +26,6 @@ public class ClientIsoChroneApiV2 implements IsoChroneClientService {
 	
 	private static final String URL = "https://data.geopf.fr/navigation/isochrone";
 	
-	// https://data.geopf.fr/navigation/isochrone?gp-access-lib=3.4.1&apiKey=calcul&resource=bdtopo-valhalla
-	// &point=3.0144703388214116,50.63679884038829&costValue=300&direction=departure&costType=time&profile=pedestrian&timeUnit=second&distanceUnit=meter&crs=EPSG:4326&constraints=
-	/*
-	 * point=2.337306%2C48.849319&costValue=300&resource=bdtopo-iso&costType=time&profile=pedestrian&direction=departure&geometryFormat=geojson&distanceUnit=meter&timeUnit=second&crs=EPSG%3A4326
-	 */
 	@Override
 	public String getIsoChrone(Coordinate coordinate, String duration) {
 		String strResp = null;
@@ -45,9 +40,8 @@ public class ClientIsoChroneApiV2 implements IsoChroneClientService {
 		sb.append(duration);
 		
 		sb.append("&direction=departure&costType=time&profile=pedestrian&timeUnit=second&distanceUnit=meter&crs=EPSG%3A4326&constraints=");
-//		sb.append("&direction=departure&costType=distance&profile=pedestrian&timeUnit=second&distanceUnit=meter&crs=EPSG%3A4326&constraints=");
 		
-		log.debug(sb.toString());;
+		log.debug(sb.toString());
 		
 		Request request = new Request.Builder()
 				  .url(sb.toString())
@@ -55,16 +49,12 @@ public class ClientIsoChroneApiV2 implements IsoChroneClientService {
 				  .addHeader("accept", "application/json")
 				  .addHeader("authority", "wxs.ign.fr")
 				  .addHeader("accept-language", "fr-FR,fr")
-//				  .addHeader("sec-ch-ua-mobile", "?0")
-//				  .addHeader("sec-ch-ua-platform", "Linux")
 				  .addHeader("sec-fetch-dest", "empty")
 				  .addHeader("sec-fetch-mode", "cors")
 				  .addHeader("sec-fetch-site", "cross-site")
 				  .addHeader("Referer", "https://storage.gra.cloud.ovh.net/")
 				  .addHeader("Origin", "https://storage.gra.cloud.ovh.net/")
-				  
 //				  .addHeader("Referrer-Policy", "strict-origin-when-cross-origin")
-//				  .addHeader("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36")
 				  .build();
 		
 		try {
@@ -74,7 +64,7 @@ public class ClientIsoChroneApiV2 implements IsoChroneClientService {
 			
 			strResp= response.body().string();	
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(sb.toString(), e);
 		}
 		
 		return strResp;

@@ -3,14 +3,9 @@ package com.github.cunvoas.geoserviceisochrone.controller.form;
 
 import java.util.List;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 
 import lombok.Data;
 

@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(callSuper=false, onlyExplicitlyIncluded = true)
 public class ParkGardenView extends GeoJsonProperty {
 	@EqualsAndHashCode.Include
 	private String id;

@@ -30,7 +30,7 @@ import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 class TestGeoMapService {
 	
 	@Autowired
-	GeoMapService tested=new GeoMapService();
+	GeoMapServiceV2 tested=new GeoMapServiceV2();
 
 	
 	private ObjectMapper mapper = new ObjectMapper();
@@ -55,10 +55,17 @@ class TestGeoMapService {
 
 
 	@Test
-	@Disabled
+    @Disabled
 	void testColor() {
 		for (int i = 0; i < 20; i++) {
-			System.out.println(tested.getColor(i));
+			System.out.println(i+" "+tested.getColor(i));
+		}
+	}
+	
+	@Test
+	void testGreyColor() {
+		for (Double i = 0d; i < 13; i++) {
+			System.out.println(i+" "+tested.getColorGrey(i));
 		}
 	}
 	

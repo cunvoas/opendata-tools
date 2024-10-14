@@ -4,11 +4,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
@@ -19,14 +16,9 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvCarre200ShapeParser;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200m;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mShape;
-import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
-import com.github.cunvoas.geoserviceisochrone.service.park.ComputeService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV2;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
@@ -35,23 +27,19 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 @ActiveProfiles({"prod","dev"})
 class TestGeoserviceIsochroneApplication {
 	@Autowired
-	private ComputeService computeService;
-	@Autowired
 	private ComputeServiceV2 computeServiceV2;
 
 	@Autowired
 	private CsvCarre200ShapeParser csvParser;
 
 	@Autowired
-	private InseeCarre200mShapeRepository repo;
+	private InseeCarre200mOnlyShapeRepository repo;
 
 	@Autowired
 	private ParkService parkService;
 	@Autowired
 	private CityService cityService;
 
-	@Autowired
-	private InseeCarre200mRepository inseeCare200mRepository;
 	@Autowired
 	private ParkAreaRepository parkAreaRepository;
 
@@ -112,13 +100,15 @@ class TestGeoserviceIsochroneApplication {
 	 * calcule des carre vs aire des parcs
 	 */
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(21)
 	void computeCarreFix() {
 
 		try {
 			//lille
 			computeServiceV2.computeCarreByInseeCode("59350");
+//			computeServiceV2.computeCarreByInseeCode("59328");
+//			computeServiceV2.computeCarreByInseeCode("59128");
 			
 //			computeServiceV2.computeCarreByCarre200m("CRS3035RES200mN3079800E3834000");
 //			computeServiceV2.computeCarreByCarre200m("CRS3035RES200mN3081600E3829800");
@@ -136,7 +126,6 @@ class TestGeoserviceIsochroneApplication {
 		}
 			
 	}
-	
 
 	@Test
 	@Disabled
@@ -144,9 +133,9 @@ class TestGeoserviceIsochroneApplication {
 	void computeParkAreAndEntranceFix() {
 
 		try {
-			computeService.refreshParkEntrances("59350");
-			computeService.refreshParkEntrances("59328");
-			computeService.refreshParkEntrances("59128");
+			computeServiceV2.refreshParkEntrances("59350");
+			computeServiceV2.refreshParkEntrances("59328");
+			computeServiceV2.refreshParkEntrances("59128");
 			
 			System.out.println("bla");
 		} catch (Exception e) {
@@ -156,41 +145,6 @@ class TestGeoserviceIsochroneApplication {
 			
 	}
 	
-	/**
-	 * @deprecated
-	 */
-	@Test
-	@Disabled
-	@Order(11)
-	void compute() {
-		try {
-			List<ParkArea> parks =  new ArrayList<>();
-			parks.add(parkAreaRepository.findById(468L).get());
-//			List<ParkArea> parks = parkAreaRepository.findAll();
-//			List<ParkArea> parks = parkAreaRepository.findByBlock("Lomme");
-			Collections.reverse(parks);
-
-			for (ParkArea parkArea : parks) {
-
-				if (parkArea.getPolygon() != null) {
-					List<InseeCarre200m> carreShape = inseeCare200mRepository .getAllCarreInMap(GeometryQueryHelper.toText(parkArea.getPolygon()));
-
-					for (InseeCarre200m carre : carreShape) {
-						//FIXME
-//						carreService.computeCarre(carre.getId());
-						
-
-					}
-				}
-
-				//FIXME
-//				carreService.computeParkArea(parkArea);
-			}
-
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
-	}
 
 	@Test
 	@Disabled
@@ -203,39 +157,6 @@ class TestGeoserviceIsochroneApplication {
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
-	}
-
-	@Test
-	@Disabled
-	@Order(2)
-	void loadCarre200Shape() {
-		//2017
-		File test = new File(
-				"/home/cus/Documents/Associations/DeulAir/200m-carreaux-metropole/200m_carreaux_metropole_shapefile_wgs84-TEST.csv");
-
-		try {
-			List<InseeCarre200mShape> rows = csvParser.parseCarree200Shape(test);
-
-			int i = 0;
-			List<InseeCarre200mShape> todos = new ArrayList<>();
-			for (InseeCarre200mShape inseeCarre200mShape : rows) {
-				i++;
-				todos.add(inseeCarre200mShape);
-
-				if (i % 50 == 0) {
-					repo.saveAll(todos);
-					todos.clear();
-				}
-			}
-
-			if (todos.size() > 0) {
-				repo.saveAll(todos);
-			}
-
-		} catch (IOException e) {
-			fail(e.getMessage());
-		}
-
 	}
 	
 }
