@@ -27,9 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/mvc/park")
 @Slf4j
-public class ParkEditControler {
+public class ParkCheckControler {
 	
-	private String formName = "editPark";
+	private String formName = "checkPark";
 
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
@@ -39,8 +39,8 @@ public class ParkEditControler {
 	@Autowired
 	private ParkTypeService parkTypeService;
 
-	@GetMapping("/edit")
-	public String editPark(
+	@GetMapping("/check")
+	public String checkPark(
 			@RequestParam("idRegion") Long idRegion, 
 			@RequestParam("idComm2Co")Long idComm2Co, 
 			@RequestParam("idCommune") Long idCommune, 
@@ -59,7 +59,7 @@ public class ParkEditControler {
 		return populateForm(form, model);
 	}
 	
-	
+	/*
 	@PostMapping("/edit")
 	public String savePark( @ModelAttribute FormParkEdit form, Model model) {
 		
@@ -80,6 +80,7 @@ public class ParkEditControler {
 		
 		return populateForm(form, model);
 	}
+	*/
 	
 	
 	protected String populateForm( FormParkEdit form, Model model) {

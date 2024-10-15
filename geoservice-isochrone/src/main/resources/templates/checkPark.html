@@ -12,11 +12,10 @@
 
 <div class="row row-cols-1 row-cols-md-12 g-2 ">
 	<div class="container-fluid px-4">
-		<h1 class="mt-12" th:text="#{park.edit.title}">title</h1>
+		<h1 class="mt-12" th:text="#{park.check.title}">title</h1>
 	</div>
-	
     
-    <form th:action="@{/mvc/park/edit}" th:object="${editPark}" method="post" onchange="submit();">
+    <form th:action="@{/mvc/park/edit}" th:object="${checkPark}" method="post" onchange="submit();">
     <fieldset id="fsCity" disabled="disabled">      
      <div class="row"> <!-- row commune -->
            
@@ -69,12 +68,12 @@
        </form>
        
        
-        <form th:action="@{/mvc/park/edit}" th:object="${editPark.parcEtJardin}" method="post" onchange="submit();">
+        <form th:action="@{/mvc/park/edit}" th:object="${checkPark.parcEtJardin}" method="post" onchange="submit();">
         <fieldset id="fsPark" disabled="disabled">     
         <div class="row"><!-- row park --> 
     
             <div class="container-fluid px-4">
-                <h4 class="mt-12" th:text="#{park.edit.opendata}">title</h4>
+                <h4 class="mt-12" th:text="#{park.check.opendata}">title</h4>
             </div>
             <div class="col-3">
                 <div class="card border" style="text-align: center">
@@ -119,7 +118,7 @@
        <!-- row parcEtJardin -->
     
 
-        <form th:action="@{/mvc/park/edit}" th:object="${editPark.parkArea}" method="post" onchange="submit();">
+        <form th:action="@{/mvc/park/edit}" th:object="${checkPark.parkArea}" method="post" onchange="submit();">
         <fieldset id="fsParkArea" disabled="disabled">      
         <div class="row"><!-- row parkArea -->
 
@@ -127,14 +126,14 @@
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <select class="form-select" required="required"  id="id" name="id" th:field="*{type.id}" disabled="disabled">
-                            <option value="-1" selected disabled th:text="#{park.edit.type}">Choose here</option>
+                            <option value="-1" selected disabled th:text="#{park.check.type}">Choose here</option>
                             <option th:each="parkType : ${listParkTypes}" 
                                 th:value="${parkType.id}" th:text="${parkType.label}" 
                                 th:selected="${parkType.id==id}"></option>
                         </select>
                         
                         
-                        <label class="form-label" for="type" th:text="#{park.edit.type}">type</label>
+                        <label class="form-label" for="type" th:text="#{park.check.type}">type</label>
                     </div>
                 </div>
             </div>
@@ -142,7 +141,7 @@
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input type="text" class="form-control getdate" id="updated" name="updated"  th:field="*{updated}" />
-                        <label class="form-label" for="updated" th:text="#{park.edit.updateDateA}">updated</label>
+                        <label class="form-label" for="updated" th:text="#{park.check.updateDateA}">updated</label>
                     </div>
                 </div>
             </div>
@@ -153,7 +152,7 @@
        
 
 
-        <form th:action="@{/mvc/park/edit}" th:object="${editPark.parkAreaComputed}" method="post" onchange="submit();">
+        <form th:action="@{/mvc/park/edit}" th:object="${checkPark.parkAreaComputed}" method="post" onchange="submit();">
         <fieldset id="fsParkAreaComputed" disabled="disabled">      
         <div class="row"><!-- row parkAreaComputed -->
     
@@ -161,7 +160,7 @@
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input class="form-control" type="text" id="population" name="population" th:field="*{population}" disabled="disabled"  />
-                        <label class="form-label" for="type" th:text="#{park.edit.population}">population</label>
+                        <label class="form-label" for="type" th:text="#{park.check.population}">population</label>
                     </div>
                 </div>
             </div>
@@ -169,7 +168,7 @@
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input class="form-control" type="text" id="surfacePerInhabitant" name="surfacePerInhabitant" th:field="*{surfacePerInhabitant}" disabled="disabled"  />
-                        <label class="form-label" for="type" th:text="#{park.edit.surfacePerInhabitant}">surfacePerInhabitant</label>
+                        <label class="form-label" for="type" th:text="#{park.check.surfacePerInhabitant}">surfacePerInhabitant</label>
                     </div>
                 </div>
             </div>
@@ -177,7 +176,7 @@
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input class="form-control" type="text" id="oms" name="oms" th:field="*{oms}"  disabled="disabled"/>
-                        <label class="form-label" for="name" th:text="#{park.edit.oms}">oms</label>
+                        <label class="form-label" for="name" th:text="#{park.check.oms}">oms</label>
                     </div>
                 </div>
             </div>
@@ -185,7 +184,7 @@
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input type="text" class="form-control getdate" th:field="*{updated}" />
-                        <label class="form-label" for="updated" th:text="#{park.edit.updateDateP}">updated</label>
+                        <label class="form-label" for="updated" th:text="#{park.check.updateDateP}">updated</label>
                     </div>
                 </div>
             </div>
@@ -199,12 +198,12 @@
 <!-- PREF+MAP DEBUT --> 
 <!-- DATA Colonne -->
     <div class="col-6">
-<form th:action="@{/mvc/park/edit}" th:object="${editPark.parcPrefecture}" method="post">
+<form th:action="@{/mvc/park/edit}" th:object="${checkPark.parcPrefecture}" method="post">
 <fieldset id="fsParkPrefecture" disabled="disabled">     
 
         <div class="row">
             <div class="container-fluid px-4">
-                <h4 class="mt-12" th:text="#{park.edit.prefecture}">title</h4>
+                <h4 class="mt-12" th:text="#{park.check.prefecture}">title</h4>
             </div>
             <div class="col">
                 <div class="card border" style="text-align: center">
@@ -215,7 +214,7 @@
 					    <input type="hidden"  th:field="*{idPark}" />
                         <input type="hidden" id="id" name="id" th:field="*{id}" />
                         <input class="form-control" type="text" id="namePrefecture" name="namePrefecture" th:field="*{namePrefecture}"  disabled="disabled"/>
-                        <label class="form-label" for="namePrefecture" th:text="#{park.edit.namePrefecture}">namePrefecture</label>
+                        <label class="form-label" for="namePrefecture" th:text="#{park.check.namePrefecture}">namePrefecture</label>
                     </div>
                 </div>
             </div>
@@ -224,7 +223,7 @@
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input class="form-control" type="text" id="parcEtJardinName" name="parcEtJardinName" th:field="*{parcEtJardin.name}" disabled="disabled" />
-                        <label class="form-label" for="surface" th:text="#{park.edit.nameRapproche}">nameRapproche</label>
+                        <label class="form-label" for="surface" th:text="#{park.check.nameRapproche}">nameRapproche</label>
                     </div>
                 </div>
             </div>
@@ -234,7 +233,7 @@
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input class="form-control" type="text" id="surface" name="surface" th:field="*{surface}" disabled="disabled" />
-                        <label class="form-label" for="surface" th:text="#{park.edit.surface}">surface</label>
+                        <label class="form-label" for="surface" th:text="#{park.check.surface}">surface</label>
                     </div>
                 </div>
             </div>
@@ -242,7 +241,7 @@
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input class="form-control" type="text" id="communeName" name="communeName" th:field="*{commune.name}" disabled="disabled" />
-                        <label class="form-label" for="surface" th:text="#{park.edit.communeName}">communeName</label>
+                        <label class="form-label" for="surface" th:text="#{park.check.communeName}">communeName</label>
                     </div>
                 </div>
             </div>
@@ -253,7 +252,7 @@
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
 				        <input type="checkbox" id="processed" th:field="*{processed}" th:value="true" />
-				        <t class="form-label" for="processed" th:text="#{park.edit.processed}">processed</t>
+				        <t class="form-label" for="processed" th:text="#{park.check.processed}">processed</t>
                     </div>
                 </div>
             </div>
@@ -319,7 +318,7 @@
 	
 	/* manage correct ID for COMMUNNE SELECTION */
 	// th-field broke the datalist work
-	document.querySelector('#idCommune-filter').value=[[${editPark.nameCommune}]];
+	document.querySelector('#idCommune-filter').value=[[${checkPark.nameCommune}]];
 	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
 	    var input = e.target,
 	        list = input.getAttribute('list'),
