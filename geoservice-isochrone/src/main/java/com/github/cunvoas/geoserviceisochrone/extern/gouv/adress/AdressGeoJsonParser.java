@@ -45,24 +45,25 @@ public class AdressGeoJsonParser {
 		//JSonNode of geometry
 		JsonNode features = rootNode.findValue("features");
 		
-		for (JsonNode jsonNode : features) {
-			AdressBo adressItem = new AdressBo();
-			set.add(adressItem);
-			
-			JsonNode geometryNode = jsonNode.findValue("geometry");
-			Geometry geom= geometryParser.geometryFromJson(geometryNode);
-			adressItem.setPoint((Point)geom);  // cast check if API evolves
-			
-			JsonNode props = jsonNode.findValue("properties");
-			
-			adressItem.setId(props.findValue("id").asText());
-			adressItem.setLabel(props.findValue("label").asText());
-			adressItem.setCitycode(props.findValue("citycode").asText());
-			String sScore = props.findValue("score").asText();
-			adressItem.setScore(Float.valueOf(sScore));
-			
+		if (features!=null) {
+			for (JsonNode jsonNode : features) {
+				AdressBo adressItem = new AdressBo();
+				set.add(adressItem);
+				
+				JsonNode geometryNode = jsonNode.findValue("geometry");
+				Geometry geom= geometryParser.geometryFromJson(geometryNode);
+				adressItem.setPoint((Point)geom);  // cast check if API evolves
+				
+				JsonNode props = jsonNode.findValue("properties");
+				
+				adressItem.setId(props.findValue("id").asText());
+				adressItem.setLabel(props.findValue("label").asText());
+				adressItem.setCitycode(props.findValue("citycode").asText());
+				String sScore = props.findValue("score").asText();
+				adressItem.setScore(Float.valueOf(sScore));
+				
+			}
 		}
-		
 		return set;
 	}
 }

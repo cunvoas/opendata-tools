@@ -188,9 +188,10 @@ public class ParkNewControler {
 	 * @return
 	 */
 	protected FormParkNew populateForm( FormParkNew form) {
-		
-		if (form==null || form.getIdRegion()==null) {
-			form = new FormParkNew();
+		if (form==null) {
+			form = new FormParkNew();	
+		}
+		if (form.getIdRegion()==null) {
 			form.autoLocate();
 		}
 		

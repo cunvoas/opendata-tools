@@ -73,6 +73,27 @@
          </div>
      </div>
      
+     
+      <div class="row">
+            <div class="col-2">
+                <div class="card border" style="text-align: center">
+					<button type="button" class="btn btn-secondary" th:text="#{entrance.map.locateMe}" onclick="locateMe()" >locate me</button>
+                </div>
+            </div>
+            <div class="col-6">
+	           <div class="card" style="text-align: center">
+	                      <select class="form-select select2-single" id="srcAdress" name="srcAdress">
+	                      </select>
+	                      <label for="srcAdress" th:text="#{parc.edit.searchAdress}">adress</label>
+	           </div>
+	       </div>
+            <div class="col-4">
+            
+                <div class="card border" style="text-align: center">
+					<button type="button" class="btn btn-primary" th:text="#{entrance.map.locateMe}" >locate me</button>
+                </div>
+            </div>
+      </div>
 <!-- TODO --------------------------- -->
 
 
@@ -199,10 +220,7 @@
     <div class="col-9">
         <div class="row">
             <div class="col-4">
-                <h4 class="mt-12" th:text="#{entrance.map.title}">title</h4>
-                <div class="card border" style="text-align: center">
-                    <button id="switch-layers" type="button" class="btn btn-secondary"  onclick="switchLayer(this)"><span class="fa-solid fa-satellite" aria-hidden="true"></span>&nbsp;<span th:text="#{entrance.map.satellite}"></span></button>
-                </div>
+                <h4 class="mt-12" th:text="#{park.edit.title}">title</h4>
             </div>
             
             <!-- TODO: make the filter later -->
@@ -224,7 +242,6 @@
             <div class="col-12">
                 <div class="card h-100 border" style="text-align: center">
                     <div id="mapid" style="width: 100%; height: 500px;"></div>
-                    <div class="display: none;" id="mapType"></div>
                 </div>
             </div>
         </div>
@@ -249,6 +266,13 @@
 
 	<script th:inline="javascript">
 	
+	 function isEmpty(obj) {
+	     return Object.keys(obj).length === 0;
+	 }
+	 
+
+	 
+	 
 	/* manage correct ID for COMMUNNE SELECTION */
 	// th-field broke the datalist work
 	document.querySelector('#idCommune-filter').value=[[${newPark.nameCommune}]];
@@ -285,65 +309,69 @@
 	});
 
 	
-	// TODO
-	//@@ filter les geometry selon le statuts de rapprochement préfecture
-	
-
-    
     
     /////////////////////////////////////////////////////////////////////////
+    // custom location on load
+    function locatePlace(lat, lon) {
+    	return L.latLng(lat, lon);
+    }
+    var locateWorkPlace= locatePlace(50.626419,3.0719121);
+   
+    
     // map layers
     var mapMinZoom=8;
     var mapMaxZoom=19;
     
     // https://leaflet-extras.github.io/leaflet-providers/preview/
-    
+    // fond de carte
     var layerEsriWorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-    	attribution: 'Aut MEL (Esri)'
+	    	name: 'Carte WorldStreetMap',
+	    	attribution: "ArcGIS World Street Map (Esri)",
+	        maxZoom: mapMaxZoom,
+	        minZoom: mapMinZoom
     });
-    
-    var layerStadiaOutdoors = L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.{ext}', {
-        minZoom: 0,
-        maxZoom: 20,
-        attribution: 'Aut MEL (Stadia Maps)',
-        ext: 'png'
-    });
-    
-    
-    var Stadia_StamenTerrain = L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.{ext}', {
-        minZoom: 0,
-        maxZoom: 18,
-        attribution: 'Aut MEL (&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors)',
-        ext: 'png'
-    });
-    
      var layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Aut MEL (ArcGIS)',
-            maxZoom: mapMaxZoom,
+			name: "Satellite ArcGisOnline",
+			attribution: '&copy; <a href="https://www.arcgis.com/">ArcGisOnline</a>',
+			maxZoom: mapMaxZoom,
             minZoom: mapMinZoom
         });
     var layerStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: 'Aut MEL (OpenStreetMap)',
-            maxZoom: mapMaxZoom,
-            minZoom: mapMinZoom
+			name: 'Carte OpenStreetMap',
+			attribution: '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+			maxZoom: mapMaxZoom,
+			minZoom: mapMinZoom
         });
     
+    // picto fond de carte
+    const mapLayers = {
+   		'Carte WorldStreetMap': layerEsriWorldStreetMap,
+   		'Satellite ArcGisOnline': layerSatellite,
+   		'Carte OpenStreetMap': layerStreetMap
+   	};
     
-    // custom location on load
-    var locateWorkPlace= L.latLng(50.626419,3.0719121);
+    const dataPrefecture = L.layerGroup();
+    const dataAutmel = L.layerGroup();
+    var dataLayers = {
+    	"Données de la préfecture": dataPrefecture,
+    	"Contours des parcs": dataAutmel
+    };
     
-    var isMap = L.map('mapid').setView(locateWorkPlace, 16);
-    layerStreetMap.addTo(isMap);
-    isMap.addLayer(layerStreetMap);
-    document.getElementById("mapType").value="layerStreetMap";
+    var editMap = L.map('mapid', {
+    	zoom: 16,
+        layers: [ layerStreetMap, layerEsriWorldStreetMap, layerSatellite]
+    }).setView(locateWorkPlace);
+
+
     
-    L.control.scale().addTo(isMap);
+	const zoomControl = L.control.scale().addTo(editMap);
+    const layerControl = L.control.layers(mapLayers, dataLayers).addTo(editMap);
+  //  layerStreetMap.addTo(editMap); //  set as default
     
-    function isEmpty(obj) {
-        return Object.keys(obj).length === 0;
-    }
+   
     
-    // event on clicjk
+    
+    // event on click
     // https://stackoverflow.com/questions/11421127/how-to-trigger-events-on-leaflet-map-polygons
     
     function filterChange(filterType) {
@@ -360,11 +388,12 @@
         		console.log("to invisible: feat>"+feature.properties.name+">"+feature.properties.status);
         		layer.setStyle(
         				{fillOpacity: 0},
-        				 {opacity: 0}
+        				 {opacity: 0},
+        				 {color: '#1212ff'},
+        				 {fillColor: '#1212ff'},
         				);
         		
-        	} else
-        		
+        	} else {
         		if (feature.properties.fillColor) {
                 console.log("to display: feat>"+feature.properties.name+">"+feature.properties.status);
         		
@@ -373,8 +402,10 @@
                          {fillOpacity: 0.60},
                          {color: feature.properties.fillColor},
                          {opacity: 0.95}
-                 );
-            }
+                 	);
+            	}
+        	}
+    		
 
             nom ="inconnu";
             if (feature.properties.namePrefecture) {
@@ -404,29 +435,6 @@
         }
     }
     
-
-    /* switch layer between map and satellite */
-    function switchLayer(e) {
-    	mapType = document.getElementById("mapType").value;
-       // if (isMap.hasLayer(layerStreetMap)) {
-        if (mapType==="layerStreetMap") {
-        	txtSat = document.getElementById("lblSat").innerHTML;
-        	
-            isMap.addLayer(layerSatellite);
-            document.getElementById("mapType").value="layerSatellite";
-            isMap.removeLayer(layerStreetMap);
-            //e.innerText= [[#{entrance.map.satellite}]];
-            e.innerHTML= txtSat;
-            
-        } else {
-            txtMap = document.getElementById("lblMap").innerHTML;
-            isMap.addLayer(layerStreetMap);
-            document.getElementById("mapType").value="layerStreetMap";
-            isMap.removeLayer(layerSatellite);
-            //e.innerText= [[#{entrance.map.street}]];
-            e.innerHTML= txtMap;
-        }
-    }
     
     function fnParkPrefClicked(feat) {
     	manageDisabled();
@@ -488,18 +496,25 @@
     // relead parks with map fit
     function loadPrefParks() {
         if (geojsonPrefLayer!==null) {
-            isMap.removeLayer(geojsonPrefLayer);
+            editMap.removeLayer(geojsonPrefLayer);
             delete geojsonPrefLayer ;
         }
-        swLat=isMap.getBounds().getSouthWest().lat;
-        swLng=isMap.getBounds().getSouthWest().lng;
-        neLat=isMap.getBounds().getNorthEast().lat;
-        neLng=isMap.getBounds().getNorthEast().lng;
+        swLat=editMap.getBounds().getSouthWest().lat;
+        swLng=editMap.getBounds().getSouthWest().lng;
+        neLat=editMap.getBounds().getNorthEast().lat;
+        neLng=editMap.getBounds().getNorthEast().lng;
         sPos="swLat="+ swLat +"&swLng="+swLng +"&neLat="+neLat +"&neLng="+neLng;
+        
         // parc prefecture
         var sUrlGeoPref= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkPrefectureByCorner}]]+'?'+sPos;
         geojsonPrefLayer = new L.GeoJSON.AJAX(sUrlGeoPref, {onEachFeature: customOnEachFeaturePref});
-        isMap.addLayer(geojsonPrefLayer);
+        geojsonPrefLayer.addTo(dataPrefecture);
+        
+        // contours parc autmel
+        var sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkByCorner}]]+'?'+sPos;
+        geojsonAutmelLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {onEachFeature: customOnEachFeaturePref});
+        geojsonAutmelLayer.addTo(dataAutmel);
+        
         
         // works! used when affect
         geojsonPrefLayer.on('click', function(e){
@@ -517,7 +532,7 @@
           });
 
         
-        isMap.on('pm:create', ({ layer}) => {  
+        editMap.on('pm:create', ({ layer}) => {  
             console.log("pm:create geom");
             document.getElementById("etatAction").value="create";
             
@@ -525,7 +540,7 @@
                 console.log("pm:edit geom");
         	    console.log(e);
 
-                self_drawn = isMap.pm.getGeomanDrawLayers(true);
+                self_drawn = editMap.pm.getGeomanDrawLayers(true);
                 var strPoly = JSON.stringify(self_drawn.toGeoJSON());
                 document.getElementById("sGeometry").value=strPoly;
                 document.getElementById("etatAction").value="edit";
@@ -539,12 +554,12 @@
         
         
         // works! event after add poly
-        isMap.on('pm:drawend', function (e) {
+        editMap.on('pm:drawend', function (e) {
             console.log("pm:drawend");
             console.log(e);
             document.getElementById("etatAction").value="new";
             
-            self_drawn = isMap.pm.getGeomanDrawLayers(true);
+            self_drawn = editMap.pm.getGeomanDrawLayers(true);
             var strPoly = JSON.stringify(self_drawn.toGeoJSON());
             console.log(strPoly);
             document.getElementById("sGeometry").value=strPoly;
@@ -574,7 +589,7 @@
         // parc opendata + created
         var sUrlGeoParc= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenByCorner}]]+'?'+sPos;
         geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoParc, {onEachFeature: customOnEachFeatureParc});
-        isMap.addLayer(geojsonParkLayer);
+        editMap.addLayer(geojsonParkLayer);
         
         // used when affect
         geojsonParkLayer.on('click', function(e){
@@ -584,16 +599,16 @@
         
     }
     loadPrefParks();
-    isMap.on('zoomend',loadPrefParks);
-    isMap.on('moveend',loadPrefParks);
+    editMap.on('zoomend',loadPrefParks);
+    editMap.on('moveend',loadPrefParks);
 
     
     //geoman
-    isMap.pm.setLang("fr");
-    isMap.pm.setGlobalOptions({
+    editMap.pm.setLang("fr");
+    editMap.pm.setGlobalOptions({
    	  allowSelfIntersection: false
    	});
-    isMap.pm.addControls({
+    editMap.pm.addControls({
 	  position: 'topleft',  
 	  drawControls: true,
 	  editControls: true,
@@ -658,14 +673,77 @@
     }
     manageDisabled();
 
-    
+    // center on map by navigator loc (require grand)
+    function showPosition(position) {
+        lat =position.coords.latitude;
+        lon =position.coords.longitude;
+        
+        editMap.setView(L.latLng(lat,lon));
+      }
+      function locateMe() {
+  	    if (navigator.geolocation) {
+  	       navigator.geolocation.getCurrentPosition(showPosition);
+  	    }
+      }
     
     //https://gis.stackexchange.com/questions/439672/checking-whether-a-polygon-drawn-with-leaflet-geoman-plugin-is-valid
-    
-    
+
+    $(document).ready(function(){
+
+        $("#srcAdress").select2(
+        	{
+        	  ajax: {
+        		delay: 500,
+        		closeOnSelect: true,
+        		//selectOnClose: true,
+        		allowClear: true,
+        		language: "fr",
+        		placeholder: 'Rechercher par adresse',
+    	   		 minimumInputLength: 3,
+    	         url: function (params) {
+    	             console.log("change adresse select2");
+    	             var idCommune=document.getElementById('idCommune');
+    	             // var idCity = idCommune.options[idRegion.selectedIndex].value;
+    	             var idCity = idCommune.value;
+    	             console.log("idCity"+idCity);
+    	             
+    	             //var search = srcAdress.options[srcAdress.selectedIndex].value;
+    	             var search = params.term;
+    	             
+    	             console.log('adress?idCity='+ idCity +'&q='+ search);
+    	             return  [[@{/mvc/ajax/dropdown/search_adress}]] +'?idCity='+ idCity +'&q='+search;//+'&q1='+ params.term;
+    	           },
+    	           
+                dataType: 'json' ,
+                processResults: function (data) {
+               		return {
+                        "results":data
+                      };  
+                },
+            },
+            templateSelection: function (data, container) {
+                	//console.log("data-point="+data.value);
+                	//console.log("data-lat="+data.lat);
+                	//console.log("data-lon="+data.lon);
+                    $(data.element).attr('data-lat', data.lat);
+                    $(data.element).attr('data-lon', data.lon);
+                    return data.text;
+            },
+          }
+        ); // select2 commune
+	
+        $('#srcAdress').on("change", function(e) { 
+            //locate on the adress
+            var selectedSelect2OptionSource = $("#srcAdress :selected");
+        	var lon = selectedSelect2OptionSource.attr('data-lon');
+        	var lat = selectedSelect2OptionSource.attr('data-lat');
+        	
+            locateWorkPlace=locatePlace(lat, lon);
+            editMap.setView(locateWorkPlace);
+        });
+    });
+
 </script>
-               <div class="display: none;" id="lblSat"><span class="fa-solid fa-satellite" aria-hidden="true"></span>&nbsp;<span th:text="#{entrance.map.satellite}"></span></div>
-               <div class="display: none;" id="lblMap"><span class="fa-solid fa-map" aria-hidden="true"></span>&nbsp;<span th:text="#{entrance.map.street}"></span></div>
 
 </body>
 </html>
