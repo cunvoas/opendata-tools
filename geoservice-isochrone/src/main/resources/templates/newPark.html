@@ -511,7 +511,7 @@
         geojsonPrefLayer.addTo(dataPrefecture);
         
         // contours parc autmel
-        var sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkByCorner}]]+'?'+sPos;
+        var sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenOutlineByCorner}]]+'?'+sPos;
         geojsonAutmelLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {onEachFeature: customOnEachFeaturePref});
         geojsonAutmelLayer.addTo(dataAutmel);
         
@@ -679,12 +679,12 @@
         lon =position.coords.longitude;
         
         editMap.setView(L.latLng(lat,lon));
-      }
-      function locateMe() {
-  	    if (navigator.geolocation) {
-  	       navigator.geolocation.getCurrentPosition(showPosition);
-  	    }
-      }
+    }
+    function locateMe() {
+	    if (navigator.geolocation) {
+	       navigator.geolocation.getCurrentPosition(showPosition);
+	    }
+    }
     
     //https://gis.stackexchange.com/questions/439672/checking-whether-a-polygon-drawn-with-leaflet-geoman-plugin-is-valid
 
@@ -743,6 +743,31 @@
         });
     });
 
+    
+    
+/*
+ https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/file-upload-Spring-Boot-Ajax-example
+
+
+	 <!-- HTML5 Input Form Elements -->
+	 <input id="fileupload" type="file" name="fileupload" /> 
+	 <button id="upload-button" onclick="uploadFile()"> Upload </button>
+
+	 <!-- Ajax JavaScript File Upload to Spring Boot Logic -->
+	 <script>
+ */
+    async function uploadFile() {
+      let formData = new FormData(); 
+      formData.append("file", fileupload.files[0]);
+      let response = await fetch('/upload', {
+        method: "POST", 
+        body: formData
+      }); 
+
+      if (response.status == 200) {
+        alert("File successfully uploaded.");
+      }
+    }
 </script>
 
 </body>

@@ -17,6 +17,10 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
 
+web:
+  cors:
+    allowed-origins: "${PROTOCOL_AND_FQDN}"
+
 application:
   security:
     jwt-sign-key: FAKE_KEY

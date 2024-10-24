@@ -1,7 +1,9 @@
 package com.github.cunvoas.geoserviceisochrone.model.opendata;
 
+import java.util.Date;
+
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.NumberFormat;
 
 import jakarta.persistence.Column;
@@ -11,8 +13,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.Data;
 
 @Data
@@ -53,6 +53,16 @@ public class ParcEtJardin {
 	
 	@Column(name = "coordonnee")
 	private Point coordonnee;
+
+	@Column(name="contour")
+	private Geometry contour;
+	
+	// date 
+	@Column(name="date_debut")
+	private Date dateDebut;
+	
+	@Column(name="date_fin")
+	private Date dateFin;
 	
 	public String getLat() {
 		if (coordonnee!=null) {

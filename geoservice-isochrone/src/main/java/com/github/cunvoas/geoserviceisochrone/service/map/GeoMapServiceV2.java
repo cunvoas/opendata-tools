@@ -91,7 +91,7 @@ public class GeoMapServiceV2 {
 	/**
 	 * this park in greenwashed
 	 */
-	public String THRESHOLD_GREEWASHED="#f1e2e2";
+	public String THRESHOLD_GREENWASHED="#f1e2e2";
 	
 	public String THRESHOLD_NOT_COMPUTED="#4944f5";
 	
@@ -127,9 +127,8 @@ public class GeoMapServiceV2 {
 	
 	/**
 	 * @param id
-	 * @return
+	 * @return Cadastre geojson
 	 */
-	
 	public GeoJsonRoot findAllCadastreByComm2Co(Long id) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		
@@ -175,7 +174,7 @@ public class GeoMapServiceV2 {
      * @param swLng
      * @param neLat
      * @param neLng
-     * @return
+     * @return  Cadastre geojson
      */
 	public GeoJsonRoot findAllCadastreByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
 		GeoJsonRoot root = new GeoJsonRoot();
@@ -206,21 +205,52 @@ public class GeoMapServiceV2 {
      * @param swLng
      * @param neLat
      * @param neLng
-     * @return
+     * @return  Isochrone geojson
      */
     
 	public GeoJsonRoot findAllParkByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllParkByArea(polygon, annee);
     }
+	
+	/**
+	 * @param annee
+	 * @param swLat
+	 * @param swLng
+	 * @param neLat
+	 * @param neLng
+	 * @return kOutline geojson
+	 */
+	public GeoJsonRoot findAllParkOutlineByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
+    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	return this.findAllParkOutlineByArea(polygon, annee);
+    }
+	public GeoJsonRoot findAllParkOutlineByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
+    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	return this.findAllParkOutlineByArea(polygon);
+    }
     
     
+	/**
+	 * @param swLat
+	 * @param swLng
+	 * @param neLat
+	 * @param neLng
+	 * @return   Park Prefecture geojson
+	 */
 	public GeoJsonRoot findParkPrefectureByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findParkPrefectureByArea(polygon);
     }
     
     
+	/**
+	 * @param swLat
+	 * @param swLng
+	 * @param neLat
+	 * @param neLng
+	 * @return   Isochrone geojson
+	 */
 	public GeoJsonRoot findParcEtJardinByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findParcEtJardinByArea(polygon);
@@ -259,7 +289,7 @@ public class GeoMapServiceV2 {
     /**
      * isochrone of each entrance
      * @param idPark
-     * @return
+     * @return   Isochrone geojson
      */
     
 	public GeoJsonRoot findIsochroneParkEntrance(Long idPark) {
@@ -284,6 +314,10 @@ public class GeoMapServiceV2 {
     	return root;
     }
     
+	/**
+	 * @param idPark
+	 * @return   Isochrone geojson
+	 */
 	public GeoJsonRoot findIsochronePark(Long idPark) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		ParkArea pa = parkAreaRepository.findByIdParcEtJardin(idPark);
@@ -304,12 +338,66 @@ public class GeoMapServiceV2 {
     }
     
     
-    
 	/**
 	 * @param polygon
+	 * @param annee
 	 * @return
 	 */
+	public GeoJsonRoot findAllParkOutlineByArea(Polygon polygon, Integer annee) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
+
+    	if (polygon!=null) {
+    		List<ParcEtJardin> parcEtJardins = parkJardinRepository.findByAreaAndYear(annee, polygon);
+    		if (!CollectionUtils.isEmpty(parcEtJardins)) {
+    			for (ParcEtJardin park : parcEtJardins) {
+
+					GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					feature.setGeometry(park.getContour());
+					
+					ParkGardenView pv = new ParkGardenView();
+					feature.setProperties(pv);
+					pv.setId(String.valueOf(park.getId()));
+					pv.setName(park.getName());
+    			}
+    		}
+    	}
+		return root;
+	}
 	
+
+	/**
+	 * @param polygon
+	 * @param annee
+	 * @return
+	 */
+	public GeoJsonRoot findAllParkOutlineByArea(Polygon polygon) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
+    	if (polygon!=null) {
+    		List<ParcEtJardin> parcEtJardins = parkJardinRepository.findByArea(polygon);
+    		if (!CollectionUtils.isEmpty(parcEtJardins)) {
+    			for (ParcEtJardin park : parcEtJardins) {
+
+					GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					feature.setGeometry(park.getContour());
+					
+					ParkGardenView pv = new ParkGardenView();
+					feature.setProperties(pv);
+					pv.setId(String.valueOf(park.getId()));
+					pv.setName(park.getName());
+    			}
+    		}
+    	}
+		return root;
+	}
+	
+	/**
+	 * @param polygon
+	 * @return   Isochrone geojson
+	 */
 	public GeoJsonRoot findAllParkByArea(Polygon polygon, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		
@@ -325,6 +413,7 @@ public class GeoMapServiceV2 {
 					feature.setGeometry(parkArea.getPolygon());
 					
 					ParkView pv = new ParkView();
+					
 					pv.setId(String.valueOf(parkArea.getId()));
 					pv.setName(parkArea.getName());
 					pv.setQuartier(parkArea.getBlock());
@@ -347,6 +436,10 @@ public class GeoMapServiceV2 {
 	
 	
 	
+	/**
+	 * @param polygon
+	 * @return   Parc Point geojson
+	 */
 	public GeoJsonRoot findParcEtJardinByArea(Polygon polygon) {
 		GeoJsonRoot root = new GeoJsonRoot();
 
@@ -451,9 +544,8 @@ public class GeoMapServiceV2 {
 	 * @param areaCputed
 	 * @return color of an isochrone park.
 	 */
-	
-	public String getFillColorPark(ParkView pv, ParkAreaComputed areaCputed) {
-		String color= THRESHOLD_GREEWASHED;
+	protected String getFillColorPark(ParkView pv, ParkAreaComputed areaCputed) {
+		String color= THRESHOLD_GREENWASHED;
 
 		double thresholdReco = 12;
 		double thresholdMin = 10;
@@ -488,19 +580,19 @@ public class GeoMapServiceV2 {
 	
 	/**
 	 * @param pv
-	 * @param cpu
+	 * @param pac
 	 */
 	
-	public void extraFeature(ParkView pv, ParkAreaComputed cpu) {
+	public void extraFeature(ParkView pv, ParkAreaComputed pac) {
 		
 		NumberFormat nf = new DecimalFormat("# ##0");
-		if (cpu!=null) {
-			pv.setPeople(nf.format(cpu.getPopulation()));
-			pv.setArea(nf.format(cpu.getSurface()));
-			pv.setOms(cpu.getOms());
-			pv.setDense(cpu.getIsDense());
+		if (pac!=null) {
+			pv.setPeople(nf.format(pac.getPopulation()));
+			pv.setArea(nf.format(pac.getSurface()));
+			pv.setOms(pac.getOms());
+			pv.setDense(pac.getIsDense());
 			
-			pv.setFillColor(this.getFillColorPark(pv, cpu));
+			pv.setFillColor(this.getFillColorPark(pv, pac));
 		}
 	}
 	
@@ -511,34 +603,34 @@ public class GeoMapServiceV2 {
 	}
 	
 	
-	public String getFillColorCarre(Carre200AndShapeView v, InseeCarre200mComputedV2 cpuEd) {
-		String color = THRESHOLD_GREEWASHED;
+	public String getFillColorCarre(Carre200AndShapeView v, InseeCarre200mComputedV2 pacEd) {
+		String color = THRESHOLD_GREENWASHED;
 
-		if (cpuEd.getUpdated()!=null) {
-			if (cpuEd.getPopAll()==null) {
+		if (pacEd.getUpdated()!=null) {
+			if (pacEd.getPopAll()==null) {
 				v.setAreaPerPeople("-");
 				return THRESHOLD_NOT_COMPUTED;
 			}
 			
 			double thresholdReco = 12;
 			double thresholdMin = 10;
-			if (Boolean.FALSE.equals(cpuEd.getIsDense())) {
+			if (Boolean.FALSE.equals(pacEd.getIsDense())) {
 				 thresholdReco = applicationBusinessProperties.getRecoSubUrbSquareMeterPerCapita();
 				 thresholdMin = applicationBusinessProperties.getMinSubUrbSquareMeterPerCapita();
 			} else {
 				 thresholdReco = applicationBusinessProperties.getRecoUrbSquareMeterPerCapita();
 				 thresholdMin = applicationBusinessProperties.getMinUrbSquareMeterPerCapita();
 			}
-			BigDecimal spc = cpuEd.getSurfaceParkPerCapitaOms();
+			BigDecimal spc = pacEd.getSurfaceParkPerCapitaOms();
 			if (spc==null) {
 				spc=BigDecimal.ZERO;
 			}
 			
 			Double sph = BigDecimalMath.roundToDouble(spc, RoundingMode.HALF_EVEN);
 			
-			Boolean allInhabitant = cpuEd.getPopAll()!=null?cpuEd.getPopAll().equals(cpuEd.getPopIncludedOms()):Boolean.FALSE;
+			Boolean allInhabitant = pacEd.getPopAll()!=null?pacEd.getPopAll().equals(pacEd.getPopIncludedOms()):Boolean.FALSE;
 			
-			if ("LAEA200M_N15407E19138".equals(cpuEd.getIdCarre200())) {
+			if ("LAEA200M_N15407E19138".equals(pacEd.getIdCarre200())) {
 				int debug=0;
 			}
 			if (sph>thresholdReco && allInhabitant) {
@@ -563,9 +655,13 @@ public class GeoMapServiceV2 {
 	}
 	
 	
+	/**
+	 * @param sph
+	 * @return gradient color
+	 */
 	public String getColorGrey(Double sph) {
 		String color=THRESHOLD_BAD;
-		
+		// color from 0 to 255
 		Long v = Math.round(123+sph*10);
 		String s = Integer.toString(Ints.checkedCast(v), 16);
 		color = String.format("#%s%s%s", s, s, s);
@@ -573,9 +669,20 @@ public class GeoMapServiceV2 {
 	}
 	
 	
+	/**
+	 * format an integer pattern.
+	 */
 	private static final NumberFormat DF_E = new DecimalFormat("#0");
+	/**
+	 * format a decimal pattern.
+	 */
 	private static final NumberFormat DF_S = new DecimalFormat("#0.00");
 	
+	/**
+	 * format an integer .
+	 * @param v
+	 * @return
+	 */
 	public String formatInt(BigDecimal v) {
 		if (v!=null) {
 			return  DF_E.format(v);
@@ -584,6 +691,11 @@ public class GeoMapServiceV2 {
 		
 	}
 	
+	/**
+	 * format a decimal.
+	 * @param v
+	 * @return
+	 */
 	public String formatDec(BigDecimal v) {
 		if (v!=null) {
 			return  DF_S.format(v);
@@ -598,7 +710,6 @@ public class GeoMapServiceV2 {
 	 * @return
 	 * @FIXME until final front permit to change year.
 	 */
-	
 	public GeoJsonRoot findAllCarreByArea(Polygon polygon) {
 		//FIXME until final front permit to change year
 		log.error("FIXME findAllCarreByArea(Polygon polygon)");
