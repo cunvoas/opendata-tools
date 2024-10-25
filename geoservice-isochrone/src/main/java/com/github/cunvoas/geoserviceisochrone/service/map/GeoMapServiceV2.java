@@ -853,29 +853,36 @@ public class GeoMapServiceV2 {
     }
     
 
+    /**
+     * @param swLat
+     * @param swLng
+     * @param neLat
+     * @param neLng
+     * @return
+     */
     Polygon getPolygonFromBounds(Double swLat, Double swLng, Double neLat, Double neLng) {
-	    	
     	Polygon polygon=null;
     	
-	    	Double x1=  swLng;
-	    	Double x2=  neLng;
-	    	Double y1= swLat;
-	    	Double y2= neLat;
+    	Double x1= swLng;
+    	Double x2= neLng;
+    	Double y1= swLat;
+    	Double y2= neLat;
+    	
+    	Coordinate southWest = new Coordinate(x1,y1);
+    	Coordinate northEast = new Coordinate(x2,y2);
+    	
+    	if (checkDistance(southWest, northEast)) {
+	    	List<Coordinate> coords = new ArrayList<>();
+	    	coords.add( new Coordinate(x1,y1) );
+	    	coords.add( new Coordinate(x1,y2) );
+	    	coords.add( new Coordinate(x2,y2) );
+	    	coords.add( new Coordinate(x2,y1) );
+	    	coords.add( new Coordinate(x1,y1) );
 	    	
-	    	Coordinate southWest = new Coordinate(x1,y1);
-	    	Coordinate northEast = new Coordinate(x2,y2);
-	    	
-	    	if (checkDistance(southWest, northEast)) {
-		    	List<Coordinate> coords = new ArrayList<>();
-		    	coords.add(new Coordinate(x1,y1) );
-		    	coords.add(new Coordinate(x1,y2) );
-		    	coords.add(new Coordinate(x2,y2) );
-		    	coords.add(new Coordinate(x2,y1) );
-		    	coords.add(new Coordinate(x1,y1) );
-		    	
-		    	Coordinate[] array = coords.toArray(Coordinate[]::new);
-		    	polygon= (Polygon)factory.createPolygon(array).getEnvelope();
-	    	}
+	    	Coordinate[] array = coords.toArray(Coordinate[]::new);
+//	    	polygon= (Polygon)factory.createPolygon(array).getEnvelope();
+	    	polygon= factory.createPolygon(array);
+    	}
     	
     	return polygon;
     }
@@ -889,16 +896,12 @@ public class GeoMapServiceV2 {
      * @return
      */
     boolean checkDistance(Coordinate southWest, Coordinate northEast) {
-    	 
     	Double d =  DistanceHelper.crowFlyDistance(
 	    				southWest.getY(), southWest.getX(),
 	    				northEast.getY(), northEast.getX()
 	    			);
-    	
     	return d<50;
     	
-//    	double dist = southWest.distance(northEast);
-//    	return dist<0.80d;
     }
     
     

@@ -7,11 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 
 import lombok.Data;
 

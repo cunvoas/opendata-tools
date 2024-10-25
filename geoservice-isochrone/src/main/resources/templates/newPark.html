@@ -12,11 +12,13 @@
 
 				<div class="container">
 
-<div class="row row-cols-1 row-cols-md-12 g-2 ">
+<div class="row row-cols-1 row-cols-md-12  ">
 	<div class="container-fluid px-4">
-		<h1 class="mt-12" th:text="#{park.title}">title</h1>
+		<h4 class="mt-12" th:text="#{park.title}">title</h4>
 	</div>
-     <div class="row">
+	
+     <div class="row input-group border border-dark rounded-3">
+      	<h6 class="col-12" th:text="#{parc.edit.chooseCity}">select city</h6>
          <div class="col-3">
              <div class="card" style="text-align: center">
                	<!-- region -->
@@ -57,8 +59,6 @@
 				<form id="formSelectCity" th:action="@{/mvc/park/new/city}" method="POST" th:object="${newPark}">
 				<fieldset id="fsCity" disabled="disabled">
 					<div class="form-floating">
-	
-	
 						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
 						<datalist id="communes" class="form-label">
 							<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
@@ -74,46 +74,90 @@
      </div>
      
      
-      <div class="row">
+      <div class="row input-group border border-dark rounded-3">
+      		<h6 class="col-12" th:text="#{parc.edit.locateOnMap}">locate on map</h6>
+            <div class="col-5">
+	           <div class="card" style="text-align: center">
+	                      <label for="srcAdress" th:text="#{parc.edit.searchAdress}">adress</label>
+	                      <select class="form-select select2-single" id="srcAdress" name="srcAdress">
+	                      </select>
+	           </div>
+	       </div>
             <div class="col-2">
                 <div class="card border" style="text-align: center">
 					<button type="button" class="btn btn-secondary" th:text="#{entrance.map.locateMe}" onclick="locateMe()" >locate me</button>
                 </div>
             </div>
-            <div class="col-6">
-	           <div class="card" style="text-align: center">
-	                      <select class="form-select select2-single" id="srcAdress" name="srcAdress">
-	                      </select>
-	                      <label for="srcAdress" th:text="#{parc.edit.searchAdress}">adress</label>
-	           </div>
-	       </div>
-            <div class="col-4">
-            
+            <div class="col-3">
                 <div class="card border" style="text-align: center">
-					<button type="button" class="btn btn-primary" th:text="#{entrance.map.locateMe}" >locate me</button>
+                    <label for="fileupload" th:text="#{entrance.map.upload}">upload photo</label>
+					  <input class="form-control form-control-sm" id="fileupload" type="file" name="fileupload" onchange="return fileValidation()" />
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="card border" style="text-align: center">
+                    <button type="button" class="btn btn-secondary" th:text="#{entrance.map.uploadBtn}" onclick="uploadFile()">upload me</button>
                 </div>
             </div>
       </div>
+      
+      
 <!-- TODO --------------------------- -->
 
+<span class="row input-group border border-dark rounded-3">
 
-    <div class="col-3">
-        <form th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">
+    <div class="col-6">
+     <form th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">
         <fieldset id="fsEditPark" disabled="disabled">
         <input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
         <input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
         <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
         <input type="hidden" id="idPark" name="idPark" th:field="*{idPark}" />
         <input type="hidden" id="id" name="id" th:field="*{id}" />
+        <input type="hidden" id="mapLat" name=mapLat th:field="*{mapLat}"/>
+        <input type="hidden" id="mapLng" name="mapLng" th:field="*{mapLng}"/>
+						
+        
+        <span style="display: none;">
         <input type="text" id="sGeometry" name="sGeometry" th:field="*{sGeometry}" />
         <input type="text" id="etat" name="etat" th:field="*{etat}" />
         <input type="text" id="etatAction" name="etatAction" th:field="*{etatAction}" />
+        </span>
         
         
+        <!-- 
+        
+        
+        
+        
+                
         
         <div class="row">
+            <div class="col">
+                    <div class="card border" style="text-align: center">
+                        <input class="btn btn-secondary" type="button" id="btnNew" name="btnNew" th:field="*{name}" />
+                        <label class="btn-label" for="btnNew" th:text="#{park.edit.new}">new parc</label>
+                    </div>
+                    
+                   <div class="card border" style="text-align: center">
+                        <input class="btn btn-secondary" type="button" id="btnEdit" name="btnEdit" th:field="*{name}" />
+                        <label class="btn-label" for="btnEdit" th:text="#{park.edit.edit}">edit parc</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        
+        
+         -->
+        <div class="row">
             <div class="container-fluid px-4">
-                <h4 class="mt-12" th:text="#{entrance.park.title}">title</h4>
+                <h6 th:text="#{entrance.park.title}">title</h6>
             </div>
             <div class="col">
                 <div class="card border" style="text-align: center">
@@ -124,7 +168,7 @@
                 </div>
             </div>
         </div>
-        
+
                                 
          <div class="row">
             <div class="col">
@@ -212,19 +256,8 @@
                 </div>
             </div>
         </div>
-
-    </fieldset>
-    </form>
-    </div>
-    
-    <div class="col-9">
-        <div class="row">
-            <div class="col-4">
-                <h4 class="mt-12" th:text="#{park.edit.title}">title</h4>
-            </div>
-            
             <!-- TODO: make the filter later -->
-            <div class="col-8" style="display: none;"> 
+            <div class="col-6" style="display: block;"> 
                 <div  style="text-align: left">
                  <h6 class="mt-12" th:text="#{park.filter}">title</h6>
 	             <input type="radio" id="filterValid" name="filterPark" value="VALID" class="form-check-input" onchange="filterChange('VALID');" />
@@ -237,17 +270,45 @@
 	             <label for="filterReject" th:text="#{park.filter.reject}" >REJECT</label>
                 </div>
             </div>
-        </div>
-        <div class="row h-100 ">
-            <div class="col-12">
-                <div class="card h-100 border" style="text-align: center">
-                    <div id="mapid" style="width: 100%; height: 500px;"></div>
-                </div>
+
+<!--            
+<div class="accordion" id="accordionPreview">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+        Prévisualisation
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div class="accordion-body" id="imagePreview">
+      </div>
+    </div>
+  </div>
+</div>
+ -->
+
+    </div>
+    
+    <div class="col-6">
+        <div class="row">
+            <div class="col-4">
+                <h6 th:text="#{park.edit.title}">title</h6>
             </div>
+            
+
         </div>
+        <div class="row col-12 h-100 ">
+                <div class="card " style="text-align: center">
+                    <div id="mapid" style="width: 100%; height: 100%;"></div>
+                </div>
+        </div>
+        
+        
+            </fieldset>
+    </form>
     </div>
 
-
+</span>
 
 <!-- --------------------------- -->
      
@@ -315,8 +376,13 @@
     function locatePlace(lat, lon) {
     	return L.latLng(lat, lon);
     }
-    var locateWorkPlace= locatePlace(50.626419,3.0719121);
-   
+    var locateWorkPlace= L.latLng(50.626419,3.0719121);
+    var mLng = document.getElementById("mapLng").value;
+    var mLat = document.getElementById("mapLat").value;
+    if (mLng!="" && mLat!="") {
+    	locateWorkPlace = locatePlace(mLat, mLng);
+    }
+    
     
     // map layers
     var mapMinZoom=8;
@@ -677,6 +743,10 @@
     function showPosition(position) {
         lat =position.coords.latitude;
         lon =position.coords.longitude;
+
+    	// feedback on form
+        document.getElementById("mapLng").value=lon;
+        document.getElementById("mapLat").value=lat;
         
         editMap.setView(L.latLng(lat,lon));
     }
@@ -738,6 +808,10 @@
         	var lon = selectedSelect2OptionSource.attr('data-lon');
         	var lat = selectedSelect2OptionSource.attr('data-lat');
         	
+        	// feedback on form
+            document.getElementById("mapLng").value=lon;
+            document.getElementById("mapLat").value=lat;
+            
             locateWorkPlace=locatePlace(lat, lon);
             editMap.setView(locateWorkPlace);
         });
@@ -768,6 +842,140 @@
         alert("File successfully uploaded.");
       }
     }
+
+ function ConvertDMSToDD(degrees, minutes, seconds, direction) {
+     //console.log(degrees+" "+minutes+" "+seconds+" "+direction);
+     var dd = degrees + (minutes/60) + (seconds/36000000);
+     //console.log(degrees+" "+(minutes/60)+" "+(60000/36000000));                               
+     if (direction == "S" || direction == "W") {
+         dd = dd * -1;
+     }
+     //console.log(dd);
+     return dd;
+  }
+
+
+ // prévalidation du fichier d'upload (type, conhérence, exif)
+ function fileValidation() {
+     var fileInput =  document.getElementById('fileupload');
+     var filePath = fileInput.value;
+     
+     // Allowing file type
+     //var allowedExtensions =  /(\.jpg|\.jpeg|\.png|\.gif)$/i;
+     var allowedExtensions =  /(\.jpg|\.jpeg)$/i;
+     if (!allowedExtensions.exec(filePath)) {
+    	 //console.log("fichier invalide");
+         alert("Le fichier n'est pas une photo.");
+         fileInput.value = '';
+         return false;
+         
+     } else  {
+         // Image preview
+         if (fileInput.files && fileInput.files[0]) {
+        	 var blob = fileInput.files[0]; // See step 1 above
+        	 var extType=blob.type;
+        	 //console.log("extType="+extType);
+
+        	 var fileReader = new FileReader();
+        	 fileReader.onloadend = function(e) {
+		 	   var arr = (new Uint8Array(e.target.result)).subarray(0, 4);
+		 	   var header = "";
+		 	   for(var i = 0; i < arr.length; i++) {
+		 	      header += arr[i].toString(16);
+		 	   }
+		 	   //console.log("header="+header);
+		 	   
+		 	   // Check the file signature against known types
+		  	  var realType="unknown";
+		 	  switch (header) {
+		 	    case "89504e47":
+		 	    	realType = "image/png";
+		 	        break;
+		 	    case "47494638":
+		 	    	realType = "image/gif";
+		 	        break;
+		 	    case "ffd8ffe0":
+		 	    case "ffd8ffe1":
+		 	    case "ffd8ffe2":
+		 	    case "ffd8ffe3":
+		 	    case "ffd8ffe8":
+		 	    	realType = "image/jpeg";
+		 	        break;
+		 	    case "52494646":
+		 	    	realType = "image/webp";
+		 	        break;
+		 	    default:
+		 	    	realType = "unknown"; // Or you can use the blob.type as fallback
+		 	        break;
+		 	  }
+		 	  //console.log("realType="+realType);
+       	  
+				if (realType==="unknown") {
+					fileInput.value = '';
+					alert('Le format du fichier est inconnu.');
+					return false;
+				} else if (extType===realType) {
+					//console.log("Le format du fichier ne correspond pas à l'extention.");
+					var chkLoc=false;
+					
+					EXIF.getData(blob, function(chkLoc) {
+				        var extLat = EXIF.getTag(this, "GPSLatitude");
+				        var extLon = EXIF.getTag(this, "GPSLongitude");
+				        console.log(extLat);
+				        console.log(extLon);
+				        if (!extLat && !extLon) {
+				        	fileInput.value = '';
+				        	alert("La photo n'a pas de données de localisation.");
+				        	chkLoc= false;
+				        } else {
+				        	chkLoc= true;
+				        	
+				        	// get latitude from exif data and calculate latitude decimal
+				            var latDegree = extLat[0].numerator;
+				            var latMinute = extLat[1].numerator;
+				            var latSecond = extLat[2].numerator;
+				            var latDirection = EXIF.getTag(this, "GPSLatitudeRef");
+				            var latFinal = ConvertDMSToDD(latDegree, latMinute, latSecond, latDirection);
+				            
+				            // get longitude from exif data and calculate longitude decimal
+				            var lonDegree = extLon[0].numerator;
+				            var lonMinute = extLon[1].numerator;
+				            var lonSecond = extLon[2].numerator;
+				            var lonDirection = EXIF.getTag(this, "GPSLongitudeRef");
+				            var lonFinal = ConvertDMSToDD(lonDegree, lonMinute, lonSecond, lonDirection);
+				            
+				            // centrage sur la carte
+				            locateWorkPlace=locatePlace(latFinal, lonFinal);
+				            editMap.setView(locateWorkPlace);
+				        }
+				    });
+					
+					/*
+		        	 var previsuReader = new FileReader();
+		        	 previsuReader.onloadend = function(e) {
+		        		 document.getElementById('imagePreview').innerHTML = '<img width="300" height="200" src="'+ blob +'"/>';
+		        	 }
+		        	 previsuReader.readAsDataURL(blob);
+		        	 */
+		        	 
+					return chkLoc;
+				} else {
+					fileInput.value = '';
+					//console.log("fichier non conforme");
+					alert("Le format du fichier ne correspond pas à l'extention.");
+					return false;
+				}
+	        	 
+        	 };
+        	 fileReader.readAsArrayBuffer(blob);
+        	 
+         } else {
+        	 console.log("pas de fichier");
+        	 return false;
+         }
+     }
+ }
+
 </script>
 
 </body>
