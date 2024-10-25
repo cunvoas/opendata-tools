@@ -41,7 +41,7 @@ public class Contributeur implements UserDetails {
 	@Column(length = 100)
 	private String email;
 	
-	@Column(length = 400)
+	@Column(length = 500)
 	private String password;
 
 	@Column(length = 100)

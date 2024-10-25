@@ -12,6 +12,7 @@ public class DashboardCache {
 	public static final String ASSOS="ASSOS";
 	public static final String CONTRIB="CONTRIB";
 	public static final String CARREAUX="CARREAUX";
+	public static final String FILOSOFIL="FILOSOFIL";
 	public static final String ANNES="ANNES";
 	public static final String COM2CO="COM2CO";
 	public static final String COMMUNE="COMMUNE";

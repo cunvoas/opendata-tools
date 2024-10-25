@@ -16,7 +16,8 @@ public class DashboardSummary {
 	private Long nbAssociation;
 	private Long nbCommunauteCommune;
 	private Long nbCommune;
-	
+
+	private Long nbFilosofil;
 	private Long nbCarreau;
 	private Long nbAnnee;
 	private Long nbParcReference;

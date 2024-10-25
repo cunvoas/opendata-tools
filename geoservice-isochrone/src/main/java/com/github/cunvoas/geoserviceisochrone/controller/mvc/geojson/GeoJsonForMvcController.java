@@ -48,5 +48,17 @@ public class GeoJsonForMvcController {
     		) {
         return geoMapService.findParcEtJardinByArea(swLat, swLng, neLat, neLng);
     }
+
+	
+	@GetMapping("/parkGardenOutlineByCorner")
+    public GeoJsonRoot getParcJardinOutlineByArea(
+    			@RequestParam("swLat") Double swLat,
+    			@RequestParam("swLng") Double swLng,
+    			@RequestParam("neLat") Double neLat,
+    			@RequestParam("neLng") Double neLng
+    		) {
+        return geoMapService.findAllParkOutlineByArea(swLat, swLng, neLat, neLng);
+    }
+	
 	
 }

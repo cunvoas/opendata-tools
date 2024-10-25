@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
+import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
@@ -80,6 +82,9 @@ public class ParkNewControler {
 	
 	@PostMapping("/city")
 	public String changeCity(@ModelAttribute FormParkNew form, Model model) {
+		Coordinate location = serviceReadReferences.getCoordinate(form.getIdCommune());
+		form.setMapLng(String.valueOf(location.getX()));
+		form.setMapLat(String.valueOf(location.getY()));
 		return getForm(form, model);
 	}
 	
@@ -188,10 +193,15 @@ public class ParkNewControler {
 	 * @return
 	 */
 	protected FormParkNew populateForm( FormParkNew form) {
-		
-		if (form==null || form.getIdRegion()==null) {
-			form = new FormParkNew();
+		if (form==null) {
+			form = new FormParkNew();	
+		}
+		if (form.getIdRegion()==null) {
 			form.autoLocate();
+			
+			Coordinate location = serviceReadReferences.getCoordinate(form.getIdCommune());
+			form.setMapLng(String.valueOf(location.getX()));
+			form.setMapLat(String.valueOf(location.getY()));
 		}
 		
 		// Populate Selection List
