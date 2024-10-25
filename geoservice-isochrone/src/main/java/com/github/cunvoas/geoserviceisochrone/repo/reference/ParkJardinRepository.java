@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.repo.reference;
 
 import java.util.List;
 
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.springframework.data.domain.Page;
@@ -11,13 +12,22 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 
 @Repository
 public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> {
 
-
+	/**
+	 * @param txt
+	 * @return geolatte, to convert in locationtech, use GeometryQueryHelper.cast()
+	 */
+	@Query(nativeQuery = true,
+			value="select ST_GeomFromText(?)")
+	org.geolatte.geom.Geometry<?> getGeometryFromText(String txt);
+	
 	ParcEtJardin findByName(String name);
+	ParcEtJardin findByNameIgnoreCase(String name);
+	
+	//ContainingIgnoreCase
 	
 	@Query(nativeQuery = true,
 			value="select pj.* from parc_jardin pj where pj.id_city=:id",
@@ -87,10 +97,27 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 			   value = "SELECT pj.* FROM parc_jardin pj WHERE ST_Intersects(pj.coordonnee, :searchArea)")
 	List<ParcEtJardin> findByArea(String searchArea);
 	
+	@Query(nativeQuery = true, 
+			   value = "SELECT pj.* FROM parc_jardin pj "
+			   		+ "WHERE pj.id_city=:cityId and ST_Contains(pj.coordonnee, :searchArea)")
+	List<ParcEtJardin> findByAreaAndCityId(Long cityId, Geometry searchArea);
+	
 	
 	
 	@Query(value="SELECT * from parc_jardin where ST_Distance(coordonnee, :p) < :distanceM order by ST_Distance(coordonnee, :p) asc", nativeQuery = true)
 	List<ParcEtJardin> findNearWithinDistance(Point p, double distanceM);
 	
 	
+	@Query(nativeQuery = true, 
+		   value = "SELECT pj.* FROM parc_jardin pj "
+		   		+ " WHERE date_part('year',COALESCE(pj.date_debut, TO_DATE('20100101','YYYYMMDD'))) <=:annee "
+		   		+ "   AND :annee <= date_part('year',COALESCE(pj.date_fin, TO_DATE('20991231','YYYYMMDD'))) "
+		   		+ "   AND ST_Intersects(pj.contour, :searchArea)")
+	List<ParcEtJardin> findByAreaAndYear(Integer annee, Polygon searchArea);
+
+	
+	@Query(nativeQuery = true, 
+		   value = "SELECT pj.* FROM parc_jardin pj "
+		   		+ "WHERE ST_Intersects(pj.contour, :searchArea)")
+	List<ParcEtJardin> findByArea(Geometry searchArea);
 }

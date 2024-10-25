@@ -20,7 +20,7 @@
 	         <div class="col-3">
 	             <div class="card" style="text-align: center">
 	               	<!-- region -->
-					<form th:action="@{/mvc/park/region}" th:object="${formParkList}" method="post" onchange="submit();">
+					<form th:action="@{/mvc/park/list/region}" th:object="${formParkList}" method="post" onchange="submit();">
 						<div class="form-floating">
 							<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
 								<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
@@ -38,7 +38,7 @@
 	         <div class="col-3">
 	             <div class="card" style="text-align: center">
 	                	<!-- comm2co -->
-						<form th:action="@{/mvc/park/commDeCo}" th:object="${formParkList}" method="post" onchange="submit();">
+						<form th:action="@{/mvc/park/list/commDeCo}" th:object="${formParkList}" method="post" onchange="submit();">
 						<fieldset id="fsComm2co" disabled="disabled">
 							<div class="form-floating">
 								<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
@@ -56,7 +56,7 @@
 	         <div class="col-6">
 	             <div class="card" style="text-align: center">
 	             	<!-- commune -->
-					<form id="formSelectCity" th:action="@{/mvc/park/city}" method="POST" th:object="${formParkList}">
+					<form id="formSelectCity" th:action="@{/mvc/park/list/city}" method="POST" th:object="${formParkList}">
 					<fieldset id="fsCity" disabled="disabled">
 						<div class="form-floating">
 		
@@ -83,7 +83,7 @@
                  <div class="card" style="text-align: center">
                    <div class="form-floating">
                     <!-- RADIOS -->
-                    <form th:action="@{/mvc/park/case}" th:object="${formParkList}" method="post" onchange="submit();">
+                    <form th:action="@{/mvc/park/list/case}" th:object="${formParkList}" method="post" onchange="submit();">
                     
                                 <input type="radio" id="caseAll" name="caseAll" value="all" class="form-check-input" th:field="*{parkCase}" />
                                 <label for="caseAll" th:text="#{park.case.all}" >all</label>
@@ -152,7 +152,7 @@
 			                        <td th:text="${park.lastEntranceUpdate}" />
 			                        <td th:text="${park.lastIsochroneUpdate}" />
 			                        <td>
-			                            <a th:href="@{/mvc/park/edit?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkPark}"></a>
+			                            <a th:href="@{/mvc/park/check?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkPark}"></a>
 			                            &nbsp;
 			                            <a th:href="@{/mvc/entrance/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkEntrance}"></a>
 			                        </td>

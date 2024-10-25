@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.controller.mvc.admin;
+package com.github.cunvoas.geoserviceisochrone.controller.rest;
 
 import java.util.ArrayList;
 import java.util.List;

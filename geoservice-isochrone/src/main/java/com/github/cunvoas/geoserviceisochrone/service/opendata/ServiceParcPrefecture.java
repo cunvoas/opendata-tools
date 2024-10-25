@@ -33,7 +33,6 @@ public class ServiceParcPrefecture {
 
 	@Autowired 
 	private CityService cityService;
-	@Autowired 
 	
 	public void update() {
 		List<ParcPrefecture> pps = parcPrefectureRepository.findAll();

@@ -17,6 +17,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.AssociationRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
@@ -34,6 +35,8 @@ public class DashboadService {
 	@Autowired
 	private InseeCarre200mOnlyShapeRepository inseeCarre200mRepository;
 	@Autowired
+	private Filosofil200mRepository filosofil200mRepository;
+	@Autowired
 	private ParkJardinRepository parkJardinRepository;
 	@Autowired
 	private ParkAreaRepository parkAreaRepository;
@@ -48,8 +51,10 @@ public class DashboadService {
 	
 	public void refresh() {
 		List<DashboardCache> cache = new ArrayList<>();
+		
 		cache.add(new DashboardCache(DashboardCache.ANNES, applicationBusinessProperties.getInseeAnnees().length));
 		cache.add(new DashboardCache(DashboardCache.CARREAUX, inseeCarre200mRepository.count()));
+		cache.add(new DashboardCache(DashboardCache.FILOSOFIL, filosofil200mRepository.count()));
 		cache.add(new DashboardCache(DashboardCache.ASSOS, associationRepository.count()));
 		cache.add(new DashboardCache(DashboardCache.CONTRIB, contributeurRepository.count()));
 		cache.add(new DashboardCache(DashboardCache.COM2CO, communauteCommuneRepository.count()));
@@ -60,7 +65,6 @@ public class DashboadService {
 		cache.add(new DashboardCache(DashboardCache.PARC_REF, parkJardinRepository.count()));
 		
 		dashboardCacheRepository.saveAll(cache);
-		
 	}
 
 	public DashboardSummary getDashboardAndRefresh() {
@@ -69,19 +73,19 @@ public class DashboadService {
 	}
 	
 	public DashboardSummary getDashboard() {
-		if (10!=dashboardCacheRepository.count()) {
+		
+		if (11!=dashboardCacheRepository.count()) {
 			refresh();
 		}
-		
-		
 		
 		DashboardSummary ret = new DashboardSummary();
 		
 		ret.setNbContributeur(dashboardCacheRepository.findById(DashboardCache.CONTRIB).get().getIndicator());
 		ret.setNbAssociation(dashboardCacheRepository.findById(DashboardCache.ASSOS).get().getIndicator());
-		
-		ret.setNbCarreau(dashboardCacheRepository.findById(DashboardCache.CARREAUX).get().getIndicator());
+
 		ret.setNbAnnee(dashboardCacheRepository.findById(DashboardCache.ANNES).get().getIndicator());
+		ret.setNbCarreau(dashboardCacheRepository.findById(DashboardCache.CARREAUX).get().getIndicator());
+		ret.setNbFilosofil(dashboardCacheRepository.findById(DashboardCache.FILOSOFIL).get().getIndicator());
 
 		ret.setNbCommunauteCommune(dashboardCacheRepository.findById(DashboardCache.COM2CO).get().getIndicator());
 		ret.setNbCommune(dashboardCacheRepository.findById(DashboardCache.COMMUNE).get().getIndicator());

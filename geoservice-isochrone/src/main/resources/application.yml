@@ -71,8 +71,17 @@ spring:
   thymeleaf:
     cache: false
     enable-spring-el-compiler: false
-    
-    
+
+#      allowed-methods: GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD
+  web:
+    cors:
+      allowed-origins: "http://localhost:8980"
+      allowed-methods: GET, POST, HEAD
+      max-age: 3600
+      allowed-headers: "Requestor-Type"
+      exposed-headers: "X-Get-Header"
+
+
 application:
   business:
     # https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrones/documentation-du-service-de-calcul-disochrones#2500
