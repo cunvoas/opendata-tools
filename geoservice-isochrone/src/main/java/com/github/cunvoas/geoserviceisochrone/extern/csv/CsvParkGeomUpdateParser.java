@@ -1,9 +1,12 @@
 package com.github.cunvoas.geoserviceisochrone.extern.csv;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,28 +16,33 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Component;
 
+import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvParkUpdateParser.ParkUpdateCsvHeaders;
+
 /**
  * @author cus
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */
 @Component
-public class CsvParkUpdateParser {
+public class CsvParkGeomUpdateParser {
 	
 	/**
 	 * CSV Header definition for easier mods.
 	 * @author cus
+	 * objectid,id,nom,quartier,nom_liste,adresse,surface,geom
 	 */
-	public enum ParkUpdateCsvHeaders {
-		cityId("cityId"),
-		parkId("parkId"),
+	public enum CsvParkGeomUpdateCsvHeaders {
+		objectid("objectid"),
+		id("id"),
 		nom("nom"),
+		quartier("quartier"),
+		nomListe("nom_liste"),
+		adresse("adresse"),
 		surface("surface"),
-		nomE("nomE"),
-		coord("coord");
+		geom("geom");
 		
 		private String column;
 
-		ParkUpdateCsvHeaders(String column) {
+		CsvParkGeomUpdateCsvHeaders(String column) {
 			this.column = column;
 		}
 
@@ -59,6 +67,20 @@ public class CsvParkUpdateParser {
 
 	}
 	
+	public void write(File csvFile, List<CsvParkGeomUpdate> rows) throws IOException {
+		Writer writer = new BufferedWriter(new FileWriter(csvFile));
+		for (CsvParkGeomUpdate row : rows) {
+			writer.write("update public.parc_jardin set contour=ST_GeomFromText('");
+			writer.write(row.getGeom());
+			writer.write("') where nom_parc='");
+			writer.write(row.getNom().replaceAll("'", "''"));
+			writer.write("';\n");
+			writer.flush();
+			System.out.println(row.getNom());
+		}
+
+		writer.close();
+	}
 
 	/**
 	 * Parse CSV.
@@ -66,14 +88,14 @@ public class CsvParkUpdateParser {
 	 * @return
 	 * @throws IOException
 	 */
-	public List<CsvParkUpdate> parseParkEntrance(File csvFile) throws IOException {
-		List<CsvParkUpdate> contacts = new ArrayList<>();
+	public List<CsvParkGeomUpdate> parseParkGeom(File csvFile) throws IOException {
+		List<CsvParkGeomUpdate> contacts = new ArrayList<>();
 
 		if (csvFile.isFile()) {
 			CSVFormat format = CSVFormat.DEFAULT.builder()
-					.setDelimiter(";")
+					.setDelimiter(",")
 					.setQuote('"')
-					.setHeader(ParkUpdateCsvHeaders.class)
+					.setHeader(CsvParkGeomUpdateCsvHeaders.class)
 					.setSkipHeaderRecord(true)
 					.build();
 
@@ -81,13 +103,10 @@ public class CsvParkUpdateParser {
 				Iterable<CSVRecord> rows = format.parse(reader);
 
 				for (CSVRecord row : rows) {
-					CsvParkUpdate contact = new CsvParkUpdate();
-					contact.setCityId(row.get(ParkUpdateCsvHeaders.cityId));
-					contact.setParkId(row.get(ParkUpdateCsvHeaders.parkId));
-					contact.setNom(row.get(ParkUpdateCsvHeaders.nom));
-					contact.setSurface(row.get(ParkUpdateCsvHeaders.surface));
-					contact.setNomE(row.get(ParkUpdateCsvHeaders.nomE));
-					contact.setCoord(row.get(ParkUpdateCsvHeaders.coord));
+					CsvParkGeomUpdate contact = new CsvParkGeomUpdate();
+					contact.setNom(row.get(CsvParkGeomUpdateCsvHeaders.nom));
+					contact.setSurface(row.get(CsvParkGeomUpdateCsvHeaders.surface));
+					contact.setGeom(row.get(CsvParkGeomUpdateCsvHeaders.geom));
 					contacts.add(contact);
 				}
 			}

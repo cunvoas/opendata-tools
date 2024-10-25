@@ -17,71 +17,6 @@
 
 					<div class="row mt-3">
 
-
-						<div class="col-sm-3 col-md-3 col-lg-3">
-							<div
-								class="card bg-warning text-white  border-left-primary shadow h-100 py-2 ">
-								<div class="card-body">
-									<div class="row no-gutters align-items-center">
-										<div class="col-auto">
-											<i class="fas fa-users-rays fa-2x text-gray-300"></i>
-										</div>
-										<div class="col mr-2">
-											<div
-												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
-												th:text="#{association.nbAssociation}">nbAssociation</div>
-											<div class="h5 mb-0 font-weight-bold text-gray-800"
-												th:text="${#numbers.formatInteger(dashboard.nbAssociation, 1, 'POINT')}"></div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-						
-						<div class="col-sm-3 col-md-3 col-lg-3">
-							<div
-								class="card bg-warning text-white  border-left-primary shadow h-100 py-2">
-								<div class="card-body">
-									<div class="row no-gutters align-items-center">
-										<div class="col-auto">
-											<i class="fas fa-users fa-2x text-gray-300"></i>
-										</div>
-										<div class="col mr-2">
-											<div
-												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
-												th:text="#{association.nbContributeur}">
-												nbContributeur</div>
-											<div class="h5 mb-0 font-weight-bold text-gray-800"
-												th:text="${#numbers.formatInteger(dashboard.nbContributeur, 1, 'POINT')}"></div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-
-
-
-                        <div class="col-sm-3 col-md-3 col-lg-3">
-                            <div
-                                class="card bg-secondary text-white  border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col-auto">
-                                            <i class="fas fa-book-atlas fa-2x text-gray-300"></i>
-                                        </div>
-                                        <div class="col mr-2">
-                                            <div
-                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
-                                                th:text="#{association.nbAnnee}">nbAnnee</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                th:text="${#numbers.formatInteger(dashboard.nbAnnee, 1, 'POINT')}"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-						
-
                         <div class="col-sm-3 col-md-3 col-lg-3">
                             <div
                                 class="card bg-secondary text-white  border-left-primary shadow h-100 py-2">
@@ -101,11 +36,78 @@
                                 </div>
                             </div>
                         </div>
-					</div>
+
+
+
+                        <div class="col-sm-3 col-md-3 col-lg-3">
+                            <div
+                                class="card bg-secondary text-white  border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col-auto">
+                                            <i class="fas fa-calendar-days fa-2x text-gray-300"></i>
+                                        </div>
+                                        <div class="col mr-2">
+                                            <div
+                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+                                                th:text="#{association.nbAnnee}">nbAnnee</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
+                                                th:text="${#numbers.formatInteger(dashboard.nbAnnee, 1, 'POINT')}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+
+                        <div class="col-sm-3 col-md-3 col-lg-3">
+                            <div
+                                class="card bg-secondary text-white  border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col-auto">
+                                            <i class="fas fa-square-poll-vertical fa-2x text-gray-300"></i>
+                                            <!-- fa-people-group -->
+                                        </div>
+                                        <div class="col mr-2">
+                                            <div
+                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+                                                th:text="#{association.nbFilosofil}">nbFilosofil</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
+                                                th:text="${#numbers.formatInteger(dashboard.nbFilosofil, 1, 'POINT')}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+						
+
+						
+						<div class="col-sm-3 col-md-3 col-lg-3">
+							<div
+								class="card bg-warning text-white  border-left-primary shadow h-100 py-2 ">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-users-rays fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbAssociation}">nbAssociation</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbAssociation, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div> <!-- row -->
 
 
 					<div class="row mt-3">
-
 
 						<div class="col-sm-3 col-md-3 col-lg-3">
 							<div
@@ -170,6 +172,35 @@
                         </div>
 
 
+                        
+                        
+						<div class="col-sm-3 col-md-3 col-lg-3">
+							<div
+								class="card bg-warning text-white  border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-user-gear fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbContributeur}">
+												nbContributeur</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbContributeur, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+                        
+                        
+					</div>
+
+					<div class="row mt-3">
+
+
                         <div class="col-sm-3 col-md-3 col-lg-3">
                             <div
                                 class="card bg-primary text-white  border-left-primary shadow h-100 py-2">
@@ -189,10 +220,6 @@
                                 </div>
                             </div>
                         </div>
-					</div>
-
-					<div class="row mt-3">
-
 
                         <div class="col-sm-3 col-md-3 col-lg-3">
                             <div

@@ -31,7 +31,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
 
 
 @Controller
-@RequestMapping("/mvc/park")
+@RequestMapping("/mvc/park/list")
 public class ParkListControler {
 	
 	private String formName = "listPark";

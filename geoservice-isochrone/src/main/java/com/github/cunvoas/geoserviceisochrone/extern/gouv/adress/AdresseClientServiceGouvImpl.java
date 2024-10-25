@@ -32,9 +32,16 @@ public class AdresseClientServiceGouvImpl implements AdresseClientService {
 	
 	@Override
 	public Set<AdressBo> getAdresses(String insee, String requete) {
+		log.info("insee={}, q={}", insee, requete);
+		
+		//FIX because select2 send an array
+		if (requete.indexOf(",")>0) {
+			requete = requete.split(",")[1];
+		}
 		String strResp = this.search(insee, requete);
 		
 		try {
+			log.info("strResp={}",strResp);
 			return adressGeoJsonParser.parse(strResp);
 			
 		} catch (JsonProcessingException e) {

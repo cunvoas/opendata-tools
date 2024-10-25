@@ -1,9 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone;
 
-import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +22,27 @@ public class GeoserviceIsochroneApplication {
 		SpringApplication.run(GeoserviceIsochroneApplication.class, args);
 	}
 
-    
+/*    
+	-- https://reflectoring.io/spring-cors/
+	
+	@Bean
+	public WebMvcConfigurer corsMappingConfigurer() {
+	   return new WebMvcConfigurer() {
+	       @Override
+	       public void addCorsMappings(CorsRegistry registry) {
+	           WebConfigProperties.Cors cors = webConfigProperties.getCors();
+	           registry.addMapping("/**")
+	             .allowedOrigins(cors.getAllowedOrigins())
+	             .allowedMethods(cors.getAllowedMethods())
+	             .maxAge(cors.getMaxAge())
+	             .allowedHeaders(cors.getAllowedHeaders())
+	             .exposedHeaders(cors.getExposedHeaders());
+	       }
+	   };
+	}
+*/
+
+	
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {

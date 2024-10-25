@@ -28,7 +28,7 @@ public class GeoJsonParkController {
     private ApplicationBusinessProperties applicationBusinessProperties;
 
     @GetMapping("/parkByPolygon")
-    public GeoJsonRoot getParkByArea(@RequestParam("polygon") Polygon polygon, @RequestParam("annee") Integer annee) {
+    public GeoJsonRoot getParkIsochroneByArea(@RequestParam("polygon") Polygon polygon, @RequestParam("annee") Integer annee) {
     	if (annee==null) {
     		annee=applicationBusinessProperties.getDerniereAnnee();
     	}
@@ -38,7 +38,23 @@ public class GeoJsonParkController {
     //FIXME use global conf
     @CrossOrigin(origins = {"http://localhost:8081", "https://autmel-maps.duckdns.org/"})
     @GetMapping("/area")
-    public GeoJsonRoot getParkByArea(
+    public GeoJsonRoot getParkIsochroneByArea(
+    			@RequestParam("swLat") Double swLat,
+    			@RequestParam("swLng") Double swLng,
+    			@RequestParam("neLat") Double neLat,
+    			@RequestParam("neLng") Double neLng,
+    			@RequestParam("annee") Integer annee
+    		) {
+    	if (annee==null) {
+    		annee=applicationBusinessProperties.getDerniereAnnee();
+    	}
+        return geoMapService.findAllParkByArea(annee, swLat, swLng, neLat, neLng);
+    }
+    
+    //FIXME use global conf
+    @CrossOrigin(origins = {"http://localhost:8081", "https://autmel-maps.duckdns.org/"})
+    @GetMapping("/outline")
+    public GeoJsonRoot getParkOutlineByArea(
     			@RequestParam("swLat") Double swLat,
     			@RequestParam("swLng") Double swLng,
     			@RequestParam("neLat") Double neLat,

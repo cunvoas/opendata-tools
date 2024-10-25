@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.locationtech.jts.awt.ShapeReader;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -18,6 +19,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.operation.polygonize.Polygonizer;
+import org.locationtech.jts.util.GeometricShapeFactory;
 
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
 
@@ -27,6 +29,7 @@ import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
 public class GeoShapeHelper {
 
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
+	private static GeometricShapeFactory shapeFactory = new GeometricShapeFactory(factory);
 	
 	/**
 	 * 
@@ -290,5 +293,102 @@ public class GeoShapeHelper {
 	            }
 	            return ret;
 	    }
+	}
+	
+	
+
+	
+	/**
+	 *  converti le geoshape en YX en XY.
+	 *  X=longitude
+	 *  Y=latitude
+	 *  @param in
+	 * @return
+	 */
+	public static String geoShape2SRID(String in) {
+		if (in.contains("MULTIPOLYGON")) {
+			return doMULTIPOLYGON(in);
+		} else if (in.contains("POLYGON")) {
+			return doPOLYGON(in);
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * converti le geoshape en YX en XY.
+	 * @param geoshape
+	 * @return
+	 */
+	private static String doMULTIPOLYGON(String geoshape) {
+		StringBuilder ret=new StringBuilder();
+		ret.append("SRID=4326;MULTIPOLYGON (((");
+		
+		// début de geometrie
+		String[] base = geoshape.split("MULTIPOLYGON \\(\\(\\(");
+		// fin de geometrie
+		String[] base2 = base[1].split("\\)\\)\\)");
+		
+		String polys = base2[0];
+		
+		// séparation des polygones
+		String[] tpoints = polys.split("\\)\\), \\(\\(");
+		for (int i = 0; i < tpoints.length; i++) {
+			if (i>0) {
+				// séparation entre polygons
+				ret.append(")), ((");
+			}
+			ret.append(performPoints(tpoints[i]));
+		}
+		
+		ret.append(")))");
+		return ret.toString();
+	
+	}
+
+	/**
+	 *  converti le geoshape en YX en XY.
+	 *  @param geoshape
+	 * @return
+	 */
+	private static String doPOLYGON(String geoshape) {
+		StringBuilder ret=new StringBuilder();
+		ret.append("SRID=4326;POLYGON ((");
+		String[] base = geoshape.split("POLYGON \\(\\(");
+		String[] base2 = base[1].split("\\)\\)");
+		
+		System.out.println(base2.length);
+		String data = base2[0];
+		
+		ret.append(performPoints(data));
+		
+		ret.append("))");
+		return ret.toString();
+	}
+	
+	private static StringBuilder performPoints(String data) {
+		StringBuilder ret=new StringBuilder();
+		String memo1st=null;
+		// separation des points
+		String[] work = data.split(", ");
+		for (int i = 0; i < work.length; i++) {
+			String[] point = work[i].split(" ");
+			String pointXY = point[1]+" "+point[0];
+			if (i>0) {
+				ret.append(", ");
+			} else {
+				memo1st = pointXY;
+			}
+			ret.append(pointXY);
+			
+			if (i==work.length-1) {
+				// controle polygon fermé
+				if (pointXY!=memo1st)  {
+					// si pas fermé, on ajoute le 1er pour le fermer
+					ret.append(", ").append(memo1st);
+				}
+			}
+		}
+		return ret;
 	}
 }

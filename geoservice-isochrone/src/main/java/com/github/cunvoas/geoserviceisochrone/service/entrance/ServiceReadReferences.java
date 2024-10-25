@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,11 +15,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.Laposte;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
@@ -24,8 +30,10 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.LaposteRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
@@ -46,6 +54,10 @@ public class ServiceReadReferences {
 	private CommunauteCommuneRepository communauteCommuneRepository;
 	@Autowired
 	private CityRepository cityRepository;
+	@Autowired
+	private CadastreRepository cadastreRepository;
+	@Autowired
+	private LaposteRepository laposteRepository;
 	@Autowired
 	private ParkJardinRepository parkJardinRepository;
 	@Autowired
@@ -113,6 +125,38 @@ public class ServiceReadReferences {
 	public City getCity(Long id) {
 		return cityRepository.getReferenceById(id);
 	}
+	
+	public Coordinate getCoordinate(Long id) {
+		Coordinate location=null;
+		City city = cityRepository.getReferenceById(id);
+		
+		Cadastre cadastre=cadastreRepository.getReferenceById(city.getInseeCode());
+		if (cadastre!=null && cadastre.getGeoShape()!=null) {
+			org.locationtech.jts.geom.Coordinate coord=null;
+			if ( cadastre.getGeoShape() instanceof Point) {
+				coord = ((Point)cadastre.getGeoShape()).getCoordinate();
+			} else if ( cadastre.getGeoShape() instanceof Polygon) {
+				coord = ((Polygon)cadastre.getGeoShape()).getCentroid().getCoordinate();
+			} else if ( cadastre.getGeoShape() instanceof MultiPolygon) {
+				coord = ((MultiPolygon)cadastre.getGeoShape()).getCentroid().getCoordinate();
+			}
+			
+			if (coord!=null) {
+				location = new Coordinate(coord.getX(), coord.getY());
+			}
+		}
+		
+		if (location==null) {
+			Laposte poste = laposteRepository.getReferenceById(city.getInseeCode());
+			if (poste!=null) {
+				String gps = poste.getCoordonneesGps();
+				String[] coord = gps.split(", ");
+				location = new Coordinate(Double.valueOf(coord[1]), Double.valueOf(coord[1]));
+			}
+		}
+		return location;
+	}
+	
 	
 	public List<City> getCityByCommunauteCommuneId(Long id) {
 		return cityRepository.findByCommunauteCommuneId(id);
