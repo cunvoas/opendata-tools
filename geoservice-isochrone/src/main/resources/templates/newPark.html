@@ -7,10 +7,43 @@
 	<div id="layoutSidenav">
 		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
 
+
 		<div id="layoutSidenav_content">
 			<main>
 
 				<div class="container">
+
+<p class="d-inline-flex gap-1">
+	<button id="btnNew" type="button" class="btn btn-outline-success">Création</button>
+	<button type="button" class="btn btn-success">Création</button>
+	<button id="btnSave" type="button" class="btn btn-outline-warning">Sauvegarder</button>
+	<button type="button" class="btn btn-warning">Sauvegarder</button>
+
+  <a class="btn btn-danger" style="position:absolute;right:10px" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+    Aide
+  </a>
+</p>
+<div class="collapse" id="collapseExample">
+  <div class="card card-body">
+    <ul>
+	    <li>Sélectionner votre région, puis votre communauté de commune si vous en avez une et enfin votre Commune</li>
+	    <li>Positionner vous sur la carte:</li>
+		    <ul>
+		    	<li>soit par la recheeche d'adresse</li>
+		    	<li>soit par le bouton "me localiser"</li>
+		    	<li>soit par l'ajhout d'une photo localisée</li>
+		    </ul>
+	    <li>Saisir le nom du parc à minima</li>
+	    <li>Définir le contours du parc avec l'outil polygone de la carte</li>
+		    <ul>
+		    	<li>les parcs déjà saisi sont visible par une pointe bleue ou soit pas le contour avec l'option "contour des parcs"</li>
+		    	<li>soit par le bouton "me localiser"</li>
+		    	<li>soit par l'ajhout d'une photo localisée</li>
+		    </ul>
+    </ul>
+  </div>
+</div>
+
 
 <div class="row row-cols-1 row-cols-md-12  ">
 	<div class="container-fluid px-4">
@@ -117,7 +150,6 @@
         <input type="hidden" id="mapLat" name=mapLat th:field="*{mapLat}"/>
         <input type="hidden" id="mapLng" name="mapLng" th:field="*{mapLng}"/>
 						
-        
         <span style="display: none;">
         <input type="text" id="sGeometry" name="sGeometry" th:field="*{sGeometry}" />
         <input type="text" id="etat" name="etat" th:field="*{etat}" />
@@ -126,12 +158,6 @@
         
         
         <!-- 
-        
-        
-        
-        
-                
-        
         <div class="row">
             <div class="col">
                     <div class="card border" style="text-align: center">
@@ -146,15 +172,9 @@
                 </div>
             </div>
         </div>
-        
-        
-        
-        
-        
-        
-        
-        
          -->
+
+<!-- FCTONNNE     
         <div class="row">
             <div class="container-fluid px-4">
                 <h6 th:text="#{entrance.park.title}">title</h6>
@@ -168,8 +188,73 @@
                 </div>
             </div>
         </div>
+ -->    
+ 
+   
+        <div class="row">
+            <div class="container-fluid px-4">
+                <h6 th:text="#{entrance.park.title}">title</h6>
+            </div>
+            <div class="col">
+            	<div class="row">
+	                <div class="card border" style="text-align: center">
+	                    <div class="form-floating">
+	                        <input class="form-control" type="text" id="name" name="name" th:field="*{name}" />
+	                        <label class="form-label" for="name" th:text="#{entrance.park}">parc</label>
+	                    </div>
+                	</div>
+                </div>
+                
+                <div class="row">
+           
+                
 
-                                
+                </div>
+                
+                <!--accordionDetail1 
+            	<div class="row">
+					<div class="accordion" id="accordionDetail1">
+					  <div class="accordion-item">
+					  
+					    <h2 class="accordion-header" id="heading1">
+					      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="false" aria-controls="collapse1">
+					        Détails
+					      </button>
+					    </h2>
+					    
+					    <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="heading1" data-bs-parent="#accordionDetail1">
+			              <div class="col">
+            				<div class="row">
+				                <div class="card border" style="text-align: center">
+				                    <div class="form-floating">
+				                        <input class="form-control" type="text" id="quartier" name="quartier" th:field="*{quartier}"  />
+				                        <label class="form-label" for="quartier" th:text="#{entrance.park.block}">block</label>
+				                    </div>
+				                </div>
+            				</div>
+            				<div class="row">
+				                <div class="card border" style="text-align: center">
+				                    <div class="form-floating">
+				                        <input class="form-control" type="text" id="type" name="type" th:field="*{type}"  disabled="disabled"/>
+				                        <label class="form-label" for="type" th:text="#{entrance.type}">type</label>
+				                    </div>
+				                </div>
+            				</div>
+            				
+         				   </div>
+					    </div>
+					  </div>
+					</div>
+
+                </div> row accordionDetail1--> 
+            </div>
+        </div>
+        
+<!--            
+
+ -->
+ 
+<!--   
          <div class="row">
             <div class="col">
                 <div class="card border" style="text-align: center">
@@ -190,6 +275,7 @@
                 </div>
             </div>
         </div>
+ -->   
          <div class="row">
             <div class="col">
                 <div class="card border" style="text-align: center">
@@ -271,21 +357,7 @@
                 </div>
             </div>
 
-<!--            
-<div class="accordion" id="accordionPreview">
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="headingOne">
-      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-        Prévisualisation
-      </button>
-    </h2>
-    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-      <div class="accordion-body" id="imagePreview">
-      </div>
-    </div>
-  </div>
-</div>
- -->
+
 
     </div>
     
