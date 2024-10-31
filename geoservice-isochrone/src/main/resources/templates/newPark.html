@@ -14,10 +14,13 @@
 				<div class="container">
 
 <p class="d-inline-flex gap-1">
-	<button id="btnNew" type="button" class="btn btn-outline-success">Création</button>
-	<button type="button" class="btn btn-success">Création</button>
-	<button id="btnSave" type="button" class="btn btn-outline-warning">Sauvegarder</button>
-	<button type="button" class="btn btn-warning">Sauvegarder</button>
+	<button id="btnNew" onclick="manageCreateDisabled()" type="button" class="btn btn-outline-success">Création</button>
+
+	<button id="btnSave" onclick="savePark()" type="button" class="btn btn-outline-warning">Sauvegarder</button>
+	<div id="saveParkSpinner" class="spinner-border text-success" role="status" style="display:none;">
+	  <span class="visually-hidden">Loading...</span>
+	</div>
+    <!-- <button type="button" class="btn btn-warning">Sauvegarder</button>  -->
 
   <a class="btn btn-danger" style="position:absolute;right:10px" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
     Aide
@@ -31,14 +34,12 @@
 		    <ul>
 		    	<li>soit par la recheeche d'adresse</li>
 		    	<li>soit par le bouton "me localiser"</li>
-		    	<li>soit par l'ajhout d'une photo localisée</li>
+		    	<li>soit par l'ajout d'une photo localisée</li>
 		    </ul>
 	    <li>Saisir le nom du parc à minima</li>
 	    <li>Définir le contours du parc avec l'outil polygone de la carte</li>
 		    <ul>
-		    	<li>les parcs déjà saisi sont visible par une pointe bleue ou soit pas le contour avec l'option "contour des parcs"</li>
-		    	<li>soit par le bouton "me localiser"</li>
-		    	<li>soit par l'ajhout d'une photo localisée</li>
+		    	<li>les parcs déjà saisi sont visibles soit par une pointe bleue, soit pas le contour avec l'option "contour des parcs"</li>
 		    </ul>
     </ul>
   </div>
@@ -134,8 +135,6 @@
             </div>
       </div>
       
-      
-<!-- TODO --------------------------- -->
 
 <span class="row input-group border border-dark rounded-3">
 
@@ -150,198 +149,78 @@
         <input type="hidden" id="mapLat" name=mapLat th:field="*{mapLat}"/>
         <input type="hidden" id="mapLng" name="mapLng" th:field="*{mapLng}"/>
 						
-        <span style="display: none;">
+        <span style="display: none;"><!-- TODO hidden at the end -->
         <input type="text" id="sGeometry" name="sGeometry" th:field="*{sGeometry}" />
         <input type="text" id="etat" name="etat" th:field="*{etat}" />
         <input type="text" id="etatAction" name="etatAction" th:field="*{etatAction}" />
         </span>
         
-        
-        <!-- 
-        <div class="row">
-            <div class="col">
-                    <div class="card border" style="text-align: center">
-                        <input class="btn btn-secondary" type="button" id="btnNew" name="btnNew" th:field="*{name}" />
-                        <label class="btn-label" for="btnNew" th:text="#{park.edit.new}">new parc</label>
-                    </div>
-                    
-                   <div class="card border" style="text-align: center">
-                        <input class="btn btn-secondary" type="button" id="btnEdit" name="btnEdit" th:field="*{name}" />
-                        <label class="btn-label" for="btnEdit" th:text="#{park.edit.edit}">edit parc</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-         -->
-
-<!-- FCTONNNE     
-        <div class="row">
-            <div class="container-fluid px-4">
-                <h6 th:text="#{entrance.park.title}">title</h6>
-            </div>
-            <div class="col">
-                <div class="card border" style="text-align: center">
-                    <div class="form-floating">
-                        <input class="form-control" type="text" id="name" name="name" th:field="*{name}" />
-                        <label class="form-label" for="name" th:text="#{entrance.park}">parc</label>
-                    </div>
-                </div>
-            </div>
-        </div>
- -->    
- 
-   
-        <div class="row">
-            <div class="container-fluid px-4">
-                <h6 th:text="#{entrance.park.title}">title</h6>
-            </div>
-            <div class="col">
-            	<div class="row">
-	                <div class="card border" style="text-align: center">
-	                    <div class="form-floating">
-	                        <input class="form-control" type="text" id="name" name="name" th:field="*{name}" />
-	                        <label class="form-label" for="name" th:text="#{entrance.park}">parc</label>
-	                    </div>
-                	</div>
-                </div>
-                
-                <div class="row">
-           
-                
-
-                </div>
-                
-                <!--accordionDetail1 
-            	<div class="row">
-					<div class="accordion" id="accordionDetail1">
-					  <div class="accordion-item">
-					  
-					    <h2 class="accordion-header" id="heading1">
-					      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="false" aria-controls="collapse1">
-					        Détails
-					      </button>
-					    </h2>
-					    
-					    <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="heading1" data-bs-parent="#accordionDetail1">
-			              <div class="col">
-            				<div class="row">
-				                <div class="card border" style="text-align: center">
-				                    <div class="form-floating">
-				                        <input class="form-control" type="text" id="quartier" name="quartier" th:field="*{quartier}"  />
-				                        <label class="form-label" for="quartier" th:text="#{entrance.park.block}">block</label>
-				                    </div>
-				                </div>
-            				</div>
-            				<div class="row">
-				                <div class="card border" style="text-align: center">
-				                    <div class="form-floating">
-				                        <input class="form-control" type="text" id="type" name="type" th:field="*{type}"  disabled="disabled"/>
-				                        <label class="form-label" for="type" th:text="#{entrance.type}">type</label>
-				                    </div>
-				                </div>
-            				</div>
-            				
-         				   </div>
-					    </div>
-					  </div>
+		<div class="row">
+			<div class="container-fluid px-4">
+				<h6 th:text="#{entrance.park.title}">title</h6>
+			</div>
+			<div class="col">
+				<div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="name" name="name" th:field="*{name}" /> <label class="form-label" for="name" th:text="#{entrance.park}">parc</label>
 					</div>
-
-                </div> row accordionDetail1--> 
-            </div>
-        </div>
-        
-<!--            
-
- -->
- 
-<!--   
-         <div class="row">
-            <div class="col">
-                <div class="card border" style="text-align: center">
-                    <div class="form-floating">
-                        <input class="form-control" type="text" id="quartier" name="quartier" th:field="*{quartier}"  />
-                        <label class="form-label" for="quartier" th:text="#{entrance.park.block}">block</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-         <div class="row">
-            <div class="col">
-                <div class="card border" style="text-align: center">
-                    <div class="form-floating">
-                        <input class="form-control" type="text" id="type" name="type" th:field="*{type}"  disabled="disabled"/>
-                        <label class="form-label" for="type" th:text="#{entrance.type}">type</label>
-                    </div>
-                </div>
-            </div>
-        </div>
- -->   
-         <div class="row">
-            <div class="col">
-                <div class="card border" style="text-align: center">
-                    <div class="form-floating">
-                        <input class="form-control" type="text" id="sousType" name="sousType" th:field="*{sousType}"  disabled="disabled"/>
-                        <label class="form-label" for="sousType" th:text="#{entrance.sousType}">sousType</label>
-                    </div>
-                </div>
-            </div>
-         </div>
-        <div class="row">
-            <div class="col">
+				</div>
+				<div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="quartier" name="quartier" th:field="*{quartier}" /> <label class="form-label" for="quartier" th:text="#{entrance.park.block}">block</label>
+					</div>
+				</div>
+				<div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="type" name="type" th:field="*{type}" /> <label class="form-label" for="type" th:text="#{entrance.type}">type</label>
+					</div>
+				</div>
+				<div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="sousType" name="sousType" th:field="*{sousType}" /> <label class="form-label" for="sousType" th:text="#{entrance.sousType}">sousType</label>
+					</div>
+				</div>
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input class="form-control" type="text" id="surface" name="surface" th:field="*{surface}" disabled="disabled"  />
                         <label class="form-label" for="surface" th:text="#{entrance.surface}">surface</label>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input class="form-control" type="text" id="source" name="source" th:field="*{source}"  />
                         <label class="form-label" for="source" th:text="#{park.source}">source</label>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input class="form-control" type="text" id="status" name="status" th:field="*{status}" disabled="disabled"  />
                         <label class="form-label" for="status" th:text="#{park.status}">status</label>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
+                
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input class="form-control" type="text" id="status" name="status" th:field="*{status}"  />
-                        <label class="form-label" for="status" th:text="#{park.status}">idPark</label>
+                        <label class="form-label" for="status" th:text="#{park.status}">idStatus</label>
                         <!-- TODO parkTypes -->
                     </div>
                 </div>
-            </div>
-        </div>
-        
+                
+
+			</div>
+		</div>
+
+
         <div class="row">
             <div class="col">
                 <div class="card border" style="text-align: center">
                   
                 </div>
             </div>
-            <div class="col">
-                <div class="card border" style="text-align: center">
-                    <div class="form-floating">
-                        <button type="submit" class="btn btn-secondary" th:text="#{entrance.edit.submit}">validate</button>
-                    </div>
-                </div>
-            </div>
         </div>
+        
+        
             <!-- TODO: make the filter later -->
             <div class="col-6" style="display: block;"> 
                 <div  style="text-align: left">
@@ -402,11 +281,13 @@
 	 function isEmpty(obj) {
 	     return Object.keys(obj).length === 0;
 	 }
-	 
+	 function sleep(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	 }
 
 	 
 	 
-	/* manage correct ID for COMMUNNE SELECTION */
+	/* manage correct ID for COMMUNE SELECTION */
 	// th-field broke the datalist work
 	document.querySelector('#idCommune-filter').value=[[${newPark.nameCommune}]];
 	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
@@ -427,6 +308,7 @@
 		        }
 		    }
 	});
+	
 	document.querySelector('#idCommune-filter').addEventListener('focusout', function(e) {
 	    var input = e.target,
         list = input.getAttribute('list'),
@@ -441,7 +323,12 @@
 	    }
 	});
 
-	
+	var photoIcon = L.icon({
+	    iconUrl: [[@{/mvc/static/images/photo_picto.png}]]
+		,iconSize: [50, 50]
+	    ,iconAnchor:   [5, 5] // point of the icon which will correspond to marker's location
+	    ,popupAnchor:  [5, 5] // point from which the popup should open relative to the iconAnchor
+	});
     
     /////////////////////////////////////////////////////////////////////////
     // custom location on load
@@ -506,7 +393,7 @@
     const layerControl = L.control.layers(mapLayers, dataLayers).addTo(editMap);
   //  layerStreetMap.addTo(editMap); //  set as default
     
-   
+
     
     
     // event on click
@@ -669,6 +556,7 @@
         	 
           });
 
+
         
         editMap.on('pm:create', ({ layer}) => {  
             console.log("pm:create geom");
@@ -718,9 +606,6 @@
               //want to check here whether the layerToDraw is valid
               //features.addLayer(layerToDraw);
             });
-        
-        
-    
         
         
 
@@ -797,13 +682,29 @@
     	var strPoly = JSON.stringify(L.PM.Utils.findLayers(map)[0].toGeoJSON());
     }
     
-
+    function manageCreateDisabled() {
+    	document.getElementById("fsEditPark").disabled = false;
+    	var objBtnNew=document.getElementById("btnNew");
+    	objBtnNew.classList.remove('btn-outline-success');
+    	objBtnNew.classList.add('btn-success');
+    }
+    
+    function savePark() {
+    	document.getElementById("saveParkSpinner").style = "display:block;";
+    	var objBtnSave=document.getElementById("btnSave");
+    	objBtnSave.classList.remove('btn-outline-warning');
+    	objBtnSave.classList.add('btn-warning');
+    	
+    	// TODO continues
+    	
+    }
     
     function manageDisabled() {
         console.log(document.getElementById("idRegion").value);
         
         if (document.getElementById("idRegion").value!="") {
             document.getElementById("fsComm2co").disabled = false;
+            document.getElementById("fsCity").disabled = false;
         }
         if (document.getElementById("idCommunauteDeCommunes").value!="") {
             document.getElementById("fsCity").disabled = false;
@@ -811,6 +712,7 @@
     }
     manageDisabled();
 
+    
     // center on map by navigator loc (require grand)
     function showPosition(position) {
         lat =position.coords.latitude;
@@ -821,14 +723,17 @@
         document.getElementById("mapLat").value=lat;
         
         editMap.setView(L.latLng(lat,lon));
+        
+        
     }
+    
     function locateMe() {
 	    if (navigator.geolocation) {
 	       navigator.geolocation.getCurrentPosition(showPosition);
 	    }
     }
     
-    //https://gis.stackexchange.com/questions/439672/checking-whether-a-polygon-drawn-with-leaflet-geoman-plugin-is-valid
+    // https://gis.stackexchange.com/questions/439672/checking-whether-a-polygon-drawn-with-leaflet-geoman-plugin-is-valid
 
     $(document).ready(function(){
 
@@ -1019,6 +924,17 @@
 				            // centrage sur la carte
 				            locateWorkPlace=locatePlace(latFinal, lonFinal);
 				            editMap.setView(locateWorkPlace);
+				            
+				            document.getElementById("mapLng").value=lonFinal;
+				            document.getElementById("mapLat").value=latFinal;
+				            
+				            photoMarker = L.marker( L.latLng(latFinal,lonFinal), {
+				            		icon:photoIcon, draggable:false
+				            		})
+				    			 // .bindPopup('Votre photo a été prise ici.')
+				    			  .addTo(editMap);
+				    		sleep(2000).then(() => { editMap.removeLayer(photoMarker); });
+				    		
 				        }
 				    });
 					
