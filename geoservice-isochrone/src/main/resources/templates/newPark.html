@@ -51,6 +51,7 @@
 		<h4 class="mt-12" th:text="#{park.title}">title</h4>
 	</div>
 	
+        
      <div class="row input-group border border-dark rounded-3">
       	<h6 class="col-12" th:text="#{parc.edit.chooseCity}">select city</h6>
          <div class="col-3">
@@ -149,11 +150,11 @@
         <input type="hidden" id="mapLat" name=mapLat th:field="*{mapLat}"/>
         <input type="hidden" id="mapLng" name="mapLng" th:field="*{mapLng}"/>
 						
-        <span style="display: none;"><!-- TODO hidden at the end -->
+<span style="display: block;"><!-- TODO hidden at the end -->
         <input type="text" id="sGeometry" name="sGeometry" th:field="*{sGeometry}" />
         <input type="text" id="etat" name="etat" th:field="*{etat}" />
         <input type="text" id="etatAction" name="etatAction" th:field="*{etatAction}" />
-        </span>
+</span>
         
 		<div class="row">
 			<div class="container-fluid px-4">
@@ -798,14 +799,6 @@
     
 /*
  https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/file-upload-Spring-Boot-Ajax-example
-
-
-	 <!-- HTML5 Input Form Elements -->
-	 <input id="fileupload" type="file" name="fileupload" /> 
-	 <button id="upload-button" onclick="uploadFile()"> Upload </button>
-
-	 <!-- Ajax JavaScript File Upload to Spring Boot Logic -->
-	 <script>
  */
     async function uploadFile() {
       let formData = new FormData(); 
@@ -831,7 +824,7 @@
      return dd;
   }
 
-
+ var photoMarker=null;
  // prévalidation du fichier d'upload (type, conhérence, exif)
  function fileValidation() {
      var fileInput =  document.getElementById('fileupload');
@@ -892,7 +885,7 @@
 					alert('Le format du fichier est inconnu.');
 					return false;
 				} else if (extType===realType) {
-					//console.log("Le format du fichier ne correspond pas à l'extention.");
+					console.log("Le format du fichier correspond à l'extention.");
 					var chkLoc=false;
 					
 					EXIF.getData(blob, function(chkLoc) {
