@@ -50,7 +50,7 @@
 	<div class="container-fluid px-4">
 		<h4 class="mt-12" th:text="#{park.title}">title</h4>
 	</div>
-        
+	
      <div class="row input-group border border-dark rounded-3">
       	<h6 class="col-12" th:text="#{parc.edit.chooseCity}">select city</h6>
          <div class="col-3">
@@ -108,7 +108,6 @@
      </div>
      
      
-<form th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">  
       <div class="row input-group border border-dark rounded-3">
       		<h6 class="col-12" th:text="#{parc.edit.locateOnMap}">locate on map</h6>
             <div class="col-5">
@@ -140,7 +139,7 @@
 <span class="row input-group border border-dark rounded-3">
 
     <div class="col-6">
-
+     <form th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">
         <fieldset id="fsEditPark" disabled="disabled">
         <input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
         <input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
@@ -150,11 +149,11 @@
         <input type="hidden" id="mapLat" name=mapLat th:field="*{mapLat}"/>
         <input type="hidden" id="mapLng" name="mapLng" th:field="*{mapLng}"/>
 						
-<span style="display: block;"><!-- TODO hidden at the end -->
+        <span style="display: none;"><!-- TODO hidden at the end -->
         <input type="text" id="sGeometry" name="sGeometry" th:field="*{sGeometry}" />
         <input type="text" id="etat" name="etat" th:field="*{etat}" />
         <input type="text" id="etatAction" name="etatAction" th:field="*{etatAction}" />
-</span>
+        </span>
         
 		<div class="row">
 			<div class="container-fluid px-4">
@@ -257,6 +256,7 @@
         
         
             </fieldset>
+    </form>
     </div>
 
 </span>
@@ -267,7 +267,6 @@
     
 </div>
 
-    </form>
 							
 			</main>
 		</div> <!-- layoutSidenav_content -->
@@ -791,7 +790,7 @@
             document.getElementById("mapLat").value=lat;
             
             locateWorkPlace=locatePlace(lat, lon);
-            editMap.setView(locateWorkPlace, 17);
+            editMap.setView(locateWorkPlace);
         });
     });
 
@@ -799,6 +798,14 @@
     
 /*
  https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/file-upload-Spring-Boot-Ajax-example
+
+
+	 <!-- HTML5 Input Form Elements -->
+	 <input id="fileupload" type="file" name="fileupload" /> 
+	 <button id="upload-button" onclick="uploadFile()"> Upload </button>
+
+	 <!-- Ajax JavaScript File Upload to Spring Boot Logic -->
+	 <script>
  */
     async function uploadFile() {
       let formData = new FormData(); 
@@ -824,7 +831,7 @@
      return dd;
   }
 
- var photoMarker=null;
+
  // prévalidation du fichier d'upload (type, conhérence, exif)
  function fileValidation() {
      var fileInput =  document.getElementById('fileupload');
@@ -832,7 +839,7 @@
      
      // Allowing file type
      //var allowedExtensions =  /(\.jpg|\.jpeg|\.png|\.gif)$/i;
-     var allowedExtensions =  /(\.jpg|\.jpeg|\.JPG|\.JPEG)$/i;
+     var allowedExtensions =  /(\.jpg|\.jpeg)$/i;
      if (!allowedExtensions.exec(filePath)) {
     	 //console.log("fichier invalide");
          alert("Le fichier n'est pas une photo.");
@@ -853,11 +860,11 @@
 		 	   for(var i = 0; i < arr.length; i++) {
 		 	      header += arr[i].toString(16);
 		 	   }
-		 	   console.log("header="+header);
+		 	   //console.log("header="+header);
 		 	   
 		 	   // Check the file signature against known types
 		  	  var realType="unknown";
-		 	  switch (header) { //ffd8ffdb
+		 	  switch (header) {
 		 	    case "89504e47":
 		 	    	realType = "image/png";
 		 	        break;
@@ -869,8 +876,6 @@
 		 	    case "ffd8ffe2":
 		 	    case "ffd8ffe3":
 		 	    case "ffd8ffe8":
-		 	    case "ffd8ffdb":
-		 	    case "ffd8ffdb":
 		 	    	realType = "image/jpeg";
 		 	        break;
 		 	    case "52494646":
@@ -887,7 +892,7 @@
 					alert('Le format du fichier est inconnu.');
 					return false;
 				} else if (extType===realType) {
-					console.log("Le format du fichier correspond à l'extention.");
+					//console.log("Le format du fichier ne correspond pas à l'extention.");
 					var chkLoc=false;
 					
 					EXIF.getData(blob, function(chkLoc) {
