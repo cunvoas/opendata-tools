@@ -16,9 +16,7 @@ class TestGeoJson2GeometryHelper {
 	
 	@Test
 	void test() {
-
 		try {
-			
 			File f = ResourceUtils.getFile("classpath:cadastre-59001-communes.json");
 			String content = Files.contentOf(f, Charset.defaultCharset());
 		
@@ -29,5 +27,34 @@ class TestGeoJson2GeometryHelper {
 			fail(e.getMessage());
 		}
 	}
+	
+	@Test
+	void testGeomanPoly() {
+		try {
+			File f = ResourceUtils.getFile("classpath:geoman-poly.json");
+			String content = Files.contentOf(f, Charset.defaultCharset());
+		
+			Geometry g = tested.parseGeoman(content);
+			assertNotNull(g);
+			
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
+
+	@Test
+	void testGeomanMPoly() {
+		try {
+			File f = ResourceUtils.getFile("classpath:geoman-mpoly.json");
+			String content = Files.contentOf(f, Charset.defaultCharset());
+		
+			Geometry g = tested.parseGeoman(content);
+			assertNotNull(g);
+			
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
+
 
 }
