@@ -176,6 +176,38 @@ order by surface_min;
 
 
 
+-- bar graph OFFICIEL SEUIL
+ 
+ WITH range AS (
+
+    SELECT 0 AS surface_min, 10 AS surface_max
+    UNION
+    SELECT 10 AS surface_min, 12 AS surface_max
+    UNION
+    SELECT 12 AS surface_min, 200 AS surface_max
+)
+SELECT surface_min, surface_max 
+, (
+    SELECT sum(pop_all)
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    WHERE cc.annee=2019     AND f.lcog_geo like '%59350%'
+    AND surface_park_pcapita BETWEEN surface_min AND surface_max
+) as population,
+(
+    select getColorDensite(cc.is_dense, surface_min)
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    WHERE cc.annee=2019     AND f.lcog_geo like '%59350%'
+    AND surface_park_pcapita BETWEEN surface_min AND surface_max
+    group by is_dense
+) as couleur
+
+FROM range
+order by surface_min;
+
 
 --====================================================
 -- par ages

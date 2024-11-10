@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,11 +14,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
+import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceParcPrefecture;
@@ -43,6 +48,9 @@ public class ParkNewControler {
 	
 	@Autowired
 	private ParkTypeService parkTypeService;
+	
+	@Autowired
+	private GeoJson2GeometryHelper geoJson2GeometryHelper;
 	
 	private String formName = "newPark";
 
@@ -88,10 +96,57 @@ public class ParkNewControler {
 		return getForm(form, model);
 	}
 	
+	protected ParcEtJardin map(final FormParkNew form) {
+		ParcEtJardin pj=null;
+		if (form.getIdPark()==null) {
+			pj = serviceReadReferences.getParcEtJardinById(form.getIdPark());
+		} else {
+			pj = new ParcEtJardin();
+			pj.setSource(ParcSourceEnum.AUTMEL);
+		}
+		pj.setStatus(ParcStatusEnum.TO_QUALIFY);
+		//TODO : ParkType with object
+
+		City commune = serviceReadReferences.getCity(form.getIdCommune());
+		pj.setCommune(commune);
+		
+		
+		pj.setName(form.getName());
+		pj.setQuartier(form.getQuartier());
+		pj.setType(form.getType());
+		pj.setSousType(form.getSousType());
+		
+		
+		String sGeom = form.getSGeometry();
+		try {
+			Geometry geom = null;
+			
+			if (sGeom!=null) {
+				geom = geoJson2GeometryHelper.parseGeoman(sGeom);
+			}
+			
+			if (geom!=null) {
+				pj.setCoordonnee(geom.getCentroid());
+				pj.setContour(geom);
+			}
+		} catch (JsonProcessingException e) {
+			log.error("geoman parsing error = ", sGeom);
+		}	
+		
+		
+		return pj;
+	}
 	
+	;
 	@PostMapping("/save")
 	public String save(@ModelAttribute FormParkNew form, Model model) {
 		log.warn("Generic save: {}", form);
+		
+		ParcEtJardin pj = this.map(form);
+		
+		
+		
+		
 		
 		// create poly
 		if("new".equals(form.getEtatAction())) {

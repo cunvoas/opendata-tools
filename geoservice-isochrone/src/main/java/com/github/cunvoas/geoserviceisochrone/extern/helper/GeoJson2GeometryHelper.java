@@ -1,5 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.extern.helper;
 
+import java.util.List;
+
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class GeoJson2GeometryHelper {
 
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
+	private static GenericGeometryParser parser = new GenericGeometryParser(factory);
 
 	// use the safe because is threadsafe
 	private ObjectMapper mapper = new ObjectMapper();
@@ -37,6 +40,35 @@ public class GeoJson2GeometryHelper {
 		
 		GenericGeometryParser parser = new GenericGeometryParser(factory);
 		ret = parser.geometryFromJson(geometryNode);
+		
+		return ret;
+	}
+	
+	public Geometry parseGeoman(String geoJson) throws JsonProcessingException {
+		Geometry ret = null;
+		
+		
+		//JSonNode of root
+		JsonNode rootNode = mapper.readTree(geoJson);
+		
+		//JSonNode of geometry
+		List<JsonNode> geometryNodes = rootNode.findValues("geometry");
+
+		int i=0;
+		boolean many = geometryNodes.size()>1;
+		Polygon[] polys = new Polygon [geometryNodes.size()];
+		
+		for (JsonNode geometryNode : geometryNodes) {
+			Polygon poly = (Polygon)parser.geometryFromJson(geometryNode);
+			polys[i]=poly;
+			i++;
+		}
+		
+		if (many) {
+			ret = new MultiPolygon(polys, factory);
+		} else {
+			ret = polys[0];
+		}
 		
 		return ret;
 	}
