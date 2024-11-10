@@ -50,7 +50,6 @@
 	<div class="container-fluid px-4">
 		<h4 class="mt-12" th:text="#{park.title}">title</h4>
 	</div>
-	
         
      <div class="row input-group border border-dark rounded-3">
       	<h6 class="col-12" th:text="#{parc.edit.chooseCity}">select city</h6>
@@ -109,6 +108,7 @@
      </div>
      
      
+<form th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">  
       <div class="row input-group border border-dark rounded-3">
       		<h6 class="col-12" th:text="#{parc.edit.locateOnMap}">locate on map</h6>
             <div class="col-5">
@@ -140,7 +140,7 @@
 <span class="row input-group border border-dark rounded-3">
 
     <div class="col-6">
-     <form th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">
+
         <fieldset id="fsEditPark" disabled="disabled">
         <input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
         <input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
@@ -257,7 +257,6 @@
         
         
             </fieldset>
-    </form>
     </div>
 
 </span>
@@ -268,6 +267,7 @@
     
 </div>
 
+    </form>
 							
 			</main>
 		</div> <!-- layoutSidenav_content -->
@@ -791,7 +791,7 @@
             document.getElementById("mapLat").value=lat;
             
             locateWorkPlace=locatePlace(lat, lon);
-            editMap.setView(locateWorkPlace);
+            editMap.setView(locateWorkPlace, 17);
         });
     });
 
@@ -832,7 +832,7 @@
      
      // Allowing file type
      //var allowedExtensions =  /(\.jpg|\.jpeg|\.png|\.gif)$/i;
-     var allowedExtensions =  /(\.jpg|\.jpeg)$/i;
+     var allowedExtensions =  /(\.jpg|\.jpeg|\.JPG|\.JPEG)$/i;
      if (!allowedExtensions.exec(filePath)) {
     	 //console.log("fichier invalide");
          alert("Le fichier n'est pas une photo.");
@@ -853,11 +853,11 @@
 		 	   for(var i = 0; i < arr.length; i++) {
 		 	      header += arr[i].toString(16);
 		 	   }
-		 	   //console.log("header="+header);
+		 	   console.log("header="+header);
 		 	   
 		 	   // Check the file signature against known types
 		  	  var realType="unknown";
-		 	  switch (header) {
+		 	  switch (header) { //ffd8ffdb
 		 	    case "89504e47":
 		 	    	realType = "image/png";
 		 	        break;
@@ -869,6 +869,8 @@
 		 	    case "ffd8ffe2":
 		 	    case "ffd8ffe3":
 		 	    case "ffd8ffe8":
+		 	    case "ffd8ffdb":
+		 	    case "ffd8ffdb":
 		 	    	realType = "image/jpeg";
 		 	        break;
 		 	    case "52494646":

@@ -10,16 +10,13 @@
   "dependencies": {
     "core-js": "^3.8.3",
     "leaflet": "^1.9.3",
-    "sass": "^1.80.6",
-    "sass-loader": "^16.0.3",
     "vue": "^2.6.14",
-    "vue-d3-charts": "^0.2.1",
     "vue2-leaflet": "^2.7.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
-    "@vue/cli-plugin-babel": "^5.0.8",
+    "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
