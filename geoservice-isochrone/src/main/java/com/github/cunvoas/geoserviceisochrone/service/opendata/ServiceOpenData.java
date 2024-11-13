@@ -45,8 +45,9 @@ public class ServiceOpenData {
 		String ret = "300";
 		Optional<InseeDensiteCommune> idc = inseeDensiteCommuneRepository.findById(city.getInseeCode());
 		if (idc.isPresent()) {
+			// CodeDensite pix contenie plusieurs code insee
 			String cd = idc.get().getCodeDensite();
-			if (applicationBusinessProperties.getInseeCodeDensite().indexOf(cd)==-1) {
+			if (applicationBusinessProperties.getInseeCodeDensite().indexOf(cd) == -1) {
 				ret = applicationBusinessProperties.getOmsSubUrbanDistance();
 			} else {
 				ret = applicationBusinessProperties.getOmsUrbanDistance();

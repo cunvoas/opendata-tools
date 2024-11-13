@@ -28,12 +28,10 @@ public class ParkTypeService {
 	private ResourceBundleMessageSource messageSource;
 	
 	public List<ParkType> findAll() {
-		Locale locale = LocaleContextHolder.getLocale();
 		
 		List<ParkType> types = parkTypeRepository.findAll();
 		for (ParkType parkType : types) {
-			String trad = messageSource.getMessage(parkType.getI18n(), null, locale);
-			parkType.setLabel(trad);
+			this.setLabel(parkType);
 		}
 		
 		return types;
@@ -41,7 +39,10 @@ public class ParkTypeService {
 	
 	public void setLabel(ParkType parkType) {
 		Locale locale = LocaleContextHolder.getLocale();
-		String trad = messageSource.getMessage(parkType.getI18n(), null, locale);
+		String trad = "";
+		if (parkType.getI18n()!=null) {
+			 trad = messageSource.getMessage(parkType.getI18n(), null, locale);
+		}
 		parkType.setLabel(trad);
 	}
 	

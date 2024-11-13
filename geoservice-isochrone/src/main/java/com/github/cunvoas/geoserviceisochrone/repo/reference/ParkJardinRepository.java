@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
@@ -32,7 +33,7 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 	@Query(nativeQuery = true,
 			value="select pj.* from parc_jardin pj where pj.id_city=:id",
 			countQuery="select count(1) from parc_jardin pj where pj.id_city=:id")
-	List<ParcEtJardin> findByCityId(Long id);
+	List<ParcEtJardin> findByCityId(@Param("id")Long id);
 	
 	
 	@Query(nativeQuery = true,
@@ -44,7 +45,7 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 			+ " where c2c.id=:id"
 			+ " and (pe.update_date>pa.updated or pa.updated isnull)",
 	countQuery="select count(1) from parc_jardin pj inner join city c on c.id=pj.id_city inner join adm_com2commune c2c on c2c.id=c.id_comm2co where c2c.id=:id")
-	Page<ParcEtJardin> findByComm2CoId(Long id, Pageable pageable);
+	Page<ParcEtJardin> findByComm2CoId(@Param("id")Long id, Pageable pageable);
 	
 	@Query(nativeQuery = true,
 	value="select pj.* from parc_jardin pj "
@@ -54,7 +55,7 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 			+ " inner join park_entrance pe on pa.id=pe.area_id "
 			+ " where c2c.id=:id"
 			+ " and (pe.update_date>pa.updated or pa.updated isnull)")
-	Page<ParcEtJardin> findByComm2CoIdToMerge(Long id, Pageable pageable);
+	Page<ParcEtJardin> findByComm2CoIdToMerge(@Param("id")Long id, Pageable pageable);
 	
 	@Query(nativeQuery = true,
 	value="select pj.* from parc_jardin pj "
@@ -65,13 +66,13 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 			+ " where c2c.id=:id"
 			+ " and (pa.updated>pac.updated or pac.updated isnull)"
 			)
-	Page<ParcEtJardin> findByComm2CoIdToCompute(Long id, Pageable pageable);
+	Page<ParcEtJardin> findByComm2CoIdToCompute(@Param("id")Long id, Pageable pageable);
 	
 	
 	@Query(nativeQuery = true,
 			value="select pj.* from parc_jardin pj where pj.id_city=:id",
 			countQuery="select count(1) from parc_jardin pj where pj.id_city=:id")
-	Page<ParcEtJardin> findByCityId(Long id, Pageable pageable);
+	Page<ParcEtJardin> findByCityId(@Param("id")Long id, Pageable pageable);
 	
 	@Query(nativeQuery = true,
 			value="select distinct pj.* from parc_jardin pj "
@@ -80,7 +81,7 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 					+ "where pj.id_city=:id "
 					+ "and (pe.update_date>pa.updated or pa.updated isnull)"
 			)
-	Page<ParcEtJardin> findByCityIdToMerge(Long id, Pageable pageable);
+	Page<ParcEtJardin> findByCityIdToMerge(@Param("id")Long id, Pageable pageable);
 	
 	@Query(nativeQuery = true,
 			value="select distinct pj.* from parc_jardin pj "
@@ -89,23 +90,23 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 					+ "where pj.id_city=:id "
 					+ "and (pa.updated>pac.updated or pac.updated isnull)"
 			)
-	Page<ParcEtJardin> findByCityIdToCompute(Long id, Pageable pageable);
+	Page<ParcEtJardin> findByCityIdToCompute(@Param("id")Long id, Pageable pageable);
 	
 	
 	
 	@Query(nativeQuery = true, 
-			   value = "SELECT pj.* FROM parc_jardin pj WHERE ST_Intersects(pj.coordonnee, :searchArea)")
-	List<ParcEtJardin> findByArea(String searchArea);
+			   value = "SELECT pj.* FROM parc_jardin pj WHERE ST_Intersects(ST_SRID(pj.coordonnee ::geometry), :searchArea)")
+	List<ParcEtJardin> findByArea(@Param("searchArea")String searchArea);
 	
 	@Query(nativeQuery = true, 
 			   value = "SELECT pj.* FROM parc_jardin pj "
 			   		+ "WHERE pj.id_city=:cityId and ST_Contains(pj.coordonnee, :searchArea)")
-	List<ParcEtJardin> findByAreaAndCityId(Long cityId, Geometry searchArea);
+	List<ParcEtJardin> findByAreaAndCityId(@Param("cityId")Long cityId, @Param("searchArea")Geometry searchArea);
 	
 	
 	
 	@Query(value="SELECT * from parc_jardin where ST_Distance(coordonnee, :p) < :distanceM order by ST_Distance(coordonnee, :p) asc", nativeQuery = true)
-	List<ParcEtJardin> findNearWithinDistance(Point p, double distanceM);
+	List<ParcEtJardin> findNearWithinDistance(@Param("p")Point p, @Param("distanceM")double distanceM);
 	
 	
 	@Query(nativeQuery = true, 
@@ -113,11 +114,11 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 		   		+ " WHERE date_part('year',COALESCE(pj.date_debut, TO_DATE('20100101','YYYYMMDD'))) <=:annee "
 		   		+ "   AND :annee <= date_part('year',COALESCE(pj.date_fin, TO_DATE('20991231','YYYYMMDD'))) "
 		   		+ "   AND ST_Intersects(pj.contour, :searchArea)")
-	List<ParcEtJardin> findByAreaAndYear(Integer annee, Polygon searchArea);
+	List<ParcEtJardin> findByAreaAndYear(@Param("annee")Integer annee, @Param("searchArea")Polygon searchArea);
 
 	
 	@Query(nativeQuery = true, 
 		   value = "SELECT pj.* FROM parc_jardin pj "
 		   		+ "WHERE ST_Intersects(pj.contour, :searchArea)")
-	List<ParcEtJardin> findByArea(Geometry searchArea);
+	List<ParcEtJardin> findByArea(@Param("searchArea")Geometry searchArea);
 }

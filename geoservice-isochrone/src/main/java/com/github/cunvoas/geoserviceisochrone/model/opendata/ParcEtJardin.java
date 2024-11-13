@@ -6,6 +6,8 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.springframework.format.annotation.NumberFormat;
 
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -63,6 +65,13 @@ public class ParcEtJardin {
 	
 	@Column(name="date_fin")
 	private Date dateFin;
+	
+	/*
+	@ManyToOne
+	@JoinColumn( name="type_id", nullable = true)
+	private ParkType typeId;
+	*/
+	
 	
 	public String getLat() {
 		if (coordonnee!=null) {

@@ -56,7 +56,7 @@
          <div class="col-3">
              <div class="card" style="text-align: center">
                	<!-- region -->
-				<form th:action="@{/mvc/park/new/region}" th:object="${newPark}" method="post" onchange="submit();">
+				<form id="formSelectRegion" th:action="@{/mvc/park/new/region}" th:object="${newPark}" method="post" onchange="submit();">
 					<div class="form-floating">
 						<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
 							<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
@@ -73,7 +73,7 @@
          <div class="col-3">
              <div class="card" style="text-align: center">
                 	<!-- comm2co -->
-					<form th:action="@{/mvc/park/new/commDeCo}" th:object="${newPark}" method="post" onchange="submit();">
+					<form id="formSelectComm2co" th:action="@{/mvc/park/new/commDeCo}" th:object="${newPark}" method="post" onchange="submit();">
 					<fieldset id="fsComm2co" disabled="disabled">
 						<div class="form-floating">
 							<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
@@ -138,8 +138,8 @@
 
 <span class="row input-group border border-dark rounded-3">
 
-    <div class="col-6">
-     <form th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">
+    <div class="col-4">
+     <form id="formNewPark" th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">
         <fieldset id="fsEditPark" disabled="disabled">
         <input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
         <input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
@@ -240,7 +240,7 @@
 
     </div>
     
-    <div class="col-6">
+    <div class="col-8">
         <div class="row">
             <div class="col-4">
                 <h6 th:text="#{park.edit.title}">title</h6>
@@ -344,7 +344,7 @@
     
     
     // map layers
-    var mapMinZoom=8;
+    var mapMinZoom=11;
     var mapMaxZoom=19;
     
     // https://leaflet-extras.github.io/leaflet-providers/preview/
@@ -367,12 +367,22 @@
 			maxZoom: mapMaxZoom,
 			minZoom: mapMinZoom
         });
+    var layerAeroIgnMap = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
+			name: 'Vues Aérienne IGN',
+			attribution: '&copy; <a href="https://geoservices.ign.fr/services-geoplateforme-diffusion">IGN GeoPortail</a>',
+			tileSize: 256,
+			maxZoom: Math.min(18, mapMaxZoom), // 18 maxi
+			minZoom: mapMinZoom,
+    });
     
-    // picto fond de carte
+    
+    // fonds de carte
     const mapLayers = {
-   		'Carte WorldStreetMap': layerEsriWorldStreetMap,
    		'Satellite ArcGisOnline': layerSatellite,
-   		'Carte OpenStreetMap': layerStreetMap
+   		'Vues Aérienne IGN': layerAeroIgnMap,
+   		'Carte OpenStreetMap': layerStreetMap,
+   		'Carte WorldStreetMap': layerEsriWorldStreetMap,
+   		
    	};
     
     const dataPrefecture = L.layerGroup();
@@ -696,7 +706,7 @@
     	objBtnSave.classList.add('btn-warning');
     	
     	// TODO continues
-    	
+    	document.getElementById("formNewPark").submit();
     }
     
     function manageDisabled() {

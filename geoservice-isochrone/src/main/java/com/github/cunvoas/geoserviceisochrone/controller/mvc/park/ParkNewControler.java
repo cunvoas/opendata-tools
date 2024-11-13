@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkEdit;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
@@ -27,6 +28,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceParcPrefecture;
+import com.github.cunvoas.geoserviceisochrone.service.park.ParkJardinService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,9 @@ public class ParkNewControler {
 	
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
+	@Autowired
+	private ParkJardinService serviceParkJardinService;
+	
 	
 	@Autowired
 	private ServiceParcPrefecture serviceParcPrefecture;
@@ -96,9 +101,20 @@ public class ParkNewControler {
 		return getForm(form, model);
 	}
 	
+	
+	@GetMapping("/check")
+	public String checkPark(
+			@RequestParam("idPark") Long idPark,
+			@ModelAttribute FormParkNew form,
+			Model model) {
+		
+		ParcEtJardin pj = serviceReadReferences.getParcEtJardinById(idPark);
+		return getForm(form, model, pj);
+	}
+	
 	protected ParcEtJardin map(final FormParkNew form) {
 		ParcEtJardin pj=null;
-		if (form.getIdPark()==null) {
+		if (form.getIdPark()!=null) {
 			pj = serviceReadReferences.getParcEtJardinById(form.getIdPark());
 		} else {
 			pj = new ParcEtJardin();
@@ -144,32 +160,30 @@ public class ParkNewControler {
 		
 		ParcEtJardin pj = this.map(form);
 		
-		
-		
-		
+		pj=serviceParkJardinService.save(pj);
 		
 		// create poly
 		if("new".equals(form.getEtatAction())) {
 			log.warn("NEW: {}", form);
-			this.addPark(form, model);
+//			this.addPark(form, model);
 			
 		} else if("add".equals(form.getEtatAction())) {
 			log.warn("ADD: {}", form);
-			this.addPark(form, model);
+//			this.addPark(form, model);
 			
 		} else if("edit".equals(form.getEtatAction())) {
 			log.warn("EDIT: {}", form);
-			this.updPark(form, model);
+//			this.updPark(form, model);
 			
 		// change poly
 		} else if("change".equals(form.getEtatAction())) {
 			log.warn("CHANGE: {}", form);
-			this.updPark(form, model);
+//			this.updPark(form, model);
 		
 		// remove poly
 		} else if("remove".equals(form.getEtatAction())) {
 			log.warn("REMOVE: {}", form);
-			this.delPark(form, model);
+//			this.delPark(form, model);
 			
 		} else {
 			//nothing todo
@@ -177,7 +191,9 @@ public class ParkNewControler {
 		}
 		
 		
-		return getForm(form, model);
+		
+		
+		return getForm(form, model, pj);
 	}
 	
 	protected void addPark( FormParkNew form, Model model) {
@@ -240,6 +256,33 @@ public class ParkNewControler {
 		
 		return formName;
 	}
+	
+	private String getForm(@ModelAttribute FormParkNew form, Model model, ParcEtJardin pj) {
+
+		form.setId(pj.getId());
+		form.setIdRegion(pj.getCommune().getRegion().getId());
+		form.setIdCommunauteDeCommunes(pj.getCommune().getCommunauteCommune().getId());
+		form.setIdCommune(pj.getCommune().getId());
+		
+		if (pj.getCoordonnee()!=null) {
+			form.setMapLng(String.valueOf(pj.getCoordonnee().getX()));
+			form.setMapLat(String.valueOf(pj.getCoordonnee().getY()));
+		} else {
+			// no point, goto city center
+			Coordinate location = serviceReadReferences.getCoordinate(form.getIdCommune());
+			form.setMapLng(String.valueOf(location.getX()));
+			form.setMapLat(String.valueOf(location.getY()));
+			
+		}
+		form.setQuartier(pj.getQuartier());
+		form.setType(pj.getType());
+		form.setSousType(pj.getSousType());
+		form.setSource(pj.getSource());
+		form.setStatus(pj.getStatus().name());
+		
+		return getForm(form, model);
+	}
+	
 	
 
 	/**

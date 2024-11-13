@@ -38,7 +38,7 @@ public interface ParkAreaRepository extends JpaRepository<ParkArea, Long>{
 	
 	@Query(nativeQuery = true, 
 			   value = "SELECT pa.* FROM park_area pa WHERE ST_Intersects(pa.polygon, ?1)")
-	public List<ParkArea> findParkInMapArea(String mapArea);
+	public List<ParkArea> findParkInMapArea(@Param("mapArea") String mapArea);
 	
 	public ParkArea findByIdParcEtJardin(Long id);
 	
