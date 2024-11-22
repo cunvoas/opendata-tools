@@ -3,6 +3,8 @@ package com.github.cunvoas.geoserviceisochrone.controller.form;
 import java.util.List;
 
 import org.locationtech.jts.geom.Point;
+import org.springframework.format.annotation.NumberFormat;
+import org.springframework.format.annotation.NumberFormat.Style;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
@@ -50,7 +52,8 @@ public class FormParkNew extends AbstractFormLocate{
 	private Boolean aireJeux = Boolean.FALSE;
 	
 	private String adresse;
-	private Double surface;
+	@NumberFormat(pattern = "#,##0.0", style=Style.NUMBER)
+	private Double surface;iot
 	private Point coordonnee;
 	
 	private String sGeometry;

@@ -1,5 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.park;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -246,7 +248,7 @@ public class ParkNewControler {
 	@GetMapping
 	public String getForm(@ModelAttribute FormParkNew form, Model model) {
 
-		form = populateForm(form);
+		form = populateListInForm(form);
 		model.addAttribute(formName, form);
 		model.addAttribute("regions", form.getRegions());
 		model.addAttribute("communautesDeCommunes", form.getCommunautesDeCommunes());
@@ -257,6 +259,13 @@ public class ParkNewControler {
 		return formName;
 	}
 	
+	/**
+	 * populate form from business.
+	 * @param form
+	 * @param model
+	 * @param pj
+	 * @return
+	 */
 	private String getForm(@ModelAttribute FormParkNew form, Model model, ParcEtJardin pj) {
 
 		form.setId(pj.getId());
@@ -274,15 +283,19 @@ public class ParkNewControler {
 			form.setMapLat(String.valueOf(location.getY()));
 			
 		}
+		form.setName(pj.getName());
 		form.setQuartier(pj.getQuartier());
 		form.setType(pj.getType());
 		form.setSousType(pj.getSousType());
 		form.setSource(pj.getSource());
 		form.setStatus(pj.getStatus().name());
 		
+		
+		form.setSurface(pj.getSurface());	
 		return getForm(form, model);
 	}
 	
+	private NumberFormat NF = new DecimalFormat("#.##O");
 	
 
 	/**
@@ -290,7 +303,7 @@ public class ParkNewControler {
 	 * @param form
 	 * @return
 	 */
-	protected FormParkNew populateForm( FormParkNew form) {
+	protected FormParkNew populateListInForm( FormParkNew form) {
 		if (form==null) {
 			form = new FormParkNew();	
 		}

@@ -93,11 +93,6 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 	Page<ParcEtJardin> findByCityIdToCompute(@Param("id")Long id, Pageable pageable);
 	
 	
-	
-	@Query(nativeQuery = true, 
-			   value = "SELECT pj.* FROM parc_jardin pj WHERE ST_Intersects(ST_SRID(pj.coordonnee ::geometry), :searchArea)")
-	List<ParcEtJardin> findByArea(@Param("searchArea")String searchArea);
-	
 	@Query(nativeQuery = true, 
 			   value = "SELECT pj.* FROM parc_jardin pj "
 			   		+ "WHERE pj.id_city=:cityId and ST_Contains(pj.coordonnee, :searchArea)")
@@ -121,4 +116,11 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 		   value = "SELECT pj.* FROM parc_jardin pj "
 		   		+ "WHERE ST_Intersects(pj.contour, :searchArea)")
 	List<ParcEtJardin> findByArea(@Param("searchArea")Geometry searchArea);
+	
+
+	@Query(nativeQuery = true, 
+			   value = "SELECT pj.* FROM parc_jardin pj WHERE pj.coordonnee is not null and ST_Intersects(pj.coordonnee, ST_GeomFromText(:searchArea, 4326))")
+	List<ParcEtJardin> findByArea(@Param("searchArea")String searchArea);
+	
+	
 }

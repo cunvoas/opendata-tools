@@ -444,8 +444,11 @@ public class GeoMapServiceV2 {
 		GeoJsonRoot root = new GeoJsonRoot();
 
     	if (polygon!=null) {
-    		List<ParcEtJardin> parkPrefs =  parkJardinRepository.findByArea(GeometryQueryHelper.toText(polygon));
-			if (!CollectionUtils.isEmpty(parkPrefs)) {
+    		log.debug("GEOM= {}", GeometryQueryHelper.toTextWoSrid(polygon));
+    		//List<ParcEtJardin> parkPrefs =  parkJardinRepository.findByArea(GeometryQueryHelper.toText(polygon));
+    		List<ParcEtJardin> parkPrefs =  parkJardinRepository.findByArea(polygon);
+			
+    		if (!CollectionUtils.isEmpty(parkPrefs)) {
 				for (ParcEtJardin parcJardin : parkPrefs) {
 					
 					GeoJsonFeature feature = new GeoJsonFeature();

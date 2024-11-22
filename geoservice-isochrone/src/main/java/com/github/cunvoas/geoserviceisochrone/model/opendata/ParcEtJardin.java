@@ -49,7 +49,7 @@ public class ParcEtJardin {
 	@Column(name = "adresse", length = 100)
 	private String adresse;
 
-	@NumberFormat(pattern = "#,##0")
+	@NumberFormat(pattern = "#,##0.0")
 	@Column(name = "surface")
 	private Double surface;
 	

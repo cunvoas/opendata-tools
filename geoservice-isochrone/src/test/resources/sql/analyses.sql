@@ -1,3 +1,40 @@
+-- surface comptées fois en opendata
+WITH base AS (
+SELECT identifiant, nom_parc ,coordonnee,contour
+	FROM public.parc_jardin where id_city=2878 ),
+ctrl as (
+SELECT identifiant, nom_parc, coordonnee,contour
+	FROM public.parc_jardin where id_city=2878)
+	
+SELECT distinct b.identifiant, b.nom_parc, c.identifiant, c.nom_parc
+from base b, ctrl c
+where 
+ b.identifiant<> c.identifiant and 
+ ST_intersects(b.contour, c.contour)
+ 
+ 
+ 
+ -- calcul des surfaces dupliquées
+ -- surface comptées fois en opendata
+WITH base AS (
+SELECT identifiant, nom_parc ,coordonnee,contour
+	FROM public.parc_jardin where id_city=2878
+),
+ctrl as (
+SELECT identifiant, nom_parc, coordonnee,contour
+	FROM public.parc_jardin where id_city=2878)
+	
+SELECT distinct b.identifiant, b.nom_parc
+, c.identifiant, c.nom_parc
+,st_area(st_intersection(b.contour, c.contour), true)
+from base b, ctrl c
+where 
+ b.identifiant<> c.identifiant and 
+ ST_intersects(b.contour, c.contour)
+ order by b.nom_parc
+ , c.nom_parc
+ 
+
 -- parcs
 SELECT 
     pa.id, pa.name, pa.block  --, pa.type_id, pa.oms_custom

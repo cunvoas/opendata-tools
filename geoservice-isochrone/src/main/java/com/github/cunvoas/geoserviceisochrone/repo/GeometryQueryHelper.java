@@ -31,6 +31,9 @@ public class GeometryQueryHelper {
 	public static String toText(Geometry p) {
 		return "SRID=4326;"+p.toText();
 	}
+	public static String toTextWoSrid(Geometry p) {
+		return p.toText();
+	}
 	
 	public static Geometry cast(org.geolatte.geom.Geometry<?> in) {
 		Geometry ret =null;

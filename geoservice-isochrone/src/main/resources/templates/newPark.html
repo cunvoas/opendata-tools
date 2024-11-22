@@ -14,34 +14,21 @@
 				<div class="container">
 
 <p class="d-inline-flex gap-1">
-	<button id="btnNew" onclick="manageCreateDisabled()" type="button" class="btn btn-outline-success">Création</button>
+	<button id="btnNew" onclick="manageCreateDisabled()" type="button" class="btn btn-outline-success" th:text="#{park.new.create}">Create</button>
+	<button id="btnUpdate" onclick="manageUpdateDisabled()" type="button" class="btn btn-outline-success" th:text="#{park.new.update}">Update</button>
 
-	<button id="btnSave" onclick="savePark()" type="button" class="btn btn-outline-warning">Sauvegarder</button>
+	<button id="btnSave" onclick="savePark()" type="button" class="btn btn-outline-warning" th:text="#{park.new.save}">save</button>
 	<div id="saveParkSpinner" class="spinner-border text-success" role="status" style="display:none;">
 	  <span class="visually-hidden">Loading...</span>
 	</div>
-    <!-- <button type="button" class="btn btn-warning">Sauvegarder</button>  -->
 
-  <a class="btn btn-danger" style="position:absolute;right:10px" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-    Aide
+  <a th:text="#{park.new.help}" class="btn btn-danger" style="position:absolute;right:10px" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+    help
   </a>
 </p>
 <div class="collapse" id="collapseExample">
-  <div class="card card-body">
-    <ul>
-	    <li>Sélectionner votre région, puis votre communauté de commune si vous en avez une et enfin votre Commune</li>
-	    <li>Positionner vous sur la carte:</li>
-		    <ul>
-		    	<li>soit par la recheeche d'adresse</li>
-		    	<li>soit par le bouton "me localiser"</li>
-		    	<li>soit par l'ajout d'une photo localisée</li>
-		    </ul>
-	    <li>Saisir le nom du parc à minima</li>
-	    <li>Définir le contours du parc avec l'outil polygone de la carte</li>
-		    <ul>
-		    	<li>les parcs déjà saisi sont visibles soit par une pointe bleue, soit pas le contour avec l'option "contour des parcs"</li>
-		    </ul>
-    </ul>
+  <div class="card card-body" th:utext="#{park.new.helpDetail}">
+		helpDetail
   </div>
 </div>
 
@@ -161,7 +148,7 @@
 			</div>
 			<div class="col">
 				<div class="card border" style="text-align: center">
-					<div class="form-floating">
+					<div id="blkName" class="form-floating">
 						<input class="form-control" type="text" id="name" name="name" th:field="*{name}" /> <label class="form-label" for="name" th:text="#{entrance.park}">parc</label>
 					</div>
 				</div>
@@ -182,7 +169,10 @@
 				</div>
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
-                        <input class="form-control" type="text" id="surface" name="surface" th:field="*{surface}" disabled="disabled"  />
+                        <input class="form-control" type="text" id="surface" name="surface" 
+                        th:field="*{surface}" 
+                        disabled="disabled"  />
+                        
                         <label class="form-label" for="surface" th:text="#{entrance.surface}">surface</label>
                     </div>
                 </div>
@@ -190,12 +180,6 @@
                     <div class="form-floating">
                         <input class="form-control" type="text" id="source" name="source" th:field="*{source}"  />
                         <label class="form-label" for="source" th:text="#{park.source}">source</label>
-                    </div>
-                </div>
-                <div class="card border" style="text-align: center">
-                    <div class="form-floating">
-                        <input class="form-control" type="text" id="status" name="status" th:field="*{status}" disabled="disabled"  />
-                        <label class="form-label" for="status" th:text="#{park.status}">status</label>
                     </div>
                 </div>
                 
@@ -242,13 +226,13 @@
     
     <div class="col-8">
         <div class="row">
-            <div class="col-4">
+            <div class="col-4"  id="blkMap">
                 <h6 th:text="#{park.edit.title}">title</h6>
             </div>
             
 
         </div>
-        <div class="row col-12 h-100 ">
+        <div class="row col-12 h-100">
                 <div class="card " style="text-align: center">
                     <div id="mapid" style="width: 100%; height: 100%;"></div>
                 </div>
@@ -442,14 +426,17 @@
         	}
     		
 
-            nom ="inconnu";
-            if (feature.properties.namePrefecture) {
-                nom = feature.properties.namePrefecture;
-            }
+            var parcEdit ="";
+            var sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/park/new/check}]]+'?idPark=';
             if (feature.properties.name) {
-                nom=nom+"<br />"+feature.properties.name;
+            	parcEdit = "<p>"+feature.properties.name+"</p>";
+            	if (feature.properties.id) {
+            		parcEdit= "<p>"+ feature.properties.name + "<br /><a href='"+ sUrlEditPark + feature.properties.id +"' >Edit</a></p>";
+            	}
+            	layer.bindPopup(parcEdit);
             }
-            layer.bindPopup(nom + getGMapLink(feature));
+            
+            
         }
     }
     
@@ -549,6 +536,7 @@
         var sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenOutlineByCorner}]]+'?'+sPos;
         geojsonAutmelLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {onEachFeature: customOnEachFeaturePref});
         geojsonAutmelLayer.addTo(dataAutmel);
+        
         
         
         // works! used when affect
@@ -693,19 +681,90 @@
     }
     
     function manageCreateDisabled() {
+    	
+    	if (document.getElementById("idPark").value!=="") {
+    		let msg =	[[#{park.new.confirmQuestion1}]] +
+		    			document.getElementById("name").value +
+		    			[[#{park.new.confirmQuestion2}]] + "\n\n" +
+		    			[[#{park.new.confirmYesNo}]] ;
+    		let choice=confirm( msg );
+    		if (!choice) {
+    			return;
+    		}
+    	}
+    	
     	document.getElementById("fsEditPark").disabled = false;
     	var objBtnNew=document.getElementById("btnNew");
+    	objBtnNew.classList.remove('btn-outline-secondary');
     	objBtnNew.classList.remove('btn-outline-success');
     	objBtnNew.classList.add('btn-success');
+
+    	var objBtnUpdate=document.getElementById("btnUpdate");
+    	objBtnUpdate.classList.remove('btn-outline-secondary');
+    	objBtnUpdate.classList.remove('btn-outline-success');
+    	objBtnUpdate.classList.add('btn-outline-secondary');
+    	objBtnUpdate.disabled= true;
+    	
+    	// clean form
+    	//document.getElementById("formNewPark").reset();
+    	
+    	document.getElementById("idPark").value="";
+    	document.getElementById("id").value="";
+    	document.getElementById("sGeometry").value="";
+    	document.getElementById("etat").value="";
+    	document.getElementById("etatAction").value="";
+    	document.getElementById("name").value="";
+    	document.getElementById("quartier").value="";
+    	document.getElementById("type").value="";
+    	document.getElementById("sousType").value="";
+    	document.getElementById("surface").value="";
+    	document.getElementById("source").value="";
+    	document.getElementById("status").value="";
+    	
+    }
+    
+    function manageUpdateDisabled() {
+    	// can't enter in update mode without existing id
+    	if (document.getElementById("idPark").value==="") {
+  			return;
+    	}
+    	document.getElementById("fsEditPark").disabled = false;
+    	var objBtnUpdate=document.getElementById("btnUpdate");
+    	objBtnUpdate.classList.remove('btn-outline-success');
+    	objBtnUpdate.classList.add('btn-success');
+
+    	var objBtnNew=document.getElementById("btnNew");
+    	objBtnNew.classList.remove('btn-outline-success');
+    	objBtnNew.classList.add('btn-outline-secondary');
+    }
+    if (document.getElementById("idPark").value!=="") {
+    	manageUpdateDisabled();
     }
     
     function savePark() {
+    	var hasError=false;
+    	// TODO continues
+ 	    if (document.getElementById("sGeometry").value==="") {
+ 	    	hasError=true;
+ 	    	var item=document.getElementById("blkName");
+ 	    	objBtnNew.classList.add("has-error");
+    	}
+    	
+    	if (document.getElementById("sGeometry").value==="") {
+    		hasError=true;
+ 	    	var item=document.getElementById("blkMap");
+ 	    	objBtnNew.classList.add("has-error");
+    	}
+    	
+    	if (hasError) {
+    		return;
+    	}
+    	
     	document.getElementById("saveParkSpinner").style = "display:block;";
     	var objBtnSave=document.getElementById("btnSave");
     	objBtnSave.classList.remove('btn-outline-warning');
     	objBtnSave.classList.add('btn-warning');
     	
-    	// TODO continues
     	document.getElementById("formNewPark").submit();
     }
     
