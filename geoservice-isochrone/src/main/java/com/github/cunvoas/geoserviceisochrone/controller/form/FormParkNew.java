@@ -53,7 +53,7 @@ public class FormParkNew extends AbstractFormLocate{
 	
 	private String adresse;
 	@NumberFormat(pattern = "#,##0.0", style=Style.NUMBER)
-	private Double surface;iot
+	private Double surface;
 	private Point coordonnee;
 	
 	private String sGeometry;

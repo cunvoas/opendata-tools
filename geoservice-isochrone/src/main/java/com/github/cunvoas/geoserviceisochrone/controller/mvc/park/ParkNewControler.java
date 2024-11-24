@@ -270,7 +270,9 @@ public class ParkNewControler {
 
 		form.setId(pj.getId());
 		form.setIdRegion(pj.getCommune().getRegion().getId());
-		form.setIdCommunauteDeCommunes(pj.getCommune().getCommunauteCommune().getId());
+		if (pj.getCommune().getCommunauteCommune()!=null) {
+			form.setIdCommunauteDeCommunes(pj.getCommune().getCommunauteCommune().getId());
+		}
 		form.setIdCommune(pj.getCommune().getId());
 		
 		if (pj.getCoordonnee()!=null) {
