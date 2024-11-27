@@ -269,7 +269,13 @@
 		return new Promise(resolve => setTimeout(resolve, ms));
 	 }
 
-	 
+	// point icons
+	var editEntranceIcon = L.icon({
+	    iconUrl: [[@{/mvc/static/images/marker-icon-parkEdit-1x.png}]]
+	    ,iconAnchor:   [12, 41] // point of the icon which will correspond to marker's location
+	    ,popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
+	});
+	
 	 
 	/* manage correct ID for COMMUNE SELECTION */
 	// th-field broke the datalist work
@@ -326,7 +332,8 @@
     	locateWorkPlace = locatePlace(mLat, mLng);
     }
     
-    
+
+
     // map layers
     var mapMinZoom=11;
     var mapMaxZoom=19;
@@ -388,6 +395,14 @@
   //  layerStreetMap.addTo(editMap); //  set as default
     
 
+   	var idPark = document.querySelector('#idPark').value;
+    const idParkRegex = /[0-9]/g;
+    const idParkFound = idPark.match(idParkRegex);
+    if (mLng!="" && mLat!="" && idParkFound) {
+    	var txt = document.querySelector('#name').value;
+    	var editMarker = L.marker(L.latLng(mLat,mLng), {icon:editEntranceIcon,draggable:false}).addTo(editMap)
+    		.bindPopup(txt).openPopup();
+    }
     
     
     // event on click

@@ -39,5 +39,12 @@ public class GeoJsonCadastreController {
     public GeoJsonRoot getCadastreByCom2Com(@PathVariable ("id")Long id) {
     	 return geoMapService.findAllCadastreByComm2Co(id);
 	}
+    
+
+    @CrossOrigin(origins = {"http://localhost:8081", "https://autmel-maps.duckdns.org/"})
+    @GetMapping("/area/city/{id}")
+    public GeoJsonRoot getCadastreByCity(@PathVariable ("id")Long id) {
+    	 return geoMapService.findCadastreByCity(id);
+	}
 
 }
