@@ -1,7 +1,10 @@
 .DS_Store
 node_modules
 # push build for github pages
-#/dist
+dist
+node_modules
+public
+.git
 
 
 # local env files

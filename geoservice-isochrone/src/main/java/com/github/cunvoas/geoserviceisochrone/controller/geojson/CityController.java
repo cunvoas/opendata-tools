@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.controller.rest;
+package com.github.cunvoas.geoserviceisochrone.controller.geojson;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
 
 @RestController
-@RequestMapping("city")
+@RequestMapping("/map/city")
 public class CityController {
 
     @Autowired

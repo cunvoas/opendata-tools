@@ -105,7 +105,7 @@ public class WebSecurityConfiguration {
     return http
         .httpBasic().disable()
 
-        .csrf().disable()
+       // .csrf().disable()
 
         .sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

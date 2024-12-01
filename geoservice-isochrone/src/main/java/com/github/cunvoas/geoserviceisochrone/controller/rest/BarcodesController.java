@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.BarcodeHelper;
 
 @RestController
-@RequestMapping("/barcodes")
+@RequestMapping("/mvc/barcodes")
 public class BarcodesController {
 	@Autowired
 	private BarcodeHelper barcodeHelper;

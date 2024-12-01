@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.controller.mvc;
+package com.github.cunvoas.geoserviceisochrone.controller;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,10 +17,27 @@ public class RootController {
 	private static final Pattern PATTERN = Pattern.compile(
 			"(^127\\.0\\.0\\.1)|(^10\\.)|(^172\\.1[6-9]\\.)|(^172\\.2[0-9]\\.)|(^172\\.3[0-1]\\.)|(^192\\.168\\.)");
 	
-	
 	@RequestMapping("/")
 	public String root() {
 		return "redirect:/mvc/dashboard";
+	}
+	
+	// Login form
+	@RequestMapping("/login")
+	public String login() {
+		return "login";
+	}
+	
+	// Logout form
+	@RequestMapping("/logout")
+	public String logout() {
+		return "login";
+	}
+
+	/** Error page. */
+	@RequestMapping("/403.html")
+	public String forbidden() {
+		return "403";
 	}
 
 	@RequestMapping("/home")

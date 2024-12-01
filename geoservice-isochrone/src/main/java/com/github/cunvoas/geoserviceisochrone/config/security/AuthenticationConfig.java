@@ -1,7 +1,5 @@
 package com.github.cunvoas.geoserviceisochrone.config.security;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +7,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -66,53 +65,36 @@ public class AuthenticationConfig {
 //					.anyRequest()
 //					.authenticated()
 //				)
-//				.formLogin(withDefaults())
+////				.formLogin(withDefaults())
 //			.build();
 //	}
 
-	
-	
-	@Bean
-	@Order(2)                                                        
-	public SecurityFilterChain geoFilterChain(HttpSecurity http) throws Exception {
-		return http
-				.securityMatcher("/map/**")                                   
-				.authorizeHttpRequests(authorize -> authorize
-						.anyRequest()
-						.permitAll()
-					)
-			.build();
-	}
-	
 	
 	@Bean
 	@Order(1)                                                        
 	public SecurityFilterChain mvcFilterChain(HttpSecurity http) throws Exception {
 		return http
-				.securityMatcher("/mvc/**")                                   
-				.authorizeHttpRequests(authorize -> authorize
-					.anyRequest()
-					.authenticated()
+				 .authorizeHttpRequests(authorizeRequests ->
+		                 authorizeRequests
+		                         .requestMatchers(
+		             			        "/awake",
+		            		            "/login",
+		            		            "/logout",
+		            		            "/favicon.ico",
+		                        		"/pub/**",
+		                        		"/map/**").permitAll()
+		                         .anyRequest().authenticated()
+		         )
+				.formLogin(form->form
+						.loginPage("/login")
+						.permitAll()
 				)
-				.formLogin(withDefaults())
-			.build();
-	}
-	
-	@Bean       
-	@Order(0)                                                        
-	public SecurityFilterChain freeFilterChain(HttpSecurity http) throws Exception {
-		return
-			http
-				.securityMatcher(
-			        "/awake",
-		            "/login",
-		            "/logout",
-		            "/favicon.ico")                             
-				.authorizeHttpRequests(authorize -> authorize
-					.anyRequest()
-					.permitAll()
+				.logout(logout->logout
+						.logoutSuccessUrl("/logout?m=logout")
+						.permitAll()
 				)
-				.formLogin(withDefaults())
+				
+//			   .rememberMe(Customizer.withDefaults())
 			.build();
 	}
 

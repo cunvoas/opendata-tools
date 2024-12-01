@@ -34,6 +34,7 @@ public class ThymeleafConfiguration  implements WebMvcConfigurer, ApplicationCon
     @Override
     public void addResourceHandlers(final ResourceHandlerRegistry registry) {
         WebMvcConfigurer.super.addResourceHandlers(registry);
+        registry.addResourceHandler("/pub/**").addResourceLocations("classpath:/public/");
         registry.addResourceHandler("/mvc/static/**").addResourceLocations("classpath:/static/mvc/");
         registry.addResourceHandler("*.ico").addResourceLocations("classpath:/static/ico/");
 //        registry.addResourceHandler("/images/**").addResourceLocations("/images/");
