@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
@@ -88,7 +89,13 @@ public class ContributeurService {
 				toBeSaved.setPassword(
 						passwordService.securizePassword(contributeur.getPassword())
 					);
-				newPassword=true;
+				
+				// load for email info
+				Contributeur contribConnected =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+				if (!contribConnected.getId().equals(toBeSaved.getId())) {
+					newPassword=true;
+					myPassword = contributeur.getPassword();
+				}
 			}
 			
 		} else {
@@ -112,11 +119,11 @@ public class ContributeurService {
 				if (!passwordService.isSafe(contributeur.getPassword())) {
 					throw new ExceptionAdmin(ExceptionAdmin.RG_PWD_NOT_SAFE);
 				}
-				newPassword=true;
-				myPassword = contributeur.getPassword();
 				toBeSaved.setPassword(
 						passwordService.securizePassword(contributeur.getPassword())
 					);
+				newPassword=true;
+				myPassword = contributeur.getPassword();
 			} else {
 				pwdGenNeeded=true;
 			}
@@ -129,7 +136,6 @@ public class ContributeurService {
 			toBeSaved.setPassword(
 					passwordService.securizePassword(newPass)
 				);
-			
 		}
 		
 		
