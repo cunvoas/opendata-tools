@@ -88,6 +88,7 @@ public class ContributeurService {
 				toBeSaved.setPassword(
 						passwordService.securizePassword(contributeur.getPassword())
 					);
+				newPassword=true;
 			}
 			
 		} else {
@@ -105,21 +106,22 @@ public class ContributeurService {
 			toBeSaved.setId(null);
 			toBeSaved.setCreationDate(new Date());
 			
-			
-			// generate only in creation
-			if (!pwdGenNeeded) {
+			// change the password here
+			if (StringUtils.isNotEmpty(contributeur.getPassword())) {
 				
 				if (!passwordService.isSafe(contributeur.getPassword())) {
 					throw new ExceptionAdmin(ExceptionAdmin.RG_PWD_NOT_SAFE);
 				}
-				
+				newPassword=true;
+				myPassword = contributeur.getPassword();
 				toBeSaved.setPassword(
 						passwordService.securizePassword(contributeur.getPassword())
 					);
+			} else {
+				pwdGenNeeded=true;
 			}
 		}
 		
-		// generate in reset case
 		if (pwdGenNeeded) {
 			newPassword=true;
 			String newPass = passwordService.generatePassword(20);
@@ -127,7 +129,9 @@ public class ContributeurService {
 			toBeSaved.setPassword(
 					passwordService.securizePassword(newPass)
 				);
+			
 		}
+		
 		
 		toBeSaved.setUpdateDate(new Date());
 		toBeSaved.setNom(contributeur.getNom());
@@ -152,7 +156,7 @@ public class ContributeurService {
 			log.error("send email with password");
 			emailSender.sendPassword(toBeSaved.getEmail(), toBeSaved.getFullName(), myPassword);
 		}
-		
+		myPassword=null;
 		// IMPORTANT clear password on memory
 		// not works with open-in-view
 		// toBeSaved.setPassword(null);

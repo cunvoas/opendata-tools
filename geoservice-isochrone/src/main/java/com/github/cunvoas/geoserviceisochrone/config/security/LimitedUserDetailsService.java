@@ -34,6 +34,9 @@ public class LimitedUserDetailsService  implements UserDetailsService {
         	if (opUser.isPresent()) {
         		return opUser.get();
         	} else {
+        		// time hack fix
+        		long rt = Double.doubleToLongBits(Math.random()*200);
+        		Thread.sleep(2400+rt);
         		throw new UsernameNotFoundException("User not found");
         	}
  

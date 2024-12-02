@@ -181,8 +181,7 @@ public class ContributeurControler {
 				
 		Contributeur contrib=mapFromForm(fContrib);
 		try {
-			Boolean pwdGenNeeded = contrib.getPassword().trim().length()==0;
-			contrib = contributeurService.save(contrib,pwdGenNeeded);
+			contrib = contributeurService.save(contrib,false);
 		} catch (ExceptionAdmin e) {
 			log.error("sve contrib", e);
 			model.addAttribute("errorMsg_"+e.getMessage(), messageSource.getMessage(e.getMessage(), null, Locale.FRANCE));
