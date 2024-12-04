@@ -33,7 +33,7 @@ public class ParkEntrance {
         private ParkArea parkArea;
 
         // JSON response
-        @Column(name="ign_response", length=4000)
+        @Column(name="ign_response", length=10000)
         private String ignReponse;
 
         @Column(name="update_date")

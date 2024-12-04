@@ -53,12 +53,12 @@ spring:
 # JPA configuration
   jpa:
     database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
-#    hibernate.ddl-auto: update
+#    hibernate.ddl-auto: update  none
     hibernate.ddl-auto: none
     open-in-view: true
-    generate-ddl: true
+    generate-ddl: false
     show-sql: true
-    format-sql: true
+    format-sql: false
     properties:
       hibernate:
 # dépend de la version d'hibernate
