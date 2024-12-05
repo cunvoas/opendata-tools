@@ -94,12 +94,10 @@ public class PhotoHelper {
 		return gps;
 	}
 	
-	
 	/**
 	 * Transform °'" into decimal.
 	 * @param coord in °'"
 	 * @return decimal
-	 * @deprecated
 	 */
 	public Double getDecimalGps(String coord) {
 
@@ -136,9 +134,7 @@ public class PhotoHelper {
 			
 			// raise up precision
 			ret = (deg*3600 + min*60 + sec)/3600;
-			
 		}
-
 		return ret;
 	}
 	

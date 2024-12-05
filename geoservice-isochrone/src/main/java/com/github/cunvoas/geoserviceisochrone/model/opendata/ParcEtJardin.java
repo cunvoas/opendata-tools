@@ -6,8 +6,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.springframework.format.annotation.NumberFormat;
 
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

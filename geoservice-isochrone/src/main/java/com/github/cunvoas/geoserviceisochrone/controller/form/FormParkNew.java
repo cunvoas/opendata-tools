@@ -14,8 +14,10 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class FormParkNew extends AbstractFormLocate{
 
 	private Long idPark;//parcEtJardin.id

@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.config.security;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,6 +17,9 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
  */
 @Service("userDetailsService")
 public class LimitedUserDetailsService  implements UserDetailsService {
+	
+	@Value("application.security.timehack")
+	private Long timeHack=1000L;
  
 	@Autowired
 	private final ContributeurRepository userRepository = null;
@@ -23,6 +27,11 @@ public class LimitedUserDetailsService  implements UserDetailsService {
     @Autowired
     private LoginAttemptService loginAttemptService;
  
+    
+    private Long getMitigationTimeHack() {
+    	return timeHack+Double.doubleToLongBits(Math.random()*timeHack/7);
+    }
+    
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (loginAttemptService.isBlocked()) {
@@ -35,8 +44,7 @@ public class LimitedUserDetailsService  implements UserDetailsService {
         		return opUser.get();
         	} else {
         		// time hack fix
-        		long rt = Double.doubleToLongBits(Math.random()*200);
-        		Thread.sleep(2400+rt);
+        		Thread.sleep(getMitigationTimeHack());
         		throw new UsernameNotFoundException("User not found");
         	}
  

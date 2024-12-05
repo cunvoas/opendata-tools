@@ -9,8 +9,10 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class FormParkEntranceDetail {
 	
 	public FormParkEntranceDetail() {

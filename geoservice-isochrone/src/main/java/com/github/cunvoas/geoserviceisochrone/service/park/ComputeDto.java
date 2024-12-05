@@ -8,8 +8,6 @@ import org.locationtech.jts.geom.Geometry;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
 
-import lombok.Data;
-
 /**
  * DTO to factorise compute method.
  */

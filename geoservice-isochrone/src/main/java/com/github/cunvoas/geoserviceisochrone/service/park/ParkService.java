@@ -43,12 +43,10 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
 import jakarta.transaction.Transactional;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@Log
 public class ParkService {
 	
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
