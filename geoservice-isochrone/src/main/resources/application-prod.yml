@@ -21,6 +21,7 @@ web:
 
 application:
   security:
+    timehack: ${THE_LOGIN_TIME_IN_PROD}
     jwt-sign-key: FAKE_KEY
     salt-len: ${PASSWORD_SALT}
     hash-len: ${PASSWORD_LENGTH}

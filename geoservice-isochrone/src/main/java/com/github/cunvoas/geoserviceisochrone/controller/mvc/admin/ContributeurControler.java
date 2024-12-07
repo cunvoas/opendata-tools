@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.controller.mvc.admin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -21,6 +22,7 @@ import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Association;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
@@ -214,7 +216,12 @@ public class ContributeurControler {
 		clone.setIdRegion(in.getIdRegion());
 		clone.setIdCommunauteDeCommunes(in.getIdCommunauteCommune());
 		clone.setIdCommune(in.getIdCommune());
-		model.addAttribute("idCommune", in.getIdCommune());
+		
+		Optional<City> oCity = cityRepository.findById(in.getIdCommune());
+		if (oCity.isPresent()) {
+			model.addAttribute("idCommune", in.getIdCommune());
+			model.addAttribute("txtCommune", oCity.get().getName());
+		}
 		
 		clone.setRegions(regionRepository.findAllOrderByName());
 		model.addAttribute("regions", clone.getRegions());
@@ -244,6 +251,10 @@ public class ContributeurControler {
 		
 		Association asso = associationService.findById(in.getIdAsso());
 		clone.setAssociation(asso);
+		
+		clone.setIdRegion(in.getIdRegion());
+		clone.setIdCommunauteCommune(in.getIdCommunauteDeCommunes());
+		clone.setIdCommune(in.getIdCommune());
 		return clone;
 	}
 	

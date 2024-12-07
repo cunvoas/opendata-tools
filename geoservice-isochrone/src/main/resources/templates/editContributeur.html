@@ -1,205 +1,180 @@
 <!DOCTYPE html>
-<html lang="fr" 
-	xmlns:th= "http://www.thymeleaf.org" 
-	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
-    <head th:insert="~{fragments/fragment-head :: head}"></head>
-    
-    <body class="sb-nav-fixed">
-    	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
-        <div id="layoutSidenav">
-    		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:insert="~{fragments/fragment-head :: head}"></head>
 
-            <div id="layoutSidenav_content" >
- <!-- debut MAIN -->
-                <main>
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<!-- debut MAIN -->
+			<main>
+				<div class="container">
+					<div class="col-lg-7">
+
+						<div class="container-fluid px-4">
+							<h3 class="mt-4" th:text="#{contributor.title}">title</h3>
+						</div>
+
+						<div class="row">
+							<form th:action="@{/mvc/management/contrib/edit}" th:object="${editContributeur}" method="post">
+
+								<div class="row mb-3">
+									<p th:if="${errorMessage}" th:class="error" th:text="${errorMessage}">Error</p>
+
+									<div class="col-md-6">
+										<div class="form-floating mb-3 mb-md-0">
+											<input class="form-control" required="required" id="login" name="login" type="text" th:attr="placeholder=#{contributor.nickname.placeholder}" th:field="*{login}" /> <label for="login"
+												th:text="#{contributor.nickname}">nickname</label>
+											<p th:if="${#fields.hasErrors('login')}" th:class="${#fields.hasErrors('login')}? error:invisibleError" th:errors="*{login}">Error</p>
+											<p th:if="${errorMsg_RG_LOGIN_EXISTS}" th:class="error" th:text="${errorMessage}">Error</p>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="form-floating">
+											<select class="form-control" required="required" id="role" name="role" th:field="*{role}">
+												<option value="" selected disabled th:text="#{contributor.role.placeholder}">Choose here</option>
+												<option th:value="'ASSOCIATION_CONSTRIBUTOR'" th:text="#{contributor.role.ASSOCIATION_CONSTRIBUTOR}"></option>
+												<option th:value="'ASSOCIATION_MANAGER'" th:text="#{contributor.role.ASSOCIATION_MANAGER}"></option>
+												<option th:value="'SUPPORT'" th:text="#{contributor.role.SUPPORT}"></option>
+												<option th:value="'JOURNALIST'" th:text="#{contributor.role.JOURNALIST}"></option>
+												<option th:value="'ADMINISTRATOR'" th:text="#{contributor.role.ADMINISTRATOR}"></option>
+											</select> <label for="role" th:text="#{contributor.role}">Role</label>
+											<p th:if="${#fields.hasErrors('role')}" th:class="${#fields.hasErrors('role')}? error:invisibleError" th:errors="*{role}">Error</p>
+										</div>
+									</div>
+								</div>
+
+								<div class="row mb-3">
+									<div class="col-md-6">
+										<div class="form-floating mb-3 mb-md-0">
+											<input class="form-control" id="prenom" name="prenom" type="text" th:attr="placeholder=#{contributor.firstname.placeholder}" th:field="*{prenom}" /> <label for="prenom"
+												th:text="#{contributor.firstname}">First name</label> <input id="id" name="id" type="hidden" th:field="*{id}" />
+											<p th:if="${#fields.hasErrors('prenom')}" th:class="${#fields.hasErrors('prenom')}? error:invisibleError" th:errors="*{prenom}">Error</p>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="form-floating">
+											<input class="form-control" id="nom" name="nom" type="text" th:attr="placeholder=#{contributor.lastname.placeholder}" th:field="*{nom}" /> <label for="nom"
+												th:text="#{contributor.lastname}">Last name</label>
+											<p th:if="${#fields.hasErrors('nom')}" th:class="${#fields.hasErrors('nom')}? error:invisibleError" th:errors="*{nom}">Error</p>
+										</div>
+									</div>
+								</div>
+
+								<div class="form-floating mb-3">
+									<input class="form-control" required="required" id="email" name="email" type="email" th:attr="placeholder=#{contributor.email.placeholder}" th:field="*{email}" /> <label for="email"
+										th:text="#{contributor.email}">Email address</label>
+									<p th:if="${#fields.hasErrors('email')}" th:class="${#fields.hasErrors('email')}? error:invisibleError" th:errors="*{email}">Error</p>
+									<p th:if="${errorMsg_RG_EMAIL_EXISTS}" th:class="error" th:text="${errorMessage}">Error</p>
+								</div>
+
+								<div class="form-floating mb-3">
+									<select class="form-select" required="required" id="idAsso" name="idAsso" th:field="*{idAsso}">
+										<option value="" selected disabled th:text="#{contributor.asso.placeholder}">Choose here</option>
+										<option th:each="asso : ${assos}" th:value="${asso.id}" th:text="${asso.nom}" th:selected="${asso.id==idAsso}"></option>
+									</select> <label for="idAsso" th:text="#{contributor.asso}">asso</label>
+									<p th:if="${#fields.hasErrors('idAsso')}" th:class="${#fields.hasErrors('idAsso')}? error:invisibleError" th:errors="*{idAsso}">Error</p>
+								</div>
 
 
-  <div class="container">
-     <div class="col-lg-7">
-     
-     		<div class="container-fluid px-4">
-                   <h3 class="mt-4" th:text="#{contributor.title}">title</h3>
-            </div>
-           
-       	    <div class="row">
-                <form th:action="@{/mvc/management/contrib/edit}" th:object="${editContributeur}" method="post">
-                    
-                    <div class="row mb-3">
-                        <p th:if="${errorMessage}" th:class="error" th:text="${errorMessage}" >Error</p>
-                        
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3 mb-md-0">
-                                <input class="form-control" required="required"  id="login" name="login" type="text" th:attr="placeholder=#{contributor.nickname.placeholder}" th:field="*{login}" />
-                                <label for="login" th:text="#{contributor.nickname}">nickname</label>
-                                <p th:if="${#fields.hasErrors('login')}" th:class="${#fields.hasErrors('login')}? error:invisibleError" th:errors="*{login}">Error</p>
-                                <p th:if="${errorMsg_RG_LOGIN_EXISTS}" th:class="error" th:text="${errorMessage}" >Error</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <select class="form-control" required="required" id="role" name="role" th:field="*{role}">
-                                    <option value="" selected disabled th:text="#{contributor.role.placeholder}">Choose here</option>
-                                    <option th:value="'ASSOCIATION_CONSTRIBUTOR'" th:text="#{contributor.role.ASSOCIATION_CONSTRIBUTOR}"></option>
-                                    <option th:value="'ASSOCIATION_MANAGER'" th:text="#{contributor.role.ASSOCIATION_MANAGER}"></option>
-                                    <option th:value="'SUPPORT'" th:text="#{contributor.role.SUPPORT}"></option>
-                                    <option th:value="'JOURNALIST'" th:text="#{contributor.role.JOURNALIST}"></option>
-                                    <option th:value="'ADMINISTRATOR'" th:text="#{contributor.role.ADMINISTRATOR}"></option>
-                                </select>
-                                <label for="role" th:text="#{contributor.role}">Role</label>
-                                <p th:if="${#fields.hasErrors('role')}" th:class="${#fields.hasErrors('role')}? error:invisibleError" th:errors="*{role}">Error</p>
-                            </div>
-                        </div>
-                    </div>
-                
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3 mb-md-0">
-                                <input class="form-control"  id="prenom" name="prenom"  type="text" th:attr="placeholder=#{contributor.firstname.placeholder}" th:field="*{prenom}" />
-                                <label for="prenom" th:text="#{contributor.firstname}">First name</label>
-                                <input id="id" name="id" type="hidden" th:field="*{id}" />
-                                <p th:if="${#fields.hasErrors('prenom')}" th:class="${#fields.hasErrors('prenom')}? error:invisibleError" th:errors="*{prenom}">Error</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input class="form-control"  id="nom" name="nom"  type="text" th:attr="placeholder=#{contributor.lastname.placeholder}"  th:field="*{nom}" />
-                                <label for="nom" th:text="#{contributor.lastname}">Last name</label>
-                                <p th:if="${#fields.hasErrors('nom')}" th:class="${#fields.hasErrors('nom')}? error:invisibleError" th:errors="*{nom}">Error</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-floating mb-3">
-                        <input class="form-control" required="required" id="email" name="email" type="email" th:attr="placeholder=#{contributor.email.placeholder}" th:field="*{email}" />
-                        <label for="email" th:text="#{contributor.email}">Email address</label>
-                        <p th:if="${#fields.hasErrors('email')}" th:class="${#fields.hasErrors('email')}? error:invisibleError" th:errors="*{email}">Error</p>
-                        <p th:if="${errorMsg_RG_EMAIL_EXISTS}" th:class="error" th:text="${errorMessage}" >Error</p>
-                    </div>
-                    
-                    <div class="form-floating mb-3">
-                        <select class="form-select" required="required"  id="idAsso" name="idAsso" th:field="*{idAsso}">
-                            <option value="" selected disabled th:text="#{contributor.asso.placeholder}">Choose here</option>
-                            <option th:each="asso : ${assos}" 
-                                th:value="${asso.id}" th:text="${asso.nom}" 
-                                th:selected="${asso.id==idAsso}"></option>
-                        </select>
-                        <label for="idAsso" th:text="#{contributor.asso}">asso</label>
-                        <p th:if="${#fields.hasErrors('idAsso')}" th:class="${#fields.hasErrors('idAsso')}? error:invisibleError" th:errors="*{idAsso}">Error</p>
-                    </div>
-                    
+								<div class="row">
+									<div class="col-12">
+										<p th:text="#{contributor.preset.location}" />
+									</div>
+								</div>
 
-	<div class="row">
-	    <div class="col-12"> <p th:text="#{contributor.preset.location}" /></div>
+								<div class="row  mb-3">
+									<!-- row commune -->
+
+									<div class="col-3">
+										<div class="card" style="text-align: center">
+											<!-- region -->
+											<div class="form-floating">
+												<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+													<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
+													<option th:each="region : ${regions}" th:value="${region.id}" th:text="${region.name}" th:selected="${region.id==idRegion}"></option>
+												</select> <label for="idRegion" th:text="#{entrance.region}">region</label>
+											</div>
+										</div>
+									</div>
+									<div class="col-3">
+										<div class="card" style="text-align: center">
+											<!-- comm2co -->
+											<div class="form-floating">
+												<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+													<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
+													<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+												</select> <label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
+											</div>
+
+										</div>
+									</div>
+									<div class="col-6">
+										<div class="card" style="text-align: center">
+											<label for="idCommune" th:text="#{entrance.commune}">ville</label>
+											<select class="form-select" id="idCommune" name="idCommune" th:field="*{idCommune}">
+												<!-- 
+												<option th:each="commune : ${communes}" th:value="${commune.id}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
+												 -->
+											</select>
+										</div>
+									</div>
+								</div>
+								<!-- row commune -->
+
+								<div class="row mb-3">
+									<div class="col-md-6">
+										<div class="form-floating mb-3 mb-md-0">
+											<input class="form-control" id="password" name="password" type="password" th:attr="placeholder=#{contributor.password.placeholder}" /> <label for="password"
+												th:text="#{contributor.password}">Password</label>
+											<p th:if="${#fields.hasErrors('password')}" th:class="${#fields.hasErrors('password')}? error:invisibleError" th:errors="*{password}">Error</p>
+											<p th:if="${errorMsg_RG_PWD_NOT_SAFE}" th:class="error" th:text="${errorMessage}">Error</p>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="form-floating mb-3 mb-md-0">
+											<input class="form-control" id="passwordConfirm" name="passwordConfirm" type="password" th:attr="placeholder=#{contributor.confirmPassword.placeholder}" /> <label for="passwordConfirm"
+												th:text="#{contributor.confirmPassword}">Confirm Password</label>
+										</div>
+									</div>
+								</div>
+								<div class="mt-4 mb-0">
+									<div class="d-grid">
+										<input class="btn btn-primary btn-block" type="submit" th:value="#{contributor.submit}" />
+									</div>
+								</div>
+								<div class="mt-4 mb-0">
+									<div class="d-grid">
+										<p></p>
+									</div>
+								</div>
+
+								<div class="mt-4 mb-0" th:if="${#authentication.getPrincipal().getId()}==*{id}">
+									<div class="d-grid">
+										<p th:text="#{contributor.resetPasswpord.text}">reset pwd</p>
+										<input class="btn btn-primary btn-block" type="button" th:value="#{contributor.resetPasswpord}" onclick="resetPwd()" />
+									</div>
+								</div>
+
+							</form>
+						</div>
+					</div>
+				</div>
+			</main>
+			<!-- fin MAIN -->
+
+			<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+		</div>
+
 	</div>
+	<div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
 
-   <div class="row  mb-3"> <!-- row commune -->
-         
-       <div class="col-3">
-           <div class="card" style="text-align: center">
-              <!-- region -->
-                  <div class="form-floating">
-                      <select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
-                          <option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
-                          <option th:each="region : ${regions}" 
-                              th:value="${region.id}" 
-                              th:text="${region.name}" 
-                              th:selected="${region.id==idRegion}"></option>
-                      </select>
-                      <label for="idRegion" th:text="#{entrance.region}">region</label>
-                  </div>
-              </div>
-       </div>
-       <div class="col-3">
-           <div class="card" style="text-align: center">
-                  <!-- comm2co -->
-                  <div class="form-floating">
-                     <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
-                          <option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
-                          <option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
-                     </select>
-                     <label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
-                  </div>
-                  
-           </div>
-       </div>
-       <div class="col-6">
-           <div class="card" style="text-align: center">
-                 <!-- commune  
-                  <div class="form-floating" style="display:none">
-                      <select class="form-select select2-single" id="idCommune" name="idCommune" th:field="*{idCommune}">
-                           <option th:each="commune : ${communes}" th:value="${commune.id}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
-                      </select>
-                      <label for="idCommune" th:text="#{entrance.commune}">ville</label>
-                 </div>
-                -->
-                 
-                   <div class="">
-                      <select class="form-select select2-single" id="idCommune" name="idCommune" th:field="*{idCommune}">
-                      <option th:each="commune : ${communes}" th:value="${commune.id}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
-                      </select>
-                      <label for="idCommune" th:text="#{entrance.commune}">ville</label>
-                 </div> 
-           </div>
-       </div>
-   </div> <!-- row commune -->
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
 
+	<script th:inline="javascript">  
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3 mb-md-0">
-                                <input class="form-control" id="password" name="password" type="password" th:attr="placeholder=#{contributor.password.placeholder}" />
-                                <label for="password" th:text="#{contributor.password}">Password</label>
-                                <p th:if="${#fields.hasErrors('password')}" th:class="${#fields.hasErrors('password')}? error:invisibleError" th:errors="*{password}">Error</p>
-                                <p th:if="${errorMsg_RG_PWD_NOT_SAFE}" th:class="error" th:text="${errorMessage}" >Error</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3 mb-md-0">
-                                <input class="form-control" id="passwordConfirm" name="passwordConfirm" type="password" th:attr="placeholder=#{contributor.confirmPassword.placeholder}" />
-                                <label for="passwordConfirm" th:text="#{contributor.confirmPassword}">Confirm Password</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-4 mb-0">
-                        <div class="d-grid">
-                        	<input class="btn btn-primary btn-block" type="submit" th:value="#{contributor.submit}"/>
-                        </div>
-                    </div>
-                    <div class="mt-4 mb-0">
-                        <div class="d-grid">
-                            <p></p>
-                        </div>
-                    </div>
-                   
-                    <div class="mt-4 mb-0" th:if="${#authentication.getPrincipal().getId()}==*{id}">
-                        <div class="d-grid">
-                            <p th:text="#{contributor.resetPasswpord.text}">reset pwd</p>
-                            <input class="btn btn-primary btn-block" type="button" th:value="#{contributor.resetPasswpord}" onclick="resetPwd()" />
-                        </div>
-                    </div>
-                    
-                    
-                    
-      
-      
-                </form>
-            </div>
-
-        
-     </div>
-  </div>
-                </main>
- <!-- fin MAIN -->
-               
-               <div th:insert="~{fragments/fragment-footer :: footer}"></div> 
-            </div>
-            
-        </div>
-        <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
-
-        <script th:src="@{/mvc/static/js/scripts.js}"></script>
-        
-<script th:inline="javascript">  
    function resetPwd() {
        if (confirm([[#{contributor.resetPasswpord.text}]])) {
            sUrl= window.location.protocol + "//" + window.location.host + [[@{/mvc/management/contrib/resetMyPassword}]];
@@ -221,7 +196,7 @@
 	            $.ajax({
 	                type:'GET',
 	                url: [[@{/mvc/ajax/dropdown/search_c2c}]],
-	                data:'mode=reg&r='+r ,  //+"&q="+label,
+	                data: 'mode=reg&r='+r ,  //+"&q="+label,
 	                success:function(jsonResp){
 	                	var data = $.map(jsonResp, function (obj) {
 	                		  obj.text = obj.text || obj.name; // replace name with the property used for the text
@@ -244,7 +219,7 @@
 	        	//$('#idCommune').html('<option value="">Sélectionner la communauté de communes en premier.</option>'); 
 	        }
 	    });  // on idRegion
-	    
+	
 	    
 	    $('#idCommunauteDeCommunes').on('change', function(){
             console.log("change CommunauteDeCommunes");
@@ -275,33 +250,40 @@
 	    
  // https://select2.org/data-sources/ajax
     $("#idCommune").select2({
-    	ajax: {
-    		delay: 300,
-    		language: "fr"
-    		placeholder: 'Choisir une commune',
-	   		 minimumInputLength: 2,
-	         url: function (params) {
-	             console.log("change Commune select2");
-	             var idRegion=document.getElementById('idRegion');
-	             var r = idRegion.options[idRegion.selectedIndex].value;
-	             var idCommunauteDeCommunes=document.getElementById('idCommunauteDeCommunes');
-	             var c = idCommunauteDeCommunes.options[idCommunauteDeCommunes.selectedIndex].value;
-	             console.log('search ?mode=city&r='+r +'&c='+c  +'&q='+ params.term);
-	             //console.log(params.term);
-	             return  [[@{/mvc/ajax/dropdown/search_city}]] +'?mode=city&r='+r +'&c='+c+'&q1='+ params.term;
-	           },
-	           
-            dataType: 'json' ,
-            processResults: function (data) {
-           	return {
-                    "results":data
-                  };  
-            }
-        }
+		ajax: {
+			delay: 350,
+			language: "fr",
+			placeholder: 'Choisir une commune',
+			minimumInputLength: 2,
+			url: function (params) {
+			    console.log("select2 change Commune ");
+			    var idRegion=document.getElementById('idRegion');
+			    var r = idRegion.options[idRegion.selectedIndex].value;
+			    var idCommunauteDeCommunes=document.getElementById('idCommunauteDeCommunes');
+			    var c = idCommunauteDeCommunes.options[idCommunauteDeCommunes.selectedIndex].value;
+			    console.log('search ?mode=city&r='+r +'&c='+c  +'&q='+ params.term);
+			    return  [[@{/mvc/ajax/dropdown/search_city}]] +'?mode=city&r='+r +'&c='+c+'&q1='+ params.term;
+			},
+			dataType: 'json',
+			processResults: function (data) {
+				return {
+			         "results": data
+			       };  
+			},
+		 }
 
-    }); // select2 commune
-    
-   });  // ready
+	}); // select2 commune
+
+	// selected item in option list fails
+	var idC=[[${idCommune}]];
+	if (typeof idC === 'number') {
+		var txtC=[[${txtCommune}]];
+		var newOption = new Option(txtC, idC, true, true);
+	    $('#idCommune').append(newOption).trigger('change');
+	}
+	    
+  });  // doc ready
+	
 </script>
-    </body>
+</body>
 </html>

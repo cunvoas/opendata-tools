@@ -313,8 +313,10 @@ public class ParkNewControler {
 			form.autoLocate();
 			
 			Coordinate location = serviceReadReferences.getCoordinate(form.getIdCommune());
-			form.setMapLng(String.valueOf(location.getX()));
-			form.setMapLat(String.valueOf(location.getY()));
+			if (location!=null) {
+				form.setMapLng(String.valueOf(location.getX()));
+				form.setMapLat(String.valueOf(location.getY()));
+			}
 		}
 		
 		// Populate Selection List

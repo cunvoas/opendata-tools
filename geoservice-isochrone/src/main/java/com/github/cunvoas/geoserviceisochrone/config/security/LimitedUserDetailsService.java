@@ -18,7 +18,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 @Service("userDetailsService")
 public class LimitedUserDetailsService  implements UserDetailsService {
 	
-	@Value("application.security.timehack")
+	@Value("${application.security.timehack:1000}")
 	private Long timeHack=1000L;
  
 	@Autowired

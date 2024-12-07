@@ -334,6 +334,20 @@
 		</plugins>
 	</build>
 	<profiles>
+		
+		<!-- code analysis -->
+		<profile>
+			<id>SONAR</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+            <properties>
+                <!-- Optional URL to server. Default value is http://localhost:9000 -->
+                <sonar.host.url>http://localhost:9000</sonar.host.url>
+            </properties>
+			
+		</profile>
+		
 		<!-- deps analysis for security -->
 		<profile>
 			<id>OWASP</id>

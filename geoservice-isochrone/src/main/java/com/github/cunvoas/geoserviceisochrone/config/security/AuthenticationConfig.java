@@ -31,9 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthenticationConfig {
 	
-	//@TODO
-	//https://docs.spring.io/spring-security/site/docs/4.2.20.RELEASE/guides/html5/form-javaconfig.html#configuring-a-custom-login-page
-	
 	private final ApplicationSecurityProperties customProps;
 	public AuthenticationConfig(ApplicationSecurityProperties customProps) {
 		super();
@@ -49,24 +46,6 @@ public class AuthenticationConfig {
 	    return new RequestContextListener();
 	} 
 		
-//	@Bean
-//	@Order(10)                                                        
-//	public SecurityFilterChain monitorFilterChain(HttpSecurity http) throws Exception {
-//		return http
-//				.securityMatcher(
-//		            "/awake",
-//		          	"/health",
-//		          	"/info",
-//		          	"/prometheus",
-//		            "/actuator/prometheus"
-//		          )                             
-//				.authorizeHttpRequests(localNetworkAuthenticationFilter -> localNetworkAuthenticationFilter
-//					.anyRequest()
-//					.authenticated()
-//				)
-////				.formLogin(withDefaults())
-//			.build();
-//	}
 
 	
 	@Bean

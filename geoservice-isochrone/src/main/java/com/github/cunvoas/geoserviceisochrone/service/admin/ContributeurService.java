@@ -86,6 +86,11 @@ public class ContributeurService {
 			
 			// change the password here
 			if (StringUtils.isNotEmpty(contributeur.getPassword())) {
+				
+				if (!passwordService.isSafe(contributeur.getPassword())) {
+					throw new ExceptionAdmin(ExceptionAdmin.RG_PWD_NOT_SAFE);
+				}
+				
 				toBeSaved.setPassword(
 						passwordService.securizePassword(contributeur.getPassword())
 					);
@@ -151,6 +156,10 @@ public class ContributeurService {
 		toBeSaved.setEmail(contributeur.getEmail());
 		toBeSaved.setAssociation(contributeur.getAssociation());
 		
+		toBeSaved.setIdRegion(contributeur.getIdRegion());
+		toBeSaved.setIdCommunauteCommune(contributeur.getIdCommunauteCommune());
+		toBeSaved.setIdCommune(contributeur.getIdCommune());
+		
 		log.warn(""+toBeSaved.getPassword().length());
 		toBeSaved = contributeurRepository.save(toBeSaved);
 		
@@ -163,9 +172,10 @@ public class ContributeurService {
 			emailSender.sendPassword(toBeSaved.getEmail(), toBeSaved.getFullName(), myPassword);
 		}
 		myPassword=null;
+		
 		// IMPORTANT clear password on memory
-		// not works with open-in-view
-		// toBeSaved.setPassword(null);
+		// fails with open-in-view
+		// //toBeSaved.setPassword(null);
 		return toBeSaved;
 	}
 
