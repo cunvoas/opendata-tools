@@ -28,6 +28,7 @@ public class FormParkEdit extends AbstractFormLocate {
 	
 	private String nomParc;
 	private Long surface;
+	private Long surfaceContour;
 	private Boolean computeNeeded=Boolean.FALSE;
 	
 	

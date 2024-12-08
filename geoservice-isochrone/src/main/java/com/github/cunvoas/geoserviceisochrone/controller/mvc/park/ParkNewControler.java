@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkEdit;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
@@ -134,6 +133,12 @@ public class ParkNewControler {
 		pj.setType(form.getType());
 		pj.setSousType(form.getSousType());
 		
+		pj.setSurface(form.getSurface());
+
+		pj.setDateDebut(form.getDateDebut());
+		pj.setDateFin(form.getDateFin());
+		
+		pj.setTypeId(form.getTypeId());
 		
 		String sGeom = form.getSGeometry();
 		try {
@@ -283,8 +288,8 @@ public class ParkNewControler {
 			Coordinate location = serviceReadReferences.getCoordinate(form.getIdCommune());
 			form.setMapLng(String.valueOf(location.getX()));
 			form.setMapLat(String.valueOf(location.getY()));
-			
 		}
+		
 		form.setName(pj.getName());
 		form.setQuartier(pj.getQuartier());
 		form.setType(pj.getType());
@@ -292,8 +297,12 @@ public class ParkNewControler {
 		form.setSource(pj.getSource());
 		form.setStatus(pj.getStatus().name());
 		
+		form.setDateDebut(pj.getDateDebut());
+		form.setDateFin(pj.getDateFin());
+		form.setTypeId(pj.getTypeId());
 		
-		form.setSurface(pj.getSurface());	
+		form.setSurface(pj.getSurface());
+		form.setSurfaceContour(pj.getSurfaceContour());	
 		return getForm(form, model);
 	}
 	

@@ -159,6 +159,18 @@
 				</div>
 				<div class="card border" style="text-align: center">
 					<div class="form-floating">
+						<input class="form-control" type="date" id="dateDebut" name="dateDebut" th:field="*{dateDebut}" />
+						<label class="form-label" for="dateDebut" th:text="#{park.dateDebut}">dateDebut</label>
+					</div>
+				</div>
+				<div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="date" id="dateFin" name="dateFin" th:field="*{dateFin}" />
+						<label class="form-label" for="dateFin" th:text="#{park.dateFin}">dateFin</label>
+					</div>
+				</div>
+				<div class="card border" style="text-align: center">
+					<div class="form-floating">
 						<input class="form-control" type="text" id="type" name="type" th:field="*{type}" /> <label class="form-label" for="type" th:text="#{entrance.type}">type</label>
 					</div>
 				</div>
@@ -170,28 +182,53 @@
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
                         <input class="form-control" type="text" id="surface" name="surface" 
-                        th:field="*{surface}" 
-                        disabled="disabled"  />
+                        th:field="*{surface}"  />
                         
                         <label class="form-label" for="surface" th:text="#{entrance.surface}">surface</label>
                     </div>
                 </div>
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
-                        <input class="form-control" type="text" id="source" name="source" th:field="*{source}"  />
+                        <input class="form-control" type="text" id="surfaceContour" name="surfaceContour" 
+                        th:field="*{surfaceContour}" 
+                        disabled="disabled"  />
+                        
+                        <label class="form-label" for="surfaceContour" th:text="#{entrance.surfaceContour}">surfaceContour</label>
+                    </div>
+                </div>
+                
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+						<select class="form-select" required="required" id="typeId" name="typeId" th:field="*{typeId}">
+							<option value="" th:text="#{park.parkType.placeholder}">Choose here</option>
+							<option th:each="parkType : ${parkTypes}" 
+									th:value="${parkType.id}" 
+									th:text="${parkType.label}" 
+									th:selected="${parkType.id==typeId}"
+									th:attr="data-oms=${parkType.oms},data-strict=${parkType.strict}"
+									></option>
+						</select>
+						<label for="idAsso" th:text="#{park.typeId}">typeId</label>
+				        <!-- TODO parkTypes -->
+                    </div>
+                </div>
+                
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="source" name="source" th:field="*{source}"  disabled="disabled"  />
                         <label class="form-label" for="source" th:text="#{park.source}">source</label>
                     </div>
                 </div>
                 
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
-                        <input class="form-control" type="text" id="status" name="status" th:field="*{status}"  />
+                        <input class="form-control"  type="text" id="status" name="status" th:field="*{status}" disabled="disabled" />
                         <label class="form-label" for="status" th:text="#{park.status}">idStatus</label>
                         <!-- TODO parkTypes -->
                     </div>
                 </div>
                 
-
+				
 			</div>
 		</div>
 
@@ -206,7 +243,7 @@
         
         
             <!-- TODO: make the filter later -->
-            <div class="col-6" style="display: block;"> 
+            <div class="col-6" style="display: none;"> 
                 <div  style="text-align: left">
                  <h6 class="mt-12" th:text="#{park.filter}">title</h6>
 	             <input type="radio" id="filterValid" name="filterPark" value="VALID" class="form-check-input" onchange="filterChange('VALID');" />

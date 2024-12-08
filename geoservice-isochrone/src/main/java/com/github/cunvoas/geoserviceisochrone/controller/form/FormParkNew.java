@@ -1,5 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.controller.form;
 
+import java.util.Date;
 import java.util.List;
 
 import org.locationtech.jts.geom.Point;
@@ -50,17 +51,23 @@ public class FormParkNew extends AbstractFormLocate{
 	private String hierarchie;
 	private String type;
 	private String sousType;
+	private Date dateDebut;
+	private Date dateFin;
+	
 	private Boolean ouverturePermanente = Boolean.TRUE;
 	private Boolean aireJeux = Boolean.FALSE;
 	
 	private String adresse;
 	@NumberFormat(pattern = "#,##0.0", style=Style.NUMBER)
 	private Double surface;
+	private Double surfaceContour;
+	
 	private Point coordonnee;
 	
 	private String sGeometry;
 	private String etatAction;
 	private String etat;
+	private Long typeId;
 	
 	private ParcSourceEnum source = ParcSourceEnum.OPENDATA;
 	

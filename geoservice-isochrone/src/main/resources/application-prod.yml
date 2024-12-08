@@ -14,6 +14,9 @@ spring:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+  thymeleaf:
+    cache: true
+    enable-spring-el-compiler: true
 
 web:
   cors:

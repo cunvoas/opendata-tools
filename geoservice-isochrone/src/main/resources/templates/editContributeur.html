@@ -278,8 +278,8 @@
 	var idC=[[${idCommune}]];
 	if (typeof idC === 'number') {
 		var txtC=[[${txtCommune}]];
-		var newOption = new Option(txtC, idC, true, true);
-	    $('#idCommune').append(newOption).trigger('change');
+		var selectedCity = new Option(txtC, idC, true, true);
+	    $('#idCommune').append(selectedCity).trigger('change');
 	}
 	    
   });  // doc ready

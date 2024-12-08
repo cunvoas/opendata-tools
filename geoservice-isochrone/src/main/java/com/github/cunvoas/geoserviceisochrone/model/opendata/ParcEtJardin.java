@@ -2,9 +2,12 @@ package com.github.cunvoas.geoserviceisochrone.model.opendata;
 
 import java.util.Date;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.springframework.format.annotation.NumberFormat;
+
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -50,6 +53,10 @@ public class ParcEtJardin {
 	@NumberFormat(pattern = "#,##0.0")
 	@Column(name = "surface")
 	private Double surface;
+
+	@NumberFormat(pattern = "#,##0.0")
+	@Column(name = "surface_contour")
+	private Double surfaceContour;
 	
 	@Column(name = "coordonnee")
 	private Point coordonnee;
@@ -64,12 +71,8 @@ public class ParcEtJardin {
 	@Column(name="date_fin")
 	private Date dateFin;
 	
-	/*
-	@ManyToOne
-	@JoinColumn( name="type_id", nullable = true)
-	private ParkType typeId;
-	*/
-	
+	@Column( name="type_id", nullable = true )
+	private Long typeId;
 	
 	public String getLat() {
 		if (coordonnee!=null) {

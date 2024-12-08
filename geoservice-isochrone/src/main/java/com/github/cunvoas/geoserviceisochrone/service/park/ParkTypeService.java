@@ -22,7 +22,6 @@ public class ParkTypeService {
 	@Autowired
 	private ParkJardinRepository parkJardinRepository;
 	
-	
 	@Autowired
 	private ResourceBundleMessageSource messageSource;
 	
