@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,6 +18,11 @@ public class Association {
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_asso")
+    @SequenceGenerator(
+    		name="seq_asso",
+    		allocationSize=1,
+    		initialValue = 1
+    	)
 	private Long id;
 	
 	private String nom;

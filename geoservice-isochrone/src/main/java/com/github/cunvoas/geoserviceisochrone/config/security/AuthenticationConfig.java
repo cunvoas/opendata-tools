@@ -1,7 +1,5 @@
 package com.github.cunvoas.geoserviceisochrone.config.security;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,9 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthenticationConfig {
 	
-	//@TODO
-	//https://docs.spring.io/spring-security/site/docs/4.2.20.RELEASE/guides/html5/form-javaconfig.html#configuring-a-custom-login-page
-	
 	private final ApplicationSecurityProperties customProps;
 	public AuthenticationConfig(ApplicationSecurityProperties customProps) {
 		super();
@@ -51,68 +46,33 @@ public class AuthenticationConfig {
 	    return new RequestContextListener();
 	} 
 		
-//	@Bean
-//	@Order(10)                                                        
-//	public SecurityFilterChain monitorFilterChain(HttpSecurity http) throws Exception {
-//		return http
-//				.securityMatcher(
-//		            "/awake",
-//		          	"/health",
-//		          	"/info",
-//		          	"/prometheus",
-//		            "/actuator/prometheus"
-//		          )                             
-//				.authorizeHttpRequests(localNetworkAuthenticationFilter -> localNetworkAuthenticationFilter
-//					.anyRequest()
-//					.authenticated()
-//				)
-//				.formLogin(withDefaults())
-//			.build();
-//	}
 
-	
-	
-	@Bean
-	@Order(2)                                                        
-	public SecurityFilterChain geoFilterChain(HttpSecurity http) throws Exception {
-		return http
-				.securityMatcher("/map/**")                                   
-				.authorizeHttpRequests(authorize -> authorize
-						.anyRequest()
-						.permitAll()
-					)
-			.build();
-	}
-	
 	
 	@Bean
 	@Order(1)                                                        
 	public SecurityFilterChain mvcFilterChain(HttpSecurity http) throws Exception {
 		return http
-				.securityMatcher("/mvc/**")                                   
-				.authorizeHttpRequests(authorize -> authorize
-					.anyRequest()
-					.authenticated()
+				 .authorizeHttpRequests(authorizeRequests ->
+		                 authorizeRequests
+		                         .requestMatchers(
+		             			        "/awake",
+		            		            "/login",
+		            		            "/logout",
+		            		            "/favicon.ico",
+		                        		"/pub/**",
+		                        		"/map/**").permitAll()
+		                         .anyRequest().authenticated()
+		         )
+				.formLogin(form->form
+						.loginPage("/login")
+						.permitAll()
 				)
-				.formLogin(withDefaults())
-			.build();
-	}
-	
-	@Bean       
-	@Order(0)                                                        
-	public SecurityFilterChain freeFilterChain(HttpSecurity http) throws Exception {
-		return
-			http
-				.securityMatcher(
-			        "/awake",
-		            "/login",
-		            "/logout",
-		            "/favicon.ico")                             
-				.authorizeHttpRequests(authorize -> authorize
-					.anyRequest()
-					.permitAll()
+				.logout(logout->logout
+						.logoutSuccessUrl("/logout?m=logout")
+						.permitAll()
 				)
-				.formLogin(withDefaults())
+				
+//			   .rememberMe(Customizer.withDefaults())
 			.build();
 	}
 

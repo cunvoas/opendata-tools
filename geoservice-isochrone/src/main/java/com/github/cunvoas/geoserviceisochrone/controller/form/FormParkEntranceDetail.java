@@ -9,8 +9,10 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class FormParkEntranceDetail {
 	
 	public FormParkEntranceDetail() {
@@ -62,7 +64,7 @@ public class FormParkEntranceDetail {
 	private String description;
 	private Date ignDate;
 	@Temporal(TemporalType.DATE)
-	@DateTimeFormat (pattern="dd-MM-YYYY hh:mm:ss")
+	@DateTimeFormat (pattern="dd-MM-YYYY HH:mm:ss")
 	private Date updateDate;
 	private String entranceLink;
 	private Double entranceLat;

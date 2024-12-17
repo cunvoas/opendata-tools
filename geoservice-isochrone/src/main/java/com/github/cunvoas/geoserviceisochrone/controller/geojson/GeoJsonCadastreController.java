@@ -22,7 +22,7 @@ public class GeoJsonCadastreController {
     @Autowired
     private GeoMapServiceV2 geoMapService;
     
-    @CrossOrigin(origins = {"http://localhost:8081", "https://autmel-maps.duckdns.org/"})
+    @CrossOrigin 
     @GetMapping("/area")
     public GeoJsonRoot getCadastreByArea(
 			@RequestParam("swLat") Double swLat,
@@ -34,10 +34,17 @@ public class GeoJsonCadastreController {
     }
     
     
-    @CrossOrigin(origins = {"http://localhost:8081", "https://autmel-maps.duckdns.org/"})
+    @CrossOrigin 
     @GetMapping("/area/{id}")
     public GeoJsonRoot getCadastreByCom2Com(@PathVariable ("id")Long id) {
     	 return geoMapService.findAllCadastreByComm2Co(id);
+	}
+    
+
+    @CrossOrigin 
+    @GetMapping("/area/city/{id}")
+    public GeoJsonRoot getCadastreByCity(@PathVariable ("id")Long id) {
+    	 return geoMapService.findCadastreByCity(id);
 	}
 
 }

@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
@@ -85,9 +86,21 @@ public class ContributeurService {
 			
 			// change the password here
 			if (StringUtils.isNotEmpty(contributeur.getPassword())) {
+				
+				if (!passwordService.isSafe(contributeur.getPassword())) {
+					throw new ExceptionAdmin(ExceptionAdmin.RG_PWD_NOT_SAFE);
+				}
+				
 				toBeSaved.setPassword(
 						passwordService.securizePassword(contributeur.getPassword())
 					);
+				
+				// load for email info
+				Contributeur contribConnected =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+				if (!contribConnected.getId().equals(toBeSaved.getId())) {
+					newPassword=true;
+					myPassword = contributeur.getPassword();
+				}
 			}
 			
 		} else {
@@ -105,21 +118,22 @@ public class ContributeurService {
 			toBeSaved.setId(null);
 			toBeSaved.setCreationDate(new Date());
 			
-			
-			// generate only in creation
-			if (!pwdGenNeeded) {
+			// change the password here
+			if (StringUtils.isNotEmpty(contributeur.getPassword())) {
 				
 				if (!passwordService.isSafe(contributeur.getPassword())) {
 					throw new ExceptionAdmin(ExceptionAdmin.RG_PWD_NOT_SAFE);
 				}
-				
 				toBeSaved.setPassword(
 						passwordService.securizePassword(contributeur.getPassword())
 					);
+				newPassword=true;
+				myPassword = contributeur.getPassword();
+			} else {
+				pwdGenNeeded=true;
 			}
 		}
 		
-		// generate in reset case
 		if (pwdGenNeeded) {
 			newPassword=true;
 			String newPass = passwordService.generatePassword(20);
@@ -128,6 +142,7 @@ public class ContributeurService {
 					passwordService.securizePassword(newPass)
 				);
 		}
+		
 		
 		toBeSaved.setUpdateDate(new Date());
 		toBeSaved.setNom(contributeur.getNom());
@@ -141,6 +156,10 @@ public class ContributeurService {
 		toBeSaved.setEmail(contributeur.getEmail());
 		toBeSaved.setAssociation(contributeur.getAssociation());
 		
+		toBeSaved.setIdRegion(contributeur.getIdRegion());
+		toBeSaved.setIdCommunauteCommune(contributeur.getIdCommunauteCommune());
+		toBeSaved.setIdCommune(contributeur.getIdCommune());
+		
 		log.warn(""+toBeSaved.getPassword().length());
 		toBeSaved = contributeurRepository.save(toBeSaved);
 		
@@ -152,10 +171,11 @@ public class ContributeurService {
 			log.error("send email with password");
 			emailSender.sendPassword(toBeSaved.getEmail(), toBeSaved.getFullName(), myPassword);
 		}
+		myPassword=null;
 		
 		// IMPORTANT clear password on memory
-		// not works with open-in-view
-		// toBeSaved.setPassword(null);
+		// fails with open-in-view
+		// //toBeSaved.setPassword(null);
 		return toBeSaved;
 	}
 

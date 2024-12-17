@@ -11,10 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -151,9 +149,6 @@ public class EmailSender {
 	private String readTemplate(String tpl) {
 		log.info("mailjet/"+tpl);
 		try {
-//			File f = ResourceUtils.getFile("classpath:mailjet/"+tpl);
-//			Path theTpl = Paths.get(f.getAbsolutePath();
-			
 			Path theTpl = this.getFilePath("mailjet/"+tpl);
 			
 			byte[] bytes = Files.readAllBytes(theTpl);
@@ -175,15 +170,7 @@ public class EmailSender {
 	 * @param template
 	 * @param values
 	 * @return
-	 * @deprecated
-	 * @see https://stackoverflow.com/questions/25796111/java-ee-method-to-replace-dollar-sign-variables-with-custom-string
 	 */
-	private String applyData(String template, List<String> values) {
-		String message=new String(template);
-		message = MessageFormat.format(message, values.toArray());
-		return message;
-	}
-	
 	public String applyData(String template, Map<String, String> values) {
 		String ret = new String(template);
 		for (Entry<String, String> entry : values.entrySet()) {

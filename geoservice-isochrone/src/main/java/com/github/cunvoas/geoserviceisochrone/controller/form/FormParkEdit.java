@@ -11,8 +11,10 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class FormParkEdit extends AbstractFormLocate {
 
 	private Long idPark;//parcEtJardin
@@ -26,6 +28,7 @@ public class FormParkEdit extends AbstractFormLocate {
 	
 	private String nomParc;
 	private Long surface;
+	private Long surfaceContour;
 	private Boolean computeNeeded=Boolean.FALSE;
 	
 	

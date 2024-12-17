@@ -1,7 +1,5 @@
 package com.github.cunvoas.geoserviceisochrone.config.hardening;
 
-
-
 import org.apache.catalina.Container;
 import org.apache.catalina.core.StandardHost;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;

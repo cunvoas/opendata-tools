@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 
 @Data
@@ -21,6 +22,11 @@ public class City implements Comparator<City> {
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_city")
+    @SequenceGenerator(
+    		name="seq_city",
+    		allocationSize=1,
+    		initialValue = 1
+    	)
 	private Long id;
 
 	@Column(name = "name")

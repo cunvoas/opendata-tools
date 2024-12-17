@@ -25,7 +25,7 @@ public class PasswordService {
 	
 	// https://uibakery.io/regex-library/password
 	// https://mkyong.com/regular-expressions/how-to-validate-password-with-regular-expression/
-	private static final String CHECK_REGEX= "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!µ@#&()–[{}]:;',?/*~$^+=<>]).{8,}$";
+	private static final String CHECK_REGEX= "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!µ@#&()–[{}]:;',?/*~$^+=<>]).{12,}$";
 	public Boolean isSafe(String newPass) {
 		Boolean ret = Boolean.FALSE;
 		if (newPass.matches(CHECK_REGEX)) {

@@ -1,7 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.model;
 
 import lombok.Data;
-import lombok.ToString;
 
 /**
  * @author cus

@@ -3,8 +3,10 @@ package com.github.cunvoas.geoserviceisochrone.controller.form;
 import java.util.Date;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class FormParkListItem extends AbstractFormLocate{
 
 	private Long idPark;

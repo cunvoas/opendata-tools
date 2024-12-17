@@ -12,7 +12,6 @@ import org.apache.coyote.ActionCode;
 import org.apache.tomcat.util.ExceptionUtils;
 import org.springframework.http.MediaType;
 
-// Converting this to Kotlin results in this class not being used.
 /**
  * @see https://www.springcloud.io/post/2022-07/spring-boot-hardening/#gsc.tab=0
  */
@@ -54,7 +53,7 @@ public class CustomErrorReportValve extends ErrorReportValve {
             if (writer != null) {
                 // If writer is null, it's an indication that the response has
                 // been hard committed already, which should never happen
-                writer.write("<!doctype html><html lang=\"en\"><title>error</title><body>Ups! " + statusCode + "</body></html>");
+                writer.write("<!doctype html><html lang=\"fr\"><title>error</title><body>Oups! " + statusCode + "</body></html>");
                 response.finishResponse();
             }
         } catch (IOException | IllegalStateException e) {

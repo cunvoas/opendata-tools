@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 
 @Data
@@ -22,6 +23,11 @@ public class ParcEtJardin {
 	@Id
 	@Column(name = "identifiant")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_mel_park")
+    @SequenceGenerator(
+    		name="seq_mel_park",
+    		allocationSize=1,
+    		initialValue = 1
+    	)
 	private Long id;
 
 	@Column(name = "nom_parc", length = 50)
@@ -47,9 +53,13 @@ public class ParcEtJardin {
 	@Column(name = "adresse", length = 100)
 	private String adresse;
 
-	@NumberFormat(pattern = "#,##0")
+	@NumberFormat(pattern = "#,##0.0")
 	@Column(name = "surface")
 	private Double surface;
+
+	@NumberFormat(pattern = "#,##0.0")
+	@Column(name = "surface_contour")
+	private Double surfaceContour;
 	
 	@Column(name = "coordonnee")
 	private Point coordonnee;
@@ -63,6 +73,12 @@ public class ParcEtJardin {
 	
 	@Column(name="date_fin")
 	private Date dateFin;
+	
+	@Column( name="type_id", nullable = true )
+	private Long typeId;
+
+	@Column(name = "oms_custom")
+	private Boolean omsCustom;
 	
 	public String getLat() {
 		if (coordonnee!=null) {

@@ -14,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 
 @Data
@@ -26,6 +27,11 @@ public class ParkEntrance {
         	    strategy = GenerationType.SEQUENCE,
         	    generator = "seq_park_entrance"
         	)
+        @SequenceGenerator(
+        		name="seq_park_entrance",
+        		allocationSize=1,
+        		initialValue = 1
+        	)
         private long id;
         
         @ManyToOne
@@ -33,7 +39,7 @@ public class ParkEntrance {
         private ParkArea parkArea;
 
         // JSON response
-        @Column(name="ign_response", length=4000)
+        @Column(name="ign_response", length=10000)
         private String ignReponse;
 
         @Column(name="update_date")

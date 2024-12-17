@@ -113,4 +113,14 @@ public class InseeCarre200mComputedV2 {
 	@Column(name="parc_comment",length=500)
 	private String comments;
 	
+	
+	// Réf : Tarzia V. European  Common Indicators - Towars a Local Sustainability Profile. Milan, Italie: Ambiante Italia Research Institute; 2003.
+	// au moins un parc 5000 m² à 300m en zone dense
+
+	@Column(name = "sustainable_park_is")
+	private Boolean isSustainablePark = Boolean.FALSE;
+	
+	@Column(name="sustainable_park_pop", precision = 12, scale = 2)
+	private BigDecimal populationWithSustainablePark;
+	
 }

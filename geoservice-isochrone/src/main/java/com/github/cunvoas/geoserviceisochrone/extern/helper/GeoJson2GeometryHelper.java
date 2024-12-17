@@ -53,21 +53,23 @@ public class GeoJson2GeometryHelper {
 		
 		//JSonNode of geometry
 		List<JsonNode> geometryNodes = rootNode.findValues("geometry");
-
-		int i=0;
-		boolean many = geometryNodes.size()>1;
-		Polygon[] polys = new Polygon [geometryNodes.size()];
 		
-		for (JsonNode geometryNode : geometryNodes) {
-			Polygon poly = (Polygon)parser.geometryFromJson(geometryNode);
-			polys[i]=poly;
-			i++;
-		}
-		
-		if (many) {
-			ret = new MultiPolygon(polys, factory);
-		} else {
-			ret = polys[0];
+		if (!geometryNodes.isEmpty()) {
+			int i=0;
+			boolean many = geometryNodes.size()>1;
+			Polygon[] polys = new Polygon [geometryNodes.size()];
+			
+			for (JsonNode geometryNode : geometryNodes) {
+				Polygon poly = (Polygon)parser.geometryFromJson(geometryNode);
+				polys[i]=poly;
+				i++;
+			}
+			
+			if (many) {
+				ret = new MultiPolygon(polys, factory);
+			} else {
+				ret = polys[0];
+			}
 		}
 		
 		return ret;

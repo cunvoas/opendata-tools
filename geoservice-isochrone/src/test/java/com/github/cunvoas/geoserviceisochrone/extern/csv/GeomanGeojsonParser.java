@@ -25,7 +25,7 @@ public class GeomanGeojsonParser {
 	
 	public Geometry parse(String geoman) {
 		Geometry geom=null;
-		FeatureCollection featureCollection =  mapper.readValue(geoman, FeatureCollection.class);
+		//FeatureCollection featureCollection =  mapper.readValue(geoman, FeatureCollection.class);
 		
 		return geom;
 	}

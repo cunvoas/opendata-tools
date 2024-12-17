@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.github.cunvoas</groupId>
 	<artifactId>geoservice-isochrone</artifactId>
-	<version>1.0.9</version>
+	<version>1.0.10</version>
 	<packaging>jar</packaging>
 	
 	<properties>
@@ -50,7 +50,7 @@
 			<version>${hibernate.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
+			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-spatial</artifactId>
 			<version>${hibernate.version}</version>
 		</dependency>
@@ -334,6 +334,20 @@
 		</plugins>
 	</build>
 	<profiles>
+		
+		<!-- code analysis -->
+		<profile>
+			<id>SONAR</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+            <properties>
+                <!-- Optional URL to server. Default value is http://localhost:9000 -->
+                <sonar.host.url>http://localhost:9000</sonar.host.url>
+            </properties>
+			
+		</profile>
+		
 		<!-- deps analysis for security -->
 		<profile>
 			<id>OWASP</id>

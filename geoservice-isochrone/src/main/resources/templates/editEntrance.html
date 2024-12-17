@@ -57,9 +57,8 @@
 				<form id="formSelectCity" th:action="@{/mvc/entrance/city}" method="POST" th:object="${editEntrance}">
 				<fieldset id="fsCity" disabled="disabled">
 					<div class="form-floating">
-	
-	
-						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
+						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" />
+						<label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
 						<datalist id="communes" class="form-label">
 							<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
 						</datalist>
@@ -191,8 +190,11 @@
 				<h4 class="mt-12" id="editEntranceTitle" th:text="#{entrance.edit.title}">title </h4>
 			</div>
 			<div class="col">
-				<button class="btn btn-info" th:text="#{entrance.edit.mode}" onclick="switchMode(this)">mode</button>
-				<br />
+				<button class="btn btn-success" th:text="#{entrance.edit.mode}" onclick="switchMode(this)">mode</button>
+
+				<button type="button" class="btn btn-outline-warning" th:text="#{entrance.map.marker.clear}" onclick="removeTempMarker(this)">cancel add mode</button>
+            
+            <br />
 				<input type="checkbox" id="showIsochrone" name="showIsochrone" onclick="toggleIsochrone()" />
 				<input type="checkbox" id="showEntrance" name="showEntrance"  onclick="toggleIsochrone()" checked="checked" />
 				<label for="showIsochrone" th:text="#{entrance.show.isochrone}"></label>
@@ -250,14 +252,14 @@
             <div class="col">
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
-                        <button type="submit" class="btn btn-dark" th:text="#{entrance.edit.submit.isochrone}" th:formaction="@{/mvc/entrance/mergeIsochrone}">validate</button>
+                        <button type="submit" class="btn btn-outline-success" th:text="#{entrance.edit.submit.isochrone}" th:formaction="@{/mvc/entrance/mergeIsochrone}">validate</button>
                     </div>
                 </div>
             </div>
             <div class="col">
                 <div class="card border" style="text-align: center">
 					<div class="form-floating">
-						<button type="submit" class="btn btn-secondary" th:text="#{entrance.edit.submit}">validate</button>
+						<button type="submit" class="btn btn-outline-danger" th:text="#{entrance.edit.submit}">validate</button>
 					</div>
                 </div>
             </div>
@@ -287,23 +289,6 @@
 		<div class="container-fluid px-4">
 			<h2 class="mt-12" th:text="#{entrance.map.title}">title</h2>
 		</div>
-    	<div class="row">
-            <div class="col-4">
-                <div class="card border" style="text-align: center">
-					<button id="switch-layers" type="button" class="btn btn-secondary" th:text="#{entrance.map.satellite}" onclick="switchLayer(this)">fond de carte</button>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="card border" style="text-align: center">
-					<button type="button" class="btn btn-secondary" th:text="#{entrance.map.marker.clear}" onclick="removeTempMarker(this)">locate me</button>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="card border" style="text-align: center">
-					<button type="button" class="btn btn-secondary" th:text="#{entrance.map.locateMe}" onclick="locateMe()"  style="display: none">locate me</button>
-                </div>
-            </div>
-        </div>
         <div class="row h-100 ">
             <div class="col-12">
                 <div class="card h-100 border" style="text-align: center">
@@ -427,8 +412,14 @@
 	
 	/////////////////////////////////////////////////////////////////////////
 	// map layers
-	var mapMinZoom=10;
-	var mapMaxZoom=20;
+    var mapMinZoom=11;
+    var mapMaxZoom=19;
+    var layerEsriWorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    	name: 'Carte WorldStreetMap',
+    	attribution: "ArcGIS World Street Map (Esri)",
+        maxZoom: mapMaxZoom,
+        minZoom: mapMinZoom
+	});
 	var layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
 	        attribution: 'Aut MEL',
 	        maxZoom: mapMaxZoom,
@@ -439,7 +430,27 @@
 	        maxZoom: mapMaxZoom,
             minZoom: mapMinZoom
 	    });
-	
+    var layerAeroIgnMap = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
+		name: 'Vues Aérienne IGN',
+		attribution: '&copy; <a href="https://geoservices.ign.fr/services-geoplateforme-diffusion">IGN GeoPortail</a>',
+		tileSize: 256,
+		maxZoom: Math.min(18, mapMaxZoom), // 18 maxi
+		minZoom: mapMinZoom,
+	});
+
+    // fonds de carte
+    const mapLayers = {
+   		'Satellite ArcGisOnline': layerSatellite,
+   		'Vues Aérienne IGN': layerAeroIgnMap,
+   		'Carte OpenStreetMap': layerStreetMap,
+   		'Carte WorldStreetMap': layerEsriWorldStreetMap,
+   		
+   	};
+    const dataAutmel = L.layerGroup();
+    var dataLayers = {
+    	"Contours des parcs": dataAutmel
+    };
+    
     // Add an object to save markers
     var markers = {};
     
@@ -450,16 +461,73 @@
     if (mLng!="" && mLat!="") {
         locateWorkPlace = L.latLng(mLat, mLng);
     }
+     
     
-    var isMap = L.map('mapid').setView(locateWorkPlace, 16);
-    layerStreetMap.addTo(isMap);
-    L.control.scale().addTo(isMap);
+    var isMap = L.map('mapid', {
+    	zoom: 16,
+        layers: [ layerStreetMap, layerEsriWorldStreetMap, layerSatellite]
+    }).setView(locateWorkPlace);
+    
+	const zoomControl = L.control.scale().addTo(isMap);
+    const layerControl = L.control.layers(mapLayers, dataLayers).addTo(isMap);
+    
+    // TODO CHK behaviour
+    //layerStreetMap.addTo(isMap);
+
     //isMap.on('click', addMarker);
 	// remove added markers
 	function removeTempMarker(e) {
 		isMap.removeLayer(newMarker);
 	}
 	
+	
+
+    var geojsonShapeParkLayer = null;
+
+    function customOnEachFeatureDetail(feature, layer) {
+    	
+        // does this feature have a property named fillColor?
+        if (feature.properties) {
+
+        	var sUrlLocationPark =
+	        	"&idRegion="+document.querySelector('#idRegion').value +
+	        	"&idComm2Co="+document.querySelector('#idCommunauteDeCommunes').value +
+	        	"&idCommune="+document.querySelector('#idCommune').value;
+        	
+            var parcEdit ="";
+            var sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/entrance/goto}]]+'?idPark=';
+            if (feature.properties.name) {
+            	parcEdit = "<p>"+feature.properties.name+"</p>";
+            	if (feature.properties.id) {
+            		parcEdit= "<p>"+ feature.properties.name + "<br /><a href='"+ sUrlEditPark + feature.properties.id + sUrlLocationPark +"' >Edit</a></p>";
+            	}
+            	layer.bindPopup(parcEdit);
+            }
+            
+        }
+    }
+    
+    // relead parks with map fit
+    function loadParkShape() {
+
+        swLat=isMap.getBounds().getSouthWest().lat;
+        swLng=isMap.getBounds().getSouthWest().lng;
+        neLat=isMap.getBounds().getNorthEast().lat;
+        neLng=isMap.getBounds().getNorthEast().lng;
+        sPos="swLat="+ swLat +"&swLng="+swLng +"&neLat="+neLat +"&neLng="+neLng;
+        
+        // contours parc autmel
+        var sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenOutlineByCorner}]]+'?'+sPos;
+        geojsonAutmelLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {onEachFeature: customOnEachFeatureDetail});
+        geojsonAutmelLayer.addTo(dataAutmel);
+        
+    }
+    loadParkShape();
+    isMap.on('zoomend',loadParkShape);
+    isMap.on('moveend',loadParkShape);
+    
+	var geojsonParkLayer = null;
+		
 	////////////////////////////////////////////////////////////////////////////
     // isochrone
     function fetchJSON(url) {
@@ -540,21 +608,6 @@
     }
 
 	
-	
-	/* switch layer between map and satellite */
-	function switchLayer(e) {
-		if (isMap.hasLayer(layerStreetMap)) {
-	    	isMap.addLayer(layerSatellite);
-	    	isMap.removeLayer(layerStreetMap);
-	    	e.innerText= [[#{entrance.map.satellite}]];
-	    	
-	    } else {
-	    	isMap.addLayer(layerStreetMap);
-	    	isMap.removeLayer(layerSatellite);
-	    	e.innerText= [[#{entrance.map.street}]];
-	    }
-	}
-
 	/* switch between map and satellite view */
 	function switchMode(e) {
 		var mode = document.getElementById("mode").value;
@@ -576,11 +629,7 @@
 			
 			isMap.on('click', addMarker);
 		}
-		/* else {
-			document.getElementById("mode").value="upd";
-			e.innerText = [[#{entrance.edit.mode}]];
-			document.getElementById("editEntranceTitle").innerText = [[#{entrance.edit.title}]];
-		}*/
+
 	}
 	
     
@@ -634,14 +683,10 @@
       
       urlLocate=window.location.protocol + "//" + window.location.host + [[@{/mvc/entrance/locateMe}]]+'?lng='+position.coords.longitude+'&lat='+position.coords.latitude;
       alert(urlLocate)
-     //TODO window.document.href= urlLocate;
     }
     function locateMe() {
 	    if (navigator.geolocation) {
 	       navigator.geolocation.getCurrentPosition(showPosition);
-	       //TODO call server to preload alle
-	       
-	       
 	    }
     }
     
@@ -656,14 +701,24 @@
     	xhr.send();
     }
     
-    manageDisabled();
     function manageDisabled() {
+    	
+        if (document.getElementById("idRegion").value!="") {
+            document.getElementById("fsComm2co").disabled = false;
+            document.getElementById("fsCity").disabled = false;
+        }
+        if (document.getElementById("idCommunauteDeCommunes").value!="") {
+            document.getElementById("fsCity").disabled = false;
+        }
+        
+/*
     	if (document.getElementById("idRegion").value!="") {
     		document.getElementById("fsComm2co").disabled = false;
     	}
     	if (document.getElementById("idCommunauteDeCommunes").value!="") {
     		document.getElementById("fsCity").disabled = false;
     	}
+*/
     	if (document.getElementById("idCommune").value!="") {
     		document.getElementById("fsPark").disabled = false;
     	}
@@ -676,6 +731,7 @@
     		document.getElementById("fsEditEntrance").disabled = false;
     	}
     }
+    manageDisabled();
 </script>
 
 </body>

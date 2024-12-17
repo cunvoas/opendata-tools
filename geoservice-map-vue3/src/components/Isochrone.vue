@@ -151,12 +151,16 @@ export default {
           attribution:
             '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          maxZoom: 19,
+          minZoom: 10,
         },
         {
           name: "Carte WorldStreetMap",
           visible: false,
           url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
           attribution: "ArcGIS World Street Map (Esri)",
+          maxZoom: 19,
+          minZoom: 10,
         },
         {
           name: "Satellite ArcGisOnline",
@@ -164,6 +168,8 @@ export default {
           url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
           attribution:
             '&copy; <a href="https://www.arcgis.com/">ArcGisOnline</a> <a href="https://www.facebook.com/lmoxygene/">LM Oxygène</a> ',
+          maxZoom: 19,
+          minZoom: 10,
         },
         
         {
@@ -173,7 +179,7 @@ export default {
           attribution: '&copy; <a href="https://geoservices.ign.fr/services-geoplateforme-diffusion">IGN GeoPortail</a> ',
           tileSize: 256,
           maxZoom: 18,
-          minZoom: 0,
+          minZoom: 10,
         },
         
              

@@ -38,22 +38,27 @@ spring:
   # https://refactorizando.com/en/hikari-configuration-spring-boot/
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
-      minimum-idle: 2
-      maximum-pool-size: 20
+      pool-name: isochroneDb-pool
+      minimum-idle: 1
+      maximum-pool-size: 10
       idle-timeout:  600000
       max-lifetime: 1800000
       connection-timeout: 20000
       auto-commit: false 
+# https://stackoverflow.com/questions/41574502/spring-boot-hikaricp-transactional-not-overwriting-isolation-level  
+# transaction-isolation: READ_COMMITTED
+      transaction-isolation: 2
+      connection-test-query: select 1
 
 # JPA configuration
   jpa:
     database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
-#    hibernate.ddl-auto: update
+#    hibernate.ddl-auto: update  none
     hibernate.ddl-auto: none
     open-in-view: true
-    generate-ddl: true
+    generate-ddl: false
     show-sql: true
-    format-sql: true
+    format-sql: false
     properties:
       hibernate:
 # dépend de la version d'hibernate
@@ -63,7 +68,7 @@ spring:
           batch_size:  100
         format_sql:    false
         order_inserts: true
-        order_updates: false
+        order_updates: true
 
 # PostGIS configuration
 

@@ -56,9 +56,9 @@ public class EntranceControler {
 	
 	@GetMapping("/goto")
 	public String gotoEntrance(
-			@RequestParam("idRegion") Long idRegion, 
-			@RequestParam("idComm2Co")Long idComm2Co, 
-			@RequestParam("idCommune") Long idCommune, 
+			@RequestParam(value="idRegion", required = false) Long idRegion, 
+			@RequestParam(value="idComm2Co", required = false)Long idComm2Co, 
+			@RequestParam(value="idCommune", required = false) Long idCommune, 
 			@RequestParam("idPark") Long idPark,
 			@ModelAttribute FormParkEntrance form,
 			Model model) {
@@ -66,6 +66,18 @@ public class EntranceControler {
 		if (form==null ) {
 			form = new FormParkEntrance();
 		}
+		
+		if (idRegion==null || idComm2Co==null || idCommune==null) {
+			ParcEtJardin pj = serviceReadReferences.getParcEtJardinById(idPark);
+			if (pj!=null) {
+				City city = pj.getCommune();
+				
+				idCommune = city.getId();
+				idRegion = city.getRegion().getId();
+				idComm2Co = city.getCommunauteCommune().getId();
+			}
+		}
+		
 		form.setIdRegion(idRegion);
 		form.setIdCommunauteDeCommunes(idComm2Co);
 		form.setIdCommune(idCommune);

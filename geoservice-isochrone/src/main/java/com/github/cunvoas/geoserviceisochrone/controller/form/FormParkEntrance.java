@@ -8,8 +8,10 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class FormParkEntrance extends AbstractFormLocate {
 	
 	public FormParkEntrance() {

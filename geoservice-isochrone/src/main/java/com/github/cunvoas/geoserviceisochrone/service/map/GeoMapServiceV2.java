@@ -127,6 +127,34 @@ public class GeoMapServiceV2 {
 	
 	/**
 	 * @param id
+	 * @return
+	 */
+	public GeoJsonRoot findCadastreByCity(Long id) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
+		Optional<City> city = cityRepository.findById(id);
+		if (city.isPresent()) {
+			Optional<Cadastre> oCadastre = cadastreRepository.findById(city.get().getInseeCode());
+			
+			if (oCadastre.isPresent()) {
+				Cadastre cadastre = oCadastre.get();
+				
+				GeoJsonFeature feature = new GeoJsonFeature();
+				root.getFeatures().add(feature);
+				feature.setGeometry(cadastre.getGeoShape());
+				
+				CadastreView cv = new CadastreView();
+				cv.setIdInsee(cadastre.getIdInsee());
+				cv.setNom(cadastre.getNom());
+				//cv.setCommunauteCommune(com2co.get().getName());
+				feature.setProperties(cv);
+			}
+		}
+		return root;
+	}
+	
+	/**
+	 * @param id
 	 * @return Cadastre geojson
 	 */
 	public GeoJsonRoot findAllCadastreByComm2Co(Long id) {
@@ -444,8 +472,11 @@ public class GeoMapServiceV2 {
 		GeoJsonRoot root = new GeoJsonRoot();
 
     	if (polygon!=null) {
-    		List<ParcEtJardin> parkPrefs =  parkJardinRepository.findByArea(GeometryQueryHelper.toText(polygon));
-			if (!CollectionUtils.isEmpty(parkPrefs)) {
+    		log.debug("GEOM= {}", GeometryQueryHelper.toTextWoSrid(polygon));
+    		//List<ParcEtJardin> parkPrefs =  parkJardinRepository.findByArea(GeometryQueryHelper.toText(polygon));
+    		List<ParcEtJardin> parkPrefs =  parkJardinRepository.findByArea(polygon);
+			
+    		if (!CollectionUtils.isEmpty(parkPrefs)) {
 				for (ParcEtJardin parcJardin : parkPrefs) {
 					
 					GeoJsonFeature feature = new GeoJsonFeature();
