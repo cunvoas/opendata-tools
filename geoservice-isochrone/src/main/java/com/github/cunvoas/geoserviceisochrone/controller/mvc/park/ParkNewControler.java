@@ -1,11 +1,15 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.park;
 
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -42,6 +46,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/mvc/park/new")
 @Slf4j
 public class ParkNewControler {
+	
+	private static final DateFormat DF =new SimpleDateFormat("dd/MM/yyyy");
+	private NumberFormat NF = new DecimalFormat("#.##O");
 	
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
@@ -135,8 +142,18 @@ public class ParkNewControler {
 		
 		pj.setSurface(form.getSurface());
 
-		pj.setDateDebut(form.getDateDebut());
-		pj.setDateFin(form.getDateFin());
+		if (StringUtils.isNoneBlank(form.getDateDebut())) {
+			try {
+				pj.setDateDebut(DF.parse(form.getDateDebut()));
+			} catch (ParseException e) {
+			}
+		}
+		if (StringUtils.isNoneBlank(form.getDateFin())) {
+			try {
+				pj.setDateFin(DF.parse(form.getDateFin()));
+			} catch (ParseException e) {
+			}
+		}
 		
 		pj.setTypeId(form.getTypeId());
 		
@@ -160,7 +177,7 @@ public class ParkNewControler {
 		return pj;
 	}
 	
-	;
+	
 	@PostMapping("/save")
 	public String save(@ModelAttribute FormParkNew form, Model model) {
 		log.warn("Generic save: {}", form);
@@ -297,8 +314,12 @@ public class ParkNewControler {
 		form.setSource(pj.getSource());
 		form.setStatus(pj.getStatus().name());
 		
-		form.setDateDebut(pj.getDateDebut());
-		form.setDateFin(pj.getDateFin());
+		if (pj.getDateDebut()!=null) {
+			form.setDateDebut(DF.format(pj.getDateDebut()));
+		}
+		if (pj.getDateFin()!=null) {
+			form.setDateFin(DF.format(pj.getDateFin()));
+		}
 		form.setTypeId(pj.getTypeId());
 		
 		form.setSurface(pj.getSurface());
@@ -306,7 +327,7 @@ public class ParkNewControler {
 		return getForm(form, model);
 	}
 	
-	private NumberFormat NF = new DecimalFormat("#.##O");
+	
 	
 
 	/**

@@ -217,10 +217,12 @@ public class ContributeurControler {
 		clone.setIdCommunauteDeCommunes(in.getIdCommunauteCommune());
 		clone.setIdCommune(in.getIdCommune());
 		
+		if (in.getIdCommune()!=null) {
 		Optional<City> oCity = cityRepository.findById(in.getIdCommune());
-		if (oCity.isPresent()) {
-			model.addAttribute("idCommune", in.getIdCommune());
-			model.addAttribute("txtCommune", oCity.get().getName());
+			if (oCity.isPresent()) {
+				model.addAttribute("idCommune", in.getIdCommune());
+				model.addAttribute("txtCommune", oCity.get().getName());
+			}
 		}
 		
 		clone.setRegions(regionRepository.findAllOrderByName());

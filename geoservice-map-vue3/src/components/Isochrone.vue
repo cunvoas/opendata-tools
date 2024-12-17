@@ -241,7 +241,7 @@ export default {
     async callGeoJsonIsochrones(qryPrms) {
       // data isochrones
       var base = "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/park/park_c2c_1_" +  this.annee + ".json";
-      // base = this.restUrlIsochrones;
+      //var base = this.restUrlIsochrones;
       console.log("callGeoJsonIsochrones" + base + qryPrms);
       const respIsochrone = await fetch(base + qryPrms);
       const dataIsochrone = await respIsochrone.json();
@@ -250,7 +250,7 @@ export default {
     async callGeoJsonCarres(qryPrms) {
       // data carreau 200m
       var base = "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/carre200m/carre200m_c2c_1_" + this.annee + ".json";
-      // base = this.restUrlCarre;
+      //var base = this.restUrlCarre;
       console.log("callGeoJsonCarres" + base + qryPrms);
       const respCarre = await fetch(base + qryPrms);
       const dataCarre = await respCarre.json();
@@ -259,7 +259,7 @@ export default {
     async callGeoJsonCadastre(qryPrms) {
       // data Cadastre
       var base = "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/cadastre/cadastre_c2c_1.json";
-      // base = this.restUrlCadastre;
+      //var base = this.restUrlCadastre;
       console.log("callGeoJsonCadastre" + base + qryPrms);
       const respCadastre = await fetch(base + qryPrms);
       const dataCadastre = await respCadastre.json();

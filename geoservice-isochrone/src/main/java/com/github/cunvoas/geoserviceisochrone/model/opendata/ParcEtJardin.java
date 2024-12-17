@@ -2,12 +2,9 @@ package com.github.cunvoas.geoserviceisochrone.model.opendata;
 
 import java.util.Date;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.springframework.format.annotation.NumberFormat;
-
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 
 @Data
@@ -25,6 +23,11 @@ public class ParcEtJardin {
 	@Id
 	@Column(name = "identifiant")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_mel_park")
+    @SequenceGenerator(
+    		name="seq_mel_park",
+    		allocationSize=1,
+    		initialValue = 1
+    	)
 	private Long id;
 
 	@Column(name = "nom_parc", length = 50)
@@ -73,6 +76,9 @@ public class ParcEtJardin {
 	
 	@Column( name="type_id", nullable = true )
 	private Long typeId;
+
+	@Column(name = "oms_custom")
+	private Boolean omsCustom;
 	
 	public String getLat() {
 		if (coordonnee!=null) {

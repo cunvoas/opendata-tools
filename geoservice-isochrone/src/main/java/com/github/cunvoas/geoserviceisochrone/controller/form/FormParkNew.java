@@ -1,8 +1,12 @@
 package com.github.cunvoas.geoserviceisochrone.controller.form;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Point;
 import org.springframework.format.annotation.NumberFormat;
 import org.springframework.format.annotation.NumberFormat.Style;
@@ -20,6 +24,8 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class FormParkNew extends AbstractFormLocate{
+	
+	private static final DateFormat DF =new SimpleDateFormat("dd/MM/yyyy");
 
 	private Long idPark;//parcEtJardin.id
 
@@ -51,8 +57,8 @@ public class FormParkNew extends AbstractFormLocate{
 	private String hierarchie;
 	private String type;
 	private String sousType;
-	private Date dateDebut;
-	private Date dateFin;
+	private String dateDebut;
+	private String dateFin;
 	
 	private Boolean ouverturePermanente = Boolean.TRUE;
 	private Boolean aireJeux = Boolean.FALSE;
@@ -60,6 +66,7 @@ public class FormParkNew extends AbstractFormLocate{
 	private String adresse;
 	@NumberFormat(pattern = "#,##0.0", style=Style.NUMBER)
 	private Double surface;
+	@NumberFormat(pattern = "#,##0.0", style=Style.NUMBER)
 	private Double surfaceContour;
 	
 	private Point coordonnee;
@@ -68,6 +75,7 @@ public class FormParkNew extends AbstractFormLocate{
 	private String etatAction;
 	private String etat;
 	private Long typeId;
+	private Boolean omsCustom;
 	
 	private ParcSourceEnum source = ParcSourceEnum.OPENDATA;
 	
@@ -94,6 +102,7 @@ public class FormParkNew extends AbstractFormLocate{
 		this.quartier =  pj.getQuartier();
 		this.hierarchie =  pj.getHierarchie();
 		this.type =  pj.getType();
+		this.typeId =  pj.getTypeId();
 		this.sousType =  pj.getSousType();
 		this.ouverturePermanente = "Permanente".equals(pj.getEtatOuverture());
 		this.aireJeux =  "Oui".equals(pj.getAireJeux());
@@ -101,9 +110,20 @@ public class FormParkNew extends AbstractFormLocate{
 		this.surface =  pj.getSurface();
 		this.coordonnee =  pj.getCoordonnee();
 		this.source =  pj.getSource();
+		this.surfaceContour = pj.getSurfaceContour();
+
+		pj.setTypeId(this.typeId);
+		pj.setOmsCustom(this.omsCustom);
+		if (pj.getDateDebut()!=null) {
+			this.setDateDebut(DF.format(pj.getDateDebut()));
+		}
+		if (pj.getDateFin()!=null) {
+			this.setDateFin(DF.format(pj.getDateFin()));
+		}
+		
 	}
 	
-	public ParcEtJardin mapper() {
+	public ParcEtJardin mapper() throws ParseException {
 		ParcEtJardin pj = new ParcEtJardin();
 		pj.setId(this.idPark);
 		pj.setCommune(this.commune);
@@ -116,8 +136,20 @@ public class FormParkNew extends AbstractFormLocate{
 		pj.setAireJeux(this.aireJeux?"Oui":"Non");
 		pj.setAdresse(this.adresse);
 		pj.setSurface(this.surface);
+		pj.setSurfaceContour(this.surfaceContour);
 		pj.setCoordonnee(this.coordonnee);
 		pj.setSource(this.source);
+
+		pj.setTypeId(this.typeId);
+		pj.setOmsCustom(this.omsCustom);
+		
+		if (StringUtils.isNoneBlank(this.getDateDebut())) {
+			pj.setDateDebut(DF.parse(this.getDateDebut()));
+		}
+		if (StringUtils.isNoneBlank(this.getDateFin())) {
+			pj.setDateFin(DF.parse(this.getDateFin()));
+		}
+		
 		return pj;
 	}
 	

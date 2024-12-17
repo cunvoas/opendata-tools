@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -34,6 +35,11 @@ public class Stats {
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_activity_stats")
+    @SequenceGenerator(
+    		name="seq_activity_stats",
+    		allocationSize=1,
+    		initialValue = 1
+    	)
 	private Long id;
 	
 	private Long userId;

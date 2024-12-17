@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.service.park;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -38,10 +39,13 @@ public class ParkTypeService {
 	public void setLabel(ParkType parkType) {
 		Locale locale = LocaleContextHolder.getLocale();
 		String trad = "";
+		Boolean strict = Boolean.TRUE;
 		if (parkType.getI18n()!=null) {
-			 trad = messageSource.getMessage(parkType.getI18n(), null, locale);
+			trad = messageSource.getMessage(parkType.getI18n(), null, locale);
+			strict = Boolean.valueOf(messageSource.getMessage(parkType.getI18n()+".oms.strict", null, locale));
 		}
 		parkType.setLabel(trad);
+		parkType.setStrict(strict);
 	}
 	
 	public void populate(List<ParkArea> parkAreas) {
@@ -51,6 +55,17 @@ public class ParkTypeService {
 			}
 		}
 	}
+	
+	public ParkType get(Long parkTypeId) {
+		ParkType pt = null;
+		Optional<ParkType> o = parkTypeRepository.findById(parkTypeId);
+		if (o.isPresent()) {
+			pt = o.get();
+			setLabel(pt);
+		}
+		return pt;
+	}
+	
 	
 	public void populate(ParkArea parkArea) {
 		Locale locale = LocaleContextHolder.getLocale();

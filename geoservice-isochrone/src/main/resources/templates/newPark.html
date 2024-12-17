@@ -199,7 +199,7 @@
                 
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
-						<select class="form-select" required="required" id="typeId" name="typeId" th:field="*{typeId}">
+						<select onchange="changeType()" class="form-select" required="required" id="typeId" name="typeId" th:field="*{typeId}">
 							<option value="" th:text="#{park.parkType.placeholder}">Choose here</option>
 							<option th:each="parkType : ${parkTypes}" 
 									th:value="${parkType.id}" 
@@ -209,7 +209,14 @@
 									></option>
 						</select>
 						<label for="idAsso" th:text="#{park.typeId}">typeId</label>
-				        <!-- TODO parkTypes -->
+                    </div>
+                </div>
+                
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                    	<label class="form-label" for="oms" th:text="#{park.oms}">source</label>
+                    	<input class="form-radio" id="omsT" name="oms" type="radio" value="true" th:field="*{oms}" th:text="#{park.oms.yes}" /><br />
+  						<input class="form-radio" id="omsF" name="oms" type="radio" value="false" th:field="*{oms}" th:text="#{park.oms.no}" />
                     </div>
                 </div>
                 
@@ -224,7 +231,6 @@
                     <div class="form-floating">
                         <input class="form-control"  type="text" id="status" name="status" th:field="*{status}" disabled="disabled" />
                         <label class="form-label" for="status" th:text="#{park.status}">idStatus</label>
-                        <!-- TODO parkTypes -->
                     </div>
                 </div>
                 
@@ -243,7 +249,7 @@
         
         
             <!-- TODO: make the filter later -->
-            <div class="col-6" style="display: none;"> 
+            <div class="col-6" style="display: none;">
                 <div  style="text-align: left">
                  <h6 class="mt-12" th:text="#{park.filter}">title</h6>
 	             <input type="radio" id="filterValid" name="filterPark" value="VALID" class="form-check-input" onchange="filterChange('VALID');" />
@@ -282,13 +288,7 @@
 
 </span>
 
-<!-- --------------------------- -->
-     
-
-    
 </div>
-
-							
 			</main>
 		</div> <!-- layoutSidenav_content -->
 	</div> <!-- layoutSidenav -->
@@ -298,6 +298,34 @@
 	<script th:src="@{/mvc/static/js/scripts.js}"></script>
 
 	<script th:inline="javascript">
+	
+	function changeType() {
+		var slct = document.getElementById("typeId");
+		var optSlct = slct.options[slct.selectedIndex];
+		var dOms= optSlct.getAttribute('data-oms');
+		var dStrict= optSlct.getAttribute('data-strict');
+		
+		console.log("changeType: oms="+dOms+", strict="+dStrict);
+		var radioOmsT = document.getElementById("omsT");
+		var radioOmsF = document.getElementById("omsF");
+		
+		if (dOms==='true') {
+			radioOmsT.checked=true;
+			radioOmsF.checked=false;
+		} else {
+			radioOmsT.checked=false;
+			radioOmsF.checked=true;
+		}
+		
+		if (dStrict==='true') {
+			radioOmsT.disabled=true;
+			radioOmsF.disabled=true;
+		} else {
+			radioOmsT.disabled=false;
+			radioOmsF.disabled=false;
+		}
+	}
+	
 	
 	 function isEmpty(obj) {
 	     return Object.keys(obj).length === 0;
@@ -772,6 +800,8 @@
     	document.getElementById("type").value="";
     	document.getElementById("sousType").value="";
     	document.getElementById("surface").value="";
+    	document.getElementById("surfaceContour").value="";
+    	//document.getElementById("typeId").value="";
     	document.getElementById("source").value="";
     	document.getElementById("status").value="";
     	
@@ -797,20 +827,22 @@
     
     function savePark() {
     	var hasError=false;
+    	console.log("savePark");
     	// TODO continues
- 	    if (document.getElementById("sGeometry").value==="") {
+ 	    if (document.getElementById("id").value==="" && document.getElementById("sGeometry").value==="") {
  	    	hasError=true;
  	    	var item=document.getElementById("blkName");
  	    	objBtnNew.classList.add("has-error");
     	}
     	
-    	if (document.getElementById("sGeometry").value==="") {
+    	if (document.getElementById("id").value==="" && document.getElementById("sGeometry").value==="") {
     		hasError=true;
  	    	var item=document.getElementById("blkMap");
  	    	objBtnNew.classList.add("has-error");
     	}
     	
     	if (hasError) {
+    		console.log("savePark hasError");
     		return;
     	}
     	
@@ -819,6 +851,14 @@
     	objBtnSave.classList.remove('btn-outline-warning');
     	objBtnSave.classList.add('btn-warning');
     	
+    	console.log("savePark hasError");
+    	
+    	if (document.getElementById("dateDebut").value==="jj/mm/aaaa") {
+    		document.getElementById("dateDebut").value="";
+    	}
+    	if (document.getElementById("dateFin").value==="jj/mm/aaaa") {
+    		document.getElementById("dateFin").value="";
+    	}
     	document.getElementById("formNewPark").submit();
     }
     
@@ -921,7 +961,6 @@
     
 /*
  https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/file-upload-Spring-Boot-Ajax-example
-
 
 	 <!-- HTML5 Input Form Elements -->
 	 <input id="fileupload" type="file" name="fileupload" /> 
