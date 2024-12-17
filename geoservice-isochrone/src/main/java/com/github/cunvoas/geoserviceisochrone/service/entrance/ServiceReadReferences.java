@@ -128,30 +128,33 @@ public class ServiceReadReferences {
 	
 	public Coordinate getCoordinate(Long id) {
 		Coordinate location=null;
-		City city = cityRepository.getReferenceById(id);
 		
-		Cadastre cadastre=cadastreRepository.getReferenceById(city.getInseeCode());
-		if (cadastre!=null && cadastre.getGeoShape()!=null) {
-			org.locationtech.jts.geom.Coordinate coord=null;
-			if ( cadastre.getGeoShape() instanceof Point) {
-				coord = ((Point)cadastre.getGeoShape()).getCoordinate();
-			} else if ( cadastre.getGeoShape() instanceof Polygon) {
-				coord = ((Polygon)cadastre.getGeoShape()).getCentroid().getCoordinate();
-			} else if ( cadastre.getGeoShape() instanceof MultiPolygon) {
-				coord = ((MultiPolygon)cadastre.getGeoShape()).getCentroid().getCoordinate();
-			}
+		if (id!=null) {
+			City city = cityRepository.getReferenceById(id);
 			
-			if (coord!=null) {
-				location = new Coordinate(coord.getX(), coord.getY());
+			Cadastre cadastre=cadastreRepository.getReferenceById(city.getInseeCode());
+			if (cadastre!=null && cadastre.getGeoShape()!=null) {
+				org.locationtech.jts.geom.Coordinate coord=null;
+				if ( cadastre.getGeoShape() instanceof Point) {
+					coord = ((Point)cadastre.getGeoShape()).getCoordinate();
+				} else if ( cadastre.getGeoShape() instanceof Polygon) {
+					coord = ((Polygon)cadastre.getGeoShape()).getCentroid().getCoordinate();
+				} else if ( cadastre.getGeoShape() instanceof MultiPolygon) {
+					coord = ((MultiPolygon)cadastre.getGeoShape()).getCentroid().getCoordinate();
+				}
+				
+				if (coord!=null) {
+					location = new Coordinate(coord.getX(), coord.getY());
+				}
 			}
-		}
 		
-		if (location==null) {
-			Laposte poste = laposteRepository.getReferenceById(city.getInseeCode());
-			if (poste!=null) {
-				String gps = poste.getCoordonneesGps();
-				String[] coord = gps.split(", ");
-				location = new Coordinate(Double.valueOf(coord[1]), Double.valueOf(coord[1]));
+			if (location==null) {
+				Laposte poste = laposteRepository.getReferenceById(city.getInseeCode());
+				if (poste!=null) {
+					String gps = poste.getCoordonneesGps();
+					String[] coord = gps.split(", ");
+					location = new Coordinate(Double.valueOf(coord[1]), Double.valueOf(coord[1]));
+				}
 			}
 		}
 		return location;

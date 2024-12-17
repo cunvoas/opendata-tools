@@ -14,34 +14,21 @@
 				<div class="container">
 
 <p class="d-inline-flex gap-1">
-	<button id="btnNew" onclick="manageCreateDisabled()" type="button" class="btn btn-outline-success">Création</button>
+	<button id="btnNew" onclick="manageCreateDisabled()" type="button" class="btn btn-outline-success" th:text="#{park.new.create}">Create</button>
+	<button id="btnUpdate" onclick="manageUpdateDisabled()" type="button" class="btn btn-outline-success" th:text="#{park.new.update}">Update</button>
 
-	<button id="btnSave" onclick="savePark()" type="button" class="btn btn-outline-warning">Sauvegarder</button>
+	<button id="btnSave" onclick="savePark()" type="button" class="btn btn-outline-warning" th:text="#{park.new.save}">save</button>
 	<div id="saveParkSpinner" class="spinner-border text-success" role="status" style="display:none;">
 	  <span class="visually-hidden">Loading...</span>
 	</div>
-    <!-- <button type="button" class="btn btn-warning">Sauvegarder</button>  -->
 
-  <a class="btn btn-danger" style="position:absolute;right:10px" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-    Aide
+  <a th:text="#{park.new.help}" class="btn btn-danger" style="position:absolute;right:10px" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+    help
   </a>
 </p>
 <div class="collapse" id="collapseExample">
-  <div class="card card-body">
-    <ul>
-	    <li>Sélectionner votre région, puis votre communauté de commune si vous en avez une et enfin votre Commune</li>
-	    <li>Positionner vous sur la carte:</li>
-		    <ul>
-		    	<li>soit par la recheeche d'adresse</li>
-		    	<li>soit par le bouton "me localiser"</li>
-		    	<li>soit par l'ajout d'une photo localisée</li>
-		    </ul>
-	    <li>Saisir le nom du parc à minima</li>
-	    <li>Définir le contours du parc avec l'outil polygone de la carte</li>
-		    <ul>
-		    	<li>les parcs déjà saisi sont visibles soit par une pointe bleue, soit pas le contour avec l'option "contour des parcs"</li>
-		    </ul>
-    </ul>
+  <div class="card card-body" th:utext="#{park.new.helpDetail}">
+		helpDetail
   </div>
 </div>
 
@@ -56,7 +43,7 @@
          <div class="col-3">
              <div class="card" style="text-align: center">
                	<!-- region -->
-				<form th:action="@{/mvc/park/new/region}" th:object="${newPark}" method="post" onchange="submit();">
+				<form id="formSelectRegion" th:action="@{/mvc/park/new/region}" th:object="${newPark}" method="post" onchange="submit();">
 					<div class="form-floating">
 						<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
 							<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
@@ -73,7 +60,7 @@
          <div class="col-3">
              <div class="card" style="text-align: center">
                 	<!-- comm2co -->
-					<form th:action="@{/mvc/park/new/commDeCo}" th:object="${newPark}" method="post" onchange="submit();">
+					<form id="formSelectComm2co" th:action="@{/mvc/park/new/commDeCo}" th:object="${newPark}" method="post" onchange="submit();">
 					<fieldset id="fsComm2co" disabled="disabled">
 						<div class="form-floating">
 							<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
@@ -138,8 +125,8 @@
 
 <span class="row input-group border border-dark rounded-3">
 
-    <div class="col-6">
-     <form th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">
+    <div class="col-4">
+     <form id="formNewPark" th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">
         <fieldset id="fsEditPark" disabled="disabled">
         <input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
         <input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
@@ -161,13 +148,25 @@
 			</div>
 			<div class="col">
 				<div class="card border" style="text-align: center">
-					<div class="form-floating">
+					<div id="blkName" class="form-floating">
 						<input class="form-control" type="text" id="name" name="name" th:field="*{name}" /> <label class="form-label" for="name" th:text="#{entrance.park}">parc</label>
 					</div>
 				</div>
 				<div class="card border" style="text-align: center">
 					<div class="form-floating">
 						<input class="form-control" type="text" id="quartier" name="quartier" th:field="*{quartier}" /> <label class="form-label" for="quartier" th:text="#{entrance.park.block}">block</label>
+					</div>
+				</div>
+				<div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="date" id="dateDebut" name="dateDebut" th:field="*{dateDebut}" />
+						<label class="form-label" for="dateDebut" th:text="#{park.dateDebut}">dateDebut</label>
+					</div>
+				</div>
+				<div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="date" id="dateFin" name="dateFin" th:field="*{dateFin}" />
+						<label class="form-label" for="dateFin" th:text="#{park.dateFin}">dateFin</label>
 					</div>
 				</div>
 				<div class="card border" style="text-align: center">
@@ -182,32 +181,60 @@
 				</div>
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
-                        <input class="form-control" type="text" id="surface" name="surface" th:field="*{surface}" disabled="disabled"  />
+                        <input class="form-control" type="text" id="surface" name="surface" 
+                        th:field="*{surface}"  />
+                        
                         <label class="form-label" for="surface" th:text="#{entrance.surface}">surface</label>
                     </div>
                 </div>
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
-                        <input class="form-control" type="text" id="source" name="source" th:field="*{source}"  />
+                        <input class="form-control" type="text" id="surfaceContour" name="surfaceContour" 
+                        th:field="*{surfaceContour}" 
+                        disabled="disabled"  />
+                        
+                        <label class="form-label" for="surfaceContour" th:text="#{entrance.surfaceContour}">surfaceContour</label>
+                    </div>
+                </div>
+                
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+						<select onchange="changeType()" class="form-select" required="required" id="typeId" name="typeId" th:field="*{typeId}">
+							<option value="" th:text="#{park.parkType.placeholder}">Choose here</option>
+							<option th:each="parkType : ${parkTypes}" 
+									th:value="${parkType.id}" 
+									th:text="${parkType.label}" 
+									th:selected="${parkType.id==typeId}"
+									th:attr="data-oms=${parkType.oms},data-strict=${parkType.strict}"
+									></option>
+						</select>
+						<label for="idAsso" th:text="#{park.typeId}">typeId</label>
+                    </div>
+                </div>
+                
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                    	<label class="form-label" for="oms" th:text="#{park.oms}">source</label>
+                    	<input class="form-radio" id="omsT" name="oms" type="radio" value="true" th:field="*{oms}" th:text="#{park.oms.yes}" /><br />
+  						<input class="form-radio" id="omsF" name="oms" type="radio" value="false" th:field="*{oms}" th:text="#{park.oms.no}" />
+                    </div>
+                </div>
+                
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="source" name="source" th:field="*{source}"  disabled="disabled"  />
                         <label class="form-label" for="source" th:text="#{park.source}">source</label>
                     </div>
                 </div>
-                <div class="card border" style="text-align: center">
-                    <div class="form-floating">
-                        <input class="form-control" type="text" id="status" name="status" th:field="*{status}" disabled="disabled"  />
-                        <label class="form-label" for="status" th:text="#{park.status}">status</label>
-                    </div>
-                </div>
                 
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
-                        <input class="form-control" type="text" id="status" name="status" th:field="*{status}"  />
+                        <input class="form-control"  type="text" id="status" name="status" th:field="*{status}" disabled="disabled" />
                         <label class="form-label" for="status" th:text="#{park.status}">idStatus</label>
-                        <!-- TODO parkTypes -->
                     </div>
                 </div>
                 
-
+				
 			</div>
 		</div>
 
@@ -222,7 +249,7 @@
         
         
             <!-- TODO: make the filter later -->
-            <div class="col-6" style="display: block;"> 
+            <div class="col-6" style="display: none;">
                 <div  style="text-align: left">
                  <h6 class="mt-12" th:text="#{park.filter}">title</h6>
 	             <input type="radio" id="filterValid" name="filterPark" value="VALID" class="form-check-input" onchange="filterChange('VALID');" />
@@ -240,15 +267,15 @@
 
     </div>
     
-    <div class="col-6">
+    <div class="col-8">
         <div class="row">
-            <div class="col-4">
+            <div class="col-4"  id="blkMap">
                 <h6 th:text="#{park.edit.title}">title</h6>
             </div>
             
 
         </div>
-        <div class="row col-12 h-100 ">
+        <div class="row col-12 h-100">
                 <div class="card " style="text-align: center">
                     <div id="mapid" style="width: 100%; height: 100%;"></div>
                 </div>
@@ -261,13 +288,7 @@
 
 </span>
 
-<!-- --------------------------- -->
-     
-
-    
 </div>
-
-							
 			</main>
 		</div> <!-- layoutSidenav_content -->
 	</div> <!-- layoutSidenav -->
@@ -278,6 +299,34 @@
 
 	<script th:inline="javascript">
 	
+	function changeType() {
+		var slct = document.getElementById("typeId");
+		var optSlct = slct.options[slct.selectedIndex];
+		var dOms= optSlct.getAttribute('data-oms');
+		var dStrict= optSlct.getAttribute('data-strict');
+		
+		console.log("changeType: oms="+dOms+", strict="+dStrict);
+		var radioOmsT = document.getElementById("omsT");
+		var radioOmsF = document.getElementById("omsF");
+		
+		if (dOms==='true') {
+			radioOmsT.checked=true;
+			radioOmsF.checked=false;
+		} else {
+			radioOmsT.checked=false;
+			radioOmsF.checked=true;
+		}
+		
+		if (dStrict==='true') {
+			radioOmsT.disabled=true;
+			radioOmsF.disabled=true;
+		} else {
+			radioOmsT.disabled=false;
+			radioOmsF.disabled=false;
+		}
+	}
+	
+	
 	 function isEmpty(obj) {
 	     return Object.keys(obj).length === 0;
 	 }
@@ -285,7 +334,13 @@
 		return new Promise(resolve => setTimeout(resolve, ms));
 	 }
 
-	 
+	// point icons
+	var editEntranceIcon = L.icon({
+	    iconUrl: [[@{/mvc/static/images/marker-icon-parkEdit-1x.png}]]
+	    ,iconAnchor:   [12, 41] // point of the icon which will correspond to marker's location
+	    ,popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
+	});
+	
 	 
 	/* manage correct ID for COMMUNE SELECTION */
 	// th-field broke the datalist work
@@ -342,9 +397,10 @@
     	locateWorkPlace = locatePlace(mLat, mLng);
     }
     
-    
+
+
     // map layers
-    var mapMinZoom=8;
+    var mapMinZoom=11;
     var mapMaxZoom=19;
     
     // https://leaflet-extras.github.io/leaflet-providers/preview/
@@ -367,12 +423,22 @@
 			maxZoom: mapMaxZoom,
 			minZoom: mapMinZoom
         });
+    var layerAeroIgnMap = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
+			name: 'Vues Aérienne IGN',
+			attribution: '&copy; <a href="https://geoservices.ign.fr/services-geoplateforme-diffusion">IGN GeoPortail</a>',
+			tileSize: 256,
+			maxZoom: Math.min(18, mapMaxZoom), // 18 maxi
+			minZoom: mapMinZoom,
+    });
     
-    // picto fond de carte
+    
+    // fonds de carte
     const mapLayers = {
-   		'Carte WorldStreetMap': layerEsriWorldStreetMap,
    		'Satellite ArcGisOnline': layerSatellite,
-   		'Carte OpenStreetMap': layerStreetMap
+   		'Vues Aérienne IGN': layerAeroIgnMap,
+   		'Carte OpenStreetMap': layerStreetMap,
+   		'Carte WorldStreetMap': layerEsriWorldStreetMap,
+   		
    	};
     
     const dataPrefecture = L.layerGroup();
@@ -394,6 +460,14 @@
   //  layerStreetMap.addTo(editMap); //  set as default
     
 
+   	var idPark = document.querySelector('#idPark').value;
+    const idParkRegex = /[0-9]/g;
+    const idParkFound = idPark.match(idParkRegex);
+    if (mLng!="" && mLat!="" && idParkFound) {
+    	var txt = document.querySelector('#name').value;
+    	var editMarker = L.marker(L.latLng(mLat,mLng), {icon:editEntranceIcon,draggable:false}).addTo(editMap)
+    		.bindPopup(txt).openPopup();
+    }
     
     
     // event on click
@@ -432,14 +506,17 @@
         	}
     		
 
-            nom ="inconnu";
-            if (feature.properties.namePrefecture) {
-                nom = feature.properties.namePrefecture;
-            }
+            var parcEdit ="";
+            var sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/park/new/check}]]+'?idPark=';
             if (feature.properties.name) {
-                nom=nom+"<br />"+feature.properties.name;
+            	parcEdit = "<p>"+feature.properties.name+"</p>";
+            	if (feature.properties.id) {
+            		parcEdit= "<p>"+ feature.properties.name + "<br /><a href='"+ sUrlEditPark + feature.properties.id +"' >Edit</a></p>";
+            	}
+            	layer.bindPopup(parcEdit);
             }
-            layer.bindPopup(nom + getGMapLink(feature));
+            
+            
         }
     }
     
@@ -541,6 +618,7 @@
         geojsonAutmelLayer.addTo(dataAutmel);
         
         
+        
         // works! used when affect
         geojsonPrefLayer.on('click', function(e){
             console.log("click pref");
@@ -627,10 +705,12 @@
 
     
     //geoman
+    // https://geoman.io/docs/leaflet/category/modes
     editMap.pm.setLang("fr");
     editMap.pm.setGlobalOptions({
    	  allowSelfIntersection: false
    	});
+    
     editMap.pm.addControls({
 	  position: 'topleft',  
 	  drawControls: true,
@@ -683,20 +763,103 @@
     }
     
     function manageCreateDisabled() {
+    	
+    	if (document.getElementById("idPark").value!=="") {
+    		let msg =	[[#{park.new.confirmQuestion1}]] +
+		    			document.getElementById("name").value +
+		    			[[#{park.new.confirmQuestion2}]] + "\n\n" +
+		    			[[#{park.new.confirmYesNo}]] ;
+    		let choice=confirm( msg );
+    		if (!choice) {
+    			return;
+    		}
+    	}
+    	
     	document.getElementById("fsEditPark").disabled = false;
     	var objBtnNew=document.getElementById("btnNew");
+    	objBtnNew.classList.remove('btn-outline-secondary');
     	objBtnNew.classList.remove('btn-outline-success');
     	objBtnNew.classList.add('btn-success');
+
+    	var objBtnUpdate=document.getElementById("btnUpdate");
+    	objBtnUpdate.classList.remove('btn-outline-secondary');
+    	objBtnUpdate.classList.remove('btn-outline-success');
+    	objBtnUpdate.classList.add('btn-outline-secondary');
+    	objBtnUpdate.disabled= true;
+    	
+    	// clean form
+    	//document.getElementById("formNewPark").reset();
+    	
+    	document.getElementById("idPark").value="";
+    	document.getElementById("id").value="";
+    	document.getElementById("sGeometry").value="";
+    	document.getElementById("etat").value="";
+    	document.getElementById("etatAction").value="";
+    	document.getElementById("name").value="";
+    	document.getElementById("quartier").value="";
+    	document.getElementById("type").value="";
+    	document.getElementById("sousType").value="";
+    	document.getElementById("surface").value="";
+    	document.getElementById("surfaceContour").value="";
+    	//document.getElementById("typeId").value="";
+    	document.getElementById("source").value="";
+    	document.getElementById("status").value="";
+    	
+    }
+    
+    function manageUpdateDisabled() {
+    	// can't enter in update mode without existing id
+    	if (document.getElementById("idPark").value==="") {
+  			return;
+    	}
+    	document.getElementById("fsEditPark").disabled = false;
+    	var objBtnUpdate=document.getElementById("btnUpdate");
+    	objBtnUpdate.classList.remove('btn-outline-success');
+    	objBtnUpdate.classList.add('btn-success');
+
+    	var objBtnNew=document.getElementById("btnNew");
+    	objBtnNew.classList.remove('btn-outline-success');
+    	objBtnNew.classList.add('btn-outline-secondary');
+    }
+    if (document.getElementById("idPark").value!=="") {
+    	manageUpdateDisabled();
     }
     
     function savePark() {
+    	var hasError=false;
+    	console.log("savePark");
+    	// TODO continues
+ 	    if (document.getElementById("id").value==="" && document.getElementById("sGeometry").value==="") {
+ 	    	hasError=true;
+ 	    	var item=document.getElementById("blkName");
+ 	    	objBtnNew.classList.add("has-error");
+    	}
+    	
+    	if (document.getElementById("id").value==="" && document.getElementById("sGeometry").value==="") {
+    		hasError=true;
+ 	    	var item=document.getElementById("blkMap");
+ 	    	objBtnNew.classList.add("has-error");
+    	}
+    	
+    	if (hasError) {
+    		console.log("savePark hasError");
+    		return;
+    	}
+    	
     	document.getElementById("saveParkSpinner").style = "display:block;";
     	var objBtnSave=document.getElementById("btnSave");
     	objBtnSave.classList.remove('btn-outline-warning');
     	objBtnSave.classList.add('btn-warning');
     	
-    	// TODO continues
+    	console.log("savePark hasError");
     	
+    	if (document.getElementById("dateDebut").value==="jj/mm/aaaa") {
+    		document.getElementById("dateDebut").value="";
+    	}
+    	if (document.getElementById("dateFin").value==="jj/mm/aaaa") {
+    		document.getElementById("dateFin").value="";
+    	}
+    	document.getElementById("formNewPark").submit();
     }
     
     function manageDisabled() {
@@ -798,7 +961,6 @@
     
 /*
  https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/file-upload-Spring-Boot-Ajax-example
-
 
 	 <!-- HTML5 Input Form Elements -->
 	 <input id="fileupload" type="file" name="fileupload" /> 

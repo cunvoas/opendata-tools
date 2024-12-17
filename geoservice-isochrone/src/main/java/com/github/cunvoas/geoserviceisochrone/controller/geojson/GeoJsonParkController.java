@@ -27,6 +27,7 @@ public class GeoJsonParkController {
     @Autowired
     private ApplicationBusinessProperties applicationBusinessProperties;
 
+    @CrossOrigin 
     @GetMapping("/parkByPolygon")
     public GeoJsonRoot getParkIsochroneByArea(@RequestParam("polygon") Polygon polygon, @RequestParam("annee") Integer annee) {
     	if (annee==null) {
@@ -35,8 +36,7 @@ public class GeoJsonParkController {
         return geoMapService.findAllParkByArea(polygon, annee);
     }
     
-    //FIXME use global conf
-    @CrossOrigin(origins = {"http://localhost:8081", "https://autmel-maps.duckdns.org/"})
+    @CrossOrigin 
     @GetMapping("/area")
     public GeoJsonRoot getParkIsochroneByArea(
     			@RequestParam("swLat") Double swLat,
@@ -51,8 +51,7 @@ public class GeoJsonParkController {
         return geoMapService.findAllParkByArea(annee, swLat, swLng, neLat, neLng);
     }
     
-    //FIXME use global conf
-    @CrossOrigin(origins = {"http://localhost:8081", "https://autmel-maps.duckdns.org/"})
+    @CrossOrigin 
     @GetMapping("/outline")
     public GeoJsonRoot getParkOutlineByArea(
     			@RequestParam("swLat") Double swLat,
@@ -68,6 +67,7 @@ public class GeoJsonParkController {
     }
     
 
+    @CrossOrigin 
     @GetMapping("/parkByCoordsZoom")
     //https://gis.stackexchange.com/questions/284880/get-the-lat-lng-values-of-lines-polygons-drawn-by-leaflet-drawing-tools
     public GeoJsonRoot getCityPage(

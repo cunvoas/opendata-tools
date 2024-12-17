@@ -10,11 +10,6 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-import org.thymeleaf.spring6.SpringTemplateEngine;
-import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
-import org.thymeleaf.spring6.view.ThymeleafViewResolver;
-import org.thymeleaf.templatemode.TemplateMode;
 
 @Configuration
 @EnableWebMvc
@@ -34,6 +29,7 @@ public class ThymeleafConfiguration  implements WebMvcConfigurer, ApplicationCon
     @Override
     public void addResourceHandlers(final ResourceHandlerRegistry registry) {
         WebMvcConfigurer.super.addResourceHandlers(registry);
+        registry.addResourceHandler("/pub/**").addResourceLocations("classpath:/public/");
         registry.addResourceHandler("/mvc/static/**").addResourceLocations("classpath:/static/mvc/");
         registry.addResourceHandler("*.ico").addResourceLocations("classpath:/static/ico/");
 //        registry.addResourceHandler("/images/**").addResourceLocations("/images/");

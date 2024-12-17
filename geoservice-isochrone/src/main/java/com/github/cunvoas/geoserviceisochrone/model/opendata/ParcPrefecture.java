@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Data;
@@ -32,6 +33,11 @@ public class ParcPrefecture {
 	@Id
 	@Column(name = "identifiant")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_park_pref")
+    @SequenceGenerator(
+    		name="seq_park_pref",
+    		allocationSize=1,
+    		initialValue = 1
+    	)
 	private Long id;
 	
 	// original name from prefecture

@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 
 @Data
@@ -19,6 +20,11 @@ public class Region implements Comparator<Region> {
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_region")
+    @SequenceGenerator(
+    		name="seq_region",
+    		allocationSize=1,
+    		initialValue = 1
+    	)
 	private Long id;
 
 	@Column(name = "name")

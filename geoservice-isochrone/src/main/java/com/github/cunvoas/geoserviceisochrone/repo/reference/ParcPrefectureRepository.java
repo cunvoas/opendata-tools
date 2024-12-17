@@ -2,10 +2,10 @@ package com.github.cunvoas.geoserviceisochrone.repo.reference;
 
 import java.util.List;
 
-import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
@@ -33,7 +33,7 @@ public interface ParcPrefectureRepository extends JpaRepository<ParcPrefecture, 
 	
 	@Query(nativeQuery = true, 
 			   value = "SELECT pp.* FROM parc_prefecture pp WHERE ST_Intersects(area, :searchArea")
-	List<ParcPrefecture> findByArea(Polygon searchArea);
+	List<ParcPrefecture> findByArea(@Param("searchArea")Polygon searchArea);
 	
 	@Query(nativeQuery = true, 
 			   value = "SELECT pp.* FROM parc_prefecture pp WHERE ST_Intersects(pp.area, ?1)")

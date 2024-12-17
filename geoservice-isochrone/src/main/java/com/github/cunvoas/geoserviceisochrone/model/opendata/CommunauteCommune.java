@@ -15,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 
 @Data
@@ -24,6 +25,11 @@ public class CommunauteCommune implements Comparator<CommunauteCommune> {
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_com2com")
+    @SequenceGenerator(
+    		name="seq_com2com",
+    		allocationSize=1,
+    		initialValue = 1
+    	)
 	private Long id;
 
 	@Column(name = "name")

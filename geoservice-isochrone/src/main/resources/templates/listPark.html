@@ -149,10 +149,12 @@
 			                        <td th:text="${park.namePark}" />
 			                        <td th:text="${park.type}" />
 			                        <td th:text="${park.oms}" />
-			                        <td th:text="${park.lastEntranceUpdate}" />
-			                        <td th:text="${park.lastIsochroneUpdate}" />
+			                        <td th:text="${#dates.format(park.lastEntranceUpdate, 'dd/MM/yyyy HH:mm')}" />
+			                        <td th:text="${#dates.format(park.lastIsochroneUpdate, 'dd/MM/yyyy HH:mm')}" />
 			                        <td>
 			                            <a th:href="@{/mvc/park/check?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkPark}"></a>
+			                            &nbsp;
+			                            <a th:href="@{/mvc/park/new/check?idPark={idPark}(idPark=${park.idPark})}" th:text="#{park.table.linkParkEdit}"></a>
 			                            &nbsp;
 			                            <a th:href="@{/mvc/entrance/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${park.idRegion},idComm2Co=${park.idCommunauteDeCommunes},idCommune=${park.idCommune},idPark=${park.idPark})}" th:text="#{park.table.linkEntrance}"></a>
 			                        </td>

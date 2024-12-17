@@ -15,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionExtract;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvMassUpdatePivot;
@@ -32,23 +30,23 @@ import com.github.cunvoas.geoserviceisochrone.extern.mel.CsvMelParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.ParkTypeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
 import jakarta.transaction.Transactional;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@Log
 public class ParkService {
 	
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -65,6 +63,8 @@ public class ParkService {
 	
 	@Autowired
 	private ParkAreaRepository parkAreaRepository;
+	@Autowired
+	private ParkTypeRepository parkTypeRepository;
 	@Autowired
 	private CityRepository cityRepository;
 	
@@ -102,38 +102,6 @@ public class ParkService {
 	}
 	
 	/**
-	 * Save entrance from UI.
-	 * @param parkEntrance
-	 * @param withIgn
-	 * @return
-	 * @deprecated
-	 */
-//	public ParkEntrance saveEdited(ParkEntrance parkEntrance, String distance, boolean withIgn) {
-//		if (withIgn) {
-//			try {
-//				Coordinate coord = new Coordinate(
-//						parkEntrance.getEntrancePoint().getX(),
-//						parkEntrance.getEntrancePoint().getY());
-//				
-//				// 300 en zone dense, 1200 sinon
-//				String ignResp = clientIsoChrone.getIsoChrone(coord, distance);
-//				DtoIsoChrone dtoIsoChone = dtoIsoChroneParser.parseBasicIsoChrone(ignResp);
-//				parkEntrance = mapperIsoChrone.map(parkEntrance, dtoIsoChone);
-//				
-//			} catch (Exception e) {
-//				throw new ExceptionExtract("IGN_UPDATE");
-//			}
-//		}
-//		
-//		// presave parkArea  //ERREUR ICI
-//		ParkArea pa = parkAreaRepository.save(parkEntrance.getParkArea());
-//		parkEntrance.setParkArea(pa);
-//		
-//		parkEntrance = parkEntranceRepository.save(parkEntrance);
-//		return parkEntrance;
-//	}
-	
-	/**
 	 * @param parkEntrance
 	 * @param withIgn true if isochrone request required
 	 * @param cityId city to get density of the city
@@ -152,6 +120,12 @@ public class ParkService {
 				parkArea.setName(parcEtJardin.getName());
 				parkArea.setIdParcEtJardin(parcEtJardin.getId());
 				parkArea.setBlock(parcEtJardin.getQuartier());
+				
+				// FIXME quick fix for manual creation
+				ParkType type = parkTypeRepository.getReferenceById(1L);
+				parkArea.setType(type);
+				parkArea.setUpdated(new Date());
+				
 				parkArea = parkAreaRepository.save(parkArea);
 				parkEntrance.setParkArea(parkArea);
 			
@@ -286,7 +260,6 @@ public class ParkService {
 		parkArea = parkAreaRepository.save(parkArea);
 		
 		// refresh
-		//parkArea = parkAreaRepository.findByIdParcEtJardin(pj.getId());
 		this.mergeEntranceAreas(parkArea);
 		parkArea = parkAreaRepository.save(parkArea);
 		

@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.service.park;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -11,7 +12,6 @@ import org.springframework.util.CollectionUtils;
 
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkTypeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
@@ -23,17 +23,14 @@ public class ParkTypeService {
 	@Autowired
 	private ParkJardinRepository parkJardinRepository;
 	
-	
 	@Autowired
 	private ResourceBundleMessageSource messageSource;
 	
 	public List<ParkType> findAll() {
-		Locale locale = LocaleContextHolder.getLocale();
 		
 		List<ParkType> types = parkTypeRepository.findAll();
 		for (ParkType parkType : types) {
-			String trad = messageSource.getMessage(parkType.getI18n(), null, locale);
-			parkType.setLabel(trad);
+			this.setLabel(parkType);
 		}
 		
 		return types;
@@ -41,8 +38,14 @@ public class ParkTypeService {
 	
 	public void setLabel(ParkType parkType) {
 		Locale locale = LocaleContextHolder.getLocale();
-		String trad = messageSource.getMessage(parkType.getI18n(), null, locale);
+		String trad = "";
+		Boolean strict = Boolean.TRUE;
+		if (parkType.getI18n()!=null) {
+			trad = messageSource.getMessage(parkType.getI18n(), null, locale);
+			strict = Boolean.valueOf(messageSource.getMessage(parkType.getI18n()+".oms.strict", null, locale));
+		}
 		parkType.setLabel(trad);
+		parkType.setStrict(strict);
 	}
 	
 	public void populate(List<ParkArea> parkAreas) {
@@ -52,6 +55,17 @@ public class ParkTypeService {
 			}
 		}
 	}
+	
+	public ParkType get(Long parkTypeId) {
+		ParkType pt = null;
+		Optional<ParkType> o = parkTypeRepository.findById(parkTypeId);
+		if (o.isPresent()) {
+			pt = o.get();
+			setLabel(pt);
+		}
+		return pt;
+	}
+	
 	
 	public void populate(ParkArea parkArea) {
 		Locale locale = LocaleContextHolder.getLocale();

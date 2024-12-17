@@ -17,6 +17,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.ToString;
@@ -34,6 +35,11 @@ public class ParkArea {
 	@ToString.Include
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_park")
+    @SequenceGenerator(
+    		name="seq_park",
+    		allocationSize=1,
+    		initialValue = 1
+    	)
 	private Long id;
 
 	@Column(name = "id_parc_jardin")
@@ -74,8 +80,11 @@ public class ParkArea {
 	@ManyToOne
 	@JoinColumn( name="type_id", nullable = true)
 	private ParkType type;
-	
 
 	@Column(name = "oms_custom")
 	private Boolean omsCustom;
+
+	@Column(name = "to_compute")
+	private Boolean toCompute;
+	
 }

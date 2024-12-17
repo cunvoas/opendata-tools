@@ -195,7 +195,7 @@ WITH
 	FROM 
 		carre200shape cs  INNER JOIN carre200 c 
 			ON cs.id_inspire=c.id_inspire
-		INNER JOIN carre200_computed cc ON c.id=cc.id
+		INNER JOIN carre200_computed_v2 cc ON c.id=cc.id
 	),
   ville AS (
   	SELECT c.nom, c.id_insee, c.geo_shape FROM cadastre c
@@ -213,7 +213,7 @@ WITH
 	FROM 
 		carre200shape cs  
 		INNER JOIN carre200 c ON cs.id_inspire=c.id_inspire
-		INNER JOIN carre200_computed cc ON c.id=cc.id
+		INNER JOIN carre200_computed_v2 cc ON c.id=cc.id
 	),
   ville AS (
   	SELECT c.nom, c.id_insee, c.geo_shape FROM cadastre c
