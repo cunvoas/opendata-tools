@@ -176,7 +176,6 @@ public class GeoMapServiceV2 {
 			}
 			
 			
-			
 			List<Cadastre> cadastres = cadastreRepository.findAllById(ids);
 			if (cadastres!=null && cadastres.size()>0) {
     			for (Cadastre cadastre : cadastres) {

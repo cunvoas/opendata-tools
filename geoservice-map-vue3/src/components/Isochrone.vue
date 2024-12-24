@@ -31,6 +31,7 @@
      
 
     <l-map
+      ref="leafletMap"
       :zoom="zoom"
       :center="center"
       :min-zoom="minZoom"
@@ -104,11 +105,18 @@ import {
   LPolygon,
   LControlScale,
 } from "@vue-leaflet/vue-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import { ref, onMounted } from 'vue'
 
 function getCenter(idInspire) {}
 
 export default {
   name: "Isochrone",
+  props: {
+    msg: String,
+    location: Object
+  },
   components: {
     LMap,
     LIcon,
@@ -120,8 +128,15 @@ export default {
     LControl,
     LControlScale,
   },
+  /*
+  setup() {
+    const leafletMap = ref(null);
+    return { leafletMap } // expose map ref
+  },
+  */
   data() {
     return {
+      leafletMap: null,
       loading: false,
       showIsochrones: false,
       showCarre: true,
@@ -130,7 +145,7 @@ export default {
       zoom: 14,
       minZoom: 10,
       maxZoom: 18,
-      center: [50.6349747, 3.046428],
+      center: [50.6349747, 3.046428], // Default center
       bounds: null,
       boundSwLat: 0,
       boundSwLng: 0,
@@ -171,7 +186,6 @@ export default {
           maxZoom: 19,
           minZoom: 10,
         },
-        
         {
           name: "Vues Aérienne IGN",
           visible: false,
@@ -181,13 +195,45 @@ export default {
           maxZoom: 18,
           minZoom: 10,
         },
-        
-             
-        
       ],
+      addressIcon: L.icon({
+        iconUrl: '../assets/location.png', // Replace with the path to your address icon
+        iconSize: [25, 41], // Size of the icon
+        iconAnchor: [12, 41], // Point of the icon which will correspond to marker's location
+        popupAnchor: [1, -34], // Point from which the popup should open relative to the iconAnchor
+      })
     };
   },
+  watch: {
+    location: {
+      handler(newLocation) {
+        //console.log("location handler= "+JSON.stringify(newLocation));
+        if (newLocation && newLocation.lonX && newLocation.latY) {
+          this.center = [newLocation.latY, newLocation.lonX];
+          this.addTemporaryMarker(newLocation.latY, newLocation.lonX);
+          if (newLocation.locType==='city') {
+            this.zoom= 14;
+          } else if (newLocation.locType==='address') {
+            this.zoom= 17;
+          }
+         
+        }
+      },
+      immediate: true,
+      deep: true
+    }
+  },
+
   methods: {
+    addTemporaryMarker(lat, lng) {
+      /*
+      const map = leafletMap.value.leafletObject
+      const marker = L.marker([lat, lng], { icon: this.addressIcon, draggable:false }).addTo(map);
+      setTimeout(() => {
+        map.removeLayer(marker);
+      }, 2000); // Remove marker after 2 seconds
+      */
+    },
     onAnnee() {
       // refresh GeoJsonIsochrones v-model = this.annee
       var qryPrms =

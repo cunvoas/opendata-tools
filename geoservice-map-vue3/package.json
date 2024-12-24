@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.7.9",
     "chartjs": "^0.3.24",
     "vue": "^3.5.12",
     "vue-chartjs": "^5.3.2",

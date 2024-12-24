@@ -24,6 +24,8 @@ web:
 
 application:
   security:
+    export-credential-key: ${EXPORT_KEY}
+    export-ip-address:  ${EXPORT_IP}
     timehack: ${THE_LOGIN_TIME_IN_PROD}
     jwt-sign-key: FAKE_KEY
     salt-len: ${PASSWORD_SALT}
@@ -46,3 +48,4 @@ application:
     
   admin:
     photo-path: /var/isochrone/photo
+    export-data-path: /var/isochrone/data
