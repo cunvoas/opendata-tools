@@ -50,9 +50,13 @@ public class FileExporterControler {
 		}
 		
 		try {
-			servicePublicationExporter.writeRegions();
 			
-			servicePublicationExporter.writeCadastres();
+			
+//			servicePublicationExporter.writeRegions();
+//			servicePublicationExporter.writeGeoJsonCadastres();
+//
+			servicePublicationExporter.writeGeoJsonIsochrone();
+			servicePublicationExporter.writeGeoJsonCarreaux();
 			
 			status = HttpStatus.CREATED;
 			success = Boolean.TRUE;
@@ -69,8 +73,6 @@ public class FileExporterControler {
 		
 		return new ResponseEntity<Boolean>(success, status);
 	}
-	
-	
 	
 
 	private Boolean matchOk(String ip) {

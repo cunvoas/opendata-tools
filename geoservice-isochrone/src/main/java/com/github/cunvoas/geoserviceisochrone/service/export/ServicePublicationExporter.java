@@ -3,10 +3,18 @@ package com.github.cunvoas.geoserviceisochrone.service.export;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,24 +22,32 @@ import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.GeoJsonCadastreController;
+import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoCoordinate;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.export.dto.CityDto;
 import com.github.cunvoas.geoserviceisochrone.service.export.dto.CommunauteCommuneDto;
 import com.github.cunvoas.geoserviceisochrone.service.export.dto.RegionDto;
 import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ServicePublicationExporter {
-	@Value("${application.admin.export-data-path}")
-	private String jsonFileFolder;
-	
+
+	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 	private ObjectMapper objectMapper = new ObjectMapper();
+	
+	
 	public ServicePublicationExporter() {
 		super();
 		objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, DtoCoordinate.class);
@@ -42,10 +58,16 @@ public class ServicePublicationExporter {
 		objectMapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, false);
 		objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 	}
+
+	@Autowired
+	private ApplicationBusinessProperties applicationBusinessProperties;
 	
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
 	
+    @Autowired
+    private CadastreRepository cadastreRepository;
+    
 	@Autowired
 	private GeoJsonCadastreController geoJsonCadastreController;
 	
@@ -54,36 +76,208 @@ public class ServicePublicationExporter {
 	
 
 	/**
-	 * /data/carres
+	 * Write INSEE files.
 	 * @throws StreamWriteException
 	 * @throws DatabindException
 	 * @throws IOException
 	 */
-	public void writeCarreaux() throws StreamWriteException, DatabindException, IOException {
-		File file = new File(jsonFileFolder+"/data/carres/c2c/");
-		file.mkdirs();
-		file = new File(jsonFileFolder+"/data/carres/city/");
+	public void writeGeoJsonCarreaux() throws StreamWriteException, DatabindException, IOException {
+		File file = new File(applicationBusinessProperties.getJsonFileFolder()+"/geojson/carres");
 		file.mkdirs();
 
+		Integer[] tAnnees = applicationBusinessProperties.getInseeAnnees();
+		
 		List<CommunauteCommune> lc2c = serviceReadReferences.getCommunauteCommune();
-		for (CommunauteCommune c2c : lc2c) {
-			GeoJsonRoot geoJson = geoMapServiceV2.findAllCadastreByComm2Co(c2c.getId());
+		for (CommunauteCommune com2co : lc2c) {
+
+    		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/carres/"+String.valueOf(com2co.getId());
+    		file = new File(path);
+    		file.mkdirs();
 			
-			file = new File(jsonFileFolder+"/data/carres/c2c/carres_c2c_"+String.valueOf(c2c.getId())+".json");
-			objectMapper.writeValue(file, geoJson);
+			for (int i = 0; i < tAnnees.length; i++) {
+				Integer annee=tAnnees[i];
+				GeoJsonRoot geojson = geoMapServiceV2.findAllCarreByCommunauteCommune(com2co, annee);
+				if (geojson!=null && !geojson.getFeatures().isEmpty()) {
+					file = new File(path+"/carre2_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
+					objectMapper.writeValue(file, geojson);
+				}
+			}
+			
 		}
-		
-		// TODO get list city with all carre complete
-//		List<City> lcity = null;
-//		for (City city : lcity) {
-//			GeoJsonRoot geoJson = geoMapServiceV2.findAllCadastreByComm2Co(c2c.getId());
-//		}
-		
 	}
 	
-	public void writeCadastres() throws StreamWriteException, DatabindException, IOException {
+	public void testGetCom2CoShape() {
+		List<CommunauteCommune> com2cos = serviceReadReferences.getCommunauteCommune();
+		for (CommunauteCommune communauteCommune : com2cos) {
+			if (communauteCommune.getId()==1L) {
+				Polygon p = getCom2CoSquareShape(communauteCommune);
+				
+				System.out.println(p);
+			}
+		}
+		
+	}
+
+	Polygon getCom2CoLessPrecisionShape(CommunauteCommune com2co) {
+
+		// get all insee code of CommunauteCommune
+		List<String> ids = new ArrayList<>();
+		for (City city : com2co.getCities()) {
+			ids.add(city.getInseeCode());
+		}
+
+		// union all polys of Cadastre
+		List<Cadastre> cadastres = cadastreRepository.findAllById(ids);
+		List<Geometry> geoms = new ArrayList<Geometry>();
+		for (Cadastre cadastre : cadastres) {
+			geoms.add(cadastre.getGeoShape());
+		}
+		// freemem
+		cadastres=null;
+		ids=null;
+		Collections.sort(geoms, new GeometryComparator());
+		
+		Geometry mergedPoly = null;
+		
+		
+log.error("total="+String.valueOf(geoms.size()));
+		
+	int maxLoop=100;
+	while(geoms.size()!=0 && maxLoop<0) {
+			for (Iterator<Geometry> iterator = geoms.iterator(); iterator.hasNext();) {
+				Geometry geometry =  iterator.next();	
+				Geometry convex = geometry.convexHull();
+				if (mergedPoly==null) {
+					mergedPoly=convex;
+					iterator.remove();
+				} else if(
+						mergedPoly.touches(convex) ||
+						mergedPoly.intersects(convex)
+						) {
+					mergedPoly = mergedPoly.union(convex);
+					iterator.remove();
+				}
+			}
+log.error("maxLoop: "+maxLoop);
+			maxLoop--;
+	}
+		
+		
+		if (!geoms.isEmpty()) {
+			log.error("total="+String.valueOf(geoms.size()));
+			throw new ExceptionGeo("MERGE_FAILS");
+		}
+		
+		
+		Coordinate[] coords = mergedPoly.getCoordinates();
+		Coordinate first =coords[0];
+		Coordinate last =coords[coords.length-1];
+		if(first!=last) {
+			coords[coords.length-1] = first;
+		}
+		
+		return (Polygon)factory.createPolygon(coords);
+		
+	}
+	/**
+	 * Generate a square that contains the global shape of CommunauteCommune.
+	 * fast select but slower after because too many item after.
+	 * efficient for isochrones
+	 * @param com2co
+	 * @return
+	 */
+	Polygon getCom2CoSquareShape(CommunauteCommune com2co) {
+
+		// get all insee code of CommunauteCommune
+		List<String> ids = new ArrayList<>();
+		for (City city : com2co.getCities()) {
+			ids.add(city.getInseeCode());
+		}
+
+		// union all polys of Cadastre
+		List<Cadastre> cadastres = cadastreRepository.findAllById(ids);
+		
+		// inverse extremum
+		double minX=180;
+		double maxX=-180;
+		double minY=90;
+		double maxY=-90;
+		
+
+		// extract envelope
+		for (Cadastre cadastre : cadastres) {
+			Geometry envel = cadastre.getGeoShape().getEnvelope();
+			Coordinate[] coords = envel.getCoordinates();
+			for (int i = 0; i < coords.length; i++) {
+				Coordinate c = coords[i];
+				
+				if (c.getX()>maxX) {
+					maxX = c.getX();
+				}
+				if (c.getX()<minX) {
+					minX = c.getX();
+				}
+				if (c.getY()>maxY) {
+					maxY = c.getY();
+				}
+				if (c.getY()<minY) {
+					minY = c.getY();
+				}
+			}
+			
+		}
+		
+		List<Coordinate> lCoords = new ArrayList<>();
+		lCoords.add( new Coordinate(minX,minY) );
+		lCoords.add( new Coordinate(minX,maxY) );
+		lCoords.add( new Coordinate(maxX,maxY) );
+		lCoords.add( new Coordinate(maxX,minY) );
+		lCoords.add( new Coordinate(minX,minY) );
+    	
+    	Coordinate[] coords = lCoords.toArray(Coordinate[]::new);
+		
+		return (Polygon)factory.createPolygon(coords).getEnvelope();
+	}
 	
-		File file = new File(jsonFileFolder+"/data/cadastres");
+    /**
+	 * Write Isochrone files.
+     * @throws StreamWriteException
+     * @throws DatabindException
+     * @throws IOException
+     */
+    public void writeGeoJsonIsochrone() throws StreamWriteException, DatabindException, IOException {
+
+		Integer[] tAnnees = applicationBusinessProperties.getInseeAnnees();
+		
+    	List<CommunauteCommune> com2cos = serviceReadReferences.getCommunauteCommune();
+    	for (CommunauteCommune com2co : com2cos) {
+    		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/isochrones/"+String.valueOf(com2co.getId());
+    		File file = new File(path);
+    		file.mkdirs();
+			
+			Polygon polygon = getCom2CoSquareShape(com2co);
+			
+			for (int i = 0; i < tAnnees.length; i++) {
+				Integer annee=tAnnees[i];
+				GeoJsonRoot geojson = geoMapServiceV2.findAllParkByArea(polygon, annee);
+				
+				if (!geojson.getFeatures().isEmpty()) {
+					file = new File(path+"/isochrone_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
+					objectMapper.writeValue(file, geojson);
+				}
+			}
+    	}
+    }
+	
+	/**
+	 * Write Cadastre files.
+	 * @throws StreamWriteException
+	 * @throws DatabindException
+	 * @throws IOException
+	 */
+	public void writeGeoJsonCadastres() throws StreamWriteException, DatabindException, IOException {
+	
+		File file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/cadastres");
 		file.mkdirs();
 		
 		List<CommunauteCommune> lc2c = serviceReadReferences.getCommunauteCommune();
@@ -91,34 +285,35 @@ public class ServicePublicationExporter {
 			GeoJsonRoot geoJson = geoJsonCadastreController.getCadastreByCom2Com(c2c.getId());
 			
 			String regId = String.valueOf(c2c.getRegion().getId());
-			file = new File(jsonFileFolder+"/data/cadastres/"+regId+"/cadastre_c2c_"+String.valueOf(c2c.getId())+".json");
+			file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/cadastres/"+regId+"/cadastre_c2c_"+String.valueOf(c2c.getId())+".json");
 			objectMapper.writeValue(file, geoJson);
 		}
-		
 	}
 	
+	/**
+	 * Write region files.
+	 * @throws StreamWriteException
+	 * @throws DatabindException
+	 * @throws IOException
+	 */
 	public void writeRegions() throws StreamWriteException, DatabindException, IOException {
 		
-		File file = new File(jsonFileFolder+"/data/com2cos");
+		File file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/com2cos");
 		file.mkdirs();
-		file = new File(jsonFileFolder+"/data/cities");
+		file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/cities/com2co/");
+		file.mkdirs();
+		file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/cities/dept/");
 		file.mkdirs();
 		
 		List<Region> regions = serviceReadReferences.getRegion();
 		for (Region region : regions) {
 			String regId = String.valueOf(region.getId());
-			file = new File(jsonFileFolder+"/data/com2cos/"+regId);
+			file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/com2cos/"+regId);
 			file.mkdirs();
-			file = new File(jsonFileFolder+"/data/cadastres/"+regId);
-			file.mkdirs();
-			file = new File(jsonFileFolder+"/data/carres/"+regId);
+			file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/cadastres/"+regId);
 			file.mkdirs();
 		}
-		
-		
-		file = new File(jsonFileFolder+"/data/regions.json");
-		
-		
+		file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/regions.json");
 		
 		List<RegionDto> regionsSer=new ArrayList<>();
 		for (Region region : regions) {
@@ -131,7 +326,7 @@ public class ServicePublicationExporter {
 			List<CommunauteCommune> lc2c = serviceReadReferences.getCommunauteByRegionId(region.getId());
 			if (!lc2c.isEmpty()) {
 				String regId = String.valueOf(region.getId());
-				file = new File(jsonFileFolder+"/data/com2cos/"+regId+"/com2cos_"+region.getId()+".json");
+				file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/com2cos/"+regId+"/com2cos_"+region.getId()+".json");
 				List<CommunauteCommuneDto> lc2cSer=new ArrayList<>();
 				for (CommunauteCommune c2c : lc2c) {
 					CommunauteCommuneDto c2cSer=new CommunauteCommuneDto(c2c);
@@ -141,7 +336,7 @@ public class ServicePublicationExporter {
 				
 				for (CommunauteCommune c2c : lc2c) {
 					List<City> lc = serviceReadReferences.getCityByCommunauteCommuneId(c2c.getId());
-					file = new File(jsonFileFolder+"/data/cities/cities_"+c2c.getId()+".json");
+					file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/cities/com2co/cities_"+c2c.getId()+".json");
 					
 					List<CityDto> lcSer=new ArrayList<>();
 					for (City c : lc) {

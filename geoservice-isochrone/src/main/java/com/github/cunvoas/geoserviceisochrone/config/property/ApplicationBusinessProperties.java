@@ -33,6 +33,9 @@ public class ApplicationBusinessProperties {
 
 	@Value("${application.admin.export-path}")
 	private String exportPath;
+
+	@Value("${application.admin.export-data-path}")
+	private String jsonFileFolder;
 	
 	@Value("${application.mailjet.apiToken}")
 	private String mailjetToken;

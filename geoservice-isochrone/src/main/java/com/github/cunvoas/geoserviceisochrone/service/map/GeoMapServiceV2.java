@@ -5,8 +5,11 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Coordinate;
@@ -102,7 +105,7 @@ public class GeoMapServiceV2 {
     @Autowired
     private InseeCarre200mComputedV2Repository inseeCarre200mComputedV2Repository;
     @Autowired
-    private InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;
+    private InseeCarre200mOnlyShapeRepository inseeCarre200osRepository;
     @Autowired
     private Filosofil200mRepository filosofil200mRepository;
     @Autowired
@@ -751,15 +754,27 @@ public class GeoMapServiceV2 {
      * @param polygon
      * @return
      */
-    
-	public GeoJsonRoot findAllCarreByArea(Polygon polygon, Integer annee) {
-		log.error("findAllCarreByArea(Polygon polygon, Integer annee {})", annee);
-    	GeoJsonRoot root = new GeoJsonRoot();
+	public GeoJsonRoot findAllCarreByCommunauteCommune(CommunauteCommune com2co, Integer annee) {
+		log.error("findAllCarreByArea(CommunauteCommune {}, Integer annee {})", com2co.getName(), annee);
+    	GeoJsonRoot root = null;
+		
+    	Set<InseeCarre200mOnlyShape> carres = new HashSet<>();
     	
-    	if (polygon!=null) {
-    	//List<InseeCarre200m> carres = inseeCarre200mRepository.getAllCarreInMap(GeometryQueryHelper.toText(polygon));
-    	List<InseeCarre200mOnlyShape> carres = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(polygon), Boolean.TRUE);
+    	for (City city : com2co.getCities()) {
+    		List<InseeCarre200mOnlyShape> cShapes = inseeCarre200osRepository.findCarreByInseeCode(
+    				city.getInseeCode(), 
+    				Boolean.TRUE);
+    		carres.addAll(cShapes);
+    	}
     	
+    	root = findAllCarreByArea(carres, annee);
+    	
+    	return root;
+	}
+	
+	protected GeoJsonRoot findAllCarreByArea(Collection<InseeCarre200mOnlyShape> carres, Integer annee) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
     	if (carres!=null && carres.size()>0) {
     		for (InseeCarre200mOnlyShape c : carres) {
     			
@@ -823,8 +838,19 @@ public class GeoMapServiceV2 {
     			}
 			}
     	}
+		
+		return root;
+	}
+	
+	public GeoJsonRoot findAllCarreByArea(Polygon polygon, Integer annee) {
+		log.error("findAllCarreByArea(Polygon polygon, Integer annee {})", annee);
+		GeoJsonRoot root = null;
+    	if (polygon!=null) {
+	    	//List<InseeCarre200m> carres = inseeCarre200mRepository.getAllCarreInMap(GeometryQueryHelper.toText(polygon));
+	    	List<InseeCarre200mOnlyShape> carres = inseeCarre200osRepository.findCarreInMapArea(GeometryQueryHelper.toText(polygon), Boolean.TRUE);
+	    	
+	    	root = findAllCarreByArea(carres, annee);
     	}
-    	
     	return root;
     }
     
