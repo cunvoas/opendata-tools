@@ -100,7 +100,7 @@ export default {
             try {
                 const selectedOption = event.target.options[event.target.selectedIndex];
                 this.selectedCom2coName=selectedOption.text;
-                const response = await axios.get(`https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/cities/cities_${this.selectedCom2co}.json`); //${this.selectedCom2co}/
+                const response = await axios.get(`https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/cities/com2co/cities_${this.selectedCom2co}.json`); //${this.selectedCom2co}/
                 this.cities = response.data;
             } catch (error) {
                 this.cities = [];
@@ -110,7 +110,7 @@ export default {
             }
         },
         fetchAddresses: debounce(async function (query) {
-            if (!this.selectedCity && !this.selectedCityInseeCode && query.length < 4) return;
+            if (!this.selectedCity && !this.selectedCityInseeCode && query.length < 3) return;
             try {
                 const response = await axios.get(`https://api-adresse.data.gouv.fr/search/?citycode=${this.selectedCityInseeCode}&q=` + encodeURI(query), { timeout: 5000 });
                 const geojson = response.data;
@@ -122,7 +122,7 @@ export default {
             } catch (error) {
                 console.error('Error fetching addresses:', error);
             }
-        }, 100),
+        }, 250),
         handleCityChange(event) {  // call by city
             const selectedOption = event.target.options[event.target.selectedIndex];
             this.selectedCityName = selectedOption.text;

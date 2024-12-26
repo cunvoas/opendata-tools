@@ -109,7 +109,45 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { ref, onMounted } from 'vue'
 
-function getCenter(idInspire) {}
+function  getSquareColor(zoneDense, densite) {
+        let sqColor = '#4944f5';
+        if (densite===null || densite==='N/A' || densite==='' ) {
+          return sqColor;
+        }
+        densite = densite.replace(",", ".");
+
+        const greenMin = '#9ee88f';
+        const greenMax = '#1a9900';
+        const densiteMinDense=10;
+        const densiteMaxDense=12;
+        const densiteMinNoDense=25;
+        const densiteMaxNoDense=45;
+
+        let modColor=null;
+        if (zoneDense===false) {
+          if (densite>=densiteMinNoDense) {
+            sqColor=greenMin;
+          } else if (densite>=densiteMaxNoDense) {
+            sqColor=greenMax;
+          } else {
+            modColor=2;
+          }
+        } else {
+          if (densite>=densiteMinDense) {
+            sqColor=greenMin;
+          } else if (densite>=densiteMaxDense) {
+            sqColor=greenMax;
+          } else {
+            modColor=4;
+          }
+        }
+        if (modColor!==null) {
+          const i_onecolor = 123+Math.round(densite)*modColor;
+          const s_onecolor = i_onecolor.toString(16);
+          sqColor = '#' + s_onecolor + s_onecolor + s_onecolor;
+        }
+        return sqColor;
+}
 
 export default {
   name: "Isochrone",
@@ -155,6 +193,7 @@ export default {
       geojsonCarre: null,
       geojsonCadastre: null,
       annee: "2019",
+      com2co: "1",
       restUrlCadastre: "http://localhost:8980/isochrone/map/cadastre/area",
       restUrlCarre: "http://localhost:8980/isochrone/map/insee/carre200m/area",
       restUrlIsochrones: "http://localhost:8980/isochrone/map/park/area",
@@ -208,7 +247,15 @@ export default {
     location: {
       handler(newLocation) {
         //console.log("location handler= "+JSON.stringify(newLocation));
-        if (newLocation && newLocation.lonX && newLocation.latY) {
+        if (newLocation) {
+          if (newLocation.com2coId && this.com2co!==newLocation.com2coId) {
+            this.com2co = newLocation.com2coId;   
+              
+            this.callGeoJsonIsochrones();
+            this.callGeoJsonCarres();
+            this.callGeoJsonCadastre();         
+          }
+         if (newLocation.lonX && newLocation.latY) {
           this.center = [newLocation.latY, newLocation.lonX];
           this.addTemporaryMarker(newLocation.latY, newLocation.lonX);
           if (newLocation.locType==='city') {
@@ -216,7 +263,7 @@ export default {
           } else if (newLocation.locType==='address') {
             this.zoom= 17;
           }
-         
+          }
         }
       },
       immediate: true,
@@ -286,7 +333,8 @@ export default {
 
     async callGeoJsonIsochrones(qryPrms) {
       // data isochrones
-      var base = "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/park/park_c2c_1_" +  this.annee + ".json";
+      //var base = "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/park/park_c2c_1_" +  this.annee + ".json";
+      var base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/isochrones/1/isochrone_" +  this.annee + "_" +  this.com2co + ".json";
       //var base = this.restUrlIsochrones;
       console.log("callGeoJsonIsochrones" + base + qryPrms);
       const respIsochrone = await fetch(base + qryPrms);
@@ -295,7 +343,8 @@ export default {
     },
     async callGeoJsonCarres(qryPrms) {
       // data carreau 200m
-      var base = "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/carre200m/carre200m_c2c_1_" + this.annee + ".json";
+      //var base = "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/carre200m/carre200m_c2c_1_" + this.annee + ".json";
+      var base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/carres/1/carre_" + this.annee + "_" + this.com2co + ".json";
       //var base = this.restUrlCarre;
       console.log("callGeoJsonCarres" + base + qryPrms);
       const respCarre = await fetch(base + qryPrms);
@@ -457,6 +506,13 @@ export default {
           });
         });
 
+        layer.setStyle({
+            fillColor:  getSquareColor(feature.properties.isDense, feature.properties.squareMtePerCapitaOms),
+            fillOpacity: 0.4,
+          });
+       
+
+        /*
         if (feature.properties.popParkIncluded !== "n/a") {
           layer.setStyle({
             fillColor: feature.properties.fillColor,
@@ -472,6 +528,7 @@ export default {
             fillOpacity: 0.2,
           });
         }
+        */
       };
     },
 
