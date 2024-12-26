@@ -293,7 +293,7 @@ public class GeoMapServiceV2 {
      * @return
      */
     
-	public String getColor(int index) {
+	protected String getColor(int index) {
     	int start=240;
     	int rawOffest=64;
     	
@@ -616,7 +616,7 @@ public class GeoMapServiceV2 {
 	 * @param pac
 	 */
 	
-	public void extraFeature(ParkView pv, ParkAreaComputed pac) {
+	protected void extraFeature(ParkView pv, ParkAreaComputed pac) {
 		
 		NumberFormat nf = new DecimalFormat("# ##0");
 		if (pac!=null) {
@@ -630,13 +630,13 @@ public class GeoMapServiceV2 {
 	}
 	
 
-	BigDecimal fromDouble(Double d) {
+	protected BigDecimal fromDouble(Double d) {
 		NumberFormat formatter = new DecimalFormat("#0");     
 		return new BigDecimal(formatter.format(d));
 	}
 	
 	
-	public String getFillColorCarre(Carre200AndShapeView v, InseeCarre200mComputedV2 pacEd) {
+	protected String getFillColorCarre(Carre200AndShapeView v, InseeCarre200mComputedV2 pacEd) {
 		String color = THRESHOLD_GREENWASHED;
 
 		if (pacEd.getUpdated()!=null) {
@@ -692,7 +692,7 @@ public class GeoMapServiceV2 {
 	 * @param sph
 	 * @return gradient color
 	 */
-	public String getColorGrey(Double sph) {
+	protected String getColorGrey(Double sph) {
 		String color=THRESHOLD_BAD;
 		// color from 0 to 255
 		Long v = Math.round(123+sph*10);
@@ -716,7 +716,7 @@ public class GeoMapServiceV2 {
 	 * @param v
 	 * @return
 	 */
-	public String formatInt(BigDecimal v) {
+	protected String formatInt(BigDecimal v) {
 		if (v!=null) {
 			return  DF_E.format(v);
 		}
@@ -799,6 +799,8 @@ public class GeoMapServiceV2 {
     			if (ocputed.isPresent()) {
     				InseeCarre200mComputedV2 cputed = ocputed.get();
     				
+    				
+    				
     				v.setPeople(formatInt(cputed.getPopAll()));
     				
     				// declared by public organisation (^possible greenwashing)
@@ -814,7 +816,7 @@ public class GeoMapServiceV2 {
     				v.setPopParkIncludedOms(formatInt(cputed.getPopIncludedOms()));
     				v.setPopSquareShareOms(formatInt(cputed.getPopulationInIsochroneOms()));
     				v.setSquareMtePerCapitaOms(formatDec(cputed.getSurfaceParkPerCapitaOms()));
-    				
+    				v.setIsDense(cputed.getIsDense());
     				v.setFillColor(this.getFillColorCarre(v, cputed));
     				
     				if (cputed.getComments()!=null) {
@@ -871,7 +873,7 @@ public class GeoMapServiceV2 {
      * @return
      */
     
-	public String formatPopulation(String inssePop) {
+	protected String formatPopulation(String inssePop) {
     	String ret = "";
     	if (StringUtils.isNotBlank(inssePop)) {
     		int index = inssePop.indexOf(".");
@@ -916,7 +918,7 @@ public class GeoMapServiceV2 {
      * @param neLng
      * @return
      */
-    Polygon getPolygonFromBounds(Double swLat, Double swLng, Double neLat, Double neLng) {
+    protected Polygon getPolygonFromBounds(Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon=null;
     	
     	Double x1= swLng;
@@ -951,7 +953,7 @@ public class GeoMapServiceV2 {
      * @param northEast
      * @return
      */
-    boolean checkDistance(Coordinate southWest, Coordinate northEast) {
+    protected boolean checkDistance(Coordinate southWest, Coordinate northEast) {
     	Double d =  DistanceHelper.crowFlyDistance(
 	    				southWest.getY(), southWest.getX(),
 	    				northEast.getY(), northEast.getX()

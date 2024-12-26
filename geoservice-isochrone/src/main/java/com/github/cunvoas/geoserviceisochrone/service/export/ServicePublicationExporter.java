@@ -98,7 +98,7 @@ public class ServicePublicationExporter {
 				Integer annee=tAnnees[i];
 				GeoJsonRoot geojson = geoMapServiceV2.findAllCarreByCommunauteCommune(com2co, annee);
 				if (geojson!=null && !geojson.getFeatures().isEmpty()) {
-					file = new File(path+"/carre2_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
+					file = new File(path+"/carre_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
 					objectMapper.writeValue(file, geojson);
 				}
 			}
@@ -106,79 +106,6 @@ public class ServicePublicationExporter {
 		}
 	}
 	
-	public void testGetCom2CoShape() {
-		List<CommunauteCommune> com2cos = serviceReadReferences.getCommunauteCommune();
-		for (CommunauteCommune communauteCommune : com2cos) {
-			if (communauteCommune.getId()==1L) {
-				Polygon p = getCom2CoSquareShape(communauteCommune);
-				
-				System.out.println(p);
-			}
-		}
-		
-	}
-
-	Polygon getCom2CoLessPrecisionShape(CommunauteCommune com2co) {
-
-		// get all insee code of CommunauteCommune
-		List<String> ids = new ArrayList<>();
-		for (City city : com2co.getCities()) {
-			ids.add(city.getInseeCode());
-		}
-
-		// union all polys of Cadastre
-		List<Cadastre> cadastres = cadastreRepository.findAllById(ids);
-		List<Geometry> geoms = new ArrayList<Geometry>();
-		for (Cadastre cadastre : cadastres) {
-			geoms.add(cadastre.getGeoShape());
-		}
-		// freemem
-		cadastres=null;
-		ids=null;
-		Collections.sort(geoms, new GeometryComparator());
-		
-		Geometry mergedPoly = null;
-		
-		
-log.error("total="+String.valueOf(geoms.size()));
-		
-	int maxLoop=100;
-	while(geoms.size()!=0 && maxLoop<0) {
-			for (Iterator<Geometry> iterator = geoms.iterator(); iterator.hasNext();) {
-				Geometry geometry =  iterator.next();	
-				Geometry convex = geometry.convexHull();
-				if (mergedPoly==null) {
-					mergedPoly=convex;
-					iterator.remove();
-				} else if(
-						mergedPoly.touches(convex) ||
-						mergedPoly.intersects(convex)
-						) {
-					mergedPoly = mergedPoly.union(convex);
-					iterator.remove();
-				}
-			}
-log.error("maxLoop: "+maxLoop);
-			maxLoop--;
-	}
-		
-		
-		if (!geoms.isEmpty()) {
-			log.error("total="+String.valueOf(geoms.size()));
-			throw new ExceptionGeo("MERGE_FAILS");
-		}
-		
-		
-		Coordinate[] coords = mergedPoly.getCoordinates();
-		Coordinate first =coords[0];
-		Coordinate last =coords[coords.length-1];
-		if(first!=last) {
-			coords[coords.length-1] = first;
-		}
-		
-		return (Polygon)factory.createPolygon(coords);
-		
-	}
 	/**
 	 * Generate a square that contains the global shape of CommunauteCommune.
 	 * fast select but slower after because too many item after.

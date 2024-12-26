@@ -27,6 +27,7 @@ public class Carre200AndShapeView extends GeoJsonProperty {
 	private String popParkExcludedOms="";
 	private String popSquareShareOms="";
 	private String squareMtePerCapitaOms="";
+	private Boolean isDense=null;
 	
 	private String commentParks="";
 	
