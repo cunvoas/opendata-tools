@@ -31,7 +31,7 @@ public class Carre200AndShapeView extends GeoJsonProperty {
 	
 	private String commentParks="";
 	
-	private String fillColor="#060512";
+	//private String fillColor="#060512";
 	private String areaPerPeople="";
 	private String area="";
 	

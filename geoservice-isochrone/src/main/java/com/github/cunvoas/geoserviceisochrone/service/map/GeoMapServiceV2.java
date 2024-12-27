@@ -291,8 +291,9 @@ public class GeoMapServiceV2 {
      * shuffle color of polygons.
      * @param index
      * @return
+     * @deprecated
      */
-    
+    @Deprecated
 	protected String getColor(int index) {
     	int start=240;
     	int rawOffest=64;
@@ -436,8 +437,6 @@ public class GeoMapServiceV2 {
 			List<ParkArea> parkAreas =  parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(polygon));
 			if (!CollectionUtils.isEmpty(parkAreas)) {
 				for (ParkArea parkArea : parkAreas) {
-					
-					
 					GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
 					feature.setGeometry(parkArea.getPolygon());
@@ -447,8 +446,6 @@ public class GeoMapServiceV2 {
 					pv.setId(String.valueOf(parkArea.getId()));
 					pv.setName(parkArea.getName());
 					pv.setQuartier(parkArea.getBlock());
-					
-					
 
 					Optional<ParkAreaComputed> cpu = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
 					if (cpu.isPresent()) {
@@ -625,7 +622,7 @@ public class GeoMapServiceV2 {
 			pv.setOms(pac.getOms());
 			pv.setDense(pac.getIsDense());
 			
-			pv.setFillColor(this.getFillColorPark(pv, pac));
+			//pv.setFillColor(this.getFillColorPark(pv, pac));
 		}
 	}
 	
@@ -734,9 +731,7 @@ public class GeoMapServiceV2 {
 			return  DF_S.format(v);
 		}
 		return "-";
-		
 	}
-	
 	
 	 /**
 	 * @param polygon
@@ -817,7 +812,7 @@ public class GeoMapServiceV2 {
     				v.setPopSquareShareOms(formatInt(cputed.getPopulationInIsochroneOms()));
     				v.setSquareMtePerCapitaOms(formatDec(cputed.getSurfaceParkPerCapitaOms()));
     				v.setIsDense(cputed.getIsDense());
-    				v.setFillColor(this.getFillColorCarre(v, cputed));
+    				//v.setFillColor(this.getFillColorCarre(v, cputed));
     				
     				if (cputed.getComments()!=null) {
     					v.setCommentParks(cputed.getComments());
@@ -848,9 +843,7 @@ public class GeoMapServiceV2 {
 		log.error("findAllCarreByArea(Polygon polygon, Integer annee {})", annee);
 		GeoJsonRoot root = null;
     	if (polygon!=null) {
-	    	//List<InseeCarre200m> carres = inseeCarre200mRepository.getAllCarreInMap(GeometryQueryHelper.toText(polygon));
 	    	List<InseeCarre200mOnlyShape> carres = inseeCarre200osRepository.findCarreInMapArea(GeometryQueryHelper.toText(polygon), Boolean.TRUE);
-	    	
 	    	root = findAllCarreByArea(carres, annee);
     	}
     	return root;

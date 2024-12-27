@@ -60,9 +60,9 @@ export default {
 
       const coords = item.id.split(', ');
       const loc = {
-          locType: 'address',
-          lonX: coords[0],
-          latY: coords[1]
+          "locType": "address",
+          "lonX": coords[0],
+          "latY": coords[1]
       };
       //console.log("selectItem.emit"+JSON.stringify(loc));
       this.$emit('location-selected', loc);

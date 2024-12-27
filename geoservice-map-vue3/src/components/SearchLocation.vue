@@ -54,7 +54,6 @@ export default {
         this.fetchRegions();
         this.selectedRegion = '9';
         this.fetchCom2cos();
-        //  this.selectedCom2co=1;
         //  this.fetchCities();
         //  this.selectedCity =2878;
     },
@@ -130,15 +129,15 @@ export default {
             this.locX = selectedOption.getAttribute('data-longitude-x');
             this.locY = selectedOption.getAttribute('data-latitude-y');
             const loc = {
-                locType: 'city',
-                com2coId:this.selectedCom2co,
-                com2coName:this.selectedCom2coName,
-                cityId: this.selectedCity,
-                cityName: this.selectedCityName,
-                cityInsee: this.selectedCityInseeCode,
-                lonX: this.locX,
-                latY: this.locY
-
+                "locType": "city",
+                "regionId": this.selectedRegion,
+                "com2coId": this.selectedCom2co,
+                "com2coName": this.selectedCom2coName,
+                "cityId": this.selectedCity,
+                "cityName": this.selectedCityName,
+                "cityInsee": this.selectedCityInseeCode,
+                "lonX": this.locX,
+                "latY": this.locY
             };
             //console.log("handleCityChange.emit"+JSON.stringify(loc));
             this.$emit('update-location', loc);

@@ -110,14 +110,14 @@ import L from "leaflet";
 import { ref, onMounted } from 'vue'
 
 function  getSquareColor(zoneDense, densite) {
-        let sqColor = '#4944f5';
+        let sqColor = '#a5a5a5';
         if (densite===null || densite==='N/A' || densite==='' ) {
           return sqColor;
         }
         densite = densite.replace(",", ".");
 
-        const greenMin = '#9ee88f';
-        const greenMax = '#1a9900';
+        const greenMin = '#57dd17';
+        const greenMax = '#579917';
         const densiteMinDense=10;
         const densiteMaxDense=12;
         const densiteMinNoDense=25;
@@ -125,26 +125,26 @@ function  getSquareColor(zoneDense, densite) {
 
         let modColor=null;
         if (zoneDense===false) {
-          if (densite>=densiteMinNoDense) {
-            sqColor=greenMin;
-          } else if (densite>=densiteMaxNoDense) {
+          if (densite>=densiteMaxNoDense) {
             sqColor=greenMax;
+          } else if (densite>=densiteMinNoDense) {
+            sqColor=greenMin;
           } else {
-            modColor=2;
+            modColor=6;
           }
-        } else {
-          if (densite>=densiteMinDense) {
-            sqColor=greenMin;
-          } else if (densite>=densiteMaxDense) {
+        } else if (zoneDense===true) {
+          if (densite>=densiteMaxDense) {
             sqColor=greenMax;
+          } else if (densite>=densiteMinDense) {
+            sqColor=greenMin;
           } else {
-            modColor=4;
+            modColor=15;
           }
         }
         if (modColor!==null) {
-          const i_onecolor = 123+Math.round(densite)*modColor;
+          const i_onecolor = 30+Math.round(densite*modColor);
           const s_onecolor = i_onecolor.toString(16);
-          sqColor = '#' + s_onecolor + s_onecolor + s_onecolor;
+          sqColor = '#'+ "cc" + s_onecolor  + s_onecolor;
         }
         return sqColor;
 }
@@ -166,12 +166,12 @@ export default {
     LControl,
     LControlScale,
   },
-  /*
+  
   setup() {
     const leafletMap = ref(null);
     return { leafletMap } // expose map ref
   },
-  */
+  
   data() {
     return {
       leafletMap: null,
@@ -193,6 +193,7 @@ export default {
       geojsonCarre: null,
       geojsonCadastre: null,
       annee: "2019",
+      region: "9",
       com2co: "1",
       restUrlCadastre: "http://localhost:8980/isochrone/map/cadastre/area",
       restUrlCarre: "http://localhost:8980/isochrone/map/insee/carre200m/area",
@@ -244,33 +245,43 @@ export default {
     };
   },
   watch: {
-    location: {
+    location: { 
       handler(newLocation) {
         //console.log("location handler= "+JSON.stringify(newLocation));
         if (newLocation) {
+
+         if (newLocation.lonX && newLocation.latY) {
+            console.log("apply center [X,Y]");
+            this.center = [newLocation.latY, newLocation.lonX];
+            //this.addTemporaryMarker(newLocation.latY, newLocation.lonX);
+            if (newLocation.locType==='city') {
+              this.zoom= 14;
+            } else if (newLocation.locType==='address') {
+              this.zoom= 17;
+            }
+          }
+
+          if (newLocation.regionId && this.region!==newLocation.regionId) {
+            this.region=newLocation.regionId;
+            console.log("this.region="+this.region);
+          }
+          
+
           if (newLocation.com2coId && this.com2co!==newLocation.com2coId) {
-            this.com2co = newLocation.com2coId;   
-              
+            this.com2co = newLocation.com2coId;
+            console.log("this.com2co="+this.com2co)
+
             this.callGeoJsonIsochrones();
             this.callGeoJsonCarres();
             this.callGeoJsonCadastre();         
           }
-         if (newLocation.lonX && newLocation.latY) {
-          this.center = [newLocation.latY, newLocation.lonX];
-          this.addTemporaryMarker(newLocation.latY, newLocation.lonX);
-          if (newLocation.locType==='city') {
-            this.zoom= 14;
-          } else if (newLocation.locType==='address') {
-            this.zoom= 17;
-          }
-          }
+
         }
       },
       immediate: true,
       deep: true
     }
   },
-
   methods: {
     addTemporaryMarker(lat, lng) {
       /*
@@ -284,18 +295,13 @@ export default {
     onAnnee() {
       // refresh GeoJsonIsochrones v-model = this.annee
       var qryPrms =
-        "?swLat=" +
-        this.boundSwLat +
-        "&swLng=" +
-        this.boundSwLng +
-        "&neLat=" +
-        this.boundNeLat +
-        "&neLng=" +
-        this.boundNeLng +
-        "&annee=" +
-        this.annee;
+        "?swLat=" + this.boundSwLat +
+        "&swLng=" + this.boundSwLng +
+        "&neLat=" + this.boundNeLng +
+        "&annee=" + this.annee;
       console.log(qryPrms);
-      this.callGeoJsonIsochrones(qryPrms);
+        this.callGeoJsonIsochrones(qryPrms);
+        this.callGeoJsonCarres(qryPrms);
     },
     boundsUpdated(bounds) {
       this.bounds = bounds;
@@ -313,16 +319,11 @@ export default {
         this.boundNeLng = bounds._northEast.lng;
 
         var qryPrms =
-          "?swLat=" +
-          this.boundSwLat +
-          "&swLng=" +
-          this.boundSwLng +
-          "&neLat=" +
-          this.boundNeLat +
-          "&neLng=" +
-          this.boundNeLng +
-          "&annee=" +
-          this.annee;
+          "?swLat=" + this.boundSwLat +
+          "&swLng=" + this.boundSwLng +
+          "&neLat=" + this.boundNeLat +
+          "&neLng=" + this.boundNeLng +
+          "&annee=" + this.annee;
         console.log(qryPrms);
 
         this.callGeoJsonIsochrones(qryPrms);
@@ -333,30 +334,44 @@ export default {
 
     async callGeoJsonIsochrones(qryPrms) {
       // data isochrones
-      //var base = "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/park/park_c2c_1_" +  this.annee + ".json";
-      var base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/isochrones/1/isochrone_" +  this.annee + "_" +  this.com2co + ".json";
+      const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/isochrones/" +  this.com2co + "/isochrone_" +  this.annee + "_" +  this.com2co + ".json";
       //var base = this.restUrlIsochrones;
-      console.log("callGeoJsonIsochrones" + base + qryPrms);
-      const respIsochrone = await fetch(base + qryPrms);
+
+      var callUrl = base;
+      if(qryPrms) {
+        callUrl = base+qryPrms;
+      }
+      console.log("callGeoJsonIsochrones" + callUrl);
+      const respIsochrone = await fetch(callUrl);
       const dataIsochrone = await respIsochrone.json();
       this.geojsonIsochrone = dataIsochrone;
     },
     async callGeoJsonCarres(qryPrms) {
       // data carreau 200m
-      //var base = "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/carre200m/carre200m_c2c_1_" + this.annee + ".json";
-      var base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/carres/1/carre_" + this.annee + "_" + this.com2co + ".json";
+      const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/carres/" +  this.com2co + "/carre_" + this.annee + "_" + this.com2co + ".json";
       //var base = this.restUrlCarre;
-      console.log("callGeoJsonCarres" + base + qryPrms);
-      const respCarre = await fetch(base + qryPrms);
+
+      var callUrl = base;
+      if(qryPrms) {
+        callUrl = base+qryPrms;
+      }
+      console.log("callGeoJsonCarres" + callUrl);
+      const respCarre = await fetch(callUrl);
       const dataCarre = await respCarre.json();
       this.geojsonCarre = dataCarre;
     },
     async callGeoJsonCadastre(qryPrms) {
       // data Cadastre
-      var base = "https://raw.githubusercontent.com/autmel/geoservice/main/geojson/cadastre/cadastre_c2c_1.json";
+      const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/cadastres/"+this.region+"/cadastre_c2c_" + this.com2co + ".json";
       //var base = this.restUrlCadastre;
-      console.log("callGeoJsonCadastre" + base + qryPrms);
-      const respCadastre = await fetch(base + qryPrms);
+      
+      
+      var callUrl = base;
+      if(qryPrms) {
+        callUrl = base+qryPrms;
+      }
+      console.log("callGeoJsonCadastre" + callUrl);
+      const respCadastre = await fetch(callUrl);
       const dataCadastre = await respCadastre.json();
       this.geojsonCadastre = dataCadastre;
     },
