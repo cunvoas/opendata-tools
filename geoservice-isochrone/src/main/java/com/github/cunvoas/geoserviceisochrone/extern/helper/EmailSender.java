@@ -76,6 +76,9 @@ public class EmailSender {
 			return;
 		}
 		try {
+			
+			// https://stackoverflow.com/questions/11913709/why-does-replaceall-fail-with-illegal-group-reference
+			//FIXME trouble with $ in pass
 			Map<String, String> values = new HashMap<String, String>(4);
 			values.put("@nom_prenom@", prenomNom);
 			values.put("@password@", password);

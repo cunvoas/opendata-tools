@@ -413,7 +413,11 @@ public class GeoMapServiceV2 {
 
 					GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
-					feature.setGeometry(park.getContour());
+					if (park.getContour()!=null) {
+						feature.setGeometry(park.getContour());
+					} else if (park.getCoordonnee()!=null) {
+						feature.setGeometry(park.getCoordonnee());
+					}
 					
 					ParkGardenView pv = new ParkGardenView();
 					feature.setProperties(pv);

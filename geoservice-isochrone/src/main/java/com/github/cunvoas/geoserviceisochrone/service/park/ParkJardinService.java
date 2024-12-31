@@ -66,6 +66,8 @@ public class ParkJardinService {
 				match = c.getGeoShape().contains(parcEtJardin.getCoordonnee());
 			}
 			if (!match) {
+//FIXME get park and relocate to the good place
+				
 				throw new ExceptionGeo("PARK_NOT_IN_CITY");
 			}
 		} else {

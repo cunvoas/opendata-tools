@@ -130,13 +130,13 @@
         <fieldset id="fsEditPark" disabled="disabled">
         <input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
         <input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
-        <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+        <input type="hidden" id=geojsonParkLayer"idCommune" name="idCommune" th:field="*{idCommune}" />
         <input type="hidden" id="idPark" name="idPark" th:field="*{idPark}" />
         <input type="hidden" id="id" name="id" th:field="*{id}" />
         <input type="hidden" id="mapLat" name=mapLat th:field="*{mapLat}"/>
         <input type="hidden" id="mapLng" name="mapLng" th:field="*{mapLng}"/>
 						
-        <span style="display: none;"><!-- TODO hidden at the end -->
+        <span style="display: block;"><!-- TODO hidden at the end -->
         <input type="text" id="sGeometry" name="sGeometry" th:field="*{sGeometry}" />
         <input type="text" id="etat" name="etat" th:field="*{etat}" />
         <input type="text" id="etatAction" name="etatAction" th:field="*{etatAction}" />
@@ -272,16 +272,12 @@
             <div class="col-4"  id="blkMap">
                 <h6 th:text="#{park.edit.title}">title</h6>
             </div>
-            
-
         </div>
         <div class="row col-12 h-100">
                 <div class="card " style="text-align: center">
                     <div id="mapid" style="width: 100%; height: 100%;"></div>
                 </div>
         </div>
-        
-        
             </fieldset>
     </form>
     </div>
@@ -298,7 +294,6 @@
 	<script th:src="@{/mvc/static/js/scripts.js}"></script>
 
 	<script th:inline="javascript">
-	
 	function changeType() {
 		var slct = document.getElementById("typeId");
 		var optSlct = slct.options[slct.selectedIndex];
@@ -404,7 +399,7 @@
     var mapMaxZoom=19;
     
     // https://leaflet-extras.github.io/leaflet-providers/preview/
-    // fond de carte
+    // fonds de carte
     var layerEsriWorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
 	    	name: 'Carte WorldStreetMap',
 	    	attribution: "ArcGIS World Street Map (Esri)",
@@ -428,39 +423,39 @@
 			attribution: '&copy; <a href="https://geoservices.ign.fr/services-geoplateforme-diffusion">IGN GeoPortail</a>',
 			tileSize: 256,
 			maxZoom: Math.min(18, mapMaxZoom), // 18 maxi
-			minZoom: mapMinZoom,
+			minZoom: mapMinZoom
     });
     
     
-    // fonds de carte
+    // groupes des fonds de carte
     const mapLayers = {
    		'Satellite ArcGisOnline': layerSatellite,
    		'Vues Aérienne IGN': layerAeroIgnMap,
    		'Carte OpenStreetMap': layerStreetMap,
    		'Carte WorldStreetMap': layerEsriWorldStreetMap,
-   		
    	};
     
+    // extras data sur la carte
     const dataPrefecture = L.layerGroup();
     const dataAutmel = L.layerGroup();
-    var dataLayers = {
+    const dataCadastre = L.layerGroup();
+    const dataLayers = {
     	"Données de la préfecture": dataPrefecture,
+        "Cadastre des communes": dataCadastre,
     	"Contours des parcs": dataAutmel
     };
     
     var editMap = L.map('mapid', {
     	zoom: 16,
-        layers: [ layerStreetMap, layerEsriWorldStreetMap, layerSatellite]
+        layers: [ layerStreetMap, layerEsriWorldStreetMap, layerSatellite, layerAeroIgnMap]
     }).setView(locateWorkPlace);
-
 
     
 	const zoomControl = L.control.scale().addTo(editMap);
     const layerControl = L.control.layers(mapLayers, dataLayers).addTo(editMap);
-  //  layerStreetMap.addTo(editMap); //  set as default
     
 
-   	var idPark = document.querySelector('#idPark').value;
+    const idPark = document.querySelector('#idPark').value;
     const idParkRegex = /[0-9]/g;
     const idParkFound = idPark.match(idParkRegex);
     if (mLng!="" && mLat!="" && idParkFound) {
@@ -481,42 +476,28 @@
     	var filter=document.querySelector('input[name="filterPark"]:checked').value;
     	console.log('radio='+filter);
     	
+        layer.setStyle({
+           "fillOpacity": 0.3,
+            "opacity": 0.6,
+            "color": "#1212ff",
+            "fillColor": "#1212ff"
+        });
+        
         // does this feature have a property named fillColor?
         if (feature.properties) {
-        	if (feature.properties.status !== filterValid) {
-        		console.log("to invisible: feat>"+feature.properties.name+">"+feature.properties.status);
-        		layer.setStyle(
-        				{fillOpacity: 0},
-        				 {opacity: 0},
-        				 {color: '#1212ff'},
-        				 {fillColor: '#1212ff'},
-        				);
-        		
-        	} else {
+        	/*
+        	if (feature.properties.status === filterValid) {
         		if (feature.properties.fillColor) {
-                console.log("to display: feat>"+feature.properties.name+">"+feature.properties.status);
-        		
-                 layer.setStyle(
-                         {fillColor: feature.properties.fillColor},
-                         {fillOpacity: 0.60},
-                         {color: feature.properties.fillColor},
-                         {opacity: 0.95}
-                 	);
+                //console.log("to display: feat>"+feature.properties.name+">"+feature.properties.status);
+                 layer.setStyle({
+                	 "fillColor": feature.properties.fillColor,
+                     "fillOpacity": 0.30,
+                     "color": feature.properties.fillColor,
+                     "opacity": 0.6
+                   });
             	}
         	}
-    		
-
-            var parcEdit ="";
-            var sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/park/new/check}]]+'?idPark=';
-            if (feature.properties.name) {
-            	parcEdit = "<p>"+feature.properties.name+"</p>";
-            	if (feature.properties.id) {
-            		parcEdit= "<p>"+ feature.properties.name + "<br /><a href='"+ sUrlEditPark + feature.properties.id +"' >Edit</a></p>";
-            	}
-            	layer.bindPopup(parcEdit);
-            }
-            
-            
+        	*/
         }
     }
     
@@ -529,13 +510,36 @@
     }
     
     function customOnEachFeatureParc(feature, layer) {
-        // does this feature have a property named fillColor?
-        if (feature.properties) {
-            if (feature.properties.name) {
-                layer.bindPopup(feature.properties.name);
+        layer.setStyle({
+            "fillOpacity": 0.3,
+             "opacity": 0.6,
+             "color": "#78e826",
+             "fillColor": "#78e826"
+         });
+
+        const sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/park/new/check}]]+'?idPark=';
+        if (feature.properties.name) {
+        	var parcEdit = "<p>"+feature.properties.name+"</p>";
+            if (feature.properties.id) {
+                parcEdit= "<p>"+ feature.properties.name + "<br /><a href='"+ sUrlEditPark + feature.properties.id +"' >Edit</a></p>";
             }
+            layer.bindPopup(parcEdit);
         }
     }
+    
+    function customOnEachFeatureCadastre(feature, layer) {
+        layer.setStyle({
+            "fillOpacity": 0.3,
+             "opacity": 0.6,
+             "color": "#eef127",
+             "fillColor": "#eef127"
+         });
+
+        if (feature.properties && feature.properties.nom) {
+           layer.bindPopup(feature.properties.nom);
+        }
+    }
+    
     
     
     function fnParkPrefClicked(feat) {
@@ -591,32 +595,45 @@
         
     }
 
-
     
     var geojsonPrefLayer = null;
+    var geojsonCadastreLayer = null;
     var geojsonParkLayer = null;
     // relead parks with map fit
     function loadPrefParks() {
-        if (geojsonPrefLayer!==null) {
-            editMap.removeLayer(geojsonPrefLayer);
-            delete geojsonPrefLayer ;
-        }
+        
+        // prepare map corners
         swLat=editMap.getBounds().getSouthWest().lat;
         swLng=editMap.getBounds().getSouthWest().lng;
         neLat=editMap.getBounds().getNorthEast().lat;
         neLng=editMap.getBounds().getNorthEast().lng;
         sPos="swLat="+ swLat +"&swLng="+swLng +"&neLat="+neLat +"&neLng="+neLng;
         
-        // parc prefecture
+        
+        // get shapes: parc prefecture
+        if (geojsonPrefLayer!==null) {
+        	dataPrefecture.removeLayer(geojsonPrefLayer);
+        }
         var sUrlGeoPref= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkPrefectureByCorner}]]+'?'+sPos;
         geojsonPrefLayer = new L.GeoJSON.AJAX(sUrlGeoPref, {onEachFeature: customOnEachFeaturePref});
-        geojsonPrefLayer.addTo(dataPrefecture);
+        //geojsonPrefLayer.addTo(dataPrefecture);
+        dataPrefecture.addLayer(geojsonPrefLayer);
         
-        // contours parc autmel
+        // get shapes: contours parc autmel  : parkGardenByCorner
+        if (geojsonParkLayer!==null) {
+        	dataAutmel.removeLayer(geojsonParkLayer);
+        }
         var sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenOutlineByCorner}]]+'?'+sPos;
-        geojsonAutmelLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {onEachFeature: customOnEachFeaturePref});
-        geojsonAutmelLayer.addTo(dataAutmel);
+        geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {onEachFeature: customOnEachFeatureParc});
+        dataAutmel.addLayer(geojsonParkLayer);
         
+        // get shapes: Cadastre
+        if (geojsonCadastreLayer!==null) {
+        	dataCadastre.removeLayer(geojsonCadastreLayer);
+        }
+        var sUrlGeoCadastre= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/cadastreByCorner}]]+'?'+sPos;
+        geojsonCadastreLayer = new L.GeoJSON.AJAX(sUrlGeoCadastre, {onEachFeature: customOnEachFeatureCadastre});
+        dataCadastre.addLayer(geojsonCadastreLayer);
         
         
         // works! used when affect
@@ -631,7 +648,6 @@
             console.log("pm:remove geom");
         	 console.log(e.layer.feature);
         	 document.getElementById("etatAction").value="remove";
-        	 
           });
 
 
@@ -654,8 +670,6 @@
         	    //var strPoly = JSON.stringify(e.layers.toGeoJSON());
         	  });
         	});
-
-        
         
         // works! event after add poly
         editMap.on('pm:drawend', function (e) {
@@ -684,13 +698,6 @@
               //want to check here whether the layerToDraw is valid
               //features.addLayer(layerToDraw);
             });
-        
-        
-
-        // parc opendata + created
-        var sUrlGeoParc= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenByCorner}]]+'?'+sPos;
-        geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoParc, {onEachFeature: customOnEachFeatureParc});
-        editMap.addLayer(geojsonParkLayer);
         
         // used when affect
         geojsonParkLayer.on('click', function(e){

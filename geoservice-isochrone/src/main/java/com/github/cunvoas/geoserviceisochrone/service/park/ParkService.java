@@ -136,6 +136,7 @@ public class ParkService {
 		
 
 		if (withIgn) {
+			// set default before config injection
 			String distance = "300";
 			Optional<City> opt=cityRepository.findById(cityId);
 			if (opt.isPresent()) {

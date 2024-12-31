@@ -49,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 //		havingValue="v2")
 public class ComputeServiceV2 {
 
-	// 200m x 200m = 4 10^4: insse data is 40000+-1 accuracy
+	// 200m x 200m = 4 10^4: insee data is 40000+-1 accuracy
 	private static final Double SURFACE_CARRE = 40_000d;
 	
 	@Autowired
@@ -169,7 +169,20 @@ public class ComputeServiceV2 {
 						shapeParkOnSquare = shapeParkOnSquare.union(parkArea.getPolygon());
 					}
 					
-					dto.parcNames.add(parkArea.getName());
+					String sufficient="";
+					Double rs = applicationBusinessProperties.getRecoAtLeastParkSurface();
+					if (rs<=pac.getSurface().doubleValue()) {
+						sufficient="✓ ";
+						dto.withSufficient=Boolean.TRUE;
+						
+						if (dto.polygonParkAreasSustainableOms==null)  {
+							dto.polygonParkAreasSustainableOms =parkArea.getPolygon(); 
+						} else {
+							dto.polygonParkAreasSustainableOms = dto.polygonParkAreasSustainableOms.union(parkArea.getPolygon());
+						}
+					}
+				
+					dto.parcNames.add(sufficient+ parkArea.getName());
 					//increment for oms
 					count4checkOms++;
 					dto.resultOms.surfaceTotalParks = dto.resultOms.surfaceTotalParks.add(pac.getSurface());
@@ -177,7 +190,7 @@ public class ComputeServiceV2 {
 					// merge areas for parks
 					dto.polygonParkAreasOms = dto.polygonParkAreasOms.union(parkArea.getPolygon());
 				} else {
-					dto.parcNames.add("("+parkArea.getName()+")");
+					dto.parcNames.add("(✖ "+parkArea.getName()+")");
 				}
 			}  // end merge
 			
@@ -246,7 +259,14 @@ public class ComputeServiceV2 {
 			computed.setPopIncludedOms(dto.resultOms.popInc);
 			computed.setPopExcludedOms(dto.resultOms.popExc);
 			
-			
+			if (Boolean.TRUE.equals(dto.withSufficient)) {
+				computed.setIsSustainablePark(Boolean.TRUE);
+				//TODO 
+				computed.setPopulationWithSustainablePark(null);
+			} else {
+				computed.setIsSustainablePark(Boolean.FALSE);
+				computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
+			}
 
 			log.info("\tsave computed {}\n", computed.getIdInspire());
 			inseeCarre200mComputedV2Repository.save(computed);
@@ -256,10 +276,11 @@ public class ComputeServiceV2 {
 	
 	
 	/**
-	 * @param dto
-	 * @param carreShape
+	 * @param dto DTO with source data
+	 * @param crDto DTO with result data
+	 * @param carreShape  square on process
 	 * @param geometryToAnalyse
-	 * @param shapeParkOnSquare
+	 * @param shapeParkOnSquare  shape of park isochrones
 	 * @return
 	 */
 	protected ComputeResultDto computePopAndDensityDetailOptim(
@@ -291,6 +312,8 @@ public class ComputeServiceV2 {
 				Geometry isoOnCarre = carreWithIso.getGeoShape().intersection(geometryToAnalyse);
 				Long surfaceIsoSurCarre = getSurface(isoOnCarre);
 				surfacePopulationIso += Math.round(nbHabCarre*surfaceIsoSurCarre/SURFACE_CARRE);
+				
+				
 			} else {
 				log.info("Filosofil200m NOT FOUND,{},{}", dto.annee, carreWithIso.getIdInspire());
 			}
@@ -301,17 +324,28 @@ public class ComputeServiceV2 {
 		}
 		crDto.populationInIsochrone = BigDecimal.valueOf(surfacePopulationIso);
 		
+
+		Double inhabitant = dto.popAll.doubleValue();
+		
 		
 		// compute surface with accessible parks
 		Geometry parkOnCarre = carreShape.getGeoShape().intersection(shapeParkOnSquare);
 		Long surfaceParkAccess = getSurface(parkOnCarre);
-		
-		Double inhabitant = dto.popAll.doubleValue();
+
 		// protata des surfaces pour habitants avec un parc
 		Long popIn = Math.round(inhabitant*surfaceParkAccess/SURFACE_CARRE);
 		
 		crDto.popInc = new BigDecimal(popIn);
 		crDto.popExc = new BigDecimal(inhabitant-popIn);
+		
+
+		// compute surface with accessible parks
+		Geometry parkSustainable = carreShape.getGeoShape().intersection(dto.polygonParkAreasSustainableOms);
+		Long surfaceSustainable = getSurface(parkSustainable);
+
+		// protata des surfaces pour habitants avec un parc
+		Long popSustainable = Math.round(inhabitant*surfaceSustainable/SURFACE_CARRE);
+		dto.popWithSufficient = new BigDecimal(popSustainable);
 		
 		return crDto;
 	}

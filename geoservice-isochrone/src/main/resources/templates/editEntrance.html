@@ -465,51 +465,50 @@
     
     var isMap = L.map('mapid', {
     	zoom: 16,
-        layers: [ layerStreetMap, layerEsriWorldStreetMap, layerSatellite]
+        layers: [ layerStreetMap, layerEsriWorldStreetMap, layerSatellite, layerAeroIgnMap]
     }).setView(locateWorkPlace);
     
 	const zoomControl = L.control.scale().addTo(isMap);
     const layerControl = L.control.layers(mapLayers, dataLayers).addTo(isMap);
     
-    // TODO CHK behaviour
-    //layerStreetMap.addTo(isMap);
-
     //isMap.on('click', addMarker);
 	// remove added markers
 	function removeTempMarker(e) {
 		isMap.removeLayer(newMarker);
 	}
 	
-	
-
-    var geojsonShapeParkLayer = null;
 
     function customOnEachFeatureDetail(feature, layer) {
-    	
+        layer.setStyle({
+            "fillOpacity": 0.3,
+             "opacity": 0.6,
+             "color": "#78e826",
+             "fillColor": "#78e826"
+         });
+        
+
         // does this feature have a property named fillColor?
         if (feature.properties) {
-
-        	var sUrlLocationPark =
-	        	"&idRegion="+document.querySelector('#idRegion').value +
-	        	"&idComm2Co="+document.querySelector('#idCommunauteDeCommunes').value +
-	        	"&idCommune="+document.querySelector('#idCommune').value;
-        	
-            var parcEdit ="";
-            var sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/entrance/goto}]]+'?idPark=';
+            const sUrlLocationPark =
+                "&idRegion="+document.querySelector('#idRegion').value +
+                "&idComm2Co="+document.querySelector('#idCommunauteDeCommunes').value +
+                "&idCommune="+document.querySelector('#idCommune').value;
+            const sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/entrance/goto}]]+'?idPark=';
             if (feature.properties.name) {
-            	parcEdit = "<p>"+feature.properties.name+"</p>";
-            	if (feature.properties.id) {
-            		parcEdit= "<p>"+ feature.properties.name + "<br /><a href='"+ sUrlEditPark + feature.properties.id + sUrlLocationPark +"' >Edit</a></p>";
-            	}
-            	layer.bindPopup(parcEdit);
+            	var parcEdit = "<p>"+feature.properties.name+"</p>";
+                if (feature.properties.id) {
+                    parcEdit= "<p>"+ feature.properties.name + "<br /><a href='"+ sUrlEditPark + feature.properties.id + sUrlLocationPark +"' >Edit</a></p>";
+                }
+                layer.bindPopup(parcEdit);
             }
-            
         }
+        
     }
     
+    var geojsonAutmelLayer = null;
     // relead parks with map fit
     function loadParkShape() {
-
+        // get corners
         swLat=isMap.getBounds().getSouthWest().lat;
         swLng=isMap.getBounds().getSouthWest().lng;
         neLat=isMap.getBounds().getNorthEast().lat;
@@ -517,16 +516,18 @@
         sPos="swLat="+ swLat +"&swLng="+swLng +"&neLat="+neLat +"&neLng="+neLng;
         
         // contours parc autmel
+        if (geojsonAutmelLayer!==null) {
+        	dataAutmel.removeLayer(geojsonAutmelLayer);
+        }
         var sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenOutlineByCorner}]]+'?'+sPos;
         geojsonAutmelLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {onEachFeature: customOnEachFeatureDetail});
-        geojsonAutmelLayer.addTo(dataAutmel);
+        dataAutmel.addLayer(geojsonAutmelLayer);
         
     }
     loadParkShape();
     isMap.on('zoomend',loadParkShape);
     isMap.on('moveend',loadParkShape);
     
-	var geojsonParkLayer = null;
 		
 	////////////////////////////////////////////////////////////////////////////
     // isochrone

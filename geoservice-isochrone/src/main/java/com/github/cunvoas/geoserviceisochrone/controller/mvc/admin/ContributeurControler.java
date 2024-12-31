@@ -183,6 +183,11 @@ public class ContributeurControler {
 				
 		Contributeur contrib=mapFromForm(fContrib);
 		try {
+			if (contribConnected.equals(contrib)) {
+				contribConnected.setIdRegion(contrib.getIdRegion());
+				contribConnected.setIdCommunauteCommune(contrib.getIdCommunauteCommune());
+				contribConnected.setIdCommune(contrib.getIdCommune());
+			}
 			contrib = contributeurService.save(contrib,false);
 		} catch (ExceptionAdmin e) {
 			log.error("sve contrib", e);

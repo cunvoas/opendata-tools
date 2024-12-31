@@ -17,11 +17,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @Entity(name = "adm_contrib")
+@EqualsAndHashCode(of = {"id"})
 public class Contributeur implements UserDetails {
 
 	private static final long serialVersionUID = -7295077909019064322L;

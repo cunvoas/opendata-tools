@@ -52,7 +52,8 @@ spring:
 
 # JPA configuration
   jpa:
-    database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
+    #database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 #    hibernate.ddl-auto: update  none
     hibernate.ddl-auto: none
     open-in-view: true
@@ -91,6 +92,7 @@ application:
   business:
     # https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrones/documentation-du-service-de-calcul-disochrones#2500
     oms:
+      min_size: 5000
       urban:
         duration: 300
         area_reco: 12

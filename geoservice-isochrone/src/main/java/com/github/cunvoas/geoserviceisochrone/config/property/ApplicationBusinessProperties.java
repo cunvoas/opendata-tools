@@ -24,6 +24,10 @@ public class ApplicationBusinessProperties {
 	private Double minSubUrbSquareMeterPerCapita;
 	@Value("${application.business.oms.suburban.area_reco}")
 	private Double recoSubUrbSquareMeterPerCapita;
+	
+
+	@Value("${application.business.oms.min_size}")
+	private Double recoAtLeastParkSurface;
 
 	@Value("${application.business.insee.densite}")
 	private String inseeCodeDensite;
