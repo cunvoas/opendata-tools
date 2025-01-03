@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,7 +69,7 @@ public class PhotoService {
 	}
 	
 	private ParkPhoto map(PhotoDto dto) throws IllegalStateException, IOException, ImageProcessingException {
-		String rand=RandomStringUtils.random(4);
+		String rand=StringUtils.right(String.valueOf(System.nanoTime()), 4);
 		
 		ParkPhoto photo = new ParkPhoto();
 		photo.setParcId(dto.getParcEtJardin().getId());
