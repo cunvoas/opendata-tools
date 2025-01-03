@@ -11,11 +11,16 @@ import java.util.Map;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.locationtech.jts.geom.Point;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvCarre200ShapeParser.ParkEntranceCsvHeaders;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusEnum;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 
 
 /**
@@ -25,25 +30,30 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
  * @see https://opendata.roubaix.fr/explore/dataset/liste-des-jardins-familiaux-et-partages-de-roubaix/api/
  */
 @Component
-public class CsvTrgParkJardinParser {
+public class CsvNantesParkJardinParser {
+	
+	@Autowired
+	private CityRepository cityRepository;
 	
 
 	/**
 	 * CSV Header definition for easier mods.
 	 * @author cunvoas
 	 */
-	public enum ParkJardinCsvHeaders {
-	//	Identifiant;Nom;Adresse;Surface (ha);geo_shape;geo_point_2d;lat;long
-
+	public enum CsvHeaders {
+		identifiant("Identifiant"),
 		nom("Nom"),
 		type("Type"),
 		adresse("Adresse"),
-		geo_shape("geo_shape"),
-		coord("geo_point_2d");
+		codePostal("Code postal"),
+		codeInsee("Code insee"),
+		commune("Commune"),
+		y("Y"),
+		x("X");
 		
 		private String column;
 
-		ParkJardinCsvHeaders(String column) {
+		CsvHeaders(String column) {
 			this.column = column;
 		}
 
@@ -52,17 +62,17 @@ public class CsvTrgParkJardinParser {
 		}
 
 		// Lookup table
-		private static final Map<String, ParkEntranceCsvHeaders> lookup = new HashMap<>();
+		private static final Map<String, CsvHeaders> lookup = new HashMap<>();
 
 		// Populate the lookup table on loading time
 		static {
-			for (ParkEntranceCsvHeaders env : ParkEntranceCsvHeaders.values()) {
+			for (CsvHeaders env : CsvHeaders.values()) {
 				lookup.put(env.geColumn(), env);
 			}
 		}
 
 		// This method can be used for reverse lookup purpose
-		public static ParkEntranceCsvHeaders get(String column) {
+		public static CsvHeaders get(String column) {
 			return lookup.get(column);
 		}
 
@@ -82,7 +92,7 @@ public class CsvTrgParkJardinParser {
 			CSVFormat format = CSVFormat.DEFAULT.builder()
 					.setDelimiter(";")
 					.setQuote('"')
-					.setHeader(ParkJardinCsvHeaders.class)
+					.setHeader(CsvHeaders.class)
 					.setSkipHeaderRecord(true)
 					.build();
 
@@ -91,9 +101,21 @@ public class CsvTrgParkJardinParser {
 
 				for (CSVRecord row : rows) {
 					ParcEtJardin park = new ParcEtJardin();
-					park.setName(row.get(ParkJardinCsvHeaders.nom));
-					park.setAdresse(row.get(ParkJardinCsvHeaders.adresse));
-					park.setCoordonnee(GeoShapeHelper.parsePointLatLng(row.get(ParkJardinCsvHeaders.coord)));
+					park.setName(row.get(CsvHeaders.nom));
+					park.setType(row.get(CsvHeaders.type));
+					park.setAdresse(row.get(CsvHeaders.adresse));
+					Double lng = Double.valueOf(row.get(CsvHeaders.x));
+					Double lat = Double.valueOf(row.get(CsvHeaders.y));
+					
+					String insee = row.get(CsvHeaders.codeInsee);
+					City c = cityRepository.findByInseeCode(insee);
+					park.setCommune(c);
+					park.setStatus(ParcStatusEnum.TO_QUALIFY);
+					park.setSource(ParcSourceEnum.OPENDATA);
+					park.setTypeId(1L);
+					
+					Point p = GeoShapeHelper.getPoint(lng, lat);
+					park.setCoordonnee(p);
 					parks.add(park);
 				}
 			}

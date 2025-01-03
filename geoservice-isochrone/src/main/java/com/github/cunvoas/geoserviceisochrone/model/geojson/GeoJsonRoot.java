@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.Data;
 
 /**
- * @author cus
+ * @author cunvoas
  * https://www.rfc-editor.org/rfc/rfc7946
  * https://geojson.org/geojson-spec.html
  */

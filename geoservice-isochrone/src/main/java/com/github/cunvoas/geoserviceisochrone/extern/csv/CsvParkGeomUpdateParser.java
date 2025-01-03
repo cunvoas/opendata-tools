@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvParkUpdateParser.ParkUpdateCsvHeaders;
 
 /**
- * @author cus
+ * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */
 @Component
@@ -27,7 +27,7 @@ public class CsvParkGeomUpdateParser {
 	
 	/**
 	 * CSV Header definition for easier mods.
-	 * @author cus
+	 * @author cunvoas
 	 * objectid,id,nom,quartier,nom_liste,adresse,surface,geom
 	 */
 	public enum CsvParkGeomUpdateCsvHeaders {

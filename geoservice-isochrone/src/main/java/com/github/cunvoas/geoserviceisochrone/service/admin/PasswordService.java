@@ -10,7 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
- * @author cus
+ * @author cunvoas
  * @see https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html
  */
 @Service

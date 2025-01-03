@@ -12,7 +12,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 /**
- * @author cus
+ * @author cunvoas
  * @see https://www.baeldung.com/java-generating-barcodes-qr-codes
  * @see https://dzone.com/articles/how-to-create-a-qr-code-svg-using-zxing-and-jfrees
  */

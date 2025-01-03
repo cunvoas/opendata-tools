@@ -14,7 +14,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Component;
 
 /**
- * @author cus
+ * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */
 @Component
@@ -22,7 +22,7 @@ public class CsvParkUpdateParser {
 	
 	/**
 	 * CSV Header definition for easier mods.
-	 * @author cus
+	 * @author cunvoas
 	 */
 	public enum ParkUpdateCsvHeaders {
 		cityId("cityId"),
