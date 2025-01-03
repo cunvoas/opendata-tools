@@ -16,12 +16,14 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * structure for initial data from prefecture.
  * Must be qualified to be plenty usable
  */
 @Data
+@EqualsAndHashCode(of = {"id"})
 @Entity(name = "parc_prefecture")
 @Table(name = "parc_prefecture",
 indexes = {

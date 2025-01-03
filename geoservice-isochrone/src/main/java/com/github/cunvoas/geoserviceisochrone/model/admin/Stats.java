@@ -11,8 +11,10 @@ import jakarta.persistence.Index;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(of = {"id"})
 @Entity(name = "adm_activity_stats")
 @Table(indexes = {
 		  @Index(name = "idx_activity_action", columnList = "action"),

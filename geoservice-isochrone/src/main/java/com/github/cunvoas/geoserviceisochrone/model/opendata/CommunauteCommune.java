@@ -17,12 +17,16 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
 @Entity(name = "adm_com2commune")
+@EqualsAndHashCode(of = {"id"})
 public class CommunauteCommune implements Comparator<CommunauteCommune> {
 
 	@Id
+	@ToString.Include
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_com2com")
     @SequenceGenerator(
@@ -32,6 +36,7 @@ public class CommunauteCommune implements Comparator<CommunauteCommune> {
     	)
 	private Long id;
 
+	@ToString.Include
 	@Column(name = "name")
 	private String name;
 	 

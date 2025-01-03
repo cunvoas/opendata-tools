@@ -19,16 +19,19 @@ import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
+@EqualsAndHashCode(of = {"id"})
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Entity(name = "adm_contrib")
-@EqualsAndHashCode(of = {"id"})
 public class Contributeur implements UserDetails {
 
 	private static final long serialVersionUID = -7295077909019064322L;
 
 	@Id
+	@ToString.Include
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_contrib")
     @SequenceGenerator(
@@ -38,6 +41,7 @@ public class Contributeur implements UserDetails {
     	)
 	private Long id;
 
+	@ToString.Include
 	@Column(length = 50)
 	private String nom;
 	@Column(length = 50)

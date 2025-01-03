@@ -37,6 +37,10 @@ public class ApplicationBusinessProperties {
 
 	@Value("${application.admin.export-path}")
 	private String exportPath;
+	@Value("${application.admin.photo-path}")
+	private String photoPath;
+	@Value("${application.admin.photo-path-origin}")
+	private String photoPathOrigin;
 
 	@Value("${application.admin.export-data-path}")
 	private String jsonFileFolder;

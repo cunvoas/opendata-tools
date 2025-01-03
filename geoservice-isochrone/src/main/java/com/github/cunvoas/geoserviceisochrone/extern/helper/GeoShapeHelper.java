@@ -30,6 +30,15 @@ public class GeoShapeHelper {
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 	private static GeometricShapeFactory shapeFactory = new GeometricShapeFactory(factory);
 	
+	
+	public static Point getPoint(com.github.cunvoas.geoserviceisochrone.model.Coordinate geoPoint) {
+		Point point= null;
+		Double lat = geoPoint.getLatitude();
+		Double lng = geoPoint.getLongitude();
+		
+		point = factory.createPoint(new Coordinate(lng, lat));
+		return point;
+	}
 	/**
 	 * 
 	 * @param geoPoint Lille 3,50.

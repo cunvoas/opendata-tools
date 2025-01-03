@@ -14,6 +14,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
+import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.UploadFormValidator;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
@@ -35,6 +38,8 @@ import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadRefere
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkJardinService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
+import com.github.cunvoas.geoserviceisochrone.service.park.PhotoService;
+import com.github.cunvoas.geoserviceisochrone.service.park.dto.PhotoDto;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,6 +60,8 @@ public class ParkNewControler {
 	@Autowired
 	private ParkJardinService serviceParkJardinService;
 	
+	@Autowired
+	private ApplicationBusinessProperties applicationBusinessProperties;
 	
 	@Autowired
 	private ServiceParcPrefecture serviceParcPrefecture;
@@ -64,6 +71,12 @@ public class ParkNewControler {
 	
 	@Autowired
 	private GeoJson2GeometryHelper geoJson2GeometryHelper;
+	
+    @Autowired
+    private UploadFormValidator validatorUpload;
+    
+	@Autowired
+	private PhotoService photoService;
 	
 	private String formName = "newPark";
 
@@ -179,12 +192,18 @@ public class ParkNewControler {
 	
 	
 	@PostMapping("/save")
-	public String save(@ModelAttribute FormParkNew form, Model model) {
+	public String save(@ModelAttribute FormParkNew form, Model model, BindingResult bindingResult) {
 		log.warn("Generic save: {}", form);
+		
+		validatorUpload.validate(form, bindingResult);
 		
 		ParcEtJardin pj = this.map(form);
 		
 		pj=serviceParkJardinService.save(pj);
+		
+		PhotoDto dto= this.getPhotoPath(form);
+		dto.setParcEtJardin(pj);
+		photoService.savePhoto(dto);
 		
 		// create poly
 		if("new".equals(form.getEtatAction())) {
@@ -307,6 +326,7 @@ public class ParkNewControler {
 			form.setMapLat(String.valueOf(location.getY()));
 		}
 		
+		form.setHadGeometry(pj.getContour()!=null);
 		form.setName(pj.getName());
 		form.setQuartier(pj.getQuartier());
 		form.setType(pj.getType());
@@ -378,6 +398,35 @@ public class ParkNewControler {
 	}
 		
 
-	
+	private PhotoDto getPhotoPath(FormParkNew form) {
+		
+		PhotoDto dto = new PhotoDto();
+		dto.setPhoto(form.getFileupload());
+
+		dto.setStoreRoot(applicationBusinessProperties.getPhotoPath());
+		dto.setStoreRootOrigin(applicationBusinessProperties.getPhotoPathOrigin());
+		
+		
+		City c = this.serviceReadReferences.getCityById(form.getIdCommune());
+		dto.setCommuneId(form.getIdCommune());
+		dto.setInseeCode(c.getInseeCode());
+		
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("/");
+		sb.append(String.format("%s", form.getIdRegion()));
+		
+		if (form.getIdCommunauteDeCommunes()!=null) {
+			sb.append("/c2c/");
+			sb.append(String.format("%s", form.getIdCommunauteDeCommunes()));
+		} else {
+			String dpt = c.getInseeCode().substring(0, 2);
+			sb.append("/dept/").append(dpt);
+		}
+		sb.append("/");
+		sb.append(c.getInseeCode());
+		dto.setStoreFolder(sb.toString());
+		return dto;
+	}
 
 }

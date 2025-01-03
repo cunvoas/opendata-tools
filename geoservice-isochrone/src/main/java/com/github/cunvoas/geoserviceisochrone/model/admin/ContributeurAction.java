@@ -8,10 +8,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 
 @Data
+@EqualsAndHashCode(of = {"id"})
 @NoArgsConstructor
 @Entity(name = "adm_contrib_action")
 public class ContributeurAction {

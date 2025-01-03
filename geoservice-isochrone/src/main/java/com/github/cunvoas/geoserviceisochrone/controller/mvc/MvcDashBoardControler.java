@@ -35,6 +35,11 @@ public class MvcDashBoardControler {
     public String infos(Model model, ModelAndView modelAndView) {
         return "infos";
     }
+
+	@GetMapping("/release-note")
+    public String releaseNote(Model model, ModelAndView modelAndView) {
+        return "releaseNote";
+    }
 	
 	@GetMapping("/infosante")
     public String infosante(Model model, ModelAndView modelAndView) {

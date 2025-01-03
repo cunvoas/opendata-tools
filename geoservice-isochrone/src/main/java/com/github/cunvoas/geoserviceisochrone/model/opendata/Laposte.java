@@ -4,9 +4,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity(name = "laposte")
+@EqualsAndHashCode(of = {"idInsee"})
 public class Laposte {
 	
 	@Id

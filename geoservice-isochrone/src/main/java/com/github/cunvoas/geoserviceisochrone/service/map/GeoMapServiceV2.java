@@ -524,11 +524,7 @@ public class GeoMapServiceV2 {
 					pv.setNamePrefecture(parkPref.getNamePrefecture());
 					pv.setProcessed(parkPref.getProcessed());
 					pv.setSurface(parkPref.getSurface());
-					if (parkPref.getStatus()!=null) {
-						pv.setStatus(parkPref.getStatus().toString());
-					} else {
-						pv.setStatus(ParcStatusPrefEnum.TO_QUALIFY.toString());
-					}
+					
 					
 					if (parkPref.getParcEtJardin()!=null) {
 						pv.setIdParcJardin(parkPref.getParcEtJardin().getId());
@@ -543,6 +539,12 @@ public class GeoMapServiceV2 {
 						}
 					}
 					
+
+					if (parkPref.getStatus()!=null) {
+						pv.setStatus(parkPref.getStatus().toString());
+					} else {
+						pv.setStatus(ParcStatusPrefEnum.TO_QUALIFY.toString());
+					}
 					
 					if (ParcStatusPrefEnum.VALID.equals(parkPref.getStatus())) {
 						pv.setFillColor(COLOR_VALID);

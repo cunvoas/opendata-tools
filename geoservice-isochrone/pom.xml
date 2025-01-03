@@ -193,6 +193,12 @@
 			<artifactId>imgscalr-lib</artifactId>
 			<version>4.2</version>
 		</dependency>
+<!--<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-imaging</artifactId>
+    <version>1.0.0-alpha5</version>
+</dependency>-->
+
 		
 		<!-- Barcodes -->
 		<dependency>

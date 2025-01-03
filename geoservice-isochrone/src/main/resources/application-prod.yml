@@ -47,5 +47,6 @@ application:
     isochrone-impl: ign-api-v2
     
   admin:
-    photo-path: /var/isochrone/photo
-    export-data-path: /var/isochrone/data
+    photo-path: ${MOUNT_PATH}/isochrone/photo
+    photo-path-origin: ${MOUNT_PATH}/isochrone/photo_origin
+    export-data-path: ${MOUNT_PATH}/isochrone/data

@@ -94,7 +94,8 @@
          </div>
      </div>
      
-     
+
+<form id="formNewPark" th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post" enctype="multipart/form-data">
       <div class="row input-group border border-dark rounded-3">
       		<h6 class="col-12" th:text="#{parc.edit.locateOnMap}">locate on map</h6>
             <div class="col-5">
@@ -126,17 +127,18 @@
 <span class="row input-group border border-dark rounded-3">
 
     <div class="col-4">
-     <form id="formNewPark" th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post">
         <fieldset id="fsEditPark" disabled="disabled">
+        <input type="hidden" id="action_mode" name="action_mode" />
         <input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
         <input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
-        <input type="hidden" id=geojsonParkLayer"idCommune" name="idCommune" th:field="*{idCommune}" />
+        <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
         <input type="hidden" id="idPark" name="idPark" th:field="*{idPark}" />
         <input type="hidden" id="id" name="id" th:field="*{id}" />
         <input type="hidden" id="mapLat" name=mapLat th:field="*{mapLat}"/>
         <input type="hidden" id="mapLng" name="mapLng" th:field="*{mapLng}"/>
 						
-        <span style="display: block;"><!-- TODO hidden at the end -->
+        <span style="display: none;"><!-- TODO hidden at the end -->
+        <input type="text" id="hadGeometry" name="hadGeometry" th:field="*{hadGeometry}" />
         <input type="text" id="sGeometry" name="sGeometry" th:field="*{sGeometry}" />
         <input type="text" id="etat" name="etat" th:field="*{etat}" />
         <input type="text" id="etatAction" name="etatAction" th:field="*{etatAction}" />
@@ -249,6 +251,7 @@
         
         
             <!-- TODO: make the filter later -->
+            <!--  
             <div class="col-6" style="display: none;">
                 <div  style="text-align: left">
                  <h6 class="mt-12" th:text="#{park.filter}">title</h6>
@@ -262,7 +265,7 @@
 	             <label for="filterReject" th:text="#{park.filter.reject}" >REJECT</label>
                 </div>
             </div>
-
+             -->
 
 
     </div>
@@ -279,10 +282,10 @@
                 </div>
         </div>
             </fieldset>
-    </form>
     </div>
 
 </span>
+    </form>
 
 </div>
 			</main>
@@ -292,7 +295,8 @@
 	<div th:insert="~{fragments/fragment-footer :: footer}"></div>
     <div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
 	<script th:src="@{/mvc/static/js/scripts.js}"></script>
-
+    <script th:src="@{/mvc/static/js/newParkFunctions.js}"></script>
+	
 	<script th:inline="javascript">
 	function changeType() {
 		var slct = document.getElementById("typeId");
@@ -321,13 +325,6 @@
 		}
 	}
 	
-	
-	 function isEmpty(obj) {
-	     return Object.keys(obj).length === 0;
-	 }
-	 function sleep(ms) {
-		return new Promise(resolve => setTimeout(resolve, ms));
-	 }
 
 	// point icons
 	var editEntranceIcon = L.icon({
@@ -366,9 +363,7 @@
         hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
         inputValue = input.value;
 	    
-	    const regex = /[0-9]/g;
-	    const found = hiddenInput.match(regex);
-	    if (found) {
+	    if (isNumericId(hiddenInput)) {
 	    	document.querySelector("#formSelectCity").submit();
 	    }
 	});
@@ -473,8 +468,8 @@
     	//geojsonPrefLayer.redraw()
     }
     function customOnEachFeaturePref(feature, layer) {
-    	var filter=document.querySelector('input[name="filterPark"]:checked').value;
-    	console.log('radio='+filter);
+    	//var filter=document.querySelector('input[name="filterPark"]:checked').value;
+    	//console.log('radio='+filter);
     	
         layer.setStyle({
            "fillOpacity": 0.3,
@@ -483,9 +478,14 @@
             "fillColor": "#1212ff"
         });
         
-        // does this feature have a property named fillColor?
+        if (feature.properties.name) {
+            var parcEdit = "<p>"+feature.properties.name+"</p>";
+            layer.bindPopup(parcEdit);
+        }
+        
+        // does this feature have a property named fillColor
+        /*
         if (feature.properties) {
-        	/*
         	if (feature.properties.status === filterValid) {
         		if (feature.properties.fillColor) {
                 //console.log("to display: feat>"+feature.properties.name+">"+feature.properties.status);
@@ -497,8 +497,8 @@
                    });
             	}
         	}
-        	*/
         }
+        */
     }
     
     function getGMapLink(feature) {
@@ -543,14 +543,43 @@
     
     
     function fnParkPrefClicked(feat) {
-    	manageDisabled();
-    	props = feat.properties;
-    	geom = feat.geometry;
+    	//TODO detect CREATE MODE
+    	// check function fnParkPrefClicked(feat) {k is idParcJardin is null
     	
-    	var strPoly = JSON.stringify(geom);
+ 		manageLocationDisabled();
+ 		var props = feat.properties;
+ 		var geom = feat.geometry;
+        var strPoly = JSON.stringify(geom);
+        
+        const curIdPark = document.getElementById("idPark").value;
+        const curHadGeometry = document.getElementById("hadGeometry").value;
+        
+    	if (action_mode==="CREATE" || action_mode==="UPDATE") {
+    		if (
+   				(isNumericId(curIdPark) || curHadGeometry==="")
+   				&&
+   				(curHadGeometry==="false" || curHadGeometry==="")
+    		   ) {
+    			
+    			var msg ="voulez vous recopier le détourage (bleu) du parc?";
+    			let choice=confirm( msg );
+                if (choice) {
+                    document.getElementById("sGeometry").value=strPoly;
+                    document.getElementById("etatAction").value="add";
+                    document.getElementById("etat").value="pref";
+                    
+                    return;
+                }
+                
+    		} else {
+    			console.log("parc prefectur ignored");
+    		}
+    		return;
+    	}
+    	
+
         document.getElementById("sGeometry").value=strPoly;
         document.getElementById("etatAction").value="add";
-         
     	document.getElementById("etat").value="pref";
         document.getElementById("id").value = props.id;
     	document.getElementById("idPark").value = props.idParcJardin;
@@ -571,6 +600,7 @@
     function fnParkGardenClicked(props) {
     	if (document.getElementById("etat").value!=='pref') {
     		// cleanUp
+            document.getElementById("hadGeometry").value = "";
             document.getElementById("id").value = "";
             document.getElementById("idPark").value = "";
             document.getElementById("name").value = "";
@@ -743,32 +773,11 @@
     // alert(calcCrow(59.3293371,13.4877472,59.3225525,13.4619422).toFixed(1));
 
 
-
-    //This function takes in latitude and longitude of two location and returns the distance between them as the crow flies (in km)
-    function calcCrow(lat1, lon1, lat2, lon2) 
-    {
-      var R = 6371; // km
-      var dLat = toRad(lat2-lat1);
-      var dLon = toRad(lon2-lon1);
-      var lat1 = toRad(lat1);
-      var lat2 = toRad(lat2);
-
-      var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
-      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-      var d = R * c;
-      return d;
-    }
-
-    // Converts numeric degrees to radians
-    function toRad(Value) {
-        return Value * Math.PI / 180;
-    }
     
     function presave() {
     	var strPoly = JSON.stringify(L.PM.Utils.findLayers(map)[0].toGeoJSON());
     }
-    
+    var action_mode=null
     function manageCreateDisabled() {
     	
     	if (document.getElementById("idPark").value!=="") {
@@ -782,6 +791,7 @@
     		}
     	}
     	
+    	action_mode = "CREATE";
     	document.getElementById("fsEditPark").disabled = false;
     	var objBtnNew=document.getElementById("btnNew");
     	objBtnNew.classList.remove('btn-outline-secondary');
@@ -796,7 +806,7 @@
     	
     	// clean form
     	//document.getElementById("formNewPark").reset();
-    	
+        document.getElementById("hadGeometry").value = "";
     	document.getElementById("idPark").value="";
     	document.getElementById("id").value="";
     	document.getElementById("sGeometry").value="";
@@ -819,6 +829,7 @@
     	if (document.getElementById("idPark").value==="") {
   			return;
     	}
+    	action_mode = "UPDATE";
     	document.getElementById("fsEditPark").disabled = false;
     	var objBtnUpdate=document.getElementById("btnUpdate");
     	objBtnUpdate.classList.remove('btn-outline-success');
@@ -869,7 +880,7 @@
     	document.getElementById("formNewPark").submit();
     }
     
-    function manageDisabled() {
+    function manageLocationDisabled() {
         console.log(document.getElementById("idRegion").value);
         
         if (document.getElementById("idRegion").value!="") {
@@ -880,7 +891,7 @@
             document.getElementById("fsCity").disabled = false;
         }
     }
-    manageDisabled();
+    manageLocationDisabled();
 
     
     // center on map by navigator loc (require grand)
@@ -893,18 +904,9 @@
         document.getElementById("mapLat").value=lat;
         
         editMap.setView(L.latLng(lat,lon));
-        
-        
-    }
-    
-    function locateMe() {
-	    if (navigator.geolocation) {
-	       navigator.geolocation.getCurrentPosition(showPosition);
-	    }
     }
     
     // https://gis.stackexchange.com/questions/439672/checking-whether-a-polygon-drawn-with-leaflet-geoman-plugin-is-valid
-
     $(document).ready(function(){
 
         $("#srcAdress").select2(
@@ -988,17 +990,6 @@
         alert("File successfully uploaded.");
       }
     }
-
- function ConvertDMSToDD(degrees, minutes, seconds, direction) {
-     //console.log(degrees+" "+minutes+" "+seconds+" "+direction);
-     var dd = degrees + (minutes/60) + (seconds/36000000);
-     //console.log(degrees+" "+(minutes/60)+" "+(60000/36000000));                               
-     if (direction == "S" || direction == "W") {
-         dd = dd * -1;
-     }
-     //console.log(dd);
-     return dd;
-  }
 
 
  // prévalidation du fichier d'upload (type, conhérence, exif)
