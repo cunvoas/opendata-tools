@@ -346,6 +346,12 @@ public class ParkService {
 			
 		}
 	}	
+	
+	public void importParcJardin(List<ParcEtJardin> parks) throws IOException {
+		for (ParcEtJardin parcEtJardin : parks) {
+			parkJardinRepository.save(parcEtJardin);
+		}
+	}	
 		
 	
 	private void mergeEntranceAreas(ParkArea parkArea) {

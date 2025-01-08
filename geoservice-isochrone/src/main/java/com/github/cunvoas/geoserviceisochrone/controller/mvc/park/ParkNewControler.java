@@ -199,7 +199,7 @@ public class ParkNewControler {
 		
 		ParcEtJardin pj = this.map(form);
 		
-		pj=serviceParkJardinService.save(pj);
+		pj=serviceParkJardinService.save(pj, form.getSGeometry()!=null);
 		
 		PhotoDto dto= this.getPhotoPath(form);
 		dto.setParcEtJardin(pj);

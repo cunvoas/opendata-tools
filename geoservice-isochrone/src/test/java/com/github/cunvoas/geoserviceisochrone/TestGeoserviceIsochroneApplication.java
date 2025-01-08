@@ -15,7 +15,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvCarre200ShapeParser;
+import com.github.cunvoas.geoserviceisochrone.extern.mel.CsvLyonParkJardinParser;
+import com.github.cunvoas.geoserviceisochrone.extern.mel.CsvNantesParkJardinParser;
+import com.github.cunvoas.geoserviceisochrone.extern.mel.JsonToulouseParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
@@ -24,7 +28,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
 
 @SpringBootTest
-@ActiveProfiles({"prod","dev"})
+@ActiveProfiles({"secret","dev"})
 class TestGeoserviceIsochroneApplication {
 
 
@@ -161,5 +165,46 @@ class TestGeoserviceIsochroneApplication {
 		}
 	}
 
+	@Autowired
+	private CsvNantesParkJardinParser parserNantes;
+	@Test
+	@Disabled
+	void loadNantesParks() {
+		try {
+			File f = new File("/work/PERSO/ASSO/data/autresVilles/integ_nantes.csv");
+			List<ParcEtJardin> parks = parserNantes.parseCsv(f);
+			parkService.importParcJardin(parks);
+		} catch (IOException e) {
+			fail(e.getMessage());
+		}
+	}
+
+	@Autowired
+	private CsvLyonParkJardinParser parserLyon;
+	@Test
+	@Disabled
+	void loadLyonParks() {
+		try {
+			File f = new File("/work/PERSO/ASSO/data/autresVilles/integ_lyons.csv");
+			List<ParcEtJardin> parks = parserLyon.parseCsv(f);
+			parkService.importParcJardin(parks);
+		} catch (IOException e) {
+			fail(e.getMessage());
+		}
+	}
+
+	@Autowired
+	private JsonToulouseParkJardinParser parserToulouse;
+	@Test
+	@Disabled
+	void loadToulouseParks() {
+		try {
+			File f = new File("/work/PERSO/ASSO/data/autresVilles/toulouse.json.txt");
+			List<ParcEtJardin> parks = parserToulouse.parseJson(f);
+			parkService.importParcJardin(parks);
+		} catch (IOException e) {
+			fail(e.getMessage());
+		}
+	}
 	
 }

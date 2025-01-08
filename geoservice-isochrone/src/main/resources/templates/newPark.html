@@ -654,7 +654,23 @@
         	dataAutmel.removeLayer(geojsonParkLayer);
         }
         var sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenOutlineByCorner}]]+'?'+sPos;
-        geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {onEachFeature: customOnEachFeatureParc});
+        geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {
+        	   
+        	   pointToLayer: function(feature, latlng) {
+        		   if (feature.properties.name) {
+	        		   const sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/park/new/check}]]+'?idPark=';
+	        	       var parcEdit = "<p>"+feature.properties.name+"</p>";
+	       	            if (feature.properties.id) {
+	       	                parcEdit= parcEdit +"<p><a href='"+ sUrlEditPark + feature.properties.id +"' >Edit</a>&nbsp(contour non défini)</p>";
+	       	            }
+	       	           const mark = L.marker(latlng).bindPopup(parcEdit).addTo(editMap);
+	       	           //return mark;
+        	        }
+        	   },
+        	   onEachFeature: customOnEachFeatureParc
+
+        	});
+        
         dataAutmel.addLayer(geojsonParkLayer);
         
         // get shapes: Cadastre

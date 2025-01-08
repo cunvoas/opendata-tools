@@ -13,13 +13,16 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ParkJardinService {
 	
 	@Autowired 
@@ -34,6 +37,8 @@ public class ParkJardinService {
 
 	@Autowired 
 	private CadastreRepository cadastreRepository;
+	@Autowired 
+	private CityRepository cityRepository;
 
 	@Autowired 
 	private InseeCarre200mOnlyShapeRepository surfaceRepo;
@@ -44,7 +49,7 @@ public class ParkJardinService {
 	 * @param parcEtJardin
 	 * @return
 	 */
-	public ParcEtJardin save(ParcEtJardin parcEtJardin) {
+	public ParcEtJardin save(ParcEtJardin parcEtJardin, boolean updSurfaceShape) {
 		
 		
 		
@@ -66,9 +71,14 @@ public class ParkJardinService {
 				match = c.getGeoShape().contains(parcEtJardin.getCoordonnee());
 			}
 			if (!match) {
-//FIXME get park and relocate to the good place
-				
-				throw new ExceptionGeo("PARK_NOT_IN_CITY");
+				// get park and relocate to the good place
+				Cadastre ca = cadastreRepository.findMyCadastre(parcEtJardin.getCoordonnee());
+				if (ca!=null) {
+					City ci = cityRepository.findByInseeCode(ca.getIdInsee());
+					parcEtJardin.setCommune(ci);
+					log.warn("PARK_NOT_IN_CITY relocation to {}", ci);
+				}
+				//throw new ExceptionGeo("PARK_NOT_IN_CITY");
 			}
 		} else {
 			// MàJ
@@ -89,9 +99,16 @@ public class ParkJardinService {
 			
 		}
 		
+		Long s = null;
 		if (ParcSourceEnum.AUTMEL.equals(parcEtJardin.getSource())) {
-			Long s = surfaceRepo.getSurface(parcEtJardin.getContour());
+			s = surfaceRepo.getSurface(parcEtJardin.getContour());
 			parcEtJardin.setSurface(s.doubleValue());
+		}
+		if (updSurfaceShape) {
+			if (s==null) {
+				s = surfaceRepo.getSurface(parcEtJardin.getContour());
+			}
+			parcEtJardin.setSurfaceContour(s.doubleValue());
 		}
 		
 		return parkJardinRepository.saveAndFlush(parcEtJardin);

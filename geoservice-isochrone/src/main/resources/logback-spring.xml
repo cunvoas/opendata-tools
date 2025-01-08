@@ -64,6 +64,8 @@
     </encoder>
   </appender> -->
 
+  <logger name="logging.level.com.zaxxer.hikari.HikariConfig" level="info"/>
+  <logger name="logging.level.com.zaxxer.hikari" level="trace"/>
   <logger name="com.github.cunvoas.geoserviceisochrone" level="info"/>
   <logger name="com.github.cunvoas.geoserviceisochrone.GeoserviceIsochroneApplication" level="info"/>
 
@@ -75,7 +77,7 @@
   </springProfile>
 
   <!-- Local & CI environment (local-custom is a reference to application-local-custom.yml -> see : .gitignore) -->
-  <springProfile name="local,compose,secret,dev,prod,pi">
+  <springProfile name="local,compose,secret,dev,prod">
     <root level="INFO">
       <appender-ref ref="CONSOLE"/>
     </root>

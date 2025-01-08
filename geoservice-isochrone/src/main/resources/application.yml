@@ -42,16 +42,17 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       pool-name: isochroneDb-pool
-      minimum-idle: 1
-      maximum-pool-size: 10
+      connection-test-query: SELECT 1
+      minimum-idle: 2
+      maximum-pool-size: 20
       idle-timeout:  600000
       max-lifetime: 1800000
-      connection-timeout: 20000
+      connection-timeout: 30000
+      leak-detection-threshold: 2000
       auto-commit: false 
 # https://stackoverflow.com/questions/41574502/spring-boot-hikaricp-transactional-not-overwriting-isolation-level  
 # transaction-isolation: READ_COMMITTED
       transaction-isolation: 2
-      connection-test-query: select 1
 
 # JPA configuration
   jpa:

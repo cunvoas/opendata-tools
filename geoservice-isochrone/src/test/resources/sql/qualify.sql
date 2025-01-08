@@ -27,5 +27,7 @@ SELECT identifiant, adresse, nom_parc, quartier, sous_type, surface, type, id_ci
 
     
  */
-    
+UPDATE public.parc_jardin
+SET surface_contour=ST_Area(contour, true)
+WHERE contour is not null and surface_contour is null;
     

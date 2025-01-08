@@ -90,7 +90,7 @@ public class CsvNantesParkJardinParser {
 
 		if (csvFile.isFile()) {
 			CSVFormat format = CSVFormat.DEFAULT.builder()
-					.setDelimiter(";")
+					.setDelimiter(",")
 					.setQuote('"')
 					.setHeader(CsvHeaders.class)
 					.setSkipHeaderRecord(true)

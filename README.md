@@ -22,8 +22,9 @@ Projet de l'interface graphique qui représente les données sous la forme de ca
 [Détail du projet](./geoservice-map/README.md)
 
 
-## opendata-spare
+## opendata-tool-spare-data
+
 Ce projet contient un copie de sécurité des fichiers de données sources afin de pouvoir reconstruire la base de données.
 Cette copie a été décidée car les données du passé deviennent souvent indisponibles ou le format des données évoluent dans le temps. 
-[Détail du projet](./opendata-spare/README.md)
+[Détail du projet](https://github.com/cunvoas/opendata-tool-spare-data/README.md)
 
