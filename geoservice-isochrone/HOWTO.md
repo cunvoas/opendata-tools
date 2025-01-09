@@ -11,11 +11,11 @@ Le back est codé en Java 19 (java 17 minimum) sur une openjdk.
 Maven 3.9 est utilisé pour la gestion des dépendances et le build. 
 Spring Boot 3.1 est utilisé comme framework structurant.
 
-# VueJS, Lealet
+# VueJS, Leaflet
 
 L'IHM de la carte publique est réalisée en VueJS 3 avec vue3-leaflet et leaflet pour la carte. La carte communique avec les données précalculées de l'app de gestion et GeoJSON.
 
-# Thymleaf, Lealet
+# Thymleaf, Leaflet
 L'IHM de l'application de gestion est réalisée avec Thymleaf et Leaflet pour les cartes. La carte communique avec le serveur en ReST et GeoJSON.
 
 # Docker

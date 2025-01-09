@@ -41,6 +41,11 @@ public class MvcDashBoardControler {
     public String releaseNote(Model model, ModelAndView modelAndView) {
         return "releaseNote";
     }
+
+	@GetMapping("/video-help-pop")
+    public String videoHelpPop(Model model, ModelAndView modelAndView) {
+        return "videoHelp_popup";
+    }
 	
 	@GetMapping("/infosante")
     public String infosante(Model model, ModelAndView modelAndView) {
@@ -58,6 +63,10 @@ public class MvcDashBoardControler {
 		model.addAttribute("dashboard", data);
 		
         return "dashboard";
+	}
+	@RequestMapping("/")
+	public String mvc() {
+		return "redirect:/mvc/dashboard";
 	}
 	
 	
