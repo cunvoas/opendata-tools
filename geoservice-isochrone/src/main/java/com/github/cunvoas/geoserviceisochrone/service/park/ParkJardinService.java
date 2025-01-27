@@ -44,14 +44,17 @@ public class ParkJardinService {
 	private InseeCarre200mOnlyShapeRepository surfaceRepo;
 	
 	
-	/**
+	/**ParkJardinService
 	 * save ParcEtJardin.
 	 * @param parcEtJardin
 	 * @return
 	 */
 	public ParcEtJardin save(ParcEtJardin parcEtJardin, boolean updSurfaceShape) {
 		
-		
+		//fix for new park
+		if (parcEtJardin.getCoordonnee()==null && parcEtJardin.getContour()!=null) {
+			parcEtJardin.setCoordonnee(parcEtJardin.getContour().getCentroid());
+		}
 		
 		if (parcEtJardin.getId()==null) {
 			
@@ -59,17 +62,22 @@ public class ParkJardinService {
 			City city = parcEtJardin.getCommune();
 			boolean checkIntersect = true;
 			boolean match = false;
-			if (city.getCoordinate()!=null) {
+			if (city.getCoordinate()!=null && parcEtJardin.getCoordonnee()!=null) {
 				Double distance = DistanceHelper.crowFlyDistance(city.getCoordinate(), parcEtJardin.getCoordonnee());
 				if(distance<1) {
+					// detect close to city
 					checkIntersect = false;
 					match=true;
 				}
 			}
+			
+			// detect close to city but compute expensive
 			if (checkIntersect) {
 				Cadastre c = cadastreRepository.getReferenceById(city.getInseeCode());
 				match = c.getGeoShape().contains(parcEtJardin.getCoordonnee());
 			}
+			
+			// it match, so change the city defined by user to not lost the park
 			if (!match) {
 				// get park and relocate to the good place
 				Cadastre ca = cadastreRepository.findMyCadastre(parcEtJardin.getCoordonnee());
@@ -80,6 +88,7 @@ public class ParkJardinService {
 				}
 				//throw new ExceptionGeo("PARK_NOT_IN_CITY");
 			}
+			
 		} else {
 			// MàJ
 			ParcEtJardin prev = parkJardinRepository.getReferenceById(parcEtJardin.getId());

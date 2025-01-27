@@ -16,7 +16,13 @@
     SET  oms_custom=false 
     where id_parc_jardin in (15,40,88,44,34, 87,127, 123,68,37);
     --127 parc auto
-    
+  
+
+-- flowerbed
+update  public.parc_jardin set type_id=4 where identifiant in (184);
+-- concrete
+update  public.parc_jardin set type_id=5 where identifiant in (24,96);
+
 /*
 SELECT identifiant, adresse, nom_parc, quartier, sous_type, surface, type, id_city, source, status
     FROM public.parc_jardin where 

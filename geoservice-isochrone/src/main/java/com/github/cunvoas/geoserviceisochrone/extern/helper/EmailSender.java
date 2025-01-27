@@ -70,6 +70,47 @@ public class EmailSender {
 		return  Paths.get(uri);
 	}
 
+	public void sendPassword(String email, String prenomNom, String password, String login) {
+		if (!toogleFeatureEmail) {
+			log.warn("skip email sendPassword");
+			return;
+		}
+		
+		try {
+			
+			Map<String, String> values = new HashMap<String, String>(5);
+			values.put("@nom_prenom@", prenomNom);
+			values.put("@login@", login);
+			values.put("@password@", password);
+			values.put("@siteGestion@", applicationBusinessProperties.getSiteGestion());
+			values.put("@sitePublic@", applicationBusinessProperties.getSitePublique());
+
+			String tpl = readTemplate("passwordByAdmin.htm");
+			String msg = applyData(tpl, values);
+			
+			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"mailjet/logo-autmel.png");
+			String logoFile = Paths.get(f.getAbsolutePath()).toString();
+			
+			EmailToContributor toSend = new EmailToContributor();
+			toSend.setEmail(email);
+			toSend.setSubject("AUT'MEL Votre mot de passe a été réinitialisé");
+			toSend.setMessage(msg);
+			toSend.setLogoAutmel(logoFile);
+			
+			mailjetSender.send(toSend);
+			
+		} catch (FileNotFoundException e) {
+			log.error("logo not found");
+			throw new ExceptionAdmin("logo not found");
+		} catch (IOException e) {
+			log.error("logo not found");
+			throw new ExceptionAdmin("logo not found");
+		} catch (MailjetException e) {
+			log.error("MailjetException", e);
+			throw new ExceptionAdmin("Mailjet error: "+e.getMessage());
+		}
+	}
+	
 	public void sendPassword(String email, String prenomNom, String password) {
 		if (!toogleFeatureEmail) {
 			log.warn("skip email sendPassword");
@@ -78,7 +119,7 @@ public class EmailSender {
 		try {
 			
 			// https://stackoverflow.com/questions/11913709/why-does-replaceall-fail-with-illegal-group-reference
-			//FIXME trouble with $ in pass
+			// FIXME trouble with $ in pass
 			Map<String, String> values = new HashMap<String, String>(4);
 			values.put("@nom_prenom@", prenomNom);
 			values.put("@password@", password);

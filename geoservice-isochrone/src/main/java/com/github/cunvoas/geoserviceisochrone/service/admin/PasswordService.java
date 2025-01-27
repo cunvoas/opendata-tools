@@ -25,13 +25,13 @@ public class PasswordService {
 	
 	// https://uibakery.io/regex-library/password
 	// https://mkyong.com/regular-expressions/how-to-validate-password-with-regular-expression/
-	private static final String CHECK_REGEX= "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!µ@#&()–[{}]:;',?/*~$^+=<>]).{12,}$";
+	private static final String CHECK_REGEX= "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[-!%µ@#&_()–[{}]:;\\\"'`,?/*~$^+=<>]).{12,}$";
 	public Boolean isSafe(String newPass) {
 		Boolean ret = Boolean.FALSE;
 		if (newPass.matches(CHECK_REGEX)) {
 			ret = Boolean.TRUE;
 			
-			//TODO MoSCoW:Could call service about RockYou pass exists in.
+			//TODO MoSCoW: Could call service about RockYou pass exists in.
 			
 		}
 		return ret;
@@ -53,6 +53,13 @@ public class PasswordService {
         String password = pwChars.stream()
                 .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
                 .toString();
+
+        // dirty quick fix
+        int nb=10;
+        while (!isSafe(password) && nb>0) {
+            password = generatePassword(length);
+            nb--;
+        }
         return password;
     }
     
@@ -62,13 +69,13 @@ public class PasswordService {
         return pwdGenerator.generate(length);
     }
     protected String generateRandomSpecialCharacters(int length) {
-        return generateCharactersInRange(length, 33, 45);
+        return generateCharactersInRange(length, 33, 47);
     }
     protected String generateRandomNumbers(int length) {
         return generateCharactersInRange(length, 48, 57);
     }
     protected String generateRandomAlphabet(int length, boolean upperCase) {
-        return generateCharactersInRange(length, upperCase ? 65 : 97, upperCase ? 90 : 122);
+        return generateCharactersInRange(length, upperCase ? 65 : 90, upperCase ? 90 : 122);
     }
 
 }

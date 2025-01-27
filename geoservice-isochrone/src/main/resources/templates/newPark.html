@@ -424,10 +424,10 @@
     
     // groupes des fonds de carte
     const mapLayers = {
-   		'Satellite ArcGisOnline': layerSatellite,
    		'Vues Aérienne IGN': layerAeroIgnMap,
-   		'Carte OpenStreetMap': layerStreetMap,
+        'Satellite ArcGisOnline': layerSatellite,
    		'Carte WorldStreetMap': layerEsriWorldStreetMap,
+        'Carte OpenStreetMap': layerStreetMap,
    	};
     
     // extras data sur la carte
@@ -734,6 +734,19 @@
         
         // works! event after modify pref poly
         geojsonPrefLayer.on('pm:change', function (e) {
+            console.log("pm:change ");
+              var layerToDraw = e.layer;   
+              console.log(layerToDraw);
+              document.getElementById("etatAction").value="change";
+              
+              var strPoly = JSON.stringify(layerToDraw.toGeoJSON());
+              document.getElementById("sGeometry").value=strPoly;
+              //want to check here whether the layerToDraw is valid
+              //features.addLayer(layerToDraw);
+            });
+        
+        // works! event after modify autmel park poly
+        geojsonParkLayer.on('pm:change', function (e) {
             console.log("pm:change ");
               var layerToDraw = e.layer;   
               console.log(layerToDraw);

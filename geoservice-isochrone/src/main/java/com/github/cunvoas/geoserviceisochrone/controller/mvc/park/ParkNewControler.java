@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -174,14 +175,15 @@ public class ParkNewControler {
 		try {
 			Geometry geom = null;
 			
-			if (sGeom!=null) {
+			if ( StringUtils.isNotBlank(sGeom) ) {
 				geom = geoJson2GeometryHelper.parseGeoman(sGeom);
+
+				if (geom!=null) {
+					pj.setCoordonnee(geom.getCentroid());
+					pj.setContour(geom);
+				}
 			}
 			
-			if (geom!=null) {
-				pj.setCoordonnee(geom.getCentroid());
-				pj.setContour(geom);
-			}
 		} catch (JsonProcessingException e) {
 			log.error("geoman parsing error = ", sGeom);
 		}	
@@ -192,6 +194,7 @@ public class ParkNewControler {
 	
 	
 	@PostMapping("/save")
+	@Transactional
 	public String save(@ModelAttribute FormParkNew form, Model model, BindingResult bindingResult) {
 		log.warn("Generic save: {}", form);
 		
