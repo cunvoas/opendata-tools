@@ -5,6 +5,7 @@
 import { createWebHistory, createRouter } from "vue-router";
 import AppCarte from "../views/AppCarte.vue";
 import AppSurface from "../views/AppSurface.vue";
+import AppInformation from "../views/AppInformation.vue";
 
 //Vue.use(Router);
 
@@ -18,8 +19,14 @@ const routes = [
   {
     path: '/surface',
     name: 'appSurface',
-    title: 'Surface',
+    title: 'Analyse',
     component: AppSurface,
+  },
+  {
+    path: '/information',
+    name: 'appInformation',
+    title: 'Informations',
+    component: AppInformation,
   },
   {
     path: '/',
@@ -33,8 +40,3 @@ const router = createRouter({
 });
 
 export default router;
-/*
-export default new Router({
-  routes,
-});
-*/

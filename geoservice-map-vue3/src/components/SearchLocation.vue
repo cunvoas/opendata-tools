@@ -30,6 +30,7 @@
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 import Autocomplete from './Autocomplete.vue';
+import { useCookies } from "vue3-cookies";
 
 export default {
     components: { Autocomplete },
@@ -52,10 +53,32 @@ export default {
     },
     mounted() {
         this.fetchRegions();
-        this.selectedRegion = '9';
-        this.fetchCom2cos();
-        //  this.fetchCities();
-        //  this.selectedCity =2878;
+
+        const { cookies } = useCookies();
+        const cookieLoc = cookies.get("location-selected");
+        console.log("cookieLoc: "+JSON.stringify(cookieLoc));
+        if (cookieLoc!==null) {
+            // reload location from cookie
+            this.selectedRegion = cookieLoc.regionId;
+            this.fetchCom2cos();
+            this.selectedCom2co = cookieLoc.com2coId;
+            this.selectedCom2coName = cookieLoc.com2coName;
+            this.fetchCities();
+            this.selectedCity = cookieLoc.cityId;
+            this.selectedCityName=cookieLoc.cityName;
+            this.selectedCityInseeCode = cookieLoc.cityInsee;
+            this.locX = cookieLoc.lonX;
+            this.locY = cookieLoc.latY;
+
+            this.$emit('update-location', cookieLoc);
+
+        } else {
+            this.selectedRegion = '9';
+            this.fetchCom2cos();
+            //  this.fetchCities();
+            //  this.selectedCity =2878;
+        }
+
     },
     computed: {
         selectedCityInsee() {
@@ -139,6 +162,9 @@ export default {
                 "lonX": this.locX,
                 "latY": this.locY
             };
+
+            const { cookies } = useCookies();
+            cookies.set("location-selected", loc, "7d");
             //console.log("handleCityChange.emit"+JSON.stringify(loc));
             this.$emit('update-location', loc);
         },

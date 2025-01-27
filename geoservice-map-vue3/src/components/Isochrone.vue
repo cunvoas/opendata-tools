@@ -49,19 +49,27 @@
         layer-type="base"
       />
 
-
+      <l-control-layers position="topright" />
       <l-control position="bottomright">
         <div id="dataDetail" class="dataDetail">
           <h4>&nbsp;Détail des données&nbsp;</h4>
           &nbsp;<br />&nbsp;
         </div>
       </l-control>
-      <l-control-layers position="topright" />
       <l-control-scale
         position="bottomleft"
         :imperial="false"
-        :metric="true"
-      />
+        :metric="true" />
+
+      <l-control position="bottomleft" >
+        <div id="customControl" class="dataDetail">
+          <h4>&nbsp;Parc accessible&nbsp;<br/>(m²/hab.)</h4>
+          
+          <div id="legend" class="legend">            
+            <div id="legendContent" v-html="htmlLegend" />
+          </div>
+        </div>
+       </l-control>
 
 
 
@@ -92,6 +100,30 @@
   </div>
 </template>
 
+<style>
+#rotate-text-d {
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+  position: relative;
+  top: 140px;
+  font-style: italic bold;
+  color: #000000;
+}
+#rotate-text-p {
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+  position: relative;
+  top: 78px;
+  font-style: italic bold;
+  color: #000000;
+}
+</style>
 <script>
 import { latLng } from "leaflet";
 import {
@@ -109,12 +141,13 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { ref, onMounted } from 'vue'
 
+// needs to be here for map coloring
 function  getSquareColor(zoneDense, densite) {
         let sqColor = '#a5a5a5';
         if (densite===null || densite==='N/A' || densite==='' ) {
           return sqColor;
         }
-        densite = densite.replace(",", ".");
+        densite = (""+densite).replace(",", ".");
 
         const greenMin = '#57dd17';
         const greenMax = '#579917';
@@ -149,6 +182,30 @@ function  getSquareColor(zoneDense, densite) {
         return sqColor;
 }
 
+function getColorLegend() {
+  console.log("getColorLegend");
+  const grades = ['0','3','7','10','12','25','45'];
+		const labels = [];
+		let from, to;
+
+    labels.push(`<i id="rotate-text-d">dense</i> <i id="rotate-text-p">périurbain</i> `);
+		labels.push(`<i style="background:${getSquareColor(true,"N/A")}"></i> <i style="background:${getSquareColor(true,null)}"></i> non calculé`);
+		for (let i = 0; i < grades.length; i++) {
+			from = grades[i];
+			to = grades[i + 1];
+
+      let tSurface = `${from}${to ? `&ndash;${to}` : '+'}`
+      let dense = `<i style="opacity:0.4;background:${getSquareColor(true, from)}"></i> `;
+			let subur = `<i style="opacity:0.4;background:${getSquareColor(false, from)}"></i> `;
+			
+      labels.push(dense+subur+tSurface);
+		}
+    
+
+  console.log("labels"+labels);
+    return labels.join('<br>');}
+
+
 export default {
   name: "Isochrone",
   props: {
@@ -157,23 +214,26 @@ export default {
   },
   components: {
     LMap,
+    LGeoJson,
+    LPolygon,
     LIcon,
     LMarker,
     LTileLayer,
-    LControlLayers,
-    LGeoJson,
-    LPolygon,
     LControl,
     LControlScale,
+    LControlLayers,
   },
   
   setup() {
     const leafletMap = ref(null);
     return { leafletMap } // expose map ref
   },
-  
+  created () {
+     this.htmlLegend = getColorLegend();
+  },
   data() {
     return {
+      htmlLegend: null,
       leafletMap: null,
       loading: false,
       showIsochrones: false,
@@ -204,7 +264,7 @@ export default {
           name: "Carte OpenStreetMap",
           visible: true,
           attribution:
-            '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+            '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a>',
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
           maxZoom: 19,
           minZoom: 10,
@@ -222,7 +282,7 @@ export default {
           visible: false,
           url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
           attribution:
-            '&copy; <a href="https://www.arcgis.com/">ArcGisOnline</a> <a href="https://www.facebook.com/lmoxygene/">LM Oxygène</a> ',
+            '&copy; <a href="https://www.arcgis.com/">ArcGisOnline</a>',
           maxZoom: 19,
           minZoom: 10,
         },
@@ -265,7 +325,6 @@ export default {
             this.region=newLocation.regionId;
             console.log("this.region="+this.region);
           }
-          
 
           if (newLocation.com2coId && this.com2co!==newLocation.com2coId) {
             this.com2co = newLocation.com2coId;
@@ -275,13 +334,13 @@ export default {
             this.callGeoJsonCarres();
             this.callGeoJsonCadastre();         
           }
-
         }
       },
       immediate: true,
       deep: true
     }
   },
+
   methods: {
     addTemporaryMarker(lat, lng) {
       /*
@@ -375,6 +434,12 @@ export default {
       const dataCadastre = await respCadastre.json();
       this.geojsonCadastre = dataCadastre;
     },
+  },
+  mounted() {      // Add custom HTML content to the l-control
+      const customControl = document.getElementById('customControl');
+      if (customControl) {
+        customControl.innerHTML = '<p>Custom HTML content loaded on map load</p>';
+      }
   },
   computed: {
     detailIsochrone() {
@@ -557,6 +622,9 @@ export default {
         );
       };
     },
+  },
+  mounted() {
+    console.log("mounted");
   },
   beforeMount() {
     console.log("beforeMount");

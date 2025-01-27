@@ -13,7 +13,7 @@
             </div>
         </span>
 
-        <LegendeCarte></LegendeCarte>
+        <!-- <LegendeCarte></LegendeCarte> -->
     
     </div>
 </template>
