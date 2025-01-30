@@ -55,7 +55,7 @@ function getChartData(tLabels, tData, tFillColors) {
             console.log(error);
         });
   }
-  const myUrl = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/test.json";
+  const myUrl = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/test.json";
 /*
  
   (async () => {

@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 	basePackages = { 
 			"com.github.cunvoas.geoserviceisochrone.repo"
 })
-//@EnableTransactionManagement
+@EnableTransactionManagement
 public class JpaConfig {
 
 

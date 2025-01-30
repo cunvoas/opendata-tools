@@ -4,7 +4,7 @@ import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 
 /**
  * Interface d'appel au service de l'IGN.
- * @author cus
+ * @author cunvoas
  */
 public interface IsoChroneClientService {
 

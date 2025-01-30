@@ -23,6 +23,6 @@ public class BarcodesController {
 	public ResponseEntity<BufferedImage> barbecueEAN13Barcode(@PathVariable("barcode") String barcode)
 			throws Exception {
 		
-		return new ResponseEntity(barcodeHelper.generateQRCodeImage(barcode), HttpStatus.OK);
+		return new ResponseEntity<BufferedImage>(barcodeHelper.generateQRCodeImage(barcode), HttpStatus.OK);
 	}
 }

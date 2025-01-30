@@ -6,6 +6,7 @@ import HeaderAsso from './components/HeaderAsso.vue'
 //import AppCarte from './views/AppCarte.vue'
 //import AppSurface from './views/AppSurface.vue'
 import 'leaflet/dist/leaflet.css';
+import './App.css'
 import router from './router';
 
 //d3js components

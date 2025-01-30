@@ -39,11 +39,14 @@
                 /></a>
             </b-col>
         
-            <b-col name="bNav" style="vertical-align: top;" id="router-links"><nav>  
+            <b-col name="bNav" style="vertical-align: top;" id="router-links">
+                <nav>  
                     <router-link class="router-links" to="/carte">Carte</router-link>
                     &nbsp;
-                    <router-link class="router-links" to="/surface">Surface</router-link>
-                    </nav>
+                    <router-link class="router-links" to="/surface">Analyse</router-link>
+                    &nbsp;
+                    <router-link class="router-links" to="/Information">Information</router-link>
+                </nav>
             </b-col>
         </b-row>
             

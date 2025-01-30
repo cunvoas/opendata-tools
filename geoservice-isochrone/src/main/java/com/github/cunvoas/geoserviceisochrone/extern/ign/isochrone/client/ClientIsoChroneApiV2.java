@@ -13,7 +13,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * @author cus
+ * @author cunvoas
  * @see https://geoservices.ign.fr/documentation/services/services-geoplateforme/itineraire#72786
  * @see demo https://geoservices.ign.fr/documentation/services/utilisation-web/exemples/bibiotheque-dacces-calcul-disochrones-et 
  */

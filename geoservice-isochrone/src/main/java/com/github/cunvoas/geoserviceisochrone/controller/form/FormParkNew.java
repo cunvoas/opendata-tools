@@ -3,7 +3,6 @@ package com.github.cunvoas.geoserviceisochrone.controller.form;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +36,7 @@ public class FormParkNew extends AbstractFormLocate{
 	private ParcPrefecture parcPrefecture;
 	
 	// park photo
-	private MultipartFile photo;
+	private MultipartFile fileupload;
 	
 	//edit fields
 	//parkArea
@@ -70,7 +69,8 @@ public class FormParkNew extends AbstractFormLocate{
 	private Double surfaceContour;
 	
 	private Point coordonnee;
-	
+
+	private Boolean hadGeometry;
 	private String sGeometry;
 	private String etatAction;
 	private String etat;

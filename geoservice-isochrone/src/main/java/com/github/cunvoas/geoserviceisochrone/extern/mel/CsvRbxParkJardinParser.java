@@ -19,7 +19,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 
 
 /**
- * @author cus
+ * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  * 
  * @see https://opendata.roubaix.fr/explore/dataset/liste-des-jardins-familiaux-et-partages-de-roubaix/api/
@@ -30,7 +30,7 @@ public class CsvRbxParkJardinParser {
 
 	/**
 	 * CSV Header definition for easier mods.
-	 * @author cus
+	 * @author cunvoas
 	 */
 	public enum ParkJardinCsvHeaders {
 	//	Identifiant;Nom;Adresse;Surface (ha);geo_shape;geo_point_2d;lat;long

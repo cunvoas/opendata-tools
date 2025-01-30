@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.EmailSender;
@@ -69,7 +70,7 @@ public class ContributeurService {
 		}
 		return null;
 	}
-	
+	@Transactional
 	public Contributeur save(Contributeur contributeur, boolean pwdGenNeeded) {
 		boolean newAccount=false;
 		boolean newPassword=false;
@@ -169,7 +170,15 @@ public class ContributeurService {
 		
 		if (newPassword) {
 			log.error("send email with password");
-			emailSender.sendPassword(toBeSaved.getEmail(), toBeSaved.getFullName(), myPassword);
+			
+			Contributeur contribConnected =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			if (!contribConnected.getLogin().equals(toBeSaved.getLogin())) {
+				emailSender.sendPassword(toBeSaved.getEmail(), toBeSaved.getFullName(), myPassword, toBeSaved.getLogin());
+				
+			} else {
+				emailSender.sendPassword(toBeSaved.getEmail(), toBeSaved.getFullName(), myPassword);
+				
+			}
 		}
 		myPassword=null;
 		

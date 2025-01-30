@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head th:insert="~{fragments/fragment-head :: head}" />
+
+<body class="sb-nav-fixed">
+			<!-- debut MAIN -->
+			<main>
+
+				<div class="container-fluid px-4">
+					<h3 class="mt-12" th:text="#{menu.abstract.help}">Help</h3>
+                        
+                    <div class="card mt-12">
+                        <div class="card-body col-md-12">
+                        <!-- content here -->
+
+<video
+    id="helpPlayer"
+    class="video-js vjs-default-skin"
+    controls="true"
+    preload="auto"
+    poster="//github.com/cunvoas/opendata-tool-spare-data/raw/refs/heads/main/video-aide/aide_1024.png"
+    data-setup='{ "aspectRatio":"1832:1012"}'>
+
+      <source label="540p"
+         src="//github.com/cunvoas/opendata-tool-spare-data/raw/refs/heads/main/video-aide/SaisirContourParc_540p.webm"
+         type="video/webm">
+
+      <source label="720p"
+         src="//github.com/cunvoas/opendata-tool-spare-data/raw/refs/heads/main/video-aide/SaisirContourParc_720p.webm"
+         type="video/webm">
+
+      <source label="1024p"
+         selected="true"
+         src="//github.com/cunvoas/opendata-tool-spare-data/raw/refs/heads/main/video-aide/SaisirContourParc_1024.webm" 
+         type="video/webm"> 
+
+      <source label="1280p"
+         src="//github.com/cunvoas/opendata-tool-spare-data/raw/refs/heads/main/video-aide/SaisirContourParc_1280p.webm" 
+         type="video/webm">
+
+        <source label="1800p"
+         src="//github.com/cunvoas/opendata-tool-spare-data/raw/refs/heads/main/video-aide/SaisirContourParc_1800.webm" 
+         type="video/webm">
+
+	<p class="vjs-no-js">
+	  Pour voir la video, merci d'activer JavaScript, ou de mettre à jour votre navigateur
+	  <a href="https://videojs.com/html5-video-support/" target="_blank">Il doit supporter HTML5</a>.
+	</p>
+	<p class="vjs-no-js">
+	   Autrement, vous pouvez télécharger et lire <a href="//github.com/cunvoas/opendata-tool-spare-data/raw/refs/heads/main/video-aide/SaisirContourParc_1800.webm">web-m</a> video file (17.8 Mo).
+	</p>
+</video>
+
+<p class="vjs-default">
+   <strong>Contrôles clavier:</strong> <br />
+   <em>Barre Espace</em> - lancer la lecture/pause;  <br />
+   <em>Flèche droite et gauche</em> - avancer/reculer la video;  <br />
+   <!-- 
+   <em>Flèche haut et bas</em> - augmenter et baisser le volume; <br />
+   <em>touche M</em> - basculer son/silence;  <br />
+   <em>touche F</em> - basculer plein écran.
+    -->
+</p>
+
+
+                        </div>
+                    </div>
+
+
+				</div>
+			</main>
+			<!-- fin MAIN -->
+
+
+	<div th:insert="~{fragments/fragment-jslibs :: appVideo}"></div>
+
+	<script>
+
+      var player = videojs("helpPlayer");
+      console.log(player);
+      player.hotkeys({  // Section needed for keyboard access to work 
+	        volumeStep: 0.1,
+	        seekStep: 5,
+	        alwaysCaptureHotkeys: true
+	    });
+
+      var qualityLevels = player.qualityLevels();
+
+      /*
+      // https://github.com/videojs/videojs-contrib-quality-levels
+      qualityLevels.selectedIndex_ = 0;
+      qualityLevels.trigger({ type: 'change', selectedIndex: 0 });
+      */
+
+      </script>
+</body>
+</html>

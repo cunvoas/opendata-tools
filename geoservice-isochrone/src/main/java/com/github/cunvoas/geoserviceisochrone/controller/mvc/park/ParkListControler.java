@@ -147,6 +147,14 @@ public class ParkListControler {
 		return form;
 	}
 		
+	/**
+	 * populate the list dtos.
+	 * @param idCity
+	 * @param parkCase
+	 * @param type
+	 * @param page
+	 * @return
+	 */
 	private Page<FormParkListItem> populateTableList(Long idCity, String parkCase, String type, Pageable page) {
 		City city = null;
 		boolean onCity=false;

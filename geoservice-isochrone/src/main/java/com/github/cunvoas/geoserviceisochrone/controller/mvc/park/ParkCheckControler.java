@@ -58,28 +58,6 @@ public class ParkCheckControler {
 		return populateForm(form, model);
 	}
 	
-	/*
-	@PostMapping("/edit")
-	public String savePark( @ModelAttribute FormParkEdit form, Model model) {
-		
-		ParcPrefecture pf = form.getParcPrefecture();
-		
-		ParcPrefecture parcPref = serviceParcPrefecture.getById( pf.getId() );
-		if (parcPref!=null) {
-			log.error("Processed: "+ pf.getProcessed());
-			parcPref.setProcessed(pf.getProcessed());
-			parcPref = serviceParcPrefecture.update(parcPref);
-		}
-		
-		// hotfix
-		form.setIdRegion(pf.getIdRegion());
-		form.setIdCommunauteDeCommunes(pf.getIdCommunauteDeCommunes());
-		form.setIdCommune(pf.getIdCommune());
-		form.setIdPark(pf.getIdPark());
-		
-		return populateForm(form, model);
-	}
-	*/
 	
 	
 	protected String populateForm( FormParkEdit form, Model model) {

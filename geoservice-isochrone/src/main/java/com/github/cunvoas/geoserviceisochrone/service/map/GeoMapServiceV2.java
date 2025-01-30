@@ -5,8 +5,11 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Coordinate;
@@ -102,7 +105,7 @@ public class GeoMapServiceV2 {
     @Autowired
     private InseeCarre200mComputedV2Repository inseeCarre200mComputedV2Repository;
     @Autowired
-    private InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;
+    private InseeCarre200mOnlyShapeRepository inseeCarre200osRepository;
     @Autowired
     private Filosofil200mRepository filosofil200mRepository;
     @Autowired
@@ -174,7 +177,6 @@ public class GeoMapServiceV2 {
 					ids.add(city.getInseeCode());
 				}
 			}
-			
 			
 			
 			List<Cadastre> cadastres = cadastreRepository.findAllById(ids);
@@ -289,9 +291,10 @@ public class GeoMapServiceV2 {
      * shuffle color of polygons.
      * @param index
      * @return
+     * @deprecated
      */
-    
-	public String getColor(int index) {
+    @Deprecated
+	protected String getColor(int index) {
     	int start=240;
     	int rawOffest=64;
     	
@@ -410,7 +413,11 @@ public class GeoMapServiceV2 {
 
 					GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
-					feature.setGeometry(park.getContour());
+					if (park.getContour()!=null) {
+						feature.setGeometry(park.getContour());
+					} else if (park.getCoordonnee()!=null) {
+						feature.setGeometry(park.getCoordonnee());
+					}
 					
 					ParkGardenView pv = new ParkGardenView();
 					feature.setProperties(pv);
@@ -434,8 +441,6 @@ public class GeoMapServiceV2 {
 			List<ParkArea> parkAreas =  parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(polygon));
 			if (!CollectionUtils.isEmpty(parkAreas)) {
 				for (ParkArea parkArea : parkAreas) {
-					
-					
 					GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
 					feature.setGeometry(parkArea.getPolygon());
@@ -445,8 +450,6 @@ public class GeoMapServiceV2 {
 					pv.setId(String.valueOf(parkArea.getId()));
 					pv.setName(parkArea.getName());
 					pv.setQuartier(parkArea.getBlock());
-					
-					
 
 					Optional<ParkAreaComputed> cpu = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
 					if (cpu.isPresent()) {
@@ -521,11 +524,7 @@ public class GeoMapServiceV2 {
 					pv.setNamePrefecture(parkPref.getNamePrefecture());
 					pv.setProcessed(parkPref.getProcessed());
 					pv.setSurface(parkPref.getSurface());
-					if (parkPref.getStatus()!=null) {
-						pv.setStatus(parkPref.getStatus().toString());
-					} else {
-						pv.setStatus(ParcStatusPrefEnum.TO_QUALIFY.toString());
-					}
+					
 					
 					if (parkPref.getParcEtJardin()!=null) {
 						pv.setIdParcJardin(parkPref.getParcEtJardin().getId());
@@ -540,6 +539,12 @@ public class GeoMapServiceV2 {
 						}
 					}
 					
+
+					if (parkPref.getStatus()!=null) {
+						pv.setStatus(parkPref.getStatus().toString());
+					} else {
+						pv.setStatus(ParcStatusPrefEnum.TO_QUALIFY.toString());
+					}
 					
 					if (ParcStatusPrefEnum.VALID.equals(parkPref.getStatus())) {
 						pv.setFillColor(COLOR_VALID);
@@ -614,7 +619,7 @@ public class GeoMapServiceV2 {
 	 * @param pac
 	 */
 	
-	public void extraFeature(ParkView pv, ParkAreaComputed pac) {
+	protected void extraFeature(ParkView pv, ParkAreaComputed pac) {
 		
 		NumberFormat nf = new DecimalFormat("# ##0");
 		if (pac!=null) {
@@ -623,18 +628,18 @@ public class GeoMapServiceV2 {
 			pv.setOms(pac.getOms());
 			pv.setDense(pac.getIsDense());
 			
-			pv.setFillColor(this.getFillColorPark(pv, pac));
+			//pv.setFillColor(this.getFillColorPark(pv, pac));
 		}
 	}
 	
 
-	BigDecimal fromDouble(Double d) {
+	protected BigDecimal fromDouble(Double d) {
 		NumberFormat formatter = new DecimalFormat("#0");     
 		return new BigDecimal(formatter.format(d));
 	}
 	
 	
-	public String getFillColorCarre(Carre200AndShapeView v, InseeCarre200mComputedV2 pacEd) {
+	protected String getFillColorCarre(Carre200AndShapeView v, InseeCarre200mComputedV2 pacEd) {
 		String color = THRESHOLD_GREENWASHED;
 
 		if (pacEd.getUpdated()!=null) {
@@ -690,7 +695,7 @@ public class GeoMapServiceV2 {
 	 * @param sph
 	 * @return gradient color
 	 */
-	public String getColorGrey(Double sph) {
+	protected String getColorGrey(Double sph) {
 		String color=THRESHOLD_BAD;
 		// color from 0 to 255
 		Long v = Math.round(123+sph*10);
@@ -714,7 +719,7 @@ public class GeoMapServiceV2 {
 	 * @param v
 	 * @return
 	 */
-	public String formatInt(BigDecimal v) {
+	protected String formatInt(BigDecimal v) {
 		if (v!=null) {
 			return  DF_E.format(v);
 		}
@@ -732,9 +737,7 @@ public class GeoMapServiceV2 {
 			return  DF_S.format(v);
 		}
 		return "-";
-		
 	}
-	
 	
 	 /**
 	 * @param polygon
@@ -752,15 +755,27 @@ public class GeoMapServiceV2 {
      * @param polygon
      * @return
      */
-    
-	public GeoJsonRoot findAllCarreByArea(Polygon polygon, Integer annee) {
-		log.error("findAllCarreByArea(Polygon polygon, Integer annee {})", annee);
-    	GeoJsonRoot root = new GeoJsonRoot();
+	public GeoJsonRoot findAllCarreByCommunauteCommune(CommunauteCommune com2co, Integer annee) {
+		log.error("findAllCarreByArea(CommunauteCommune {}, Integer annee {})", com2co.getName(), annee);
+    	GeoJsonRoot root = null;
+		
+    	Set<InseeCarre200mOnlyShape> carres = new HashSet<>();
     	
-    	if (polygon!=null) {
-    	//List<InseeCarre200m> carres = inseeCarre200mRepository.getAllCarreInMap(GeometryQueryHelper.toText(polygon));
-    	List<InseeCarre200mOnlyShape> carres = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(polygon), Boolean.TRUE);
+    	for (City city : com2co.getCities()) {
+    		List<InseeCarre200mOnlyShape> cShapes = inseeCarre200osRepository.findCarreByInseeCode(
+    				city.getInseeCode(), 
+    				Boolean.TRUE);
+    		carres.addAll(cShapes);
+    	}
     	
+    	root = findAllCarreByArea(carres, annee);
+    	
+    	return root;
+	}
+	
+	protected GeoJsonRoot findAllCarreByArea(Collection<InseeCarre200mOnlyShape> carres, Integer annee) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
     	if (carres!=null && carres.size()>0) {
     		for (InseeCarre200mOnlyShape c : carres) {
     			
@@ -785,6 +800,8 @@ public class GeoMapServiceV2 {
     			if (ocputed.isPresent()) {
     				InseeCarre200mComputedV2 cputed = ocputed.get();
     				
+    				
+    				
     				v.setPeople(formatInt(cputed.getPopAll()));
     				
     				// declared by public organisation (^possible greenwashing)
@@ -800,8 +817,8 @@ public class GeoMapServiceV2 {
     				v.setPopParkIncludedOms(formatInt(cputed.getPopIncludedOms()));
     				v.setPopSquareShareOms(formatInt(cputed.getPopulationInIsochroneOms()));
     				v.setSquareMtePerCapitaOms(formatDec(cputed.getSurfaceParkPerCapitaOms()));
-    				
-    				v.setFillColor(this.getFillColorCarre(v, cputed));
+    				v.setIsDense(cputed.getIsDense());
+    				//v.setFillColor(this.getFillColorCarre(v, cputed));
     				
     				if (cputed.getComments()!=null) {
     					v.setCommentParks(cputed.getComments());
@@ -824,8 +841,17 @@ public class GeoMapServiceV2 {
     			}
 			}
     	}
+		
+		return root;
+	}
+	
+	public GeoJsonRoot findAllCarreByArea(Polygon polygon, Integer annee) {
+		log.error("findAllCarreByArea(Polygon polygon, Integer annee {})", annee);
+		GeoJsonRoot root = null;
+    	if (polygon!=null) {
+	    	List<InseeCarre200mOnlyShape> carres = inseeCarre200osRepository.findCarreInMapArea(GeometryQueryHelper.toText(polygon), Boolean.TRUE);
+	    	root = findAllCarreByArea(carres, annee);
     	}
-    	
     	return root;
     }
     
@@ -846,7 +872,7 @@ public class GeoMapServiceV2 {
      * @return
      */
     
-	public String formatPopulation(String inssePop) {
+	protected String formatPopulation(String inssePop) {
     	String ret = "";
     	if (StringUtils.isNotBlank(inssePop)) {
     		int index = inssePop.indexOf(".");
@@ -891,7 +917,7 @@ public class GeoMapServiceV2 {
      * @param neLng
      * @return
      */
-    Polygon getPolygonFromBounds(Double swLat, Double swLng, Double neLat, Double neLng) {
+    protected Polygon getPolygonFromBounds(Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon=null;
     	
     	Double x1= swLng;
@@ -926,7 +952,7 @@ public class GeoMapServiceV2 {
      * @param northEast
      * @return
      */
-    boolean checkDistance(Coordinate southWest, Coordinate northEast) {
+    protected boolean checkDistance(Coordinate southWest, Coordinate northEast) {
     	Double d =  DistanceHelper.crowFlyDistance(
 	    				southWest.getY(), southWest.getX(),
 	    				northEast.getY(), northEast.getX()

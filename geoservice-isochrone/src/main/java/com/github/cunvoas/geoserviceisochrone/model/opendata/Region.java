@@ -12,12 +12,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
 @Entity(name = "adm_region")
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(of = {"id"})
 public class Region implements Comparator<Region> {
 
 	@Id
+	@ToString.Include
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_region")
     @SequenceGenerator(
@@ -28,6 +33,7 @@ public class Region implements Comparator<Region> {
 	private Long id;
 
 	@Column(name = "name")
+	@ToString.Include
 	private String name;
 	
 	@OneToMany( targetEntity=CommunauteCommune.class, mappedBy="region" )

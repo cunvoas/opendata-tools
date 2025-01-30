@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 /**
- * @author cus
+ * @author cunvoas
  * sample: { "_southWest": { "lat": 50.60677419392376, "lng": 3.0161762237548833 }, "_northEast": { "lat": 50.6503312283444, "lng": 3.173933029174805 } }}
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)

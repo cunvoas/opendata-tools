@@ -13,5 +13,6 @@ public class IsochroneView extends GeoJsonProperty {
 	private String id;
 	private String name;
 	private String fillColor="#ede7e6";
+	private Boolean valid=true;
 	
 }

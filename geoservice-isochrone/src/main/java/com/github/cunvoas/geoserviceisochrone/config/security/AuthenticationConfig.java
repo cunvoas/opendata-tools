@@ -21,7 +21,7 @@ import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationSecurit
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author cus
+ * @author cunvoas
  * @see https://security.stackexchange.com/questions/247936/since-gpus-have-gigabytes-of-memory-does-argon2id-need-to-use-gigabytes-of-memo
  * @see https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html
  */

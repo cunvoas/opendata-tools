@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head th:insert="~{fragments/fragment-head :: head}" />
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<!-- debut MAIN -->
+			<main>
+
+				<div class="container-fluid px-4">
+					<h3 class="mt-12" th:text="#{menu.abstract.help}">Help</h3>
+                        
+                    <div class="card mt-12">
+                        <div class="card-body col-md-12">
+                        <!-- content here -->
+                        
+<video
+    id="the-player"
+    class="video-js"
+    controls
+    preload="auto"
+    poster="//github.com/cunvoas/opendata-tool-spare-data/raw/refs/heads/main/video-aide/aide.png"
+    data-setup='{}'>
+  <source src="//github.com/cunvoas/opendata-tool-spare-data/raw/refs/heads/main/video-aide/SaisirContourParc_1024.webm"
+   type="video/webm" ></source>
+  <p class="vjs-no-js">
+    Pour voir la video, merci d'activer JavaScrip, ou de mettre à jour votre navigateur web
+    <a href="https://videojs.com/html5-video-support/" target="_blank">
+      Il doit supporter HTML5
+    </a>.
+  </p>
+</video>
+
+                        </div>
+                    </div>
+
+
+				</div>
+			</main>
+			<!-- fin MAIN -->
+
+			<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+		</div>
+
+	</div>
+
+	<div th:insert="~{fragments/fragment-jslibs :: appVideo}"></div>
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+</body>
+</html>

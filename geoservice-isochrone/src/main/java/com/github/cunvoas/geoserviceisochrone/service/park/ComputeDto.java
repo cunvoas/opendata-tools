@@ -35,5 +35,10 @@ public class ComputeDto {
 	
 	Geometry polygonParkAreasOms = null;
 	ComputeResultDto resultOms=new ComputeResultDto();
+
+	// to compute people for 0.5ha at 300m
+	Geometry polygonParkAreasSustainableOms = null;
 	
+	BigDecimal popWithSufficient = BigDecimal.ZERO;
+	Boolean withSufficient = Boolean.FALSE;
 }

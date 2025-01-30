@@ -3,16 +3,20 @@ package com.github.cunvoas.geoserviceisochrone.model.isochrone;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 
  */
 @Data
+@EqualsAndHashCode(of = {"annee", "idInspire"})
 @Entity(name = "carre200_computed_v2")
 @IdClass(InseeCarre200mComputedId.class)
 public class InseeCarre200mComputedV2 {

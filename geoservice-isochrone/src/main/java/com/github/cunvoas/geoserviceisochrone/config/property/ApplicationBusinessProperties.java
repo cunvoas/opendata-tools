@@ -24,6 +24,10 @@ public class ApplicationBusinessProperties {
 	private Double minSubUrbSquareMeterPerCapita;
 	@Value("${application.business.oms.suburban.area_reco}")
 	private Double recoSubUrbSquareMeterPerCapita;
+	
+
+	@Value("${application.business.oms.min_size}")
+	private Double recoAtLeastParkSurface;
 
 	@Value("${application.business.insee.densite}")
 	private String inseeCodeDensite;
@@ -33,6 +37,13 @@ public class ApplicationBusinessProperties {
 
 	@Value("${application.admin.export-path}")
 	private String exportPath;
+	@Value("${application.admin.photo-path}")
+	private String photoPath;
+	@Value("${application.admin.photo-path-origin}")
+	private String photoPathOrigin;
+
+	@Value("${application.admin.export-data-path}")
+	private String jsonFileFolder;
 	
 	@Value("${application.mailjet.apiToken}")
 	private String mailjetToken;

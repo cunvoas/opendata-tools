@@ -12,12 +12,15 @@ spring:
   servlet:
     application-display-name: isochrone
     session.cookie.name: PHPSESSID
+    multipart:
+        max-file-size: 8MB
+        max-request-size: 10MB
   reactive:
     session.cookie.name: PHPSESSID
     
   # conf server
   tomcat:
-    max-http-form-post-size: 6MB
+    max-http-form-post-size: 10MB
     max-keep-alive-requests: 20
     threads:
       max: 100
@@ -38,21 +41,23 @@ spring:
   # https://refactorizando.com/en/hikari-configuration-spring-boot/
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
-      pool-name: isochroneDb-pool
-      minimum-idle: 1
-      maximum-pool-size: 10
+      pool-name: isochroneDbPool
+      connection-test-query: SELECT 1
+      minimum-idle: 3
+      maximum-pool-size: 30
       idle-timeout:  600000
       max-lifetime: 1800000
-      connection-timeout: 20000
+      connection-timeout: 30000
+      leak-detection-threshold: 2500
       auto-commit: false 
 # https://stackoverflow.com/questions/41574502/spring-boot-hikaricp-transactional-not-overwriting-isolation-level  
 # transaction-isolation: READ_COMMITTED
       transaction-isolation: 2
-      connection-test-query: select 1
 
 # JPA configuration
   jpa:
-    database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
+    #database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 #    hibernate.ddl-auto: update  none
     hibernate.ddl-auto: none
     open-in-view: true
@@ -62,10 +67,10 @@ spring:
     properties:
       hibernate:
 # dépend de la version d'hibernate
-#        dialect: org.hibernate.dialect.PostgreSQLDialect
-        dialect: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+#        dialect: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
         jdbc:
-          batch_size:  100
+          batch_size:  50
         format_sql:    false
         order_inserts: true
         order_updates: true
@@ -91,6 +96,7 @@ application:
   business:
     # https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrones/documentation-du-service-de-calcul-disochrones#2500
     oms:
+      min_size: 5000
       urban:
         duration: 300
         area_reco: 12

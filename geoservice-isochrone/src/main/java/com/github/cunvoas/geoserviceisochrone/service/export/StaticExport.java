@@ -46,7 +46,11 @@ public class StaticExport {
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 	
 	
-    
+    /**
+     * @deprecated
+     * @see ServicePublicationExporter
+     */
+    @Deprecated
     public void exportCadastre() {
     	List<CommunauteCommune> com2cos = communauteCommuneRepository.findAll();
     			
@@ -64,7 +68,13 @@ public class StaticExport {
 			}
 		}
     }
-    
+
+
+    /**
+     * @deprecated
+     * @see ServicePublicationExporter
+     */
+    @Deprecated
     public void exportIsochrone() {
     	List<CommunauteCommune> com2cos = communauteCommuneRepository.findAll();
     	for (CommunauteCommune com2co : com2cos) {

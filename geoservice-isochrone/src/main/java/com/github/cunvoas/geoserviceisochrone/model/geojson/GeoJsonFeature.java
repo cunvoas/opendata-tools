@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
 /**
- * @author cus
+ * @author cunvoas
  * Implements GeoJson RFC-7946.
  */
 @Data

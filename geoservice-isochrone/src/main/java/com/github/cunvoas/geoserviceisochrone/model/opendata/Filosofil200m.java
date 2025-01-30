@@ -7,10 +7,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity(name = "filosofi_200m")
 @IdClass(Filosofil200mId.class)
+@EqualsAndHashCode(of = {"annee", "idInspire"})
 public class Filosofil200m {
 	
 	/**
