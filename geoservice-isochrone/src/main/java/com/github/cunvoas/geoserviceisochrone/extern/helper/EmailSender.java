@@ -218,7 +218,7 @@ public class EmailSender {
 	public String applyData(String template, Map<String, String> values) {
 		String ret = new String(template);
 		for (Entry<String, String> entry : values.entrySet()) {
-			ret = ret.replaceAll(entry.getKey(), entry.getValue());
+			ret = ret.replace(entry.getKey(), entry.getValue());
 		}
 		return ret;
 	}

@@ -29,12 +29,33 @@ public interface CadastreRepository extends JpaRepository<Cadastre, String>{
 	
 	/**
 	 * warn, very slow request !
-	 * @param lng
-	 * @param lat
+	 * @param location
 	 * @return
 	 */
 	@Query(	nativeQuery = true, 
 			value = "SELECT ca.* FROM cadastre ca WHERE ST_Intersects(:location, ca.geo_shape::geography)",
 			countQuery = "SELECT count(1) FROM cadastre) WHERE ST_Intersects(:location, ca.geo_shape::geography)")
 	Cadastre findMyCadastre(Point location);
+	
+
+	/**
+	 * warn, very slow request !
+	 * @param location
+	 * @return
+	 */
+	@Query(	nativeQuery = true, 
+			value = "SELECT ca.* FROM cadastre ca WHERE id_insee in (SELECT insee_code FROM public.city where id_region=:idRegion) AND ST_Intersects(:location, ca.geo_shape::geography)",
+			countQuery = "SELECT count(1) FROM cadastre) WHERE id_insee in (SELECT insee_code FROM public.city where id_region=:idRegion) AND ST_Intersects(:location, ca.geo_shape::geography)")
+	Cadastre findMyCadastreWithRegion(Point location, Long idRegion);
+
+
+	/**
+	 * warn, very slow request !
+	 * @param location
+	 * @return
+	 */
+	@Query(	nativeQuery = true, 
+			value = "SELECT ca.* FROM cadastre ca WHERE id_insee in (SELECT insee_code FROM public.city where id_comm2co=:idCom2Co) AND ST_Intersects(:location, ca.geo_shape::geography)",
+			countQuery = "SELECT count(1) FROM cadastre) WHERE id_insee in (SELECT insee_code FROM public.city where id_comm2co=:idCom2Co) AND ST_Intersects(:location, ca.geo_shape::geography)")
+	Cadastre findMyCadastreWithComm2Co(Point location, Long idCom2Co);
 }

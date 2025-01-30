@@ -51,13 +51,14 @@ public class ParkJardinService {
 	 */
 	public ParcEtJardin save(ParcEtJardin parcEtJardin, boolean updSurfaceShape) {
 		
+		log.warn("ParkJardinService.save");
 		//fix for new park
 		if (parcEtJardin.getCoordonnee()==null && parcEtJardin.getContour()!=null) {
 			parcEtJardin.setCoordonnee(parcEtJardin.getContour().getCentroid());
 		}
 		
 		if (parcEtJardin.getId()==null) {
-			
+			log.warn("ParkJardinService.save is a new one");
 			// check park vs city location
 			City city = parcEtJardin.getCommune();
 			boolean checkIntersect = true;
@@ -70,17 +71,36 @@ public class ParkJardinService {
 					match=true;
 				}
 			}
+
+			log.warn("ParkJardinService.save park match a city checkIntersect={} match={}", checkIntersect, match);
 			
 			// detect close to city but compute expensive
 			if (checkIntersect) {
 				Cadastre c = cadastreRepository.getReferenceById(city.getInseeCode());
 				match = c.getGeoShape().contains(parcEtJardin.getCoordonnee());
+
+				log.warn("ParkJardinService.save match with cadastre checkIntersect={} match={}", checkIntersect, match);
 			}
+			
 			
 			// it match, so change the city defined by user to not lost the park
 			if (!match) {
 				// get park and relocate to the good place
-				Cadastre ca = cadastreRepository.findMyCadastre(parcEtJardin.getCoordonnee());
+				Long idRegion = city.getRegion().getId();
+				Long idCom2co = city.getCommunauteCommune().getId();
+				
+				Cadastre ca = null;
+				if (idCom2co!=null) {
+					ca = cadastreRepository.findMyCadastreWithComm2Co(parcEtJardin.getCoordonnee(), idCom2co);
+				} else if (idRegion!=null) {
+					ca = cadastreRepository.findMyCadastreWithRegion(parcEtJardin.getCoordonnee(), idRegion);
+				}
+				
+				if (ca==null) {
+					// très lent mais pas mieux
+					ca = cadastreRepository.findMyCadastre(parcEtJardin.getCoordonnee());
+				}
+				
 				if (ca!=null) {
 					City ci = cityRepository.findByInseeCode(ca.getIdInsee());
 					parcEtJardin.setCommune(ci);
@@ -107,7 +127,7 @@ public class ParkJardinService {
 			}
 			
 		}
-		
+		log.warn("ParkJardinService.save getSurface");
 		Long s = null;
 		if (ParcSourceEnum.AUTMEL.equals(parcEtJardin.getSource())) {
 			s = surfaceRepo.getSurface(parcEtJardin.getContour());
@@ -119,6 +139,8 @@ public class ParkJardinService {
 			}
 			parcEtJardin.setSurfaceContour(s.doubleValue());
 		}
+		log.warn("ParkJardinService.save saveAndFlush");
+		
 		
 		return parkJardinRepository.saveAndFlush(parcEtJardin);
 	}

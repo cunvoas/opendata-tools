@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
 import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.UploadFormValidator;
+import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
@@ -176,12 +177,14 @@ public class ParkNewControler {
 			Geometry geom = null;
 			
 			if ( StringUtils.isNotBlank(sGeom) ) {
+				log.warn("start process parseGeoman");
 				geom = geoJson2GeometryHelper.parseGeoman(sGeom);
 
 				if (geom!=null) {
 					pj.setCoordonnee(geom.getCentroid());
 					pj.setContour(geom);
 				}
+				log.warn("end process parseGeoman");
 			}
 			
 		} catch (JsonProcessingException e) {
@@ -194,7 +197,7 @@ public class ParkNewControler {
 	
 	
 	@PostMapping("/save")
-	@Transactional
+	@Transactional //(noRollbackFor = ExceptionGeo.class)
 	public String save(@ModelAttribute FormParkNew form, Model model, BindingResult bindingResult) {
 		log.warn("Generic save: {}", form);
 		

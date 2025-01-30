@@ -173,11 +173,13 @@ public class ContributeurControler {
 		if (ContributeurRole.ADMINISTRATOR.equals(contribConnected.getRole()))  {
 			model.addAttribute("assos", associationService.findAll());
 		} else {
-			model.addAttribute( "assos", (new ArrayList<Association>(1)).add(contribConnected.getAssociation()) );
+			Association asso = associationService.findById(contribConnected.getAssociation().getId());
+			model.addAttribute( "assos", (new ArrayList<Association>(1)).add(asso) );
 		}
 		
 		if (bindingResult.hasErrors()) {
 			fContrib.setPassword(null);
+			model.addAttribute(formName, fContrib);
 			return formName;
 		}
 				
@@ -199,6 +201,8 @@ public class ContributeurControler {
 		
 		model.addAttribute(formName, cloneToForm(contrib, model));
 
+
+		
 		return formName;
 	}
 	
