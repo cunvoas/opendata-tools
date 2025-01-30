@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 
 /**
- * @author cus
+ * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */
 @Component
@@ -16,7 +16,7 @@ public class CsvCarre200ShapeParser {
 	
 	/**
 	 * CSV Header definition for easier mods.
-	 * @author cus
+	 * @author cunvoas
 	 */
 	public enum ParkEntranceCsvHeaders {
 		idInspire("Identifiant INSPIRE du carreau habité"),

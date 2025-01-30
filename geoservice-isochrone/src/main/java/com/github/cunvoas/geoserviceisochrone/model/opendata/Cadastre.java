@@ -9,9 +9,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity(name = "cadastre")
+@EqualsAndHashCode(of = {"idInsee"})
 public class Cadastre {
 	@Id
 	@Column(name="id_insee", length=5)

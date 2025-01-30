@@ -12,10 +12,13 @@ import org.springframework.stereotype.Service;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  *  @see https://www.baeldung.com/spring-security-block-brute-force-authentication-attempts
  */
 @Service("userDetailsService")
+@Slf4j
 public class LimitedUserDetailsService  implements UserDetailsService {
 	
 	@Value("${application.security.timehack:1000}")
@@ -28,14 +31,21 @@ public class LimitedUserDetailsService  implements UserDetailsService {
     private LoginAttemptService loginAttemptService;
  
     
-    private Long getMitigationTimeHack() {
-    	return timeHack+Double.doubleToLongBits(Math.random()*timeHack/7);
+    private void mitigateTimeHack() {
+    	Double d = Math.random()*timeHack/7;
+    	Long time = timeHack+d.longValue();
+    	try {
+    		log.warn("mitigateTimeHack: {} ms", time);
+			Thread.sleep(time);
+		} catch (InterruptedException ignore) {
+		}
     }
     
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (loginAttemptService.isBlocked()) {
-            throw new RuntimeException("blocked");
+        	this.mitigateTimeHack();
+        	throw new UsernameNotFoundException("blocked");
         }
  
         try {
@@ -44,14 +54,12 @@ public class LimitedUserDetailsService  implements UserDetailsService {
         		return opUser.get();
         	} else {
         		// time hack fix
-        		Thread.sleep(getMitigationTimeHack());
+        		this.mitigateTimeHack();
         		throw new UsernameNotFoundException("User not found");
         	}
  
         } catch (UsernameNotFoundException e) {
             throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 

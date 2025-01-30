@@ -1,7 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.exception;
 
 /**
- * @author cus
+ * @author cunvoas
  */
 public class ExceptionAdmin extends RuntimeException {
 	

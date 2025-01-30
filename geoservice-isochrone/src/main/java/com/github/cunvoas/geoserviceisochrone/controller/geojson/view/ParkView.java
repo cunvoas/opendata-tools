@@ -16,7 +16,7 @@ public class ParkView extends GeoJsonProperty {
 	// valid with OMS definition
 	private Boolean oms;
 	private Boolean dense;
-	private String fillColor="#ede7e6";
+	//private String fillColor="#ede7e6";
 	private String areaPerPeople;
 	private String area;
 	private String people;

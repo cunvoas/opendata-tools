@@ -8,14 +8,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
+@EqualsAndHashCode(of = {"id"})
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Entity(name = "adm_asso")
 public class Association {
 
 	@Id
+	@ToString.Include
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_asso")
     @SequenceGenerator(
@@ -24,7 +29,8 @@ public class Association {
     		initialValue = 1
     	)
 	private Long id;
-	
+
+	@ToString.Include
 	private String nom;
 	private String email;
 	private String logo;

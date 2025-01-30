@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head th:insert="~{fragments/fragment-head :: head}" />
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<!-- debut MAIN -->
+			<main>
+
+				<div class="container-fluid px-4">
+					<h3 class="mt-12" th:text="#{menu.abstract.history}">History</h3>
+                        
+                    <div class="card mt-12">
+                        <div class="card-body col-md-12">
+                            <p>
+                                <code>En cours de développement</code>
+                                <br /> 
+                                <ul>
+                                    <li>...</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>Futures fonctionnalités (à prioriser)</code>
+                                <br /> 
+                                <ul>
+                                    <li>Ajout des photos sur le site publique.</li>
+                                    <li>Sélection des résultats pour les stats/ville.</li>
+                                    <li>Refonte graphique du site publique (tailwind).</li>
+                                    <li>Présentation de la richesse des foyers.</li>
+                                    <li>Gestion des groupements de communes.</li>
+                                    <li>Publication des cartes depuis l'interface de gestion.</li>
+                                    <li>...</li>
+                                    <li>Une nouvelle idée? Proposer <a href="https://github.com/cunvoas/opendata-tools/issues" target="_blank">ici</a>.</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.15-20250129</code> 
+                                <br />
+                                <ul>
+                                    <li>fix: optimisation, relocalisation automatique des parcs sur la ville</li>
+                                 </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.14-20250114</code> 
+                                <br />
+                                <ul>
+                                    <li>fix: edition de contours de parc de la couche autmel</li>
+                                 </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.13-20250106</code> 
+                                <br />
+                                <ul>
+                                    <li>fix: revue du pool du SGBDR</li>
+                                 </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.12-20250106</code> 
+                                <br />
+                                <ul>
+                                    <li>correctif: les parcs sans contours apparaissent avec un marqueur si les coordonnées existent.</li>
+                                    <li>montée de version des librairies dépendantes</li>
+                                 </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.11-20241231</code> 
+                                <br />
+                                <ul>
+                                    <li>Sélecteur de région, ville et d'adresse sur la carte publique</li>
+                                    <li>Refonte du moteur des couleurs sur la carte publique (optimisation et réduction des tailles)</li>
+                                    <li>Publication des cartes pour l'administateur.</li>
+                                    <li>Intégration du critère 0,5 ha à proximité.</li>
+                                    <li>Corrections: timehack, rafraichissement des parcs dans les formulaires de saisie</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.10-20241205</code> 
+                                <br /> 
+                                <ul>
+                                    <li>Création de parc</li>
+                                    <li>Modification du sélecteur de ville</li>
+                                    <li>Page de login custom</li>
+                                    <li>Homogénéisation des boutons.</li>
+                                    <li>Migration technique de la carte publique de vue2 à vue3</li>
+                                    <li>Démo de statistiques d'accès aux parcs</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.9-20240717</code> 
+                                <br /> 
+                                <ul>
+                                    <li>Carreaux de 200m au national</li>
+                                    <li>Donnée carroyées de 2015, 2017, 2019</li>
+                                    <li>Données de villes et des références de densité</li>
+                                    <li>Intégration des nouvelles API de l'IGN</li>
+                                    <li>Refonte du moteur de calcul et optimisations</li>
+                                    <li>nouveau rendu de la carte publique</li>
+                                    <li>publication de la carte publique pré-calculée (publication depuis l'app de gestion faisable manuellement en attendant))</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.8-20240310</code> 
+                                <br /> 
+                                <ul>
+                                    <li>Info parc, surface, m²/hab, type, status</li>
+                                    <li>Ajouter un typage pour les parcs (parc, bosquet, cimetière).</li>
+                                    <li>Ajouter un status pour les parcs (fait, a faire, a recalculer).</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.7-20240229</code> 
+                                <br /> 
+                                <ul>
+                                    <li>FIX Sécurité CVE-2024-25710, CVE-2024-1597</li>
+                                    <li>Correction des stats sur les isochrones</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.6-20240216</code> 
+                                <br /> 
+                                <ul>
+                                    <li>Rendre disponible depuis l'interface la fusion des isochrones des entrées</li>
+                                    <li>lancer depuis l'ihm la fusion des isochrones des entrées de parc.</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.5-20240205</code> 
+                                <br /> 
+                                <ul>
+                                    <li>Réactivation de l'envoi de mail.</li>
+                                    <li>Possibilité de régénérer un mot de passe.</li>
+                                    <li>Page d'information CNIL et sécurité.</li>
+                                    <li>Affichage des isochrones de chaque entrée sur le formulaire de gestion des entrées</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.4-20240202</code> 
+                                <br /> 
+                                <ul>
+                                    <li>Désactivation de l'envoi de mail.</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.3-20240130</code> 
+                                <br /> 
+                                <ul>
+                                    <li>Ajouter les parcs de l'OpenData Roubaix & Tourcoing</li>
+                                    <li>Automatiser l'envoi de mail en cas de création ou de réinitialisation de mot de passe.</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.2-20240125</code> 
+                                <br /> 
+                                <ul>
+                                    <li>Liste et édition des associations</li>
+                                    <li>Liste et édition des utilisateurs</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.1-20240119</code>
+                                <br /> 
+                                <ul>
+                                    <li>Edition des entrées</li>
+                                    <li>Liste des parcs</li>
+                                </ul>
+                            </p>
+                            <p>
+                                <code>V1.0.0-20231010</code>
+                                <br />
+                                <ul>
+                                    <li>Première version</li>
+                                </ul> 
+                            </p>
+                            <p>
+                                <code>V0.1.0-20230615</code>
+                                <br />
+                                <ul>
+                                    <li>MVP Lille-Hellemmes-Lomme publique</li>
+                                </ul> 
+                            </p>
+                            <p>
+                                <code>V0.0.1-20230328</code>
+                                <br />
+                                <ul>
+                                    <li>MVP privé Lille-Hellemmes-Lomme</li>
+                                    <li>Moteur geojson</li>
+                                    <li>Saisie GSheet</li>
+                                </ul> 
+                            </p>
+
+                        </div>
+                    </div>
+
+
+				</div>
+			</main>
+			<!-- fin MAIN -->
+
+			<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+		</div>
+
+	</div>
+
+	<div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+</body>
+</html>

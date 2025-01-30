@@ -61,4 +61,14 @@ public class GeoJsonForMvcController {
     }
 	
 	
+	@GetMapping("/cadastreByCorner")
+    public GeoJsonRoot getCadastreByArea(
+    			@RequestParam("swLat") Double swLat,
+    			@RequestParam("swLng") Double swLng,
+    			@RequestParam("neLat") Double neLat,
+    			@RequestParam("neLng") Double neLng
+    		) {
+        return geoMapService.findAllCadastreByArea(swLat, swLng, neLat, neLng);
+    }
+	
 }

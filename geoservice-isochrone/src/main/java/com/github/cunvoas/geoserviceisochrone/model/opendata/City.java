@@ -14,12 +14,17 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(of = {"id"})
 @Entity(name = "city")
 public class City implements Comparator<City> {
 
 	@Id
+	@ToString.Include
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_city")
     @SequenceGenerator(
@@ -29,6 +34,7 @@ public class City implements Comparator<City> {
     	)
 	private Long id;
 
+	@ToString.Include
 	@Column(name = "name")
 	private String name;
 

@@ -173,16 +173,23 @@ public class ContributeurControler {
 		if (ContributeurRole.ADMINISTRATOR.equals(contribConnected.getRole()))  {
 			model.addAttribute("assos", associationService.findAll());
 		} else {
-			model.addAttribute( "assos", (new ArrayList<Association>(1)).add(contribConnected.getAssociation()) );
+			Association asso = associationService.findById(contribConnected.getAssociation().getId());
+			model.addAttribute( "assos", (new ArrayList<Association>(1)).add(asso) );
 		}
 		
 		if (bindingResult.hasErrors()) {
 			fContrib.setPassword(null);
+			model.addAttribute(formName, fContrib);
 			return formName;
 		}
 				
 		Contributeur contrib=mapFromForm(fContrib);
 		try {
+			if (contribConnected.equals(contrib)) {
+				contribConnected.setIdRegion(contrib.getIdRegion());
+				contribConnected.setIdCommunauteCommune(contrib.getIdCommunauteCommune());
+				contribConnected.setIdCommune(contrib.getIdCommune());
+			}
 			contrib = contributeurService.save(contrib,false);
 		} catch (ExceptionAdmin e) {
 			log.error("sve contrib", e);
@@ -194,6 +201,8 @@ public class ContributeurControler {
 		
 		model.addAttribute(formName, cloneToForm(contrib, model));
 
+
+		
 		return formName;
 	}
 	

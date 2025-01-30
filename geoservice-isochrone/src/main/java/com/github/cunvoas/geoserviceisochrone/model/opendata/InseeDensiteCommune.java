@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Grille communale de densité.
@@ -11,6 +12,7 @@ import lombok.Data;
  */
 @Data
 @Entity(name = "insee_densite_city")
+@EqualsAndHashCode(of = {"codgeo"})
 public class InseeDensiteCommune {
 	
 	public static final String header = "CODGEO,LIBGEO,DENS,LIBDENS,PMUN20,P1,P2,P3,P4,P5,P6,P7";

@@ -14,6 +14,7 @@ import com.bedatadriven.jackson.datatype.jts.parsers.GenericGeometryParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.MissingNode;
 
 @Component
 public class GeoJson2GeometryHelper {
@@ -69,6 +70,11 @@ public class GeoJson2GeometryHelper {
 				ret = new MultiPolygon(polys, factory);
 			} else {
 				ret = polys[0];
+			}
+		} else {
+			if (! (rootNode instanceof MissingNode)) {
+				Polygon poly = (Polygon)parser.geometryFromJson(rootNode);
+				ret = poly;
 			}
 		}
 		

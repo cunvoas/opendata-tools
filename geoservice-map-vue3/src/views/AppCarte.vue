@@ -1,6 +1,7 @@
 <template>
     <div id="appCarte" valign="top" align="left">
-
+        <SearchLocation @update-location="updateLocation" @location-selected="updateLocation" />
+        
         <span style="border: 2px">
             <div
                 id="map"
@@ -8,11 +9,11 @@
                 valign="middle"
                 style="position: relative, z-index: 10;"
             >
-                <Isochrone msg="Cartographie des parcs" />
+                <Isochrone msg="Cartographie des parcs" :location="location" />
             </div>
         </span>
 
-        <LegendeCarte></LegendeCarte>
+        <!-- <LegendeCarte></LegendeCarte> -->
     
     </div>
 </template>
@@ -21,14 +22,28 @@
 import HeaderAsso from "../components/HeaderAsso.vue";
 import Isochrone from "../components/Isochrone.vue";
 import LegendeCarte from "../components/LegendeCarte.vue";
+import SearchLocation from "../components/SearchLocation.vue";
 
 export default {
     name: "AppCarte",
     components: {
-    HeaderAsso,
-    Isochrone,
-    LegendeCarte
-},
+        HeaderAsso,
+        Isochrone,
+        LegendeCarte,
+        SearchLocation
+    },
+    data() {
+        return {
+            location: null
+        };
+    },
+    methods: {
+        updateLocation(newLocation) {
+            //alert(' appcarte. updateLocation(newLocation) '+JSON.stringify(newLocation) );
+            console.log("updateLocation= "+JSON.stringify(newLocation))
+        this.location = newLocation;
+        }
+    }
 };
 </script>
 

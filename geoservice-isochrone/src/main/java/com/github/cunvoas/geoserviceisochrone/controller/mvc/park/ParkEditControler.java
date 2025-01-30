@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/mvc/park")
 @Slf4j
+@Deprecated
 public class ParkEditControler {
 	
 	private String formName = "editPark";

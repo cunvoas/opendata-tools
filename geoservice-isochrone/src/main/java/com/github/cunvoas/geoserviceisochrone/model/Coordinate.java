@@ -1,9 +1,11 @@
 package com.github.cunvoas.geoserviceisochrone.model;
 
+import org.locationtech.jts.geom.Point;
+
 import lombok.Data;
 
 /**
- * @author cus
+ * @author cunvoas
  *
  */
 @Data
@@ -34,8 +36,6 @@ public class Coordinate {
 	public String toString() {
 		return longitude +","+ latitude;
 	}
-	
-	
 	
 	
 

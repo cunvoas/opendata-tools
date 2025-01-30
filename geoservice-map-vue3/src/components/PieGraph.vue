@@ -41,7 +41,7 @@ async function getJsonData(the_url) {
   return await myStats.json();
   };
 
-const myUrl = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/test.json";
+const myUrl = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/test.json";
 
 
 var jsonResp =   await getJsonData(myUrl);

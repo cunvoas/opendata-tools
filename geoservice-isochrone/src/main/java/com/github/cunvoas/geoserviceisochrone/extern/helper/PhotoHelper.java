@@ -30,12 +30,16 @@ public class PhotoHelper {
 	private String imagesPath = "/tmp/";
 	private int targetSize = 1024;
 
+	
+	public void resizeImage(File img, String parkName) throws IOException {
+		this.resizeImage(img, new File(imagesPath + parkName+".jpg"));
+	}
 	/**
 	 * @param img
 	 * @param parkName
 	 * @throws IOException
 	 */
-	public void resizeImage(File img, String parkName) throws IOException {
+	public void resizeImage(File img, File out) throws IOException {
 
 		BufferedImage originalImage = ImageIO.read(img);
 
@@ -50,7 +54,7 @@ public class PhotoHelper {
 
 		BufferedImage newOne = Scalr.resize(originalImage, Scalr.Method.QUALITY, mode, targetSize, Scalr.OP_ANTIALIAS);
 
-		ImageIO.write(newOne, "jpg", new File(imagesPath + parkName+".jpg"));
+		ImageIO.write(newOne, "jpg", out);
 	}
 
 	/**

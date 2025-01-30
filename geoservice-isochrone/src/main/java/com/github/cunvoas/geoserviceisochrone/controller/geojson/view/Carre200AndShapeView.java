@@ -27,10 +27,11 @@ public class Carre200AndShapeView extends GeoJsonProperty {
 	private String popParkExcludedOms="";
 	private String popSquareShareOms="";
 	private String squareMtePerCapitaOms="";
+	private Boolean isDense=null;
 	
 	private String commentParks="";
 	
-	private String fillColor="#060512";
+	//private String fillColor="#060512";
 	private String areaPerPeople="";
 	private String area="";
 	

@@ -34,7 +34,7 @@ public class InseeCarre200mOnlyShape {
 	@Column(name="geo_shape", columnDefinition = "geometry(Polygon,4326)")
 	private Polygon geoShape;
 
-	@Column(name="code_insee",length=100)
+	@Column(name="code_insee",length=20)
 	private String codeInsee;
 	
 	@Column(name="avec_pop")

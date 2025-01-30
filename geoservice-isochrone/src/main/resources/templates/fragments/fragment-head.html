@@ -6,18 +6,23 @@
 	<meta name="description" content="" />
 	<meta name="author" content="LM-Oxygène" />
 	<title th:text="#{global.title}">title</title>
-	
+
+    <link rel="stylesheet" th:href="@{/mvc/static/css/styles.css}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://use.fontawesome.com/releases/v6.4.2/js/all.js" integrity="sha384-NhxsZw9+Y+PdEOvg8BK3sOUXXTzoRmr4/ncl+Ogurt6kQgJAVJaJ4LFhjD8qXtol" crossorigin="anonymous"></script>
+
+
+	<link rel="stylesheet" href="https://unpkg.com/video.js@8.21.1/dist/video-js.min.css" integrity="sha256-S1TDgke2PqUq45wH6L2QPSWT6sPCfOguRg976nCyudU=" crossorigin="anonymous">
+
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.0/dist/leaflet.css" integrity="sha384-kxXhFDZB0L84bBV/apPOb8zGC+fsQ1dBPpKXPUXc1zRymi4BaueVyC27iDDPdssp" crossorigin="anonymous" />
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" integrity="sha384-Z0TOldrI3jwzppC780UHyPq5zrGErUKUc4h9tCXK4wVmNgRZ1AfuKUm+7Dvw5qoT" crossorigin="anonymous">
-	<link rel="stylesheet" th:href="@{/mvc/static/css/styles.css}" />
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-   <!--  <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" integrity="sha384-kFHJXoxnyoGXzCN/jBWXbLGVLIsjMOz3OflpKpSJorRSOY++lYGPt8VoHurVr94q" crossorigin="anonymous">
- -->
     <link rel="stylesheet" th:href="@{/mvc/static/css/leaflet-geoman.css}" />
-
-	<script src="https://use.fontawesome.com/releases/v6.4.2/js/all.js" integrity="sha384-NhxsZw9+Y+PdEOvg8BK3sOUXXTzoRmr4/ncl+Ogurt6kQgJAVJaJ4LFhjD8qXtol" crossorigin="anonymous"></script>
-
+    
+<!--  <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" integrity="sha384-kFHJXoxnyoGXzCN/jBWXbLGVLIsjMOz3OflpKpSJorRSOY++lYGPt8VoHurVr94q" crossorigin="anonymous">
+ -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/css/select2.min.css" integrity="sha512-xrbX64SIXOxo5cMQEDUQ3UyKsCreOEq1Im90z3B7KPoxLJ2ol/tCT0aBhuIzASfmBVdODioUdUPbt5EDEXmD9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" integrity="sha384-Z0TOldrI3jwzppC780UHyPq5zrGErUKUc4h9tCXK4wVmNgRZ1AfuKUm+7Dvw5qoT" crossorigin="anonymous">
+    
 <style>
 /* align in layer box*/
 .leaflet-control-layers {  text-align: left; }
