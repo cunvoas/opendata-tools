@@ -1,5 +1,11 @@
 package com.github.cunvoas.geoserviceisochrone.config.security;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,9 +51,7 @@ public class AuthenticationConfig {
 	public RequestContextListener requestContextListener(){
 	    return new RequestContextListener();
 	} 
-		
 
-	
 	@Bean
 	@Order(1)                                                        
 	public SecurityFilterChain mvcFilterChain(HttpSecurity http) throws Exception {
@@ -55,6 +59,7 @@ public class AuthenticationConfig {
 				 .authorizeHttpRequests(authorizeRequests ->
 		                 authorizeRequests
 		                         .requestMatchers(
+			             			    "/actuator/**",
 		             			        "/awake",
 		            		            "/login",
 		            		            "/logout",
@@ -75,6 +80,7 @@ public class AuthenticationConfig {
 //			   .rememberMe(Customizer.withDefaults())
 			.build();
 	}
+
 
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
@@ -119,6 +125,6 @@ public class AuthenticationConfig {
 					customProps.getNbThreads(), customProps.getMemSizeInKb(), customProps.getNbIters() );
 
 	}
-	
+		
 	
 }

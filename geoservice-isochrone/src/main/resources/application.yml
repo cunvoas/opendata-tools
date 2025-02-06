@@ -117,7 +117,10 @@ application:
     pollutionAnalysisEnabled: false
     isochrone-impl: ign-api-v2
     carre200m-impl: v2
+    
   admin:
-    photo-path: /work/demo/isochrone/photo_path
-    export-path: /work/PERSO/github/gh_pages/geoservice/geojson
+    photo-path: /work/PERSO/ASSO/isochrone/photo
+    photo-path-origin: /work/PERSO/ASSO/isochrone/photo_origin
+    export-data-path: /work/PERSO/github/gh_pages/geoservice-data
+
 

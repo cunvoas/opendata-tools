@@ -1,0 +1,24 @@
+
+management:
+  endpoints.web.exposure:
+    include: health,metrics,prometheus
+    exclude: env,configprops,beans,shutdown,heapdump,threaddump
+  endpoint:
+    health.show-details: always
+    shutdown.enabled: false
+  metrics:
+    tags.application: ${spring.application.name}
+    export.simple.enabled: true
+
+server.tomcat:
+  accesslog:
+    enabled: false
+    suffix: .log
+    prefix: access_log
+    file-date-format: .yyyy-MM-dd
+    pattern: common
+    directory: /var/log/jvm
+#  basedir: /var/log/jvm
+  
+logging.level.org.apache.tomcat: DEBUG
+logging.level.org.apache.catalina: DEBUG

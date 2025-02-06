@@ -12,9 +12,12 @@ import org.apache.coyote.ActionCode;
 import org.apache.tomcat.util.ExceptionUtils;
 import org.springframework.http.MediaType;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * @see https://www.springcloud.io/post/2022-07/spring-boot-hardening/#gsc.tab=0
  */
+@Slf4j
 public class CustomErrorReportValve extends ErrorReportValve {
 
     @Override
@@ -31,6 +34,9 @@ public class CustomErrorReportValve extends ErrorReportValve {
             return;
         }
 
+        log.error("CustomErrorReportValve.statusCode {}", statusCode);
+        log.error("CustomErrorReportValve.report", throwable);
+        
         // If an error has occurred that prevents further I/O, don't waste time
         // producing an error report that will never be read
         final AtomicBoolean result = new AtomicBoolean(false);

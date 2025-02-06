@@ -15,7 +15,10 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- *  @see https://www.baeldung.com/spring-security-block-brute-force-authentication-attempts
+ * login service.
+ *  timehack
+ *  blocked check
+ * @see https://www.baeldung.com/spring-security-block-brute-force-authentication-attempts
  */
 @Service("userDetailsService")
 @Slf4j

@@ -52,7 +52,9 @@ public class PhotoService {
 		
 		try {
 			ParkPhoto photo = this.map(dto);
-			photo = parkPhotoRepository.save(photo);
+			if (photo!=null) {
+				photo = parkPhotoRepository.save(photo);
+			}
 			
 		} catch (IllegalStateException e) {
 			log.error(dto.toString(), e);
@@ -69,6 +71,15 @@ public class PhotoService {
 	}
 	
 	private ParkPhoto map(PhotoDto dto) throws IllegalStateException, IOException, ImageProcessingException {
+		
+		// injection check
+		if (dto.getPhoto().getOriginalFilename().indexOf("..")>=0
+				|| dto.getPhoto().getOriginalFilename().indexOf("/")>=0
+				|| dto.getPhoto().getOriginalFilename().indexOf("\\")>=0
+				) {
+			return null;
+		}
+		
 		String rand=StringUtils.right(String.valueOf(System.nanoTime()), 4);
 		
 		ParkPhoto photo = new ParkPhoto();
@@ -95,14 +106,17 @@ public class PhotoService {
 	
 
 	private String getHash(File originalFile) throws IOException {
-		Path p = Path.of(originalFile.getPath());
-		log.info("read for hash {}", originalFile.getPath());
-		byte[] content = Files.readAllBytes(p);
-		
-		String sha256hex = Hashing.sha256()
-				  .hashBytes(content)
-				  .toString();
-		log.info("hash is {}, len={}", sha256hex, sha256hex.length());
+		String sha256hex = null;
+		if (originalFile.exists()) {
+			Path p = Path.of(originalFile.getPath());
+			log.info("read for hash {}", originalFile.getPath());
+			byte[] content = Files.readAllBytes(p);
+			
+			sha256hex = Hashing.sha256()
+					  .hashBytes(content)
+					  .toString();
+			log.info("hash is {}, len={}", sha256hex, sha256hex.length());
+		}
 		return  sha256hex;
 	}
 	

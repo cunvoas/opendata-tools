@@ -7,10 +7,13 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * @see https://www.springcloud.io/post/2022-07/spring-boot-hardening/#gsc.tab=0
  */
 @Configuration(proxyBeanMethods = false)
+@Slf4j
 public class ErrorConfig {
 
     // https://docs.spring.io/spring-boot/docs/2.5.4/reference/htmlsingle/#howto-use-tomcat-legacycookieprocessor
