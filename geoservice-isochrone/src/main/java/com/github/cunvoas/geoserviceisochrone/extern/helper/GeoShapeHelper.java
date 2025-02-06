@@ -133,7 +133,6 @@ public class GeoShapeHelper {
 		} else if (poly1==null &&  poly2==null){
 			return null;
 		}
-
 		
 		Polygon ret;
 		try {

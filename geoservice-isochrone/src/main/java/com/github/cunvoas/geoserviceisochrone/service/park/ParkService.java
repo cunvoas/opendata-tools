@@ -356,11 +356,19 @@ public class ParkService {
 		
 	
 	private void mergeEntranceAreas(ParkArea parkArea) {
+		Polygon merged=null;
+		
+		Optional<ParcEtJardin> oPj = parkJardinRepository.findById(parkArea.getIdParcEtJardin());
+		if (oPj.isPresent()) {
+			// init with parc shape to unifify isochrone
+			if (oPj.get().getContour() instanceof Polygon) {
+				merged = (Polygon)oPj.get().getContour();
+			}
+		}
 		
 		List<ParkEntrance> entances = parkEntranceRepository.findByParkArea(parkArea);
 		log.info("merge {}", parkArea.getName());
 		
-		Polygon merged=null;
 		for (ParkEntrance entance : entances) {
 			log.info("\tprocess {}", entance.getParkArea().getName());
 			Polygon p =entance.getPolygon();
