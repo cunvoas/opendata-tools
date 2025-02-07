@@ -41,34 +41,32 @@ spring:
   # https://refactorizando.com/en/hikari-configuration-spring-boot/
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
-      pool-name: isochroneDbPool
-      connection-test-query: SELECT 1
-      minimum-idle: 3
-      maximum-pool-size: 30
-      idle-timeout:  600000
-      max-lifetime: 1800000
-      connection-timeout: 30000
-      leak-detection-threshold: 2500
-      auto-commit: false 
+      poolName: isochroneDbPool
+      connectionTestQuery: SELECT 1
+      minimumIdle: 2
+      maximumPoolSize: 20
+      idleTimeout: 30000
+      maxLifetime: 660000
+      connectionTimeout: 30000
+      leakDetectionThreshold: 2500
+      autoCommit: false 
 # https://stackoverflow.com/questions/41574502/spring-boot-hikaricp-transactional-not-overwriting-isolation-level  
 # transaction-isolation: READ_COMMITTED
-      transaction-isolation: 2
+      transactionIsolation: 2
 
 # JPA configuration
   jpa:
-    #database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 #    hibernate.ddl-auto: update  none
     hibernate.ddl-auto: none
+    hibernate.connection.provider_class: org.hibernate.hikaricp.internal.HikariCPConnectionProvider
     open-in-view: true
     generate-ddl: false
     show-sql: true
     format-sql: false
     properties:
       hibernate:
-# dépend de la version d'hibernate
         dialect: org.hibernate.dialect.PostgreSQLDialect
-#        dialect: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
         jdbc:
           batch_size:  50
         format_sql:    false
