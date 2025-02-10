@@ -14,6 +14,8 @@ import java.util.Set;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
@@ -39,7 +41,6 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.LaposteRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -382,7 +383,8 @@ public class ComputeServiceV2 {
 	 *  step 3: for each, get surface and isochrone of parks.
 	 *  step 4: compute with OMS parks and others.
 	 */
-	@Transactional
+
+	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public void computeCarreByCadastreV2Optim(Cadastre cadastre) {
 		log.warn(">> computeCarreByCadastreV2Optim");
 		
@@ -414,7 +416,7 @@ public class ComputeServiceV2 {
 	 * Used for mass update and full recompute ParkAreaEntrance.
 	 * @param cadastre
 	 */
-	@Transactional
+	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public void refreshParkEntrances(Cadastre cadastre) {
 		log.warn(">> refreshParkEntrances");
 

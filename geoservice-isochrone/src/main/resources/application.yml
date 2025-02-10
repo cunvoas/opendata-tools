@@ -34,8 +34,8 @@ spring:
     url: ${DB_URL}
     username: ${DB_USER:postgis}
     password: ${DB_PASSWORD:postgis
-    testWhileIdle: true
-    validationQuery: SELECT 1
+#    testWhileIdle: true
+#    validationQuery: SELECT 1
 
   # Pool JDBC : HikariCP
   # https://refactorizando.com/en/hikari-configuration-spring-boot/
@@ -43,16 +43,16 @@ spring:
     hikari:
       poolName: isochroneDbPool
       connectionTestQuery: SELECT 1
-      minimumIdle: 2
-      maximumPoolSize: 20
-      idleTimeout: 30000
-      maxLifetime: 660000
+      minimumIdle: 10
+      maximumPoolSize: 100
+      idleTimeout:  600000
+      maxLifetime: 1800000
       connectionTimeout: 30000
-      leakDetectionThreshold: 2500
-      autoCommit: false 
+      leakDetectionThreshold: 2000
+#      autoCommit: false 
 # https://stackoverflow.com/questions/41574502/spring-boot-hikaricp-transactional-not-overwriting-isolation-level  
 # transaction-isolation: READ_COMMITTED
-      transactionIsolation: 2
+#      transactionIsolation: 2
 
 # JPA configuration
   jpa:

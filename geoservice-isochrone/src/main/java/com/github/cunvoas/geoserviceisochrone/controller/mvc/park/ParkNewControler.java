@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,7 +27,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
 import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.UploadFormValidator;
-import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
@@ -197,7 +197,7 @@ public class ParkNewControler {
 	
 	
 	@PostMapping("/save")
-	@Transactional //(noRollbackFor = ExceptionGeo.class)
+	@Transactional(isolation = Isolation.READ_COMMITTED) //(noRollbackFor = ExceptionGeo.class)
 	public String save(@ModelAttribute FormParkNew form, Model model, BindingResult bindingResult) {
 		log.warn("Generic save: {}", form);
 		

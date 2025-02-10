@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
@@ -70,7 +71,8 @@ public class ContributeurService {
 		}
 		return null;
 	}
-	@Transactional
+	
+	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public Contributeur save(Contributeur contributeur, boolean pwdGenNeeded) {
 		boolean newAccount=false;
 		boolean newPassword=false;

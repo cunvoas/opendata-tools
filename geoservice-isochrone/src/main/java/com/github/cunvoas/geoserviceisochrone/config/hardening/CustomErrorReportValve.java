@@ -35,7 +35,7 @@ public class CustomErrorReportValve extends ErrorReportValve {
         }
 
         log.error("CustomErrorReportValve.statusCode {}", statusCode);
-        log.error("CustomErrorReportValve.report", throwable);
+        log.error("CustomErrorReportValve.report {}", throwable);
         
         // If an error has occurred that prevents further I/O, don't waste time
         // producing an error report that will never be read

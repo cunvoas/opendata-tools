@@ -13,6 +13,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
@@ -107,7 +108,7 @@ public class ParkService {
 	 * @param cityId city to get density of the city
 	 * @return
 	 */
-	@Transactional
+	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public ParkEntrance saveEdited(ParkEntrance parkEntrance,boolean withIgn, Long gardenId, Long cityId){
 		
 		//check area
@@ -190,7 +191,7 @@ public class ParkService {
 	 * @param pivot
 	 * @throws IOException
 	 */
-	@Transactional
+	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public void importIsoChroneEntrance(CsvMassUpdatePivot pivot) throws IOException {
 		log.warn("Process {}", pivot.getParcEtJardin());
 		
