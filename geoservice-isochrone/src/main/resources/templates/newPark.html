@@ -216,9 +216,9 @@
                 
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
-                    	<label class="form-label" for="oms" th:text="#{park.oms}">source</label>
-                    	<input class="form-radio" id="omsT" name="oms" type="radio" value="true" th:field="*{oms}" th:text="#{park.oms.yes}" /><br />
-  						<input class="form-radio" id="omsF" name="oms" type="radio" value="false" th:field="*{oms}" th:text="#{park.oms.no}" />
+                    	<label class="form-label" for="omsCustom" th:text="#{park.oms}">source</label>
+                    	<input class="form-radio" id="omsT" name="omsCustom" type="radio" value="true" th:field="*{omsCustom}"  th:checked="${newPark.omsCustom == true}" th:text="#{park.oms.yes}" /><br />
+  						<input class="form-radio" id="omsF" name="omsCustom" type="radio" value="false" th:field="*{omsCustom}" th:checked="${newPark.omsCustom == false}" th:text="#{park.oms.no}" />
                     </div>
                 </div>
                 
@@ -488,12 +488,22 @@
     }
 
     function customOnEachFeatureParc(feature, layer) {
-        layer.setStyle({
-            "fillOpacity": 0.3,
-             "opacity": 0.6,
-             "color": "#78e826",
-             "fillColor": "#78e826"
-         });
+    	if (feature.properties.oms) {
+            layer.setStyle({
+                "fillOpacity": 0.3,
+                 "opacity": 0.6,
+                 "color": "#78e826",
+                 "fillColor": "#78e826"
+             });
+    	} else {
+            layer.setStyle({
+                "fillOpacity": 0.3,
+                 "opacity": 0.6,
+                 "color": "#61b226",
+                 "fillColor": "#61b226"
+             });
+        }
+
 
         const sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/park/new/check}]]+'?idPark=';
         if (feature.properties.name) {

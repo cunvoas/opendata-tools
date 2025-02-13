@@ -10,12 +10,10 @@
 </template>
 
 <script>
-import HeaderAsso from "../components/HeaderAsso.vue";
 
 export default {
     name: "AppInformation",
     components: {
-    HeaderAsso,
     },
 };
 </script>

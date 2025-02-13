@@ -13,6 +13,7 @@ public class ParkGardenView extends GeoJsonProperty {
 	private String name;
 	private String source;
 	private Double surface;
+	private Boolean oms;
 	
 	
 }

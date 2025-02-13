@@ -117,12 +117,15 @@ public class ParkJardinService {
 			}
 			
 			ParkArea pa = parkAreaRepository.findByIdParcEtJardin(parcEtJardin.getId());
-			if (omsChanged(parcEtJardin, pa)) {
+			if (pa!=null && omsChanged(parcEtJardin, pa)) {
 				pa.setUpdated(new Date());
+				pa.setToCompute(Boolean.TRUE);
 				ParkType pt = parkTypeService.get(parcEtJardin.getTypeId());
 				pa.setType(pt);
+				if (parcEtJardin.getOmsCustom()==null) {
+					parcEtJardin.setOmsCustom(pt.getOms());
+				}
 				pa.setOmsCustom(parcEtJardin.getOmsCustom());
-				pa.setToCompute(Boolean.TRUE);
 				parkAreaRepository.save(pa);
 			}
 			
@@ -154,22 +157,24 @@ public class ParkJardinService {
 	 */
 	private Boolean omsChanged(ParcEtJardin pj, ParkArea pa) {
 		Boolean ret = Boolean.FALSE;
-		
-		Boolean strict=Boolean.FALSE;
-		if (pa!=null 
-				&& pa.getType()!=null ) {
-			strict = pa.getType().getStrict();
+		if (pa==null) {
+			return ret;
 		}
+		ParkType paType = pa.getType();
+		Boolean paOms = pa.getOmsCustom();
 		
-		if (pj!=null 
-				&& pj.getTypeId()!=null 
-			&& pa!=null 
-				&& pa.getType()!=null 
-				&& !pj.getTypeId().equals(pa.getType().getId())) {
+		if (paType==null ) {
 			ret = Boolean.TRUE;
-		} else if (pj.getOmsCustom()!=null 
-				&& pj.getOmsCustom().equals(pa.getOmsCustom())) {
-			ret = Boolean.TRUE;
+		} else {			
+			if ( ! paType.getId().equals(pj.getTypeId()) ) {
+				ret = Boolean.TRUE;
+			} else {
+				Boolean strict = pa.getType().getStrict();
+				Boolean pjOms = pj.getOmsCustom();
+				if (!strict && pjOms!=null && !pjOms.equals(paOms)) {
+					ret = Boolean.TRUE;
+				}
+			}
 		}
 		
 		return ret;

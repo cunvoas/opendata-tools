@@ -19,7 +19,6 @@
 </template>
 
 <script>
-import HeaderAsso from "../components/HeaderAsso.vue";
 import Isochrone from "../components/Isochrone.vue";
 import LegendeCarte from "../components/LegendeCarte.vue";
 import SearchLocation from "../components/SearchLocation.vue";
@@ -27,7 +26,6 @@ import SearchLocation from "../components/SearchLocation.vue";
 export default {
     name: "AppCarte",
     components: {
-        HeaderAsso,
         Isochrone,
         LegendeCarte,
         SearchLocation

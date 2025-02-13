@@ -1,7 +1,7 @@
 {
   "name": "geoservice-map-vue3",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cloudgeek/vue3-video-player": "^0.3.10",
     "axios": "^1.7.9",
     "chartjs": "^0.3.24",
     "vue": "^3.5.12",
@@ -26,3 +27,4 @@
     "vite": "^5.4.14"
   }
 }
+

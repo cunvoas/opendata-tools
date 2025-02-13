@@ -15,11 +15,13 @@ import router from './router';
 
 
 const app = createApp(HeaderAsso);
+/*
 app.use(VueMatomo, {
     // Configure your matomo server and site by providing
     host: 'https://autmel.piwik.pro',
     siteId: 'f948682b-11fe-4d25-ab02-fcfe606a7397'
 });
+*/
 
 app.use(router);
 app.mount('#app');

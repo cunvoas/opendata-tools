@@ -29,6 +29,7 @@ import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
 import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.UploadFormValidator;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
@@ -54,7 +55,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ParkNewControler {
 	
-	private static final DateFormat DF =new SimpleDateFormat("dd/MM/yyyy");
+	private static final DateFormat DF1 =new SimpleDateFormat("dd/MM/yyyy");
+	private static final DateFormat DF2 =new SimpleDateFormat("yyyy-MM-dd");
 	private NumberFormat NF = new DecimalFormat("#.##O");
 	
 	@Autowired
@@ -144,11 +146,9 @@ public class ParkNewControler {
 			pj.setSource(ParcSourceEnum.AUTMEL);
 		}
 		pj.setStatus(ParcStatusEnum.TO_QUALIFY);
-		//TODO : ParkType with object
 
 		City commune = serviceReadReferences.getCity(form.getIdCommune());
 		pj.setCommune(commune);
-		
 		
 		pj.setName(form.getName());
 		pj.setQuartier(form.getQuartier());
@@ -159,18 +159,34 @@ public class ParkNewControler {
 
 		if (StringUtils.isNoneBlank(form.getDateDebut())) {
 			try {
-				pj.setDateDebut(DF.parse(form.getDateDebut()));
+				pj.setDateDebut(DF2.parse(form.getDateDebut()));
 			} catch (ParseException e) {
-			}
-		}
-		if (StringUtils.isNoneBlank(form.getDateFin())) {
-			try {
-				pj.setDateFin(DF.parse(form.getDateFin()));
-			} catch (ParseException e) {
+				try {
+					pj.setDateDebut(DF1.parse(form.getDateDebut()));
+				} catch (ParseException e1) {
+				}
 			}
 		}
 		
+		if (StringUtils.isNoneBlank(form.getDateFin())) {
+			try {
+				pj.setDateFin(DF2.parse(form.getDateFin()));
+			} catch (ParseException e) {
+				try {
+					pj.setDateFin(DF1.parse(form.getDateFin()));
+				} catch (ParseException e1) {
+				}
+			}
+		}
+
+		// set parktype
 		pj.setTypeId(form.getTypeId());
+		pj.setOmsCustom(form.getOmsCustom());
+		if (form.getOmsCustom()==null && form.getTypeId()!=null) {
+			ParkType pt = parkTypeService.get(form.getTypeId());
+			pj.setOmsCustom(pt.getOms());
+		}
+		
 		
 		String sGeom = form.getSGeometry();
 		try {
@@ -341,12 +357,16 @@ public class ParkNewControler {
 		form.setStatus(pj.getStatus().name());
 		
 		if (pj.getDateDebut()!=null) {
-			form.setDateDebut(DF.format(pj.getDateDebut()));
+			form.setDateDebut(DF2.format(pj.getDateDebut()));
 		}
 		if (pj.getDateFin()!=null) {
-			form.setDateFin(DF.format(pj.getDateFin()));
+			form.setDateFin(DF2.format(pj.getDateFin()));
 		}
 		form.setTypeId(pj.getTypeId());
+		form.setOmsCustom(pj.getOmsCustom());
+		
+		
+		
 		
 		form.setSurface(pj.getSurface());
 		form.setSurfaceContour(pj.getSurfaceContour());	
