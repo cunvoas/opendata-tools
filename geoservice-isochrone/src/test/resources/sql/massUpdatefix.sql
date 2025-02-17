@@ -16,6 +16,12 @@ FROM ( SELECT
  	id_parc_jardin, type_id, oms_custom
 	FROM public.park_area ) pa	
 WHERE identifiant=pa.id_parc_jardin ;
+
+UPDATE public.parc_jardin 
+SET type_id=pa.type_id, oms_custom=pa.oms_custom 
+FROM   public.park_area pa 
+WHERE  pa.id_parc_jardin = identifiant and public.parc_jardin.oms_custom is null ;
+
 	
 UPDATE public.parc_jardin SET type_id=1;
 UPDATE public.parc_jardin SET type_id=4 WHERE sous_type='Jardin de poche';
