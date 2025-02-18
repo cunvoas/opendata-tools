@@ -559,7 +559,7 @@
                 }
                 
     		} else {
-    			console.log("parc prefectur ignored");
+    			console.log("parc prefecture ignored");
     		}
     		return;
     	}
@@ -584,6 +584,12 @@
     
     // manage click on geometry
     function fnParkGardenClicked(props) {
+
+		if (action_mode==="CREATE" || action_mode==="UPDATE") {
+			//FIXME : disable this behavior if create or update mode
+		    return;
+		}
+
     	if (document.getElementById("etat").value!=='pref') {
     		// cleanUp
             document.getElementById("hadGeometry").value = "";

@@ -213,7 +213,7 @@ public class ParkNewControler {
 	
 	
 	@PostMapping("/save")
-	@Transactional(isolation = Isolation.READ_COMMITTED) //(noRollbackFor = ExceptionGeo.class)
+	@Transactional //(isolation = Isolation.READ_COMMITTED) //(noRollbackFor = ExceptionGeo.class)
 	public String save(@ModelAttribute FormParkNew form, Model model, BindingResult bindingResult) {
 		log.warn("Generic save: {}", form);
 		
@@ -332,6 +332,7 @@ public class ParkNewControler {
 	private String getForm(@ModelAttribute FormParkNew form, Model model, ParcEtJardin pj) {
 
 		form.setId(pj.getId());
+		form.setIdPark(pj.getId());
 		form.setIdRegion(pj.getCommune().getRegion().getId());
 		if (pj.getCommune().getCommunauteCommune()!=null) {
 			form.setIdCommunauteDeCommunes(pj.getCommune().getCommunauteCommune().getId());

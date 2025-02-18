@@ -87,7 +87,11 @@ public class ParkJardinService {
 			if (!match) {
 				// get park and relocate to the good place
 				Long idRegion = city.getRegion().getId();
-				Long idCom2co = city.getCommunauteCommune().getId();
+				Long idCom2co = null;
+				if (city.getCommunauteCommune()!=null) {
+					idCom2co = city.getCommunauteCommune().getId();
+				}
+					
 				
 				Cadastre ca = null;
 				if (idCom2co!=null) {

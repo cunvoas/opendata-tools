@@ -8,6 +8,12 @@ Futures fonctionnalités (à prioriser)
     Refonte graphique du site publique (tailwind)?
 
 
+
+V1.0.17-20250219
+
+    fix: après création de parc, on va en mode modification sur le nouveau parc
+    fix: création d'un contour adjacent à un contour existant
+
 V1.0.16-20250206
 
     ajout du monitoring de l'application (micrometer, prometheus)
