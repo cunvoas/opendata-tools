@@ -123,9 +123,14 @@ public class ParkService {
 				parkArea.setIdParcEtJardin(parcEtJardin.getId());
 				parkArea.setBlock(parcEtJardin.getQuartier());
 				
-				// FIXME quick fix for manual creation
-				ParkType type = parkTypeRepository.getReferenceById(1L);
+				// quick fix for manual creation
+				Long idType = 1L;
+				if (parcEtJardin.getTypeId()!=null) {
+					idType = parcEtJardin.getTypeId();
+				}
+				ParkType type = parkTypeRepository.getReferenceById(idType);
 				parkArea.setType(type);
+				parkArea.setOmsCustom(parcEtJardin.getOmsCustom());
 				parkArea.setUpdated(new Date());
 				
 				parkArea = parkAreaRepository.save(parkArea);
@@ -172,12 +177,15 @@ public class ParkService {
 			
 			// 300 en zone dense, 1200 sinon
 			String ignResp = clientIsoChrone.getIsoChrone(coord, distance);
-			parkEntrance.setIgnReponse(ignResp);
 			
-			DtoIsoChrone dtoIsoChone = dtoIsoChroneParser.parseBasicIsoChrone(ignResp);
-			parkEntrance = mapperIsoChrone.map(parkEntrance, dtoIsoChone);
-			
-			parkEntrance = parkEntranceRepository.save(parkEntrance);
+			if (StringUtils.isNotBlank(ignResp)) {
+				parkEntrance.setIgnReponse(ignResp);
+				DtoIsoChrone dtoIsoChone = dtoIsoChroneParser.parseBasicIsoChrone(ignResp);
+				parkEntrance = mapperIsoChrone.map(parkEntrance, dtoIsoChone);
+				parkEntrance = parkEntranceRepository.save(parkEntrance);
+			} else {
+				log.warn("IGN_UPDATE (no IGN response)");
+			}
 		} catch (Exception e) {
 			log.error("IGN_UPDATE ("+parkEntrance.getId()+")", e);
 			throw new ExceptionExtract("IGN_UPDATE");

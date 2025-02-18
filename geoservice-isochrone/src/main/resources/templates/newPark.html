@@ -256,12 +256,12 @@
             <div class="col-12"  id="blkMap">
                 <h6 th:text="#{park.edit.title}">title</h6>
                 <div style="text-align: end;">
-        Localiser dans <a id="aGMapLink" href="#" target="_blank" alt="voir la même carte sur GMap">Google Map</a>
-        
-        <span th:if="${newPark.idPark != null}">
-             &nbsp;&nbsp;
-             <a id="aEntranceLink" target="_blank" th:href="@{/mvc/entrance/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${newPark.idRegion},idComm2Co=${newPark.idCommunauteDeCommunes},idCommune=${newPark.idCommune},idPark=${newPark.idPark})}" >Editer les entrées</a>
-        </span>
+			        Localiser dans <a id="aGMapLink" href="#" target="_blank" alt="voir la même carte sur GMap">Google Map</a>
+			        
+			        <span th:if="${newPark.idPark != null}">
+			             &nbsp;&nbsp;
+			             <a id="aEntranceLink" target="_blank" th:href="@{/mvc/entrance/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${newPark.idRegion},idComm2Co=${newPark.idCommunauteDeCommunes},idCommune=${newPark.idCommune},idPark=${newPark.idPark})}" >Editer les entrées</a>
+			        </span>
         
                 </div>
             </div>
@@ -487,20 +487,43 @@
         return gUrl;
     }
 
+
+    const legend = L.control({position: 'bottomright'});
+    legend.onAdd = function (editMap) {
+        const div = L.DomUtil.create('div', 'info legend');
+        const labels = [];
+
+        labels.push(`<i style="background:#78e826"></i> Parc inclus OMS`);
+        labels.push(`<i style="background:#f6fc26"></i> Entrées à saisir`);
+        labels.push(`<i style="background:#e96020"></i> Parc exclus OMS`);
+        div.innerHTML = labels.join('<br>');
+        return div;
+    };
+    legend.addTo(editMap);
+    
     function customOnEachFeatureParc(feature, layer) {
     	if (feature.properties.oms) {
-            layer.setStyle({
-                "fillOpacity": 0.3,
-                 "opacity": 0.6,
-                 "color": "#78e826",
-                 "fillColor": "#78e826"
-             });
+    		if (feature.properties.entry) {
+	            layer.setStyle({
+	                "fillOpacity": 0.3,
+	                 "opacity": 0.6,
+	                 "color": "#78e826",
+	                 "fillColor": "#78e826"
+	             });
+    		} else {
+    		    layer.setStyle({
+	                "fillOpacity": 0.3,
+	                "opacity": 0.6,
+	                "color": "#f6fc26",
+	                "fillColor": "#f6fc26"
+	            });
+    		}
     	} else {
             layer.setStyle({
                 "fillOpacity": 0.3,
                  "opacity": 0.6,
-                 "color": "#61b226",
-                 "fillColor": "#61b226"
+                 "color": "#e96020",
+                 "fillColor": "#e96020"
              });
         }
 

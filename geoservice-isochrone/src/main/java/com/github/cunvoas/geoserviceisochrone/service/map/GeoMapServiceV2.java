@@ -434,6 +434,11 @@ public class GeoMapServiceV2 {
 						pv.setOms(pt.getOms());
 					}
 					
+					ParkArea pa =parkAreaRepository.findByIdParcEtJardin(park.getId());
+					pv.setEntry(pa!=null && pa.getPolygon()!=null);
+//					if (pa!=null && pa.getPolygon()!=null) {
+//						pv.setEntry(true);
+//					}
     			}
     		}
     	}

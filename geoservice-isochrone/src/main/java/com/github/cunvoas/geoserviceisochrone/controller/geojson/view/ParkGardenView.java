@@ -8,12 +8,13 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper=false, onlyExplicitlyIncluded = true)
 public class ParkGardenView extends GeoJsonProperty {
+	
 	@EqualsAndHashCode.Include
 	private String id;
 	private String name;
 	private String source;
 	private Double surface;
 	private Boolean oms;
-	
+	private Boolean entry;
 	
 }

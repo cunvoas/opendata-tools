@@ -288,6 +288,13 @@
     <div class="col-6">
 		<div class="container-fluid px-4">
 			<h2 class="mt-12" th:text="#{entrance.map.title}">title</h2>
+             <div style="text-align: end;">
+                 Localiser dans <a id="aGMapLink" href="#" target="_blank" alt="voir la même carte sur GMap">Google Map</a>
+                 <span th:if="${parkEntranceDetail.idPark != null}">
+	                 &nbsp;&nbsp;
+	                 <a id="aParkLink" target="_blank" th:href="@{/mvc/park/new/check?idPark={idPark}(idPark=${parkEntranceDetail.idPark})}" >Editer le parc</a>
+                 </span>
+             </div>
 		</div>
         <div class="row h-100 ">
             <div class="col-12">
@@ -478,13 +485,45 @@
 	}
 	
 
+	const legend = L.control({position: 'bottomright'});
+    legend.onAdd = function (isMap) {
+        const div = L.DomUtil.create('div', 'info legend');
+        const labels = [];
+
+        labels.push(`<i style="background:#78e826"></i> Parc inclus OMS`);
+        labels.push(`<i style="background:#f6fc26"></i> Entrées à saisir`);
+        labels.push(`<i style="background:#e96020"></i> Parc exclus OMS`);
+        div.innerHTML = labels.join('<br>');
+        return div;
+    };
+    legend.addTo(isMap);
+    
+	
     function customOnEachFeatureDetail(feature, layer) {
-        layer.setStyle({
-            "fillOpacity": 0.3,
-             "opacity": 0.6,
-             "color": "#78e826",
-             "fillColor": "#78e826"
-         });
+        if (feature.properties.oms) {
+            if (feature.properties.entry) {
+                layer.setStyle({
+                    "fillOpacity": 0.3,
+                     "opacity": 0.6,
+                     "color": "#78e826",
+                     "fillColor": "#78e826"
+                 });
+            } else {
+                layer.setStyle({
+                    "fillOpacity": 0.3,
+                    "opacity": 0.6,
+                    "color": "#f6fc26",
+                    "fillColor": "#f6fc26"
+                });
+            }
+        } else {
+            layer.setStyle({
+                "fillOpacity": 0.3,
+                 "opacity": 0.6,
+                 "color": "#e96020",
+                 "fillColor": "#e96020"
+             });
+        }
         
 
         // does this feature have a property named fillColor?
@@ -504,6 +543,14 @@
         }
         
     }
+
+    function getGMapLink(clkLat, clkLng) {
+        return "<a href='"+getGMapUrl(clkLat, clkLng)+"' target='_blank'>GMap</a>";
+    }
+    function getGMapUrl(clkLat, clkLng) {
+        gUrl="https://www.google.com/maps/@"+clkLat+","+clkLng+",18.03z";
+        return gUrl;
+    }
     
     var geojsonAutmelLayer = null;
     // relead parks with map fit
@@ -514,6 +561,17 @@
         neLat=isMap.getBounds().getNorthEast().lat;
         neLng=isMap.getBounds().getNorthEast().lng;
         sPos="swLat="+ swLat +"&swLng="+swLng +"&neLat="+neLat +"&neLng="+neLng;
+        
+        // purpose google map link
+        const gmLat = (neLat+swLat)/2;
+        const gmLng = (swLng+neLng)/2;
+        const lnk = getGMapUrl(gmLat, gmLng);
+        
+        const oGmLink =  document.getElementById("aGMapLink");
+        console.log("old: "+oGmLink.href);
+        oGmLink.href=lnk;
+        console.log("new: "+oGmLink.href);
+        
         
         // contours parc autmel
         if (geojsonAutmelLayer!==null) {

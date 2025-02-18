@@ -13,6 +13,8 @@ V1.0.17-20250219
 
     fix: après création de parc, on va en mode modification sur le nouveau parc
     fix: création d'un contour adjacent à un contour existant
+    Ajout de code couleur sur les parcs avec la légende
+    Ajout de liens pour accès rapide parc <-> entrées
 
 V1.0.16-20250206
 
@@ -43,6 +45,7 @@ V1.0.11-20241231
     Publication des cartes pour l'administateur.
     Intégration du critère 0,5 ha à proximité.
     Corrections: timehack, rafraichissement des parcs dans les formulaires de saisie
+    Ajouter les parcs de l'OpenData Lyon, Nantes & Toulouse
 
 V1.0.10-20241205
 
