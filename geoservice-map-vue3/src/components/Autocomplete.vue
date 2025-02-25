@@ -1,11 +1,12 @@
 <template>
-  <div class="autocomplete">
+  <div class="autocomplete" v-if="displaySearchAddress">
     <input
       type="text"
       v-model="search"
       @input="onInput"
       :placeholder="placeholder"
       :disabled="disabled"
+      
     />
     <ul v-if="filteredItems.length && showDropdown">
       <li
@@ -25,7 +26,11 @@ export default {
     modelValue: [String, Number],
     fetchItems: Function,
     placeholder: String,
-    disabled: Boolean
+    disabled: Boolean,
+    displaySearchAddress: {
+      type: Boolean,
+      default: true
+    },
   },
   data() {
     return {

@@ -16,16 +16,6 @@
     <label for="cbCadastre"> | Cadastre</label>
     <input id="cbCadastre" v-model="showCadastre" type="checkbox" />
 
-    <!--        <label for="checkboxWithOMS" style="display: none"
-            > | Conforme OMS</label
-        >
-        <input
-            style="display: none"
-            id="checkboxWithOMS"
-            v-model="checkboxWithOMS"
-            type="checkbox"
-        />-->
-
     <br />
 
      
@@ -239,7 +229,6 @@ export default {
       showIsochrones: false,
       showCarre: true,
       showCadastre: false,
-      checkboxWithOMS: true,
       zoom: 14,
       minZoom: 10,
       maxZoom: 18,
@@ -510,7 +499,7 @@ export default {
           { permanent: false, sticky: true }
         );
 
-        if (this.checkboxWithOMS && !feature.properties.oms) {
+        if ( !feature.properties.oms) {
           layer.setStyle({
             fillColor: feature.properties.fillColor,
             opacity: 0.0,

@@ -1,41 +1,50 @@
 <template>
-    <div id="appCarte" valign="top" align="left">
-        <SearchLocation @update-location="updateLocation" @location-selected="updateLocation" :displaySearchAddress="true" />
+    <div id="appStatistics" valign="top" align="left">
+        
+        <SearchLocation @update-location="updateLocation" @location-selected="updateLocation" :displaySearchAddress="false" />
         
         <span style="border: 2px">
             <div
-                id="map"
+                id="statsGrapg"
                 align="center"
                 valign="middle"
                 style="position: relative, z-index: 10;"
             >
-                <Isochrone msg="Cartographie des parcs" :location="location" />
+                <StatsGraph 
+                    :key="componentKey"
+                    :location="location"
+                    />
             </div>
+            
         </span>
     
     </div>
 </template>
 
 <script>
-import Isochrone from "../components/Isochrone.vue";
 import SearchLocation from "../components/SearchLocation.vue";
+import StatsGraph from "../components/StatsGraph.vue";
+
 
 export default {
-    name: "AppCarte",
+    name: "AppStatistics",
     components: {
         SearchLocation,
-        Isochrone
+        StatsGraph
     },
     data() {
         return {
-            location: null
+            location: null,
+            componentKey: 0
         };
     },
     methods: {
-        updateLocation(newLocation) {
-            //alert(' appcarte. updateLocation(newLocation) '+JSON.stringify(newLocation) );
-            console.log("updateLocation= "+JSON.stringify(newLocation))
-        this.location = newLocation;
+        async updateLocation(newLocation) {
+            //console.log("AppStatistics.updateLocation", JSON.stringify(newLocation));
+            //this.location = JSON.parse(JSON.stringify(newLocation));
+            console.log("AppStatistics.updateLocation", newLocation);
+            this.location = newLocation;
+            this.componentKey++; // Force re-render
         }
     }
 };
@@ -71,16 +80,5 @@ table.legend td {
     margin: 0 0 5px;
     color: #777;
 }
-.legend {
-    text-align: left;
-    line-height: 18px;
-    color: #555;
-}
-.legend i {
-    width: 18px;
-    height: 18px;
-    float: left;
-    margin-right: 8px;
-    opacity: 0.7;
-}
+
 </style>

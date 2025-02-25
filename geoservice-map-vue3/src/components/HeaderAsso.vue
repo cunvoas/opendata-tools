@@ -45,6 +45,8 @@
                     &nbsp;
                     <router-link class="router-links" to="/surface">Analyse</router-link>
                     &nbsp;
+                    <router-link class="router-links" to="/stats">Statistiques</router-link>
+                    &nbsp;
                     <router-link class="router-links" to="/Information">Information</router-link>
                 </nav>
             </b-col>
