@@ -19,12 +19,12 @@
     "vue3-cookies": "^1.0.6"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.1.4",
+    "@vitejs/plugin-vue": "^5.2.1",
     "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vue/cli-plugin-router": "~5.0.0",
     "leaflet": "^1.9.4",
     "sass-embedded": "^1.80.6",
-    "vite": "^5.4.14"
+    "vite": "^6.2.0"
   }
 }
 
