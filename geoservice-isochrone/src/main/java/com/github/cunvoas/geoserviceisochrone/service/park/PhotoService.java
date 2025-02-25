@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,7 +51,9 @@ public class PhotoService {
 		
 		try {
 			ParkPhoto photo = this.map(dto);
-			photo = parkPhotoRepository.save(photo);
+			if (photo!=null) {
+				photo = parkPhotoRepository.save(photo);
+			}
 			
 		} catch (IllegalStateException e) {
 			log.error(dto.toString(), e);
@@ -69,6 +70,15 @@ public class PhotoService {
 	}
 	
 	private ParkPhoto map(PhotoDto dto) throws IllegalStateException, IOException, ImageProcessingException {
+		
+		// injection check
+		if (dto.getPhoto().getOriginalFilename().indexOf("..")>=0
+				|| dto.getPhoto().getOriginalFilename().indexOf("/")>=0
+				|| dto.getPhoto().getOriginalFilename().indexOf("\\")>=0
+				) {
+			return null;
+		}
+		
 		String rand=StringUtils.right(String.valueOf(System.nanoTime()), 4);
 		
 		ParkPhoto photo = new ParkPhoto();
@@ -78,7 +88,13 @@ public class PhotoService {
 		photo.setStoredFolder(dto.getStoreFolder()+"/");
 		photo.setOriginalFileName(dto.getPhoto().getOriginalFilename());
 		
-	    File fOrignal = new File(dto.getStoreRootOrigin()+dto.getStoreFolder()+"/"+photo.getOriginalFileName());
+	    Path storeRootOriginPath = Path.of(dto.getStoreRootOrigin()).normalize().toAbsolutePath();
+	    Path storeFolderPath = storeRootOriginPath.resolve(dto.getStoreFolder()).normalize();
+	    Path originalFilePath = storeFolderPath.resolve(photo.getOriginalFileName()).normalize();
+	    if (!originalFilePath.startsWith(storeRootOriginPath)) {
+	        throw new IllegalArgumentException("Invalid file path");
+	    }
+	    File fOrignal = originalFilePath.toFile();
 	    dto.getPhoto().transferTo(fOrignal);
 	    photo.setOriginalFileHash(getHash(fOrignal));
 	    
@@ -87,7 +103,13 @@ public class PhotoService {
 		Coordinate coord=photoHelper.getCoordinateFromExif(fOrignal);
 		photo.setLocation(GeoShapeHelper.getPoint(coord));
 		
-		File fResize = new File(dto.getStoreRoot()+dto.getStoreFolder()+"/"+photo.getCurrentFileName());
+		Path storeRootPath = Path.of(dto.getStoreRoot()).normalize().toAbsolutePath();
+		Path resizeFolderPath = storeRootPath.resolve(dto.getStoreFolder()).normalize();
+		Path resizeFilePath = resizeFolderPath.resolve(photo.getCurrentFileName()).normalize();
+		if (!resizeFilePath.startsWith(storeRootPath)) {
+		    throw new IllegalArgumentException("Invalid file path");
+		}
+		File fResize = resizeFilePath.toFile();
 		photoHelper.resizeImage(fOrignal, fResize);
 		
 		return photo;
@@ -95,14 +117,17 @@ public class PhotoService {
 	
 
 	private String getHash(File originalFile) throws IOException {
-		Path p = Path.of(originalFile.getPath());
-		log.info("read for hash {}", originalFile.getPath());
-		byte[] content = Files.readAllBytes(p);
-		
-		String sha256hex = Hashing.sha256()
-				  .hashBytes(content)
-				  .toString();
-		log.info("hash is {}, len={}", sha256hex, sha256hex.length());
+		String sha256hex = null;
+		if (originalFile.exists()) {
+			Path p = Path.of(originalFile.getPath());
+			log.info("read for hash {}", originalFile.getPath());
+			byte[] content = Files.readAllBytes(p);
+			
+			sha256hex = Hashing.sha256()
+					  .hashBytes(content)
+					  .toString();
+			log.info("hash is {}, len={}", sha256hex, sha256hex.length());
+		}
 		return  sha256hex;
 	}
 	

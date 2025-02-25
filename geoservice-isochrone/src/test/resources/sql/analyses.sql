@@ -146,7 +146,7 @@ order by surface_min;
     UNION
     SELECT 25 AS surface_min, 45 AS surface_max
     UNION
-    SELECT 45 AS surface_min, 200 AS surface_max
+    SELECT 45 AS surface_min, 500 AS surface_max
 )
 SELECT surface_min, surface_max 
 , (
@@ -174,6 +174,7 @@ order by surface_min;
 
 -- bar graph OFFICIEL
  
+
  WITH series AS (
     SELECT generate_series(0, 11, 1) AS surface_min
 ), range AS (
@@ -206,11 +207,26 @@ SELECT surface_min, surface_max
     WHERE cc.annee=2019     AND f.lcog_geo like '%59350%'
     AND surface_park_pcapita BETWEEN surface_min AND surface_max
     group by is_dense
-) as couleur
+) as couleur,
+(
+    SELECT round(sum(men-men_pauv))
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    WHERE cc.annee=2019     AND f.lcog_geo like '%59350%'
+    AND surface_park_pcapita BETWEEN surface_min AND surface_max
+) as men,
+(
+    SELECT round(sum(men_pauv))
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    WHERE cc.annee=2019     AND f.lcog_geo like '%59350%'
+    AND surface_park_pcapita BETWEEN surface_min AND surface_max
+) as men_pauv
 
 FROM range
 order by surface_min;
-
 
 
 -- bar graph OFFICIEL SEUIL
@@ -221,11 +237,15 @@ order by surface_min;
     UNION
     SELECT 10 AS surface_min, 12 AS surface_max
     UNION
-    SELECT 12 AS surface_min, 200 AS surface_max
+    SELECT 12 AS surface_min, 500 AS surface_max
 )
 SELECT surface_min, surface_max 
 , (
     SELECT sum(pop_all)
+    ,
+        coalesce(round(sum(f.men), 0), 0) as men,
+        coalesce(round(sum(f.men-f.men_pauv), 0), 0) as men_rich,
+        coalesce(round(sum(f.men_pauv), 0), 0) as men_pauv
     FROM public.carre200_computed_v2 cc 
     INNER JOIN public.filosofi_200m f 
         ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
@@ -428,7 +448,6 @@ order by r.surface_min;
 -- =========================   PAR Age optimisée
 
 
-
 WITH series AS (
     SELECT generate_series(0, 170, 1) AS surface_min
 ), range AS (
@@ -451,6 +470,7 @@ WITH series AS (
         coalesce(round(sum(f.ind_65_79), 0), 0) as ind_65_79,
         coalesce(round(sum(f.ind_80p), 0), 0) as ind_80p,
         coalesce(round(sum(f.men), 0), 0) as men,
+        coalesce(round(sum(f.men-f.men_pauv), 0), 0) as men_rich,
         coalesce(round(sum(f.men_pauv), 0), 0) as men_pauv
 
     FROM public.carre200_computed_v2 cc 
@@ -477,7 +497,8 @@ SELECT
     sum(ind_55_64) as ind_55_64,
     sum(ind_65_79) as ind_65_79,
     sum(ind_80p) as ind_80p,
-    sum(men) as men,
+    sum(men) as men,,
+    sum(men-men_pauv) as men_rich
     sum(men_pauv) as men_pauv
 
 FROM range r, stats

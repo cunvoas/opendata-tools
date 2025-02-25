@@ -43,10 +43,6 @@ public class FormParkNew extends AbstractFormLocate{
 	private String description;
 	private Long idParkType;	//ParkType
 	
-	//parkAreaCompute
-	private Boolean oms;
-	
-	
 	
 	/////////////
 	private Long id;

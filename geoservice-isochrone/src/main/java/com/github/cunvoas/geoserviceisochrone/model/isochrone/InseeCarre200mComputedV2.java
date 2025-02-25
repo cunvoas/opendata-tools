@@ -3,8 +3,6 @@ package com.github.cunvoas.geoserviceisochrone.model.isochrone;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
