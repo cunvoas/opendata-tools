@@ -13,7 +13,7 @@
 	        <!-- daily rollover -->
 	        <fileNamePattern>isochrone.%d{yyyy-MM-dd}.gz</fileNamePattern>
 	
-	        <maxHistory>10</maxHistory>
+	        <maxHistory>5</maxHistory>
 	        <totalSizeCap>1GB</totalSizeCap>
 	    </rollingPolicy>
 	    <encoder>
@@ -32,7 +32,7 @@
   <logger name="com.zaxxer.hikari.HikariConfig" level="info"/>
   <logger name="com.zaxxer.hikari" level="error"/>
   
-  <logger name="com.github.cunvoas.geoserviceisochrone" level="info"/>
+  <logger name="com.github.cunvoas.geoserviceisochrone" level="warn"/>
   <logger name="com.github.cunvoas.geoserviceisochrone.GeoserviceIsochroneApplication" level="info"/>
 
   <!-- deployed environments -->

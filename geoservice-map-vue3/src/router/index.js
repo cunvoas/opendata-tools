@@ -5,6 +5,7 @@
 import { createWebHistory, createRouter } from "vue-router";
 import AppCarte from "../views/AppCarte.vue";
 import AppSurface from "../views/AppSurface.vue";
+import AppStatistics from "../views/AppStatistics.vue";
 import AppInformation from "../views/AppInformation.vue";
 
 //Vue.use(Router);
@@ -22,6 +23,13 @@ const routes = [
     title: 'Analyse',
     component: AppSurface,
   },
+  
+  {
+    path: '/stats',
+    name: 'stats',
+    title: 'Statistiques',
+    component: AppStatistics,
+  },
   {
     path: '/information',
     name: 'appInformation',
@@ -35,7 +43,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 });
 

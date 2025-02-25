@@ -16,7 +16,7 @@ public class ParkType {
 
     @Id
     @Column(name="id")
-    private long id;
+    private Long id;
 
     @Column(name="park_type")
     private String type;

@@ -16,6 +16,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * creds auth failure handler.
+ */
 @Component("authenticationFailureHandler")
 public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 

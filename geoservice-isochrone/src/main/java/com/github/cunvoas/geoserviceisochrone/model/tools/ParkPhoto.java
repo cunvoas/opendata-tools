@@ -2,8 +2,6 @@ package com.github.cunvoas.geoserviceisochrone.model.tools;
 
 import org.locationtech.jts.geom.Point;
 
-import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

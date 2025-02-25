@@ -1,0 +1,40 @@
+# https://medium.com/@ksandeeptech07/integrating-prometheus-with-spring-boot-for-metrics-alerts-and-monitoring-5b2c31995ddb
+
+# https://levelup.gitconnected.com/java-23-springboot-3-3-4-metrics-micrometer-aop-part-6-808dcb97dcb7
+
+
+# JMX
+spring.datasource.hikari.registerMbeans: true
+
+# prometheus
+management:
+  endpoints.web.exposure:
+    include: prometheus,health,info,metric
+    exclude: env,configprops,shutdown,heapdump,threaddump, beans
+  endpoint:
+    health.show-details: always
+    shutdown.enabled: false
+    prometheus.enabled: true
+  metrics:
+    distribution.percentiles-histogram.http:
+        server.requests: true
+        client.requests: true
+    tags.application: ${spring.application.name}
+    export.simple.enabled: true
+    export.prometheus.enabled: true
+  health.probes.enabled: true
+    
+
+# embeded tomcat    
+server.tomcat:
+  accesslog:
+    enabled: false
+    suffix: .log
+    prefix: access_log
+    file-date-format: .yyyy-MM-dd
+    pattern: common
+    directory: /var/log/jvm
+#  basedir: /var/log/jvm
+  
+logging.level.org.apache.tomcat: ERROR
+logging.level.org.apache.catalina: ERROR

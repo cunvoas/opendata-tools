@@ -34,41 +34,39 @@ spring:
     url: ${DB_URL}
     username: ${DB_USER:postgis}
     password: ${DB_PASSWORD:postgis
-    testWhileIdle: true
-    validationQuery: SELECT 1
+#    testWhileIdle: true
+#    validationQuery: SELECT 1
 
   # Pool JDBC : HikariCP
   # https://refactorizando.com/en/hikari-configuration-spring-boot/
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
-      pool-name: isochroneDbPool
-      connection-test-query: SELECT 1
-      minimum-idle: 3
-      maximum-pool-size: 30
-      idle-timeout:  600000
-      max-lifetime: 1800000
-      connection-timeout: 30000
-      leak-detection-threshold: 2500
-      auto-commit: false 
+      poolName: isochroneDbPool
+      connectionTestQuery: SELECT 1
+      minimumIdle: 10
+      maximumPoolSize: 100
+      idleTimeout:  600000
+      maxLifetime: 1800000
+      connectionTimeout: 30000
+      leakDetectionThreshold: 2000
+#      autoCommit: false 
 # https://stackoverflow.com/questions/41574502/spring-boot-hikaricp-transactional-not-overwriting-isolation-level  
 # transaction-isolation: READ_COMMITTED
-      transaction-isolation: 2
+#      transactionIsolation: 2
 
 # JPA configuration
   jpa:
-    #database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 #    hibernate.ddl-auto: update  none
     hibernate.ddl-auto: none
+    hibernate.connection.provider_class: org.hibernate.hikaricp.internal.HikariCPConnectionProvider
     open-in-view: true
     generate-ddl: false
     show-sql: true
     format-sql: false
     properties:
       hibernate:
-# dépend de la version d'hibernate
         dialect: org.hibernate.dialect.PostgreSQLDialect
-#        dialect: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
         jdbc:
           batch_size:  50
         format_sql:    false
@@ -117,7 +115,10 @@ application:
     pollutionAnalysisEnabled: false
     isochrone-impl: ign-api-v2
     carre200m-impl: v2
+    
   admin:
-    photo-path: /work/demo/isochrone/photo_path
-    export-path: /work/PERSO/github/gh_pages/geoservice/geojson
+    photo-path: /work/PERSO/ASSO/isochrone/photo
+    photo-path-origin: /work/PERSO/ASSO/isochrone/photo_origin
+    export-data-path: /work/PERSO/github/gh_pages/geoservice-data
+
 

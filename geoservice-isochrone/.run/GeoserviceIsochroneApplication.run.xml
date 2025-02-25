@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="GeoserviceIsochroneApplication" type="Application" factoryName="Application" nameIsGenerated="true">
     <envs>
-      <env name="-Dspring.profiles.active" value="secret, dev" />
+      <env name="-Dspring.profiles.active" value="secret,dev" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="com.github.cunvoas.geoserviceisochrone.GeoserviceIsochroneApplication" />
     <module name="geoservice-isochrone" />

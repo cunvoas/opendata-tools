@@ -38,6 +38,7 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComp
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
@@ -59,6 +60,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mReposi
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
+import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
 import com.google.common.math.BigDecimalMath;
 import com.google.common.primitives.Ints;
 
@@ -126,7 +128,8 @@ public class GeoMapServiceV2 {
     private ParkJardinRepository parkJardinRepository;
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
-	
+	@Autowired 
+	private ParkTypeService parkTypeService;
 	
 	/**
 	 * @param id
@@ -423,6 +426,19 @@ public class GeoMapServiceV2 {
 					feature.setProperties(pv);
 					pv.setId(String.valueOf(park.getId()));
 					pv.setName(park.getName());
+					
+					if (park.getOmsCustom()!=null) {
+						pv.setOms(park.getOmsCustom());
+					} else if (park.getTypeId()!=null){
+						ParkType pt = parkTypeService.get(park.getTypeId());
+						pv.setOms(pt.getOms());
+					}
+					
+					ParkArea pa =parkAreaRepository.findByIdParcEtJardin(park.getId());
+					pv.setEntry(pa!=null && pa.getPolygon()!=null);
+//					if (pa!=null && pa.getPolygon()!=null) {
+//						pv.setEntry(true);
+//					}
     			}
     		}
     	}

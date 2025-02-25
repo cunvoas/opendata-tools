@@ -216,9 +216,9 @@
                 
                 <div class="card border" style="text-align: center">
                     <div class="form-floating">
-                    	<label class="form-label" for="oms" th:text="#{park.oms}">source</label>
-                    	<input class="form-radio" id="omsT" name="oms" type="radio" value="true" th:field="*{oms}" th:text="#{park.oms.yes}" /><br />
-  						<input class="form-radio" id="omsF" name="oms" type="radio" value="false" th:field="*{oms}" th:text="#{park.oms.no}" />
+                    	<label class="form-label" for="omsCustom" th:text="#{park.oms}">source</label>
+                    	<input class="form-radio" id="omsT" name="omsCustom" type="radio" value="true" th:field="*{omsCustom}"  th:checked="${newPark.omsCustom == true}" th:text="#{park.oms.yes}" /><br />
+  						<input class="form-radio" id="omsF" name="omsCustom" type="radio" value="false" th:field="*{omsCustom}" th:checked="${newPark.omsCustom == false}" th:text="#{park.oms.no}" />
                     </div>
                 </div>
                 
@@ -249,31 +249,21 @@
             </div>
         </div>
         
-        
-            <!-- TODO: make the filter later -->
-            <!--  
-            <div class="col-6" style="display: none;">
-                <div  style="text-align: left">
-                 <h6 class="mt-12" th:text="#{park.filter}">title</h6>
-	             <input type="radio" id="filterValid" name="filterPark" value="VALID" class="form-check-input" onchange="filterChange('VALID');" />
-	             <label for="filterValid" th:text="#{park.filter.valid}" >VALID</label>
-	             
-	             <input type="radio" id="filterNoMatch" name="filterPark"  value="NO_MATCH" class="form-check-input"  onchange="filterChange('NO_MATCH');" checked="checked" />
-	             <label for="caseMerge" th:text="#{park.filter.noMatch}" >NO_MATCH</label>
-	            
-	             <input type="radio" id="filterReject" name="filterPark" value="REJECT" class="form-check-input" onchange="filterChange('REJECT');"  />
-	             <label for="filterReject" th:text="#{park.filter.reject}" >REJECT</label>
-                </div>
-            </div>
-             -->
-
-
     </div>
     
     <div class="col-8">
         <div class="row">
-            <div class="col-4"  id="blkMap">
+            <div class="col-12"  id="blkMap">
                 <h6 th:text="#{park.edit.title}">title</h6>
+                <div style="text-align: end;">
+			        Localiser dans <a id="aGMapLink" href="#" target="_blank" alt="voir la même carte sur GMap">Google Map</a>
+			        
+			        <span th:if="${newPark.idPark != null}">
+			             &nbsp;&nbsp;
+			             <a id="aEntranceLink" target="_blank" th:href="@{/mvc/entrance/goto?idRegion={idRegion}&idComm2Co={idComm2Co}&idCommune={idCommune}&idPark={idPark}(idRegion=${newPark.idRegion},idComm2Co=${newPark.idCommunauteDeCommunes},idCommune=${newPark.idCommune},idPark=${newPark.idPark})}" >Editer les entrées</a>
+			        </span>
+        
+                </div>
             </div>
         </div>
         <div class="row col-12 h-100">
@@ -281,8 +271,8 @@
                     <div id="mapid" style="width: 100%; height: 100%;"></div>
                 </div>
         </div>
-            </fieldset>
     </div>
+    </fieldset>
 
 </span>
     </form>
@@ -433,10 +423,10 @@
     // extras data sur la carte
     const dataPrefecture = L.layerGroup();
     const dataAutmel = L.layerGroup();
-    const dataCadastre = L.layerGroup();
+    //const dataCadastre = L.layerGroup();
     const dataLayers = {
     	"Données de la préfecture": dataPrefecture,
-        "Cadastre des communes": dataCadastre,
+        //"Cadastre des communes": dataCadastre,
     	"Contours des parcs": dataAutmel
     };
     
@@ -468,9 +458,7 @@
     	//geojsonPrefLayer.redraw()
     }
     function customOnEachFeaturePref(feature, layer) {
-    	//var filter=document.querySelector('input[name="filterPark"]:checked').value;
-    	//console.log('radio='+filter);
-    	
+   	
         layer.setStyle({
            "fillOpacity": 0.3,
             "opacity": 0.6,
@@ -483,39 +471,62 @@
             layer.bindPopup(parcEdit);
         }
         
-        // does this feature have a property named fillColor
-        /*
-        if (feature.properties) {
-        	if (feature.properties.status === filterValid) {
-        		if (feature.properties.fillColor) {
-                //console.log("to display: feat>"+feature.properties.name+">"+feature.properties.status);
-                 layer.setStyle({
-                	 "fillColor": feature.properties.fillColor,
-                     "fillOpacity": 0.30,
-                     "color": feature.properties.fillColor,
-                     "opacity": 0.6
-                   });
-            	}
-        	}
-        }
-        */
     }
     
     function getGMapLink(feature) {
         //first point of the polygon
         clkLat = feature.geometry.coordinates[0][0][1];
         clkLng = feature.geometry.coordinates[0][0][0];
-        gUrl="https://www.google.com/maps/@"+clkLat+","+clkLng+",18.03z";
-        return "<br /><a href='"+gUrl+"' target='_blank'>GMap</a>";
+        return "<br />"+ getGMapLink(clkLat, clkLng);
     }
+    function getGMapLink(clkLat, clkLng) {
+        return "<a href='"+getGMapUrl(clkLat, clkLng)+"' target='_blank'>GMap</a>";
+    }
+    function getGMapUrl(clkLat, clkLng) {
+        gUrl="https://www.google.com/maps/@"+clkLat+","+clkLng+",18.03z";
+        return gUrl;
+    }
+
+
+    const legend = L.control({position: 'bottomright'});
+    legend.onAdd = function (editMap) {
+        const div = L.DomUtil.create('div', 'info legend');
+        const labels = [];
+
+        labels.push(`<i style="background:#78e826"></i> Parc inclus OMS`);
+        labels.push(`<i style="background:#f6fc26"></i> Entrées à saisir`);
+        labels.push(`<i style="background:#e96020"></i> Parc exclus OMS`);
+        div.innerHTML = labels.join('<br>');
+        return div;
+    };
+    legend.addTo(editMap);
     
     function customOnEachFeatureParc(feature, layer) {
-        layer.setStyle({
-            "fillOpacity": 0.3,
-             "opacity": 0.6,
-             "color": "#78e826",
-             "fillColor": "#78e826"
-         });
+    	if (feature.properties.oms) {
+    		if (feature.properties.entry) {
+	            layer.setStyle({
+	                "fillOpacity": 0.3,
+	                 "opacity": 0.6,
+	                 "color": "#78e826",
+	                 "fillColor": "#78e826"
+	             });
+    		} else {
+    		    layer.setStyle({
+	                "fillOpacity": 0.3,
+	                "opacity": 0.6,
+	                "color": "#f6fc26",
+	                "fillColor": "#f6fc26"
+	            });
+    		}
+    	} else {
+            layer.setStyle({
+                "fillOpacity": 0.3,
+                 "opacity": 0.6,
+                 "color": "#e96020",
+                 "fillColor": "#e96020"
+             });
+        }
+
 
         const sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/park/new/check}]]+'?idPark=';
         if (feature.properties.name) {
@@ -539,7 +550,6 @@
            layer.bindPopup(feature.properties.nom);
         }
     }
-    
     
     
     function fnParkPrefClicked(feat) {
@@ -572,12 +582,11 @@
                 }
                 
     		} else {
-    			console.log("parc prefectur ignored");
+    			console.log("parc prefecture ignored");
     		}
     		return;
     	}
     	
-
         document.getElementById("sGeometry").value=strPoly;
         document.getElementById("etatAction").value="add";
     	document.getElementById("etat").value="pref";
@@ -598,6 +607,12 @@
     
     // manage click on geometry
     function fnParkGardenClicked(props) {
+
+		if (action_mode==="CREATE" || action_mode==="UPDATE") {
+			//FIXME : disable this behavior if create or update mode
+		    return;
+		}
+
     	if (document.getElementById("etat").value!=='pref') {
     		// cleanUp
             document.getElementById("hadGeometry").value = "";
@@ -639,6 +654,15 @@
         neLng=editMap.getBounds().getNorthEast().lng;
         sPos="swLat="+ swLat +"&swLng="+swLng +"&neLat="+neLat +"&neLng="+neLng;
         
+        // purpose google map link
+        const gmLat = (neLat+swLat)/2;
+        const gmLng = (swLng+neLng)/2;
+        const lnk = getGMapUrl(gmLat, gmLng);
+        
+        const oGmLink =  document.getElementById("aGMapLink");
+        console.log("old: "+oGmLink.href);
+        oGmLink.href=lnk;
+        console.log("new: "+oGmLink.href);
         
         // get shapes: parc prefecture
         if (geojsonPrefLayer!==null) {
@@ -674,13 +698,14 @@
         dataAutmel.addLayer(geojsonParkLayer);
         
         // get shapes: Cadastre
+        /*
         if (geojsonCadastreLayer!==null) {
         	dataCadastre.removeLayer(geojsonCadastreLayer);
         }
         var sUrlGeoCadastre= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/cadastreByCorner}]]+'?'+sPos;
         geojsonCadastreLayer = new L.GeoJSON.AJAX(sUrlGeoCadastre, {onEachFeature: customOnEachFeatureCadastre});
         dataCadastre.addLayer(geojsonCadastreLayer);
-        
+        */
         
         // works! used when affect
         geojsonPrefLayer.on('click', function(e){

@@ -14,6 +14,10 @@ import com.google.common.cache.LoadingCache;
 import jakarta.servlet.http.HttpServletRequest;
 
 
+/**
+ * limit failed login service.
+ *  counter part
+ */
 @Service
 public class LoginAttemptService {
 
