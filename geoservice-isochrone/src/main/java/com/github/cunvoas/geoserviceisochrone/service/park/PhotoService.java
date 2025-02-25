@@ -88,7 +88,13 @@ public class PhotoService {
 		photo.setStoredFolder(dto.getStoreFolder()+"/");
 		photo.setOriginalFileName(dto.getPhoto().getOriginalFilename());
 		
-	    File fOrignal = new File(dto.getStoreRootOrigin()+dto.getStoreFolder()+"/"+photo.getOriginalFileName());
+	    Path storeRootOriginPath = Path.of(dto.getStoreRootOrigin()).normalize().toAbsolutePath();
+	    Path storeFolderPath = storeRootOriginPath.resolve(dto.getStoreFolder()).normalize();
+	    Path originalFilePath = storeFolderPath.resolve(photo.getOriginalFileName()).normalize();
+	    if (!originalFilePath.startsWith(storeRootOriginPath)) {
+	        throw new IllegalArgumentException("Invalid file path");
+	    }
+	    File fOrignal = originalFilePath.toFile();
 	    dto.getPhoto().transferTo(fOrignal);
 	    photo.setOriginalFileHash(getHash(fOrignal));
 	    
@@ -97,7 +103,13 @@ public class PhotoService {
 		Coordinate coord=photoHelper.getCoordinateFromExif(fOrignal);
 		photo.setLocation(GeoShapeHelper.getPoint(coord));
 		
-		File fResize = new File(dto.getStoreRoot()+dto.getStoreFolder()+"/"+photo.getCurrentFileName());
+		Path storeRootPath = Path.of(dto.getStoreRoot()).normalize().toAbsolutePath();
+		Path resizeFolderPath = storeRootPath.resolve(dto.getStoreFolder()).normalize();
+		Path resizeFilePath = resizeFolderPath.resolve(photo.getCurrentFileName()).normalize();
+		if (!resizeFilePath.startsWith(storeRootPath)) {
+		    throw new IllegalArgumentException("Invalid file path");
+		}
+		File fResize = resizeFilePath.toFile();
 		photoHelper.resizeImage(fOrignal, fResize);
 		
 		return photo;
