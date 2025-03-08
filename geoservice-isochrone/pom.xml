@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.github.cunvoas</groupId>
 	<artifactId>geoservice-isochrone</artifactId>
-	<version>1.0.17</version>
+	<version>1.0.18</version>
 	<packaging>jar</packaging>
 	
 	<properties>
@@ -21,13 +21,20 @@
 		<maven.compiler.release>${java.version}</maven.compiler.release>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<postgresql.version>42.7.4</postgresql.version>
-		<jwt.version>0.11.5</jwt.version>
+		
+		<postgresql.version>42.7.5</postgresql.version>
+		
 		
 		<!--<hibernate.version>6.6.1.Final</hibernate.version>-->
 		<hibernate.version>6.6.4.Final</hibernate.version>
+
+        
+
 	</properties>
 	
+
+
+
 	<dependencies>
 		<!-- pojo -->
 		<dependency>
@@ -88,15 +95,8 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
-        </dependency>
-  
+		
+          
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -120,6 +120,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
+		
 		<!-- security impl -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -238,6 +239,40 @@
 			<version>3.4.3</version>
 		</dependency>
 		
+		
+
+        <!-- Monitoring -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-reporter-brave</artifactId>
+        </dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-sleuth</artifactId>
+    <version>3.1.11</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-sleuth-zipkin</artifactId>
+    <version>3.1.11</version>
+</dependency>
+         
 		<!--TEST -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -325,6 +360,9 @@
 			<url>https://repo.osgeo.org/repository/release/</url>
 		</repository>
 	</repositories>
+	
+	
+	
 	
 	<build>
 		<!--<resources>

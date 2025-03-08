@@ -9,6 +9,12 @@ Futures fonctionnalités (à prioriser)
 
 
 
+V1.0.18-20250307
+
+    monitoring APM
+    Ajout d'une liste de calcul des carreaux
+    
+
 V1.0.17-20250219
 
     fix: après création de parc, on va en mode modification sur le nouveau parc

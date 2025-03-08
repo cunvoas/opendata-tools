@@ -20,4 +20,6 @@ public class CustomMetricsService {
     public void incrementCustomMetric() {
         customMetricCounter.increment();
     }
+    
+    
 }
