@@ -28,7 +28,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
 
 @SpringBootTest
-@ActiveProfiles({"secret","dev"})
+@ActiveProfiles({"secret","pi"})
 class TestGeoserviceIsochroneApplication {
 
 
@@ -106,13 +106,26 @@ class TestGeoserviceIsochroneApplication {
 	 * calcule des carre vs aire des parcs
 	 */
 	@Test
-	@Disabled
+//	@Disabled
 	@Order(21)
 	void computeCarreFix() {
 
 		try {
 			//lille
-			computeServiceV2.computeCarreByInseeCode("59350");
+	//		computeServiceV2.computeCarreByInseeCode("59350");
+			//lezennes					
+			computeServiceV2.computeCarreByInseeCode("59346");
+			
+/*
+ * 
+INSERT INTO public.compute_job( annee, id_inspire, demand, processed, status)
+select 2019, id_inspire, now(), null, 0
+FROM public.carre200onlyshape
+WHERE code_insee='59346'
+
+ */
+			// v'ascq
+			computeServiceV2.computeCarreByInseeCode("59009");
 //			computeServiceV2.computeCarreByInseeCode("59328");
 //			computeServiceV2.computeCarreByInseeCode("59128");
 			

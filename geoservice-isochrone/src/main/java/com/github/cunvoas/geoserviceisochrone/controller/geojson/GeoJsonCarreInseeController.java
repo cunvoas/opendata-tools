@@ -18,7 +18,8 @@ public class GeoJsonCarreInseeController {
     @Autowired
     private GeoMapServiceV2 inseeCarre200mService;
 
-    @CrossOrigin 
+
+    @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/carre200m/area")
     public GeoJsonRoot getCarreByArea(
 			@RequestParam("swLat") Double swLat,
@@ -34,7 +35,8 @@ public class GeoJsonCarreInseeController {
     	}
     }
 
-    @CrossOrigin 
+
+    @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/carre200m/polygon")
     public GeoJsonRoot getCarreByArea(@RequestParam("polygon") Polygon polygon, @RequestParam("annee") Integer annee) {
         if (annee==null) {

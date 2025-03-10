@@ -74,7 +74,6 @@ public class InseeCarre200mComputedV2 {
 	
 	
 	// OMS Conditions
-
 	/**
 	 * population with OMS park (prorata surface)
 	 */

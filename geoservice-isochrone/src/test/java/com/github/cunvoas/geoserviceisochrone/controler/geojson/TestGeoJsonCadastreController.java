@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.io.IOException;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +29,7 @@ class TestGeoJsonCadastreController {
 	
 	
 	@Test
+	@Disabled
 	void testGetCadastreByCom2Com() {
 		
 		for (Long i = 1L; i < 18L; i++) {

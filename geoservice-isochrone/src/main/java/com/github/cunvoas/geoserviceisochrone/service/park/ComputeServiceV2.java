@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.service.park;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJob;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
@@ -50,7 +53,7 @@ import lombok.extern.slf4j.Slf4j;
 //		havingValue="v2")
 public class ComputeServiceV2 {
 
-	// 200m x 200m = 4 10^4: insee data is 40000+-1 accuracy
+	// 200m x 200m = 4 10^4: insee data is 40000 +-1 accuracy
 	private static final Double SURFACE_CARRE = 40_000d;
 	
 	@Autowired
@@ -83,7 +86,6 @@ public class ComputeServiceV2 {
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	
 	
-	
 	public void computeCarreByPostalCode(String postalCode) {
 		Set<Cadastre> uniques = new HashSet<>();
 		List<Laposte> postes = laposteRepository.findByPostalCode(postalCode);
@@ -111,18 +113,46 @@ public class ComputeServiceV2 {
 		}
 	}
 
+	protected Boolean isActive(ParkArea pa, Integer annee) {
+		Boolean active=false;
+		
+		Optional<ParcEtJardin> oPj = parkJardinRepository.findById(pa.getIdParcEtJardin());
+		if (oPj.isPresent()) {
+			ParcEtJardin pj = oPj.get();
+			Date dd = pj.getDateDebut();
+			Date df = pj.getDateFin();
+			
+			Calendar cal = Calendar.getInstance();
+			
+			int d = 1900;
+			if (dd!=null) {
+				cal.setTime(dd);
+				d = cal.get(Calendar.YEAR);
+			}
+			
+			int f = 2100;
+			if (df!=null) {
+				cal.setTime(df);
+				f = cal.get(Calendar.YEAR);
+			}
+			
+			active = d<=annee && annee<=f;
+		}
 	
+		return active;
+	}
 	
 	/**
 	 * Compute the surface of parks availlable per capita in the square.
 	 * @param carreShape
 	 * @param isDense
+	 * @TODO make optim to not recompute all years ( before 2027 )
 	 */
 	protected void computeCarreShapeV2Optim(InseeCarre200mOnlyShape carreShape, Boolean isDense) {
 		
 		log.warn(">> InseeCarre200mOnlyShape {}", carreShape.getIdInspire());
 
-		List<Integer> annes = List.of(applicationBusinessProperties.getInseeAnnees());
+		List<Integer> annees = List.of(applicationBusinessProperties.getInseeAnnees());
 		
 		// find parks in square shape
 		List<ParkArea> parkAreas = parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(carreShape.getGeoShape()));
@@ -133,7 +163,7 @@ public class ComputeServiceV2 {
 		Geometry shapeParkOnSquare=null;
 		
 		// prepare surface and polygons for parks coverage
-		for (Integer annee : annes) {
+		for (Integer annee : annees) {
 			int count4checkOms=parkAreas.size();
 			ComputeDto dto = new ComputeDto(carreShape);
 			dto.isDense = isDense;
@@ -143,6 +173,11 @@ public class ComputeServiceV2 {
 		
 			for (ParkArea parkArea : parkAreas) {
 				log.info("\tcompose {}", parkArea);
+				
+				if (!isActive(parkArea, annee)) {
+					// TODO add full testing
+					continue;
+				}
 				
 				ParkAreaComputed pac;
 				Optional<ParkAreaComputed> opac = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
@@ -223,7 +258,7 @@ public class ComputeServiceV2 {
 		
 		
 		// get for each years, all square in parks area
-		for (Integer annee : annes) {
+		for (Integer annee : annees) {
 			ComputeDto dto = mapDto.get(annee);	
 			
 			// get already computed square results
@@ -371,32 +406,70 @@ public class ComputeServiceV2 {
 		}
 	}
 	
+	public Boolean computeCarreByComputeJobV2Optim(ComputeJob job) {
+		log.info("begin computeCarre {}", job.getIdInspire());
+		Boolean ret = Boolean.FALSE;
+		
+		Optional<InseeCarre200mOnlyShape> oCarre = inseeCarre200mOnlyShapeRepository.findById(job.getIdInspire());
+		if (oCarre.isPresent()) {
+			try {
+				InseeCarre200mOnlyShape carre = oCarre.get();
+				Boolean isDense = serviceOpenData.isDistanceDense(carre.getCodeInsee());
+				this.computeCarreShapeV2Optim(carre, isDense);
+				ret = Boolean.TRUE;
+				
+			} catch (Exception e) {
+				log.error("computeCarre in error: {}", job.getIdInspire());
+			}
+		}
+		
+		return ret;
+	}
+
+	/**
+	 * @param cadastre
+	 */
+	public void computeCarreByCadastreV2Optim(Cadastre cadastre) {
+		this.computeCarreByGeoShapeV2Optim(cadastre.getIdInsee(), cadastre.getGeoShape());
+	}
 	
+	public void computeCarreByParkId(Long idPark) {
+		Optional<ParcEtJardin> opj = parkJardinRepository.findById(idPark);
+		if( opj.isPresent())  {
+			ParcEtJardin pj = opj.get();
+			Cadastre cadastre = cadastreRepository.findMyCadastre(pj.getCoordonnee());
+			this.computeCarreByGeoShapeV2Optim(cadastre.getIdInsee(), pj.getContour());
+		}
+	}
 	
 	/**
 	 * Computes population that can access a park at once.
 	 * @param cadastre
 	 * 
 	 * Algorithm:
-	 *  step 1: Find area of the city.
+	 *  step 1: Find city density.
 	 *  step 2: Find 200m squares that matches.
 	 *  step 3: for each, get surface and isochrone of parks.
 	 *  step 4: compute with OMS parks and others.
 	 */
-
 	@Transactional(isolation = Isolation.READ_COMMITTED)
-	public void computeCarreByCadastreV2Optim(Cadastre cadastre) {
+	public void computeCarreByGeoShapeV2Optim(String idInsee, Geometry geoShape) {
+			
 		log.warn(">> computeCarreByCadastreV2Optim");
 		
-		Boolean isDense = serviceOpenData.isDistanceDense(cadastre.getIdInsee());
+		// STEP 1: city density
+		Boolean isDense = serviceOpenData.isDistanceDense(idInsee);
 		
+		// STEP 2: squares
 		// find all square that fits the city area
-		List<InseeCarre200mOnlyShape> shapes = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(cadastre.getGeoShape()));
+		List<InseeCarre200mOnlyShape> shapes = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(geoShape));
 		
 		// iterate on each
+		//STEP 3: foreach
 		for (InseeCarre200mOnlyShape carreShape : shapes) {
+			//STEP 4: compute
 			computeCarreShapeV2Optim(carreShape, isDense);
-		}	
+		}
 
 		log.warn("<< computeCarreByCadastreV2Optim");
 		
@@ -514,12 +587,14 @@ public class ComputeServiceV2 {
 		
 	}
 	
+	
 	/**
 	 * Compute ParkEntrance from ParkArea and List<ParkEntrance>.
 	 * @param park
 	 * @return
 	 * @TODO to be reviewed
 	 */
+	
 	public ParkAreaComputed computeParkAreaV2(ParkArea park) {
 		ParkAreaComputed parcCpu=null;
 		log.info("computePark( {}-{} )",park.getId(), park.getName());
@@ -601,6 +676,7 @@ public class ComputeServiceV2 {
 		}
 		return parcCpu;
 	}
+
 	
 	public Long getSurface(Geometry geom) {
 		return inseeCarre200mOnlyShapeRepository.getSurface(geom);

@@ -22,7 +22,7 @@ public class GeoJsonCadastreController {
     @Autowired
     private GeoMapServiceV2 geoMapService;
     
-    @CrossOrigin 
+    @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area")
     public GeoJsonRoot getCadastreByArea(
 			@RequestParam("swLat") Double swLat,
@@ -33,15 +33,15 @@ public class GeoJsonCadastreController {
         return geoMapService.findAllCadastreByArea(swLat, swLng, neLat, neLng);	
     }
     
-    
-    @CrossOrigin 
+
+    @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area/{id}")
     public GeoJsonRoot getCadastreByCom2Com(@PathVariable ("id")Long id) {
     	 return geoMapService.findAllCadastreByComm2Co(id);
 	}
     
 
-    @CrossOrigin 
+    @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area/city/{id}")
     public GeoJsonRoot getCadastreByCity(@PathVariable ("id")Long id) {
     	 return geoMapService.findCadastreByCity(id);

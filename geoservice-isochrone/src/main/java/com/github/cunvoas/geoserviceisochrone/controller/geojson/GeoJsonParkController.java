@@ -27,7 +27,8 @@ public class GeoJsonParkController {
     @Autowired
     private ApplicationBusinessProperties applicationBusinessProperties;
 
-    @CrossOrigin 
+
+    @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/parkByPolygon")
     public GeoJsonRoot getParkIsochroneByArea(@RequestParam("polygon") Polygon polygon, @RequestParam("annee") Integer annee) {
     	if (annee==null) {
@@ -36,7 +37,8 @@ public class GeoJsonParkController {
         return geoMapService.findAllParkByArea(polygon, annee);
     }
     
-    @CrossOrigin 
+
+    @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area")
     public GeoJsonRoot getParkIsochroneByArea(
     			@RequestParam("swLat") Double swLat,
@@ -51,7 +53,8 @@ public class GeoJsonParkController {
         return geoMapService.findAllParkByArea(annee, swLat, swLng, neLat, neLng);
     }
     
-    @CrossOrigin 
+
+    @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/outline")
     public GeoJsonRoot getParkOutlineByArea(
     			@RequestParam("swLat") Double swLat,
@@ -67,7 +70,8 @@ public class GeoJsonParkController {
     }
     
 
-    @CrossOrigin 
+
+    @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/parkByCoordsZoom")
     //https://gis.stackexchange.com/questions/284880/get-the-lat-lng-values-of-lines-polygons-drawn-by-leaflet-drawing-tools
     public GeoJsonRoot getCityPage(
