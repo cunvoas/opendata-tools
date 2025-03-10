@@ -216,7 +216,8 @@ public class EmailSender {
 	 * @return
 	 */
 	public String applyData(String template, Map<String, String> values) {
-		String ret = new String(template);
+		// make a clone
+		String ret = String.valueOf(template);
 		for (Entry<String, String> entry : values.entrySet()) {
 			ret = ret.replace(entry.getKey(), entry.getValue());
 		}

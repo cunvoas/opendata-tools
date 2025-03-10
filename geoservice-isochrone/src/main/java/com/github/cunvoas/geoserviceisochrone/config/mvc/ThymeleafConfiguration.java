@@ -49,56 +49,13 @@ public class ThymeleafConfiguration  implements WebMvcConfigurer, ApplicationCon
  		return messageSource;
  	}
  	
-    
-//	@Bean
-//	public SpringResourceTemplateResolver templateResolver(){
-//        SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
-//        templateResolver.setApplicationContext(this.applicationContext);
-//        templateResolver.setPrefix("templates/");
-//        templateResolver.setSuffix(".html");
-//        templateResolver.setTemplateMode(TemplateMode.HTML);
-//        // Template cache is true by default. Set to false if you want
-//        // templates to be automatically updated when modified.
-//        templateResolver.setCacheable(true);
-//        return templateResolver;
-//    }
-//	
-//
-//
-//
-//@Bean
-//@Description("Thymeleaf Template Engine")
-//public SpringTemplateEngine templateEngine(){
-//    SpringTemplateEngine templateEngine = new SpringTemplateEngine();
-//    templateEngine.setEnableSpringELCompiler(true); // Compiled SpringEL should speed up executions
-//    templateEngine.setTemplateResolver(templateResolver());
-//    templateEngine.setEnableSpringELCompiler(true);
-//    templateEngine.setTemplateEngineMessageSource(messageSource());
-////    templateEngine.addDialect(new SpringSecurityDialect());
-//    return templateEngine;
-//}
-//	
-//
-//	
-//	@Bean
-//	@Description("Thymeleaf View Resolver")
-//    public ThymeleafViewResolver viewResolver(){
-//        ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
-//        viewResolver.setTemplateEngine(templateEngine());
-//        return viewResolver;
-//    }
-//	
 
-
-//	
-//
 //	@Bean
 //	public LocaleChangeInterceptor localeChangeInterceptor() {
 //		LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
 //		localeChangeInterceptor.setParamName("lang");
 //		return localeChangeInterceptor;
 //	}
-//	
 
 
 

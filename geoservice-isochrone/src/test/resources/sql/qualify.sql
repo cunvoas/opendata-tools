@@ -36,4 +36,59 @@ SELECT identifiant, adresse, nom_parc, quartier, sous_type, surface, type, id_ci
 UPDATE public.parc_jardin
 SET surface_contour=ST_Area(contour, true)
 WHERE contour is not null and surface_contour is null;
+
+
+-- ajout du code insee dans les carreau
+UPDATE public.carre200onlyshape
+SET code_insee=c.id_insee
+FROM   public.cadastre c
+WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape)
+    AND code_insee is null;
+--UPDATE 13702395
+--Query complete 10:32:23.749 (Raspberry PI 4)
+
+    
+-- si pas assez d'espace disque (15 Go env)
+UPDATE public.carre200onlyshape SET code_insee=c.id_insee
+    FROM   public.cadastre c
+    WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape) 
+    and code_insee is null and c.id_insee like '0%';
+UPDATE public.carre200onlyshape SET code_insee=c.id_insee
+    FROM   public.cadastre c
+    WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape) 
+    and code_insee is null and c.id_insee like '1%';
+UPDATE public.carre200onlyshape SET code_insee=c.id_insee
+    FROM   public.cadastre c
+    WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape) 
+    and code_insee is null and c.id_insee like '2%';
+UPDATE public.carre200onlyshape SET code_insee=c.id_insee
+    FROM   public.cadastre c
+    WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape) 
+    and code_insee is null and c.id_insee like '3%';
+UPDATE public.carre200onlyshape SET code_insee=c.id_insee
+    FROM   public.cadastre c
+    WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape) 
+    and code_insee is null and c.id_insee like '4%';
+UPDATE public.carre200onlyshape SET code_insee=c.id_insee
+    FROM   public.cadastre c
+    WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape) 
+    and code_insee is null and c.id_insee like '5%';
+UPDATE public.carre200onlyshape SET code_insee=c.id_insee
+    FROM   public.cadastre c
+    WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape) 
+    and code_insee is null and c.id_insee like '6%';
+UPDATE public.carre200onlyshape SET code_insee=c.id_insee
+    FROM   public.cadastre c
+    WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape) 
+    and code_insee is null and c.id_insee like '7%';
+UPDATE public.carre200onlyshape SET code_insee=c.id_insee
+    FROM   public.cadastre c
+    WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape) 
+    and code_insee is null and c.id_insee like '8%';
+UPDATE public.carre200onlyshape SET code_insee=c.id_insee
+    FROM   public.cadastre c
+    WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape) 
+    and code_insee is null and c.id_insee like '9%';
+
+
     

@@ -3,11 +3,37 @@
 # https://levelup.gitconnected.com/java-23-springboot-3-3-4-metrics-micrometer-aop-part-6-808dcb97dcb7
 
 
+# zipkin + sleuth
+spring:
+    sleuth:
+        sampler.probability: 1.0
+#        reactor.instrumentation-type: decorate-on-last
+    zipkin:
+        baseUrl: http://zipkin:9411/
+        sender.type: web
+    
+    
 # JMX
 spring.datasource.hikari.registerMbeans: true
 
-# prometheus
 management:
+# zipkin + brave
+  tracing:
+    sampling:
+      probability: 1.0
+      enabled: true
+  propagation:
+    type: w3c
+  baggage:
+    correlation:
+      enabled: true
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+      connect-timeout: 1s
+      read-timeout: 10s
+#      encoding: [JSON]
+# prometheus
   endpoints.web.exposure:
     include: prometheus,health,info,metric
     exclude: env,configprops,shutdown,heapdump,threaddump, beans
@@ -36,5 +62,12 @@ server.tomcat:
     directory: /var/log/jvm
 #  basedir: /var/log/jvm
   
-logging.level.org.apache.tomcat: ERROR
-logging.level.org.apache.catalina: ERROR
+logging:
+  level:
+    org.apache.tomcat: ERROR
+    org.apache.catalina: ERROR
+    org.springframework.web: DEBUG
+    com.github.cunvoas.geoserviceisochrone: DEBUG
+  pattern.level: "%5p [${spring.application.name},%X{traceId:-},%X{spanId:-}] [%t] %C{2} - %m%n"
+  
+#  level: "%5p [${spring.application.name},%X{traceId:-},%X{spanId:-}]"

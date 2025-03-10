@@ -7,6 +7,8 @@ server:
 spring:
   application.name: isochrone
   
+  task.scheduling.pool.size: 1
+  
   # Hardening
   server-header:
   servlet:
@@ -115,6 +117,7 @@ application:
     pollutionAnalysisEnabled: false
     isochrone-impl: ign-api-v2
     carre200m-impl: v2
+    sample.zipkin.enable: false
     
   admin:
     photo-path: /work/PERSO/ASSO/isochrone/photo

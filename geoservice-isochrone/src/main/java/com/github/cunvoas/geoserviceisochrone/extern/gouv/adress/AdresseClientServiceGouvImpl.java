@@ -35,7 +35,7 @@ public class AdresseClientServiceGouvImpl implements AdresseClientService {
 		log.info("insee={}, q={}", insee, requete);
 		
 		//FIX because select2 send an array
-		if (requete.indexOf(",")>0) {
+		if (requete.indexOf(',')>0) {
 			requete = requete.split(",")[1];
 		}
 		String strResp = this.search(insee, requete);

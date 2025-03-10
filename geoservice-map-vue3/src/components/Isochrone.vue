@@ -129,7 +129,9 @@ import {
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import debounce from 'lodash/debounce';
 
 // needs to be here for map coloring
 function  getSquareColor(zoneDense, densite) {
@@ -167,20 +169,37 @@ function  getSquareColor(zoneDense, densite) {
         if (modColor!==null) {
           const i_onecolor = 30+Math.round(densite*modColor);
           const s_onecolor = i_onecolor.toString(16);
-          sqColor = '#'+ "cc" + s_onecolor  + s_onecolor;
+          // FIXME: Color Square
+          // bad = red
+          //sqColor = '#'+ "cc" + s_onecolor  + s_onecolor;
+          // bad = blue
+          sqColor = '#' + s_onecolor  + s_onecolor + "cc";
         }
         return sqColor;
 }
 
-function getColorLegend() {
+function getColorLegend(legendeDense) {
+
+  
   console.log("getColorLegend");
   const grades = ['0','3','7','10','12','25','45'];
 		const labels = [];
 		let from, to;
 
-    labels.push(`<i id="rotate-text-d">dense</i> <i id="rotate-text-p">périurbain</i> `);
-		labels.push(`<i style="background:${getSquareColor(true,"N/A")}"></i> <i style="background:${getSquareColor(true,null)}"></i> non calculé`);
-		for (let i = 0; i < grades.length; i++) {
+    if (legendeDense) {
+      labels.push(`<i id="rotate-text-d">dense</i> `);
+    } else {
+      labels.push(`<i id="rotate-text-p">périurbain</i> `);
+    }
+    labels.push(`<i style="background:${getSquareColor(true,null)}"></i> non calculé`);
+
+
+
+    //labels.push(`<i id="rotate-text-d">dense</i> <i id="rotate-text-p">périurbain</i> `);
+		//labels.push(`<i style="background:${getSquareColor(true,"N/A")}"></i> <i style="background:${getSquareColor(true,null)}"></i> non calculé`);
+
+
+ 		for (let i = 0; i < grades.length; i++) {
 			from = grades[i];
 			to = grades[i + 1];
 
@@ -188,12 +207,18 @@ function getColorLegend() {
       let dense = `<i style="opacity:0.4;background:${getSquareColor(true, from)}"></i> `;
 			let subur = `<i style="opacity:0.4;background:${getSquareColor(false, from)}"></i> `;
 			
-      labels.push(dense+subur+tSurface);
+      //labels.push(dense+subur+tSurface);
+      if (legendeDense) {
+        labels.push(dense+tSurface);
+      } else {
+        labels.push(subur+tSurface);
+      }
 		}
     
 
   console.log("labels"+labels);
-    return labels.join('<br>');}
+    return labels.join('<br>');
+  }
 
 
 export default {
@@ -219,7 +244,7 @@ export default {
     return { leafletMap } // expose map ref
   },
   created () {
-     this.htmlLegend = getColorLegend();
+     this.htmlLegend = getColorLegend(true);
   },
   data() {
     return {
@@ -229,6 +254,7 @@ export default {
       showIsochrones: false,
       showCarre: true,
       showCadastre: false,
+      legendeDense: true,
       zoom: 14,
       minZoom: 10,
       maxZoom: 18,
@@ -308,6 +334,9 @@ export default {
             } else if (newLocation.locType==='address') {
               this.zoom= 17;
             }
+
+            //this.fetchCommune(newLocation.latY, newLocation.lonX);
+            this.debouncedFetchCommune(newLocation.latY, newLocation.lonX);
           }
 
           if (newLocation.regionId && this.region!==newLocation.regionId) {
@@ -323,6 +352,8 @@ export default {
             this.callGeoJsonCarres();
             this.callGeoJsonCadastre();         
           }
+
+
         }
       },
       immediate: true,
@@ -377,9 +408,65 @@ export default {
         this.callGeoJsonIsochrones(qryPrms);
         this.callGeoJsonCarres(qryPrms);
         this.callGeoJsonCadastre(qryPrms);
+
+        const lat =(bounds._northEast.lat + bounds._southWest.lat)/2;
+        const lon =(bounds._northEast.lng + bounds._southWest.lng)/2;
+        console.log("lat="+lat+" lon="+lon);
+        //this.fetchCommune(lat, lon);
+        this.debouncedFetchCommune(lat, lon);
+        
+
       }
     },
+    async fetchCommune (lat, lon){
+      try {
 
+        const memoIsDense = this.legendeDense;
+
+        // doc: https://api.gouv.fr/documentation/api-geo
+        const response = await axios.get(`https://geo.api.gouv.fr/communes?fields=nom,code&format=json&lat=`+ lat +`&lon=`+ lon, { timeout: 5000 });
+        const dataCommune = response.data;
+        
+        if (!dataCommune || !dataCommune.length) {
+            console.log("No commune found for coordinates:", lat, lon);
+            return;
+        }
+        const codeInsee = dataCommune[0].code;
+        console.log("Found commune with INSEE code:", codeInsee);
+
+
+        // Get density data
+        const respDensite = await axios.get("https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/cities/densite.json", { timeout: 5000 });
+        const dataDensite = respDensite.data;
+
+        // Find the density data for the given codeInsee
+        const densityItem = dataDensite.find(item => item[codeInsee] !== undefined);
+        if (densityItem) {
+            const codeDensite = densityItem[codeInsee];
+            console.log(`Found density code ${codeDensite} for INSEE code ${codeInsee}`);
+
+            // Update legend based on density code
+            this.legendeDense = (codeDensite === "1" || codeDensite === "2");
+
+            // Update legend if density classification changed
+            if (memoIsDense !== this.legendeDense) {
+                console.log("Updating legend for density type:", this.legendeDense ? "dense" : "non-dense");
+                this.htmlLegend = getColorLegend(this.legendeDense);
+            }
+        } else {
+            console.log(`No density data found for INSEE code ${codeInsee}`);
+        }
+
+
+
+
+        } catch (error) {
+          console.error('Error fetching addresses:', error);
+        }
+    },
+    debouncedFetchCommune: debounce(async function(lat, lon) {
+      await this.fetchCommune(lat, lon);
+    }, 400), // 500ms debounce delay
     async callGeoJsonIsochrones(qryPrms) {
       // data isochrones
       const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/isochrones/" +  this.com2co + "/isochrone_" +  this.annee + "_" +  this.com2co + ".json";

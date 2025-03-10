@@ -1,15 +1,15 @@
-package com.github.cunvoas.geoserviceisochrone;
+package com.github.cunvoas.geoserviceisochrone.config.security;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main {
+public class LocalNetworkHelper {
 
-	public static void main(String[] args) throws Exception {
-		System.out.println(getSubnet());
-	}
+//	public static void main(String[] args) throws Exception {
+//		System.out.println(getSubnet());
+//	}
 
 	
 	private static List<String> whitelist = new ArrayList<String>();
