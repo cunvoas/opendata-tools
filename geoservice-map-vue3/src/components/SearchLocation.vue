@@ -30,7 +30,6 @@
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 import Autocomplete from './Autocomplete.vue';
-//import { useCookies } from "vue3-cookies";
 
 export default {
     props: {

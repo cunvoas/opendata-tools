@@ -9,6 +9,10 @@ Futures fonctionnalités (à prioriser)
 
 
 
+V1.0.19-20250311
+
+    fix: security advices after audit
+
 V1.0.18-20250307
 
     monitoring APM

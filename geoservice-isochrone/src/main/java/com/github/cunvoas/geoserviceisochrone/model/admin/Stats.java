@@ -22,12 +22,12 @@ import lombok.EqualsAndHashCode;
 		})
 public class Stats {
 	
-	public static String EVT_ENTRANCE="EVT_ENTRANCE";
-	public static String EVT_ISOCHRONE="EVT_ISOCHRONE";
-	public static String EVT_PARK="EVT_PARK";
-	public static String EVT_ADMIN="EVT_ADMIN";
-	public static String MODE_ADD="ADD";
-	public static String MODE_UPD="UPD";
+	public static final String EVT_ENTRANCE="EVT_ENTRANCE";
+	public static final String EVT_ISOCHRONE="EVT_ISOCHRONE";
+	public static final String EVT_PARK="EVT_PARK";
+	public static final String EVT_ADMIN="EVT_ADMIN";
+	public static final String MODE_ADD="ADD";
+	public static final String MODE_UPD="UPD";
 	
 	public Stats(String action) {
 		super();

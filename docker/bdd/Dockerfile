@@ -1,0 +1,1 @@
+FROM tobi312/rpi-postgresql-postgis:15-3.4-alpine-arm

@@ -891,7 +891,7 @@ public class GeoMapServiceV2 {
 	protected String formatPopulation(String inssePop) {
     	String ret = "";
     	if (StringUtils.isNotBlank(inssePop)) {
-    		int index = inssePop.indexOf(".");
+    		int index = inssePop.indexOf('.');
     		if (index>0) {
     			ret = inssePop.substring(0, index);
     		} else {

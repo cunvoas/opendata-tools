@@ -334,6 +334,9 @@ export default {
             } else if (newLocation.locType==='address') {
               this.zoom= 17;
             }
+
+            //this.fetchCommune(newLocation.latY, newLocation.lonX);
+            this.debouncedFetchCommune(newLocation.latY, newLocation.lonX);
           }
 
           if (newLocation.regionId && this.region!==newLocation.regionId) {
@@ -349,6 +352,8 @@ export default {
             this.callGeoJsonCarres();
             this.callGeoJsonCadastre();         
           }
+
+
         }
       },
       immediate: true,
@@ -407,7 +412,9 @@ export default {
         const lat =(bounds._northEast.lat + bounds._southWest.lat)/2;
         const lon =(bounds._northEast.lng + bounds._southWest.lng)/2;
         console.log("lat="+lat+" lon="+lon);
-        this.fetchCommune(lat, lon);
+        //this.fetchCommune(lat, lon);
+        this.debouncedFetchCommune(lat, lon);
+        
 
       }
     },
@@ -457,6 +464,9 @@ export default {
           console.error('Error fetching addresses:', error);
         }
     },
+    debouncedFetchCommune: debounce(async function(lat, lon) {
+      await this.fetchCommune(lat, lon);
+    }, 400), // 500ms debounce delay
     async callGeoJsonIsochrones(qryPrms) {
       // data isochrones
       const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/isochrones/" +  this.com2co + "/isochrone_" +  this.annee + "_" +  this.com2co + ".json";

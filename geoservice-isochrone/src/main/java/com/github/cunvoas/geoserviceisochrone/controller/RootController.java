@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -17,30 +18,30 @@ public class RootController {
 	private static final Pattern PATTERN = Pattern.compile(
 			"(^127\\.0\\.0\\.1)|(^10\\.)|(^172\\.1[6-9]\\.)|(^172\\.2[0-9]\\.)|(^172\\.3[0-1]\\.)|(^192\\.168\\.)");
 	
-	@RequestMapping("/")
+	@GetMapping("/")
 	public String root() {
 		return "redirect:/mvc/dashboard";
 	}
 	
 	// Login form
-	@RequestMapping("/login")
+	@GetMapping(value="/login")
 	public String login() {
 		return "login";
 	}
 	
 	// Logout form
-	@RequestMapping("/logout")
+	@GetMapping(value="/logout")
 	public String logout() {
 		return "login";
 	}
 
 	/** Error page. */
-	@RequestMapping("/403.html")
+	@GetMapping("/403.html")
 	public String forbidden() {
 		return "403";
 	}
 
-	@RequestMapping("/home")
+	@GetMapping("/home")
 	public ResponseEntity<String> index() {
 		return new ResponseEntity<>("<html><body><p>AUT'MEL</p></body></html>", HttpStatus.OK);
 	}
@@ -64,8 +65,6 @@ public class RootController {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
-	
-	
 	
 
 }

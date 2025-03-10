@@ -156,16 +156,15 @@ public class CityService {
 		String geoJson = null;
 
 		OutputStream out = new OutputStream() {
-			private StringBuilder string = new StringBuilder();
+			private StringBuilder sb = new StringBuilder();
 
-			
 			public void write(int b) throws IOException {
-				this.string.append((char) b);
+				this.sb.append((char) b);
 			}
 
 			// overrides this toString()
 			public String toString() {
-				return this.string.toString();
+				return this.sb.toString();
 			}
 		};
 
