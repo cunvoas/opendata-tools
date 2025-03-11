@@ -1,3 +1,9 @@
+[![Known Vulnerabilities](https://snyk.io/test/github/dwyl/hapi-auth-jwt2/badge.svg?targetFile=package.json)](https://snyk.io/test/github/dwyl/hapi-auth-jwt2?targetFile=package.json)
+
+[![DeepSource](https://deepsource.io/gh/cunvoas/opendata-tools.svg/?label=active)](https://deepsource.io/gh/cunvoas/opendata-tools/?ref=repository-badge)
+
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/0a8911c0ee04464b83490f95d04c84cf)](https://app.codacy.com/gh/cunvoas/opendata-tools/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
 # Résumé
 
 Ce projet a pour but premier de quantifier, avec des données fiables et des méthodes de calcul publiques, l'état des parcs et jardins pour les habitants de la MEL.
@@ -17,7 +23,7 @@ Sur les plateformes opendata, il y a souvent des fichiers de la base de données
 Projet de traitement et données, contenant les calculs, les services web et la base de données.
 [Détail du projet](./geoservice-isochrone/README.md)
 
-## geoservice-map
+## geoservice-map-vue3
 Projet de l'interface graphique qui représente les données sous la forme de cartes.
 [Détail du projet](./geoservice-map/README.md)
 

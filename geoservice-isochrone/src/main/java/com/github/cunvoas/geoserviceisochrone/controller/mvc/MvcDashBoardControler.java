@@ -64,7 +64,7 @@ public class MvcDashBoardControler {
 		
         return "dashboard";
 	}
-	@RequestMapping("/")
+	@GetMapping("/")
 	public String mvc() {
 		return "redirect:/mvc/dashboard";
 	}

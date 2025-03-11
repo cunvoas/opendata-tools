@@ -1,4 +1,4 @@
-FROM openjdk:25-jdk-slim
+FROM openjdk:25-jdk-slim-bullseye
 
 RUN apt-get update && apt-get install -y curl
 
