@@ -8,7 +8,7 @@
             <b-col>
                 <a
                     href="https://www.helloasso.com/associations/aut-mel"
-                    target="_blank" >
+                    target="_blank" rel="noopener noreferrer">
                     <img
                         alt="Aut'MEL'"
                         src="../assets/logo-autmel.png"
@@ -19,7 +19,7 @@
             <b-col>
                 <a
                     href="https://www.helloasso.com/associations/deul-air"
-                    target="_blank" >
+                    target="_blank" rel="noopener noreferrer">
                     <img
                         alt="Deul'Air"
                         src="../assets/logo-deulair.png"
@@ -30,7 +30,7 @@
             <b-col>
                 <a
                     href="https://www.helloasso.com/associations/lm-oxygene"
-                    target="_blank" >
+                    target="_blank" rel="noopener noreferrer">
                     <img
                         alt="LM Oxygène"
                         src="../assets/logo-lmo.png"
