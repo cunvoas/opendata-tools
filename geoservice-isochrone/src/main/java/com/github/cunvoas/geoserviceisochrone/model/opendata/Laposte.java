@@ -6,6 +6,9 @@ import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Model Laposte.
+ */
 @Data
 @Entity(name = "laposte")
 @EqualsAndHashCode(of = {"idInsee"})

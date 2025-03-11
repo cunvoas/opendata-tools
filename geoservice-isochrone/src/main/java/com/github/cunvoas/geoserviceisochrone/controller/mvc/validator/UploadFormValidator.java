@@ -14,6 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
 
+/**
+ * Form validator to uploads.
+ */
 @Component
 public class UploadFormValidator implements Validator{
 

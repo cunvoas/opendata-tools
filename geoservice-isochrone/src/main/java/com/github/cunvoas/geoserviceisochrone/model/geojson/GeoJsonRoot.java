@@ -6,9 +6,11 @@ import java.util.List;
 import lombok.Data;
 
 /**
+ * DTO for GeoJson root.
+ * Implements GeoJson RFC-7946.
  * @author cunvoas
- * https://www.rfc-editor.org/rfc/rfc7946
- * https://geojson.org/geojson-spec.html
+ * @see https://www.rfc-editor.org/rfc/rfc7946
+ * @see https://geojson.org/geojson-spec.html
  */
 @Data
 public class GeoJsonRoot {

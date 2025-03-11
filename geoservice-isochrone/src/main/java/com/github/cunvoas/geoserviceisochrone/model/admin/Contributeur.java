@@ -21,6 +21,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Model Contributeur.
+ */
 @Data
 @EqualsAndHashCode(of = {"id"})
 @ToString(onlyExplicitlyIncluded = true)

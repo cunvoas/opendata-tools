@@ -11,6 +11,9 @@ import jakarta.persistence.TemporalType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Form for Entance page.
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class FormParkEntranceDetail {

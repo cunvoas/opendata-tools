@@ -14,6 +14,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Component;
 
 /**
+ * CSV parser to import.
  * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */

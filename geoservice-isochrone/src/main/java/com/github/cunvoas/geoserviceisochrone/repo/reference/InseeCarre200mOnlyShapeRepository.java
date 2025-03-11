@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
 
 /**
+ * Spring JPA repository.
  * Repo pour only geographic squares.
  */
 @Repository

@@ -21,6 +21,9 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * REsT Controler for dropdown.
+ */
 @RestController
 @RequestMapping("/mvc/ajax/dropdown")
 @Slf4j
@@ -38,7 +41,13 @@ public class ContributeurRestControler {
 	private static int MAX_LINE=150;
 	
 	
-	 @GetMapping("/search_c2c")
+	 /**
+	 * search c2c.
+	 * @param idRegion
+	 * @param query
+	 * @return
+	 */
+	@GetMapping("/search_c2c")
 	 public List<SearchListDto> searchC2C(
 			 @RequestParam(value = "r") Long idRegion,
 			 @RequestParam(value = "q", required = false) String query
@@ -59,7 +68,14 @@ public class ContributeurRestControler {
                      .collect(Collectors.toList());
     }
 
-	 @GetMapping("/search_city")
+	 /**
+	 * search city.
+	 * @param idRegion
+	 * @param idC2C
+	 * @param query
+	 * @return
+	 */
+	@GetMapping("/search_city")
 	 public List<SearchListDto> searchCity(
 			 @RequestParam(value = "r", required = false) Long idRegion,
 			 @RequestParam(value = "c", required = false) Long idC2C,
@@ -125,10 +141,21 @@ public class ContributeurRestControler {
 
 
     // Generic function to convert a list to stream
+    /**
+     * make a stream.
+     * @param <T>
+     * @param list
+     * @return
+     */
     private static <T> Stream<T> convertListToStream(List<T> list) {
         return list.stream();
     }
     
+    /**
+     * mapper.
+     * @param bean
+     * @return
+     */
     private SearchListDto mapToDto(CommunauteCommune bean) {
         return SearchListDto.builder()
                         .id(bean.getId())
@@ -136,6 +163,11 @@ public class ContributeurRestControler {
                         .build();
     }
     
+    /**
+     * mapper.
+     * @param bean
+     * @return
+     */
     private SearchListDto mapToDto(City bean) {
         return SearchListDto.builder()
                         .id(bean.getId())
@@ -143,6 +175,11 @@ public class ContributeurRestControler {
                         .build();
     }	
     
+    /**
+     * letter normalizer.
+     * @param q
+     * @return
+     */
     private String normalise(String q) {
     	if (q!=null) {
 	    	String work = StringUtils.stripAccents(q);

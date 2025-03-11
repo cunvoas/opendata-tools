@@ -15,7 +15,9 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 
+
 /**
+ * Spring JPA repository.
  * Helper to convert :
  *   - Geometry in text.
  *   - geolatte.* in locationtech.*

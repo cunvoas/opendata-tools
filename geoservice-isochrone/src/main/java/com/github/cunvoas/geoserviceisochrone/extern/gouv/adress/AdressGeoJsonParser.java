@@ -18,6 +18,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cunvoas.geoserviceisochrone.extern.gouv.adress.dto.AdressBo;
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoCoordinate;
 
+/**
+ * parser json.
+ */
 @Component
 public class AdressGeoJsonParser {
 

@@ -20,6 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CustomErrorReportValve extends ErrorReportValve {
 
+    /**
+     * @see ErrorReportValve.report.
+     */
     @Override
     protected void report(final Request request, final Response response, final Throwable throwable) {
         // ref: ErrorReportValve implementation

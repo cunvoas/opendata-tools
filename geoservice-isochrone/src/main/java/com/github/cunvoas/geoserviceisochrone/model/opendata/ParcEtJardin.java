@@ -18,6 +18,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+/**
+ * Model ParcEtJardin.
+ */
 @Data
 @Entity(name = "parc_jardin")
 @EqualsAndHashCode(of = {"id"})

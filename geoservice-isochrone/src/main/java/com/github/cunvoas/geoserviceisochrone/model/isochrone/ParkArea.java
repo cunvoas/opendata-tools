@@ -22,6 +22,9 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.ToString;
 
+/**
+ * Model ParkArea.
+ */
 @Data
 @ToString(onlyExplicitlyIncluded = true)
 @Entity(name = "park_area")

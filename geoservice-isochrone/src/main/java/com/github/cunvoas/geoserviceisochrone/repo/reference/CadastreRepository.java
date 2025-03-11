@@ -10,6 +10,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface CadastreRepository extends JpaRepository<Cadastre, String>{
 	@Query(nativeQuery = true, 

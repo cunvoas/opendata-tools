@@ -18,18 +18,25 @@ public class RootController {
 	private static final Pattern PATTERN = Pattern.compile(
 			"(^127\\.0\\.0\\.1)|(^10\\.)|(^172\\.1[6-9]\\.)|(^172\\.2[0-9]\\.)|(^172\\.3[0-1]\\.)|(^192\\.168\\.)");
 	
+	/**
+	 * root page.
+	 * @return
+	 */
 	@GetMapping("/")
 	public String root() {
 		return "redirect:/mvc/dashboard";
 	}
 	
-	// Login form
+	/** Login form. */
 	@GetMapping(value="/login")
 	public String login() {
 		return "login";
 	}
 	
-	// Logout form
+	/**
+	 * Logout form.
+	 * @return
+	 */
 	@GetMapping(value="/logout")
 	public String logout() {
 		return "login";
@@ -41,6 +48,10 @@ public class RootController {
 		return "403";
 	}
 
+	/**
+	 * home page.
+	 * @return
+	 */
 	@GetMapping("/home")
 	public ResponseEntity<String> index() {
 		return new ResponseEntity<>("<html><body><p>AUT'MEL</p></body></html>", HttpStatus.OK);

@@ -3,8 +3,8 @@ package com.github.cunvoas.geoserviceisochrone.model;
 import lombok.Data;
 
 /**
+ * DTO Coordinate.
  * @author cunvoas
- *
  */
 @Data
 public class Coordinate {

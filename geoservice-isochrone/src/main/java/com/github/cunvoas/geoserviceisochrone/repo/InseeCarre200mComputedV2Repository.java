@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface InseeCarre200mComputedV2Repository extends JpaRepository<InseeCarre200mComputedV2, InseeCarre200mComputedId>{
 

@@ -10,6 +10,9 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJob;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface ComputeJobRepository extends JpaRepository<ComputeJob, InseeCarre200mComputedId>{
 

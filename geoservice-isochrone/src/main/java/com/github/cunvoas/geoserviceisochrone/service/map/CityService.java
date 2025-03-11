@@ -35,6 +35,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+/**
+ * DTO.
+ */
 @Service
 @Slf4j
 public class CityService {

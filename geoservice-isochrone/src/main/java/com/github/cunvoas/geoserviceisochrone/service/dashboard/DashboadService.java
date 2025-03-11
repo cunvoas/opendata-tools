@@ -21,6 +21,9 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mReposi
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
+/**
+ * Business Service impl.
+ */
 @Service
 public class DashboadService {
 	

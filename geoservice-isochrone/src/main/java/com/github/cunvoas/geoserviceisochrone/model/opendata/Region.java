@@ -15,6 +15,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+/**
+ * Model Region.
+ */
 @Data
 @Entity(name = "adm_region")
 @ToString(onlyExplicitlyIncluded = true)

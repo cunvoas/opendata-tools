@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+/**
+ * DTO for search locations.
+ */
 @Data
 @Builder
 @ToString

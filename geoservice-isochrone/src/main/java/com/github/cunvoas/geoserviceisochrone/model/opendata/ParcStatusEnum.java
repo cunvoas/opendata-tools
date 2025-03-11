@@ -1,7 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.model.opendata;
 	
 /**
- * Source du parc.
+ * Enum Source du parc.
  */
 public enum ParcStatusEnum {
 	TO_QUALIFY("TO_QUALIFY"),	// 0

@@ -2,6 +2,9 @@ package com.github.cunvoas.geoserviceisochrone.service.park;
 
 import java.math.BigDecimal;
 
+/**
+ * DTO.
+ */
 public class ComputeResultDto {
 
 	BigDecimal popInc = BigDecimal.ZERO;

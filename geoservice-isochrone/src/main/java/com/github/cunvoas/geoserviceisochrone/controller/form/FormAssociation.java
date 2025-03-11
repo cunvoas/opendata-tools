@@ -6,6 +6,9 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Form for Association page.
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class FormAssociation {

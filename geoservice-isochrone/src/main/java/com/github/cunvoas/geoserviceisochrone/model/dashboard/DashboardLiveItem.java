@@ -2,6 +2,9 @@ package com.github.cunvoas.geoserviceisochrone.model.dashboard;
 
 import lombok.Data;
 
+/**
+ * DTO DashboardLiveItem.
+ */
 @Data
 public class DashboardLiveItem {
 

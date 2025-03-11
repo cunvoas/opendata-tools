@@ -6,6 +6,9 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 
 import lombok.Data;
 
+/**
+ * DTO.
+ */
 @Data
 public class PhotoDto {
 	

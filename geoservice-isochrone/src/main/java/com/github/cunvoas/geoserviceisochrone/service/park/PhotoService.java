@@ -21,6 +21,9 @@ import com.google.common.hash.Hashing;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Business Service impl.
+ */
 @Service
 @Slf4j
 public class PhotoService {

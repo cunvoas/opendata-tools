@@ -18,6 +18,9 @@ import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.Dt
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoIsoChrone;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 
+/**
+ * mapper.
+ */
 @Component
 public class MapperIsoChrone {
 

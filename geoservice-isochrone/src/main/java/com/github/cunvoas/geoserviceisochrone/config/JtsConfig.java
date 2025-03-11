@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Configuration;
 
 import com.bedatadriven.jackson.datatype.jts.JtsModule;
 
+/**
+ * Setup for JTS (geo libs)
+ */
 @Configuration
 public class JtsConfig {
 

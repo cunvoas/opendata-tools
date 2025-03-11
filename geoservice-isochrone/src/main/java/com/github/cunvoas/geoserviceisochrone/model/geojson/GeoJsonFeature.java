@@ -10,8 +10,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
 /**
- * @author cunvoas
+ * DTO for GeoJson feature.
  * Implements GeoJson RFC-7946.
+ * @author cunvoas
  */
 @Data
 public class GeoJsonFeature {

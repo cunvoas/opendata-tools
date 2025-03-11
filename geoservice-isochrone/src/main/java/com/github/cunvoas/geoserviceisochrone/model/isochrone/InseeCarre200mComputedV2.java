@@ -11,7 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 
+ * Model InseeCarre200mComputed.
  */
 @Data
 @EqualsAndHashCode(of = {"annee", "idInspire"})

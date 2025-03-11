@@ -13,6 +13,9 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 
+/**
+ * file parser.
+ */
 @Component
 public class MassUpdatePreProcess {
 

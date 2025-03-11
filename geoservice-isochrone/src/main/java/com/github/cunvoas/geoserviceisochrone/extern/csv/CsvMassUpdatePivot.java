@@ -13,6 +13,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
+/**
+ * DTO.
+ */
 @Data
 @NoArgsConstructor
 public class CsvMassUpdatePivot {

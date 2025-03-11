@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
+/**
+ * REsT controler for geojson parks and entrances layer.
+ */
 @RestController
 @RequestMapping("/mvc/geojson")
 public class GeoJsonForMvcController {

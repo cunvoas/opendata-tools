@@ -8,6 +8,10 @@ import org.springframework.stereotype.Component;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Auth Failure interceptor.
+ * 
+ */
 @Component
 @Slf4j
 public class AuthenticationFailureListener implements ApplicationListener<AuthenticationFailureBadCredentialsEvent> {
@@ -18,6 +22,9 @@ public class AuthenticationFailureListener implements ApplicationListener<Authen
     @Autowired
     private LoginAttemptService loginAttemptService;
 
+    /**
+     * count fails for IP blocking.
+     */
     @Override
     public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent e) {
         final String xfHeader = request.getHeader("X-Forwarded-For");

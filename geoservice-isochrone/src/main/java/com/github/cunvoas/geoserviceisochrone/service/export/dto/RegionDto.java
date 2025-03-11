@@ -4,6 +4,9 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 
 import lombok.Data;
 
+/**
+ * DTO.
+ */
 @Data
 public class RegionDto {
 	

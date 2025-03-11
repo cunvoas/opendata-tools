@@ -7,6 +7,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Laposte;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface LaposteRepository extends JpaRepository<Laposte, String>{
 	List<Laposte> findByPostalCode(String postalCode);

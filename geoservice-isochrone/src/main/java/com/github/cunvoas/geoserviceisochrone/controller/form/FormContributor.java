@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
+ * Form for Contributor page.
  * @see https://www.baeldung.com/spring-thymeleaf-error-messages
  */
 @Data

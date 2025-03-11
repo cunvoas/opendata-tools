@@ -22,6 +22,9 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * REsT Controler for adress dropdown.
+ */
 @RestController
 @RequestMapping("/mvc/ajax/dropdown")
 @Slf4j
@@ -36,7 +39,13 @@ public class AdressRestControler {
 	private static int MAX_LINE=150;
 	
 
-	 @GetMapping("/search_adress")
+	 /**
+	 * search.
+	 * @param idCity
+	 * @param query
+	 * @return
+	 */
+	@GetMapping("/search_adress")
 	 public List<SearchListDto> searchAdress(
 			 @RequestParam(value = "idCity", required = false) Long idCity,
 			 @RequestParam(value = "q", required = false) String query

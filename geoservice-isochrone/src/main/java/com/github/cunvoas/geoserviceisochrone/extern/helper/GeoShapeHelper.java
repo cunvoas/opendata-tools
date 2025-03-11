@@ -23,7 +23,7 @@ import org.locationtech.jts.util.GeometricShapeFactory;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
 
 /**
- * 
+ * Geometry helper.
  */
 public class GeoShapeHelper {
 

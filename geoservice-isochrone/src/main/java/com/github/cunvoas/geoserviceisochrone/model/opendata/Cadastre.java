@@ -11,6 +11,9 @@ import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Model Cadastre.
+ */
 @Data
 @Entity(name = "cadastre")
 @EqualsAndHashCode(of = {"idInsee"})

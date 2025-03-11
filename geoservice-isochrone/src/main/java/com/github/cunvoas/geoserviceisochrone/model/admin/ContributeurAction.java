@@ -12,6 +12,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 
+/**
+ * Model ContributeurAction.
+ */
 @Data
 @EqualsAndHashCode(of = {"id"})
 @NoArgsConstructor

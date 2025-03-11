@@ -9,6 +9,9 @@ import org.springframework.validation.annotation.Validated;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Setup for password factory.
+ */
 @Getter
 @Setter
 @Configuration

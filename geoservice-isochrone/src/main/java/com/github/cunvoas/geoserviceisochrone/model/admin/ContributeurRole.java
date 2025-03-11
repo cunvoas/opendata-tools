@@ -2,6 +2,9 @@ package com.github.cunvoas.geoserviceisochrone.model.admin;
 
 import org.springframework.security.core.GrantedAuthority;
 
+/**
+ * Enum for user roles.
+ */
 public enum ContributeurRole implements GrantedAuthority{
 
 	ADMINISTRATOR("ADMINISTRATOR"), 

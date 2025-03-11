@@ -21,6 +21,9 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Business Service impl.
+ */
 @Service
 @Slf4j
 public class ContributeurService {

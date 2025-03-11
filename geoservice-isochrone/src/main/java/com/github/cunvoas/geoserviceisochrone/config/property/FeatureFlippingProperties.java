@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * setup vars for Feature flag.
  * @author cunvoas
  */
 @Getter

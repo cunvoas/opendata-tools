@@ -8,6 +8,9 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 
 import lombok.Data;
 
+/**
+ * DTO.
+ */
 @Data
 public class CommunauteCommuneDto {
 	

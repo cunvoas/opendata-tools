@@ -17,6 +17,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+/**
+ * Model City.
+ */
 @Data
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(of = {"id"})

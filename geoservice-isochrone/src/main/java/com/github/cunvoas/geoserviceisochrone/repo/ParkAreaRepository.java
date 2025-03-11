@@ -10,6 +10,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface ParkAreaRepository extends JpaRepository<ParkArea, Long>{
 	

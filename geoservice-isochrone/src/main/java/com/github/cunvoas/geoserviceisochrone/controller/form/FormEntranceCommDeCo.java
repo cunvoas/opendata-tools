@@ -5,6 +5,9 @@ import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * DTO for Entrance page.
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class FormEntranceCommDeCo {

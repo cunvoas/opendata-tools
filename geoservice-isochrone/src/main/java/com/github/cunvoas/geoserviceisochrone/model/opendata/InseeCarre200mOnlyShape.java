@@ -11,6 +11,9 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Model InseeCarre200mOnlyShape.
+ */
 @Data
 @Entity(name = "carre200onlyshape")
 @Table(name = "carre200onlyshape",

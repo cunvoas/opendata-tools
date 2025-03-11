@@ -6,6 +6,9 @@ import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Model DashboardCache.
+ */
 @Data
 @EqualsAndHashCode(of = {"code"})
 @Entity(name = "dashboard_cache")

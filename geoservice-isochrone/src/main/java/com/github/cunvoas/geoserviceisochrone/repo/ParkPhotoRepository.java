@@ -5,6 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.tools.ParkPhoto;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface ParkPhotoRepository extends JpaRepository<ParkPhoto, Long>{
 

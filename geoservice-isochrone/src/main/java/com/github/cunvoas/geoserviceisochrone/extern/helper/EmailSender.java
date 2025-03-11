@@ -28,6 +28,9 @@ import com.mailjet.client.errors.MailjetException;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * send email.
+ */
 @Component
 @Slf4j
 public class EmailSender {

@@ -5,6 +5,9 @@ import org.springframework.stereotype.Component;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 
+/**
+ * custom metric for prometheus monitoring.
+ */
 @Component
 public class CustomMetricsService {
 

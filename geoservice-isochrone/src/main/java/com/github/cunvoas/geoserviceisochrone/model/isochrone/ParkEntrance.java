@@ -17,6 +17,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 
+/**
+ * model ParkEntrance.
+ */
 @Data
 @Entity(name = "park_entrance")
 public class ParkEntrance {

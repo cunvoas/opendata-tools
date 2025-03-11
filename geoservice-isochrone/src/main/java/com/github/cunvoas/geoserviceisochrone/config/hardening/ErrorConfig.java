@@ -16,8 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ErrorConfig {
 
-    // https://docs.spring.io/spring-boot/docs/2.5.4/reference/htmlsingle/#howto-use-tomcat-legacycookieprocessor
-    // https://github.com/spring-projects/spring-boot/issues/21257#issuecomment-745565376
+    /**
+     * Activate FQDN check. 
+     * @return
+     * @see https://github.com/spring-projects/spring-boot/issues/21257#issuecomment-745565376
+     * @see https://docs.spring.io/spring-boot/docs/2.5.4/reference/htmlsingle/#howto-use-tomcat-legacycookieprocessor
+     */
     @Bean
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> errorReportValveCustomizer() {
         return (factory) -> {

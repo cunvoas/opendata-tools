@@ -10,6 +10,9 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Form for Entrance page.
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class FormParkEntrance extends AbstractFormLocate {

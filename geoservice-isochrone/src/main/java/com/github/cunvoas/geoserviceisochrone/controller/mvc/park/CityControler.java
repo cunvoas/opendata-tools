@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Association;
 
 
+/**
+ * Page controler for city.
+ */
 @Controller
 @RequestMapping("/mvc/city")
 public class CityControler {

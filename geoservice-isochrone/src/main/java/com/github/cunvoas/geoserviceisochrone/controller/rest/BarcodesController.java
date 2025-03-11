@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.github.cunvoas.geoserviceisochrone.extern.helper.BarcodeHelper;
 
+/**
+ * REsT Controler for QRcode.
+ */
 @RestController
 @RequestMapping("/mvc/barcodes")
 public class BarcodesController {
@@ -20,7 +23,7 @@ public class BarcodesController {
 	private BarcodeHelper barcodeHelper;
 
 	@GetMapping(value = "/qrcode/{barcode}", produces = MediaType.IMAGE_PNG_VALUE)
-	public ResponseEntity<BufferedImage> barbecueEAN13Barcode(@PathVariable("barcode") String barcode)
+	public ResponseEntity<BufferedImage> barcode(@PathVariable("barcode") String barcode)
 			throws Exception {
 		
 		return new ResponseEntity<BufferedImage>(barcodeHelper.generateQRCodeImage(barcode), HttpStatus.OK);

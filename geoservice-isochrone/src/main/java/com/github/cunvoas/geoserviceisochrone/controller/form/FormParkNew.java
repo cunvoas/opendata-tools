@@ -20,6 +20,9 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Form for Park page (new and current impl).
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class FormParkNew extends AbstractFormLocate{

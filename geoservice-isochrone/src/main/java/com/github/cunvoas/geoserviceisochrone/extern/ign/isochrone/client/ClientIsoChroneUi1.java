@@ -12,6 +12,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+/**
+ * impl reverse v0.
+ */
 @Component
 @Slf4j
 @Deprecated

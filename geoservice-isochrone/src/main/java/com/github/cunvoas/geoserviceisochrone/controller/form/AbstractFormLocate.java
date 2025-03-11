@@ -12,6 +12,9 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 
 import lombok.Data;
 
+/**
+ * Abstract form for factorization.
+ */
 @Data
 public abstract class AbstractFormLocate {
 
@@ -33,6 +36,9 @@ public abstract class AbstractFormLocate {
 	private String mapLat;
 	private String mapLng;
 	
+	/**
+	 * autolocate by user context.
+	 */
 	public void autoLocate() {
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

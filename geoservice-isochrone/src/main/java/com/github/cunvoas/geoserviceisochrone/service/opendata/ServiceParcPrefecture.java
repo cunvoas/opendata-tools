@@ -19,6 +19,9 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV2;
 
+/**
+ * Business Service impl.
+ */
 @Service
 public class ServiceParcPrefecture {
 	

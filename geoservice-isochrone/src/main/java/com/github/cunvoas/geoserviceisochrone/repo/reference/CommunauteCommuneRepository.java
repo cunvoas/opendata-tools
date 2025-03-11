@@ -9,6 +9,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface CommunauteCommuneRepository extends JpaRepository<CommunauteCommune, Long>{
 	@Query(	nativeQuery = true,
