@@ -83,10 +83,6 @@
       />
     </l-map>
 
-<!--
-    <br />
-    <span>Bounds: {{ bounds }}</span>
--->
   </div>
 </template>
 
@@ -115,7 +111,6 @@
 }
 </style>
 <script>
-import { latLng } from "leaflet";
 import {
   LMap,
   LTileLayer,
@@ -127,8 +122,8 @@ import {
   LPolygon,
   LControlScale,
 } from "@vue-leaflet/vue-leaflet";
+import L, { latLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
@@ -698,9 +693,6 @@ export default {
         );
       };
     },
-  },
-  mounted() {
-    console.log("mounted");
   },
   beforeMount() {
     console.log("beforeMount");
