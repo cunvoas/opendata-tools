@@ -373,7 +373,7 @@ export default {
     },
     onAnnee() {
       // refresh GeoJsonIsochrones v-model = this.annee
-      var qryPrms =
+      const qryPrms =
         "?swLat=" + this.boundSwLat +
         "&swLng=" + this.boundSwLng +
         "&neLat=" + this.boundNeLng +
@@ -397,7 +397,7 @@ export default {
         this.boundNeLat = bounds._northEast.lat;
         this.boundNeLng = bounds._northEast.lng;
 
-        var qryPrms =
+        const qryPrms =
           "?swLat=" + this.boundSwLat +
           "&swLng=" + this.boundSwLng +
           "&neLat=" + this.boundNeLat +
@@ -470,9 +470,9 @@ export default {
     async callGeoJsonIsochrones(qryPrms) {
       // data isochrones
       const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/isochrones/" +  this.com2co + "/isochrone_" +  this.annee + "_" +  this.com2co + ".json";
-      //var base = this.restUrlIsochrones;
+      //const base = this.restUrlIsochrones;
 
-      var callUrl = base;
+      let callUrl = base;
       if(qryPrms) {
         callUrl = base+qryPrms;
       }
@@ -484,9 +484,9 @@ export default {
     async callGeoJsonCarres(qryPrms) {
       // data carreau 200m
       const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/carres/" +  this.com2co + "/carre_" + this.annee + "_" + this.com2co + ".json";
-      //var base = this.restUrlCarre;
+      //const base = this.restUrlCarre;
 
-      var callUrl = base;
+      let callUrl = base;
       if(qryPrms) {
         callUrl = base+qryPrms;
       }
@@ -498,10 +498,10 @@ export default {
     async callGeoJsonCadastre(qryPrms) {
       // data Cadastre
       const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/cadastres/"+this.region+"/cadastre_c2c_" + this.com2co + ".json";
-      //var base = this.restUrlCadastre;
+      //const base = this.restUrlCadastre;
       
       
-      var callUrl = base;
+      let callUrl = base;
       if(qryPrms) {
         callUrl = base+qryPrms;
       }
@@ -604,7 +604,7 @@ export default {
     onDetailCarre() {
       return (feature, layer) => {
         layer.on("mouseover", function (e) {
-          var feature = e.target.feature;
+          const feature = e.target.feature;
           const theComment =
             "<h4>Données carroyées : Parc / Habitant</h4>" +
             "<div>id Inspire:" +
@@ -617,7 +617,7 @@ export default {
             feature.properties.people +
             "</b></div>";
 
-          var detailData = "";
+          let detailData = "";
           if (
             feature.properties.surfaceTotalParkOms === null ||
             feature.properties.surfaceTotalParkOms === ""
@@ -704,7 +704,7 @@ export default {
   },
   beforeMount() {
     console.log("beforeMount");
-    var self = this;
+    const self = this;
     self.loading = true;
 
     //  async parallel calls

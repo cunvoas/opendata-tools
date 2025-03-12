@@ -184,21 +184,21 @@
    
    $(document).ready(function(){
 	   function formatOutput (item) {
-		    var $state = $(item.element).data('id') + ' ' + item.data('text');
+		   const $state = $(item.element).data('id') + ' ' + item.data('text');
 		    return $state;
 		};
 		
 	    $('#idRegion').on('change', function() {
 	    	console.log("change region");
-	    	var idRegion=document.getElementById('idRegion');
-	    	var r = idRegion.options[idRegion.selectedIndex].value;
+	    	const idRegion=document.getElementById('idRegion');
+	    	const r = idRegion.options[idRegion.selectedIndex].value;
 	        if(r){
 	            $.ajax({
 	                type:'GET',
 	                url: [[@{/mvc/ajax/dropdown/search_c2c}]],
 	                data: 'mode=reg&r='+r ,  //+"&q="+label,
 	                success:function(jsonResp){
-	                	var data = $.map(jsonResp, function (obj) {
+	                	const data = $.map(jsonResp, function (obj) {
 	                		  obj.text = obj.text || obj.name; // replace name with the property used for the text
 
 	                		  return obj;
@@ -224,9 +224,9 @@
 	    $('#idCommunauteDeCommunes').on('change', function(){
             console.log("change CommunauteDeCommunes");
 
-            var idCommunauteDeCommunes=document.getElementById('idCommunauteDeCommunes');
-            var c = idCommunauteDeCommunes.options[idCommunauteDeCommunes.selectedIndex].value;
-            var label = $(this).val();
+            const idCommunauteDeCommunes=document.getElementById('idCommunauteDeCommunes');
+            const c = idCommunauteDeCommunes.options[idCommunauteDeCommunes.selectedIndex].value;
+            const label = $(this).val();
 	        if(c){
 	        	console.log("mode:c2c,c:"+c);
 	        	/*
@@ -257,10 +257,10 @@
 			minimumInputLength: 2,
 			url: function (params) {
 			    console.log("select2 change Commune ");
-			    var idRegion=document.getElementById('idRegion');
-			    var r = idRegion.options[idRegion.selectedIndex].value;
-			    var idCommunauteDeCommunes=document.getElementById('idCommunauteDeCommunes');
-			    var c = idCommunauteDeCommunes.options[idCommunauteDeCommunes.selectedIndex].value;
+			    const idRegion=document.getElementById('idRegion');
+			    const r = idRegion.options[idRegion.selectedIndex].value;
+			    const idCommunauteDeCommunes=document.getElementById('idCommunauteDeCommunes');
+			    const c = idCommunauteDeCommunes.options[idCommunauteDeCommunes.selectedIndex].value;
 			    console.log('search ?mode=city&r='+r +'&c='+c  +'&q='+ params.term);
 			    return  [[@{/mvc/ajax/dropdown/search_city}]] +'?mode=city&r='+r +'&c='+c+'&q1='+ params.term;
 			},
@@ -275,10 +275,10 @@
 	}); // select2 commune
 
 	// selected item in option list fails
-	var idC=[[${idCommune}]];
+	const idC=[[${idCommune}]];
 	if (typeof idC === 'number') {
-		var txtC=[[${txtCommune}]];
-		var selectedCity = new Option(txtC, idC, true, true);
+		const txtC=[[${txtCommune}]];
+		const selectedCity = new Option(txtC, idC, true, true);
 	    $('#idCommune').append(selectedCity).trigger('change');
 	}
 	    

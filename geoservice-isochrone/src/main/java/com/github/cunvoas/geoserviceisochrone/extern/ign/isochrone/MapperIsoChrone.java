@@ -50,7 +50,9 @@ public class MapperIsoChrone {
 			model.setEntrancePoint(point);
 			
 			List<Coordinate> shape = map(dto.getGeometry().getCoordinates());
-			Polygon polygon = factory.createPolygon(shape.toArray(Coordinate[]::new));
+//			Polygon polygon = factory.createPolygon(shape.toArray(Coordinate[]::new));
+			Polygon polygon = factory.createPolygon(shape.toArray(new Coordinate[0]));
+			
 			model.setPolygon(polygon);
 		}
 		

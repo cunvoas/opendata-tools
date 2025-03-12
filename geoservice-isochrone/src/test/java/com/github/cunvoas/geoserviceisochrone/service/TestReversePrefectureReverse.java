@@ -58,48 +58,48 @@ class TestReversePrefectureReverse {
 			JSONObject sub = (JSONObject) calls.get(i);
 			displayObj(sub);
 			
-			if (i==0 && false) { // qu'est-ce? 17k items
-				JSONArray arg = (JSONArray)sub.get("args");
-				displayObj(arg);
-				for (int j1 = 0; j1 < arg.length(); j1++) {
-					
-
-					Polygon polygon= null;
-					List<Coordinate> coords = new ArrayList<>();
-					
-					JSONArray niv1 = (JSONArray)arg.get(j1);
-					for (int j2 = 0; j2 < niv1.length(); j2++) {
-						JSONArray niv2 = (JSONArray) niv1.get(j2);
-						
-						for (int j3 = 0; j3 < niv2.length(); j3++) {
-							JSONArray niv3 = (JSONArray) niv2.get(j3);
-							// shape of a park  [{lng:[]}, {lat :[]}]
-							
-							JSONObject niv4 = (JSONObject) niv3.get(0);
-							JSONArray lng = (JSONArray)niv4.get("lng");
-							JSONArray lat = (JSONArray)niv4.get("lat");
-							
-							nbParc++;
-//							displayObj(lng);
-//							displayObj(lat);
-							
-							// transform to GeoGson true impl
-							
-							for (int ii  = 0; ii <lng.length(); ii++) {
-								Coordinate dtoCoord = new Coordinate(lng.getDouble(ii), lat.getDouble(ii));
-								coords.add(dtoCoord);
-							}
-							coords.add(coords.get(0));
-							
-							Coordinate[] array = coords.toArray(Coordinate[]::new);
-							polygon = (Polygon)factory.createPolygon(array);
-							System.out.println(polygon);
-							
-							serviceParcPrefecture.prepareFromSite(null, polygon);
-						}
-					}
-				}
-			}
+//			if (i==0) { // qu'est-ce? 17k items
+//				JSONArray arg = (JSONArray)sub.get("args");
+//				displayObj(arg);
+//				for (int j1 = 0; j1 < arg.length(); j1++) {
+//					
+//
+//					Polygon polygon= null;
+//					List<Coordinate> coords = new ArrayList<>();
+//					
+//					JSONArray niv1 = (JSONArray)arg.get(j1);
+//					for (int j2 = 0; j2 < niv1.length(); j2++) {
+//						JSONArray niv2 = (JSONArray) niv1.get(j2);
+//						
+//						for (int j3 = 0; j3 < niv2.length(); j3++) {
+//							JSONArray niv3 = (JSONArray) niv2.get(j3);
+//							// shape of a park  [{lng:[]}, {lat :[]}]
+//							
+//							JSONObject niv4 = (JSONObject) niv3.get(0);
+//							JSONArray lng = (JSONArray)niv4.get("lng");
+//							JSONArray lat = (JSONArray)niv4.get("lat");
+//							
+//							nbParc++;
+////							displayObj(lng);
+////							displayObj(lat);
+//							
+//							// transform to GeoGson true impl
+//							
+//							for (int ii  = 0; ii <lng.length(); ii++) {
+//								Coordinate dtoCoord = new Coordinate(lng.getDouble(ii), lat.getDouble(ii));
+//								coords.add(dtoCoord);
+//							}
+//							coords.add(coords.get(0));
+//							
+//							Coordinate[] array = coords.toArray(Coordinate[]::new);
+//							polygon = (Polygon)factory.createPolygon(array);
+//							System.out.println(polygon);
+//							
+//							serviceParcPrefecture.prepareFromSite(null, polygon);
+//						}
+//					}
+//				}
+//			}
 			
 
 			if (i==1  ) { // parls areas 1802 items

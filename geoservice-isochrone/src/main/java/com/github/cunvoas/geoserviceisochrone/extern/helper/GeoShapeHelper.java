@@ -117,7 +117,9 @@ public class GeoShapeHelper {
 					coords.add(dtoCoord);
 				}
 			}
-			Coordinate[] array = coords.toArray(Coordinate[]::new);
+//			Coordinate[] array = coords.toArray(Coordinate[]::new);
+			Coordinate[] array = coords.toArray(new Coordinate[0]);
+			
 			polygon = (Polygon)factory.createPolygon(array).getEnvelope();
 		}
 		

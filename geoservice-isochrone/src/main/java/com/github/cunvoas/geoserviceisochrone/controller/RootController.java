@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+/**
+ * Home page controler.
+ */
 @Controller
 public class RootController {
 

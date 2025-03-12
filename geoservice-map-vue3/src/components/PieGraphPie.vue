@@ -44,7 +44,7 @@ async function getJsonData(the_url) {
 const myUrl = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/test.json";
 
 
-var jsonResp =   await getJsonData(myUrl);
+const jsonResp =   await getJsonData(myUrl);
 //const tLabels = [...new Set(jsonResp["stats"].map(value => value.surface))];
 const tLabels = jsonResp["stats"].map(value => value.surface);
 const tFillColors = jsonResp["stats"].map(value => value.barColor);

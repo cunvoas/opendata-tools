@@ -9,7 +9,7 @@ function isEmpty(obj) {
 
 // check if valueId is numeric
 function isNumericId(valueId) {
-    const regex = /[0-9]/g;
+    let regex = /[0-9]/g;
     return valueId.match(regex);
 }
 
@@ -24,16 +24,16 @@ function toRad(Value) {
 }
 
 //This function takes in latitude and longitude of two location and returns the distance between them as the crow flies (in km)
-function calcCrow(lat1, lon1, lat2, lon2) {
-  var R = 6371; // km
-  var dLat = toRad(lat2-lat1);
-  var dLon = toRad(lon2-lon1);
-  var lat1 = toRad(lat1);
-  var lat2 = toRad(lat2);
-  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+function calcCrow(ilat1, ilon1, ilat2, ilon2) {
+  const R = 6371; // km
+  const dLat = toRad(ilat2-ilat1);
+  const dLon = toRad(ilon2-ilon1);
+  const lat1 = toRad(ilat1);
+  const lat2 = toRad(ilat2);
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
     Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-  var d = R * c;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  const d = R * c;
   return d;
 }
 
@@ -47,7 +47,7 @@ function locateMe() {
 // conertion of degrees, minutes, seconds to Decimal
 function ConvertDMSToDD(degrees, minutes, seconds, direction) {
     //console.log(degrees+" "+minutes+" "+seconds+" "+direction);
-    var dd = degrees + (minutes/60) + (seconds/36000000);
+    let dd = degrees + (minutes/60) + (seconds/36000000);
     //console.log(degrees+" "+(minutes/60)+" "+(60000/36000000));                               
     if (direction == "S" || direction == "W") {
         dd = dd * -1;

@@ -159,7 +159,9 @@ public class ServicePublicationExporter {
 		lCoords.add( new Coordinate(maxX,minY) );
 		lCoords.add( new Coordinate(minX,minY) );
     	
-    	Coordinate[] coords = lCoords.toArray(Coordinate[]::new);
+//    	Coordinate[] coords = lCoords.toArray(Coordinate[]::new);
+    	Coordinate[] coords = lCoords.toArray(new Coordinate[0]);
+    	
 		
 		return (Polygon)factory.createPolygon(coords).getEnvelope();
 	}

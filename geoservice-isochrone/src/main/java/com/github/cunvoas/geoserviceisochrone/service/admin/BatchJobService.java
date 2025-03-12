@@ -151,7 +151,7 @@ public class BatchJobService {
 	}
 	
 	// every minutes
-	@Scheduled(fixedDelay = 5000, initialDelay = 10000)
+	@Scheduled(fixedDelay = 600000, initialDelay = 10000)
 	public void processCarres() {
 		log.error("processCarres at {}", DF.format(new Date()));
 		

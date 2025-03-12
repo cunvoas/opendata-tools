@@ -19,6 +19,7 @@ spring.datasource.hikari.registerMbeans: true
 management:
 # zipkin + brave
   tracing:
+    enabled: true
     sampling:
       probability: 1.0
       enabled: true

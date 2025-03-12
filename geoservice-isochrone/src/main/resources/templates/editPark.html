@@ -321,7 +321,7 @@
 	// th-field broke the datalist work
 	document.querySelector('#idCommune-filter').value=[[${editPark.nameCommune}]];
 	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
-	    var input = e.target,
+		const input = e.target,
 	        list = input.getAttribute('list'),
 	        options = document.querySelectorAll('#' + list + ' option'),
 	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
@@ -329,8 +329,8 @@
 		    
 	    	hiddenInput.value = inputValue;
 		    
-		    for(var i = 0; i < options.length; i++) {
-		        var option = options[i];
+		    for(let i = 0; i < options.length; i++) {
+		    	const option = options[i];
 		        if(option.value === inputValue) {
 		        	hiddenInput.value = option.getAttribute('data-value');
 		        	document.querySelector("#formSelectCity").submit();
@@ -339,7 +339,7 @@
 		    }
 	});
 	document.querySelector('#idCommune-filter').addEventListener('focusout', function(e) {
-	    var input = e.target,
+		const input = e.target,
         list = input.getAttribute('list'),
         options = document.querySelectorAll('#' + list + ' option'),
         hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
@@ -356,29 +356,29 @@
 	// MAP MANAGEMENT
 	
 	// map layers
-	var mapMinZoom=10;
-	var mapMaxZoom=20;
-	var layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+	let mapMinZoom=10;
+	let mapMaxZoom=20;
+	const layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
 	        attribution: 'Aut MEL',
 	        maxZoom: mapMaxZoom,
             minZoom: mapMinZoom
 	    });
-	var layerStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	const layerStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	        attribution: 'Aut MEL',
 	        maxZoom: mapMaxZoom,
             minZoom: mapMinZoom
 	    });
 	
     // Add an object to save markers
-    var markers = {};
+    const markers = {};
     
     // custom location on load
     
     lat = document.querySelector('#lat').value;
     lng = document.querySelector('#lng').value;
-    var locateWorkPlace= L.latLng(lat,lng);
+    let locateWorkPlace= L.latLng(lat,lng);
     
-    var isMap = L.map('mapid').setView(locateWorkPlace, 16);
+    const isMap = L.map('mapid').setView(locateWorkPlace, 16);
     layerStreetMap.addTo(isMap);
     L.control.scale().addTo(isMap);
     
@@ -428,7 +428,7 @@
         }
     }
     
-    var geojsonPrefLayer = null;
+    let geojsonPrefLayer = null;
 	// relead parks with map fit
 	function loadPrefParks() {
 		if (geojsonPrefLayer!==null) {
@@ -440,7 +440,7 @@
         neLat=isMap.getBounds().getNorthEast().lat;
         neLng=isMap.getBounds().getNorthEast().lng;
         sPos="swLat="+ swLat +"&swLng="+swLng +"&neLat="+neLat +"&neLng="+neLng;
-        var sUrlGeoPref= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkPrefectureByCorner}]]+'?'+sPos;
+        const sUrlGeoPref= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkPrefectureByCorner}]]+'?'+sPos;
         geojsonPrefLayer = new L.GeoJSON.AJAX(sUrlGeoPref, {onEachFeature: customOnEachFeature});
         isMap.addLayer(geojsonPrefLayer);
 	}

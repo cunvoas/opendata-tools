@@ -83,7 +83,8 @@ public class GeometryQueryHelper {
 			}
 		}
 		
-		Coordinate[] array = coords.toArray(Coordinate[]::new);
+		//Coordinate[] array = coords.toArray(Coordinate[]::new);
+		Coordinate[] array = coords.toArray(new Coordinate[0]);
 		
 
 		Geometry geo=null;

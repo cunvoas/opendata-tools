@@ -325,7 +325,7 @@
 	// th-field broke the datalist work
 	document.querySelector('#idCommune-filter').value=[[${editEntrance.nameCommune}]];
 	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
-	    var input = e.target,
+		const input = e.target,
 	        list = input.getAttribute('list'),
 	        options = document.querySelectorAll('#' + list + ' option'),
 	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
@@ -333,8 +333,8 @@
 		    
 	    	hiddenInput.value = inputValue;
 		    
-		    for(var i = 0; i < options.length; i++) {
-		        var option = options[i];
+		    for(let i = 0; i < options.length; i++) {
+		    	const option = options[i];
 		        if(option.value === inputValue) {
 		        	hiddenInput.value = option.getAttribute('data-value');
 		        	document.querySelector("#formSelectCity").submit();
@@ -343,7 +343,7 @@
 		    }
 	});
 	document.querySelector('#idCommune-filter').addEventListener('focusout', function(e) {
-	    var input = e.target,
+		const input = e.target,
         list = input.getAttribute('list'),
         options = document.querySelectorAll('#' + list + ' option'),
         hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
@@ -360,7 +360,7 @@
 	// th-field broke the datalist work
 	document.querySelector('#idPark-filter').value=[[${editEntrance.namePark}]];
 	document.querySelector('#idPark-filter').addEventListener('input', function(e) {
-	    var input = e.target,
+		const input = e.target,
 	        list = input.getAttribute('list'),
 	        options = document.querySelectorAll('#' + list + ' option'),
 	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
@@ -373,8 +373,8 @@
         
 	    	hiddenInput.value = inputValue;
 		    
-		    for(var i = 0; i < options.length; i++) {
-		        var option = options[i];
+		    for(let i = 0; i < options.length; i++) {
+		    	const option = options[i];
 		        if(option.value === inputValue) {
 		        	hiddenInput.value = option.getAttribute('data-value');
 		        	document.querySelector("#formSelectPark").submit();
@@ -383,7 +383,7 @@
 		    }
 	});
 	document.querySelector('#idPark-filter').addEventListener('focusout', function(e) {
-	    var input = e.target,
+		const input = e.target,
         list = input.getAttribute('list'),
         options = document.querySelectorAll('#' + list + ' option'),
         hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
@@ -404,12 +404,12 @@
 	// MAP MANAGEMENT
 	
 	// point icons
-	var entranceIcon = L.icon({
+	const entranceIcon = L.icon({
 	    iconUrl: [[@{/mvc/static/images/marker-icon-entrance-1x.png}]]
 	    ,iconAnchor:   [12, 41] // point of the icon which will correspond to marker's location
 	    ,popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
 	});
-	var editEntranceIcon = L.icon({
+	const editEntranceIcon = L.icon({
 	    iconUrl: [[@{/mvc/static/images/marker-icon-parkEdit-1x.png}]]
 	    ,iconAnchor:   [12, 41] // point of the icon which will correspond to marker's location
 	    ,popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
@@ -419,25 +419,25 @@
 	
 	/////////////////////////////////////////////////////////////////////////
 	// map layers
-    var mapMinZoom=11;
-    var mapMaxZoom=19;
-    var layerEsriWorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    let mapMinZoom=11;
+    let mapMaxZoom=19;
+    const layerEsriWorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
     	name: 'Carte WorldStreetMap',
     	attribution: "ArcGIS World Street Map (Esri)",
         maxZoom: mapMaxZoom,
         minZoom: mapMinZoom
 	});
-	var layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    const layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
 	        attribution: 'Aut MEL',
 	        maxZoom: mapMaxZoom,
             minZoom: mapMinZoom
 	    });
-	var layerStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const layerStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	        attribution: 'Aut MEL',
 	        maxZoom: mapMaxZoom,
             minZoom: mapMinZoom
 	    });
-    var layerAeroIgnMap = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
+    const layerAeroIgnMap = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
 		name: 'Vues Aérienne IGN',
 		attribution: '&copy; <a href="https://geoservices.ign.fr/services-geoplateforme-diffusion">IGN GeoPortail</a>',
 		tileSize: 256,
@@ -454,23 +454,23 @@
    		
    	};
     const dataAutmel = L.layerGroup();
-    var dataLayers = {
+    const dataLayers = {
     	"Contours des parcs": dataAutmel
     };
     
     // Add an object to save markers
-    var markers = {};
+    const markers = {};
     
     // custom location on load
-    var locateWorkPlace= L.latLng(50.626419,3.0719121);
-    var mLng = document.getElementById("mapLongitude").value;
-    var mLat = document.getElementById("mapLatitude").value;
+    let locateWorkPlace= L.latLng(50.626419,3.0719121);
+    let mLng = document.getElementById("mapLongitude").value;
+    let mLat = document.getElementById("mapLatitude").value;
     if (mLng!="" && mLat!="") {
         locateWorkPlace = L.latLng(mLat, mLng);
     }
      
     
-    var isMap = L.map('mapid', {
+    const isMap = L.map('mapid', {
     	zoom: 16,
         layers: [ layerStreetMap, layerEsriWorldStreetMap, layerSatellite, layerAeroIgnMap]
     }).setView(locateWorkPlace);
@@ -534,7 +534,7 @@
                 "&idCommune="+document.querySelector('#idCommune').value;
             const sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/entrance/goto}]]+'?idPark=';
             if (feature.properties.name) {
-            	var parcEdit = "<p>"+feature.properties.name+"</p>";
+            	let parcEdit = "<p>"+feature.properties.name+"</p>";
                 if (feature.properties.id) {
                     parcEdit= "<p>"+ feature.properties.name + "<br /><a href='"+ sUrlEditPark + feature.properties.id + sUrlLocationPark +"' >Edit</a></p>";
                 }
@@ -552,7 +552,7 @@
         return gUrl;
     }
     
-    var geojsonAutmelLayer = null;
+    let geojsonAutmelLayer = null;
     // relead parks with map fit
     function loadParkShape() {
         // get corners
@@ -577,7 +577,7 @@
         if (geojsonAutmelLayer!==null) {
         	dataAutmel.removeLayer(geojsonAutmelLayer);
         }
-        var sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenOutlineByCorner}]]+'?'+sPos;
+        const sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenOutlineByCorner}]]+'?'+sPos;
         geojsonAutmelLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {onEachFeature: customOnEachFeatureDetail});
         dataAutmel.addLayer(geojsonAutmelLayer);
         
@@ -616,20 +616,20 @@
     }
     
     
-	var idPark = document.getElementById("idPark").value;
+    const idPark = document.getElementById("idPark").value;
 	if (!isEmpty(idPark) && idPark!='') {
-		var sUrlGeoEntrance= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones/entrance}]]+'?idPark='+idPark;
-		var geojsonEntranceLayer = new L.GeoJSON.AJAX(sUrlGeoEntrance, {onEachFeature: customOnEachFeature});
+		const sUrlGeoEntrance= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones/entrance}]]+'?idPark='+idPark;
+		const geojsonEntranceLayer = new L.GeoJSON.AJAX(sUrlGeoEntrance, {onEachFeature: customOnEachFeature});
 		
-        var sUrlGeoPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones/park}]]+'?idPark='+idPark;
-        var geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoPark, {onEachFeature: customOnEachFeature});
+		const sUrlGeoPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones/park}]]+'?idPark='+idPark;
+		const geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoPark, {onEachFeature: customOnEachFeature});
 		
 	}
 	
 	function toggleIsochrone() {
 		if (!isEmpty(idPark) && idPark!='') {
-			var showIso = document.getElementById("showIsochrone").checked;
-            var showEntrance = document.getElementById("showEntrance").checked;
+			const showIso = document.getElementById("showIsochrone").checked;
+			const showEntrance = document.getElementById("showEntrance").checked;
 			
 			if (showIso) {
 				if (showEntrance) {
@@ -647,7 +647,7 @@
 	}
 	
 	
-    var newMarker = null;
+    let newMarker = null;
     function addMarker(e){
         //markers["new1"] 
         if (newMarker===null) {
@@ -669,7 +669,7 @@
 	
 	/* switch between map and satellite view */
 	function switchMode(e) {
-		var mode = document.getElementById("mode").value;
+		const mode = document.getElementById("mode").value;
 		//console.log(document.getElementById("editEntranceTitle").innerText);
 		if (mode==="upd") {
 			document.getElementById("mode").value="add";
@@ -693,7 +693,7 @@
 	
     
     // park MARKER
-    var mPark = document.getElementById("name").value;
+    const mPark = document.getElementById("name").value;
     if (mPark!="") {
     	L.marker(locateWorkPlace).addTo(isMap)
     		.bindPopup(mPark)
@@ -701,25 +701,25 @@
     }
     
     // Entrance markers
-    var idPark = document.querySelector('#idPark').value;
-    var idEntrance = document.querySelector('#idEntrance').value;
+    //const idPark = document.querySelector('#idPark').value;
+    const idEntrance = document.querySelector('#idEntrance').value;
     const idParkRegex = /[0-9]/g;
     const idParkFound = idPark.match(idParkRegex);
     if (idParkFound) {
     	options = document.querySelectorAll('#idEntrance option');
        // console.log("options:"+options);
-    	for(var i = 1; i < options.length; i++) {
-	        var option = options[i];
+    	for(let i = 1; i < options.length; i++) {
+    		const option = options[i];
 	        
 	        lng = option.getAttribute('data-lng');
 	        lat = option.getAttribute('data-lat');
 	        txt = option.text;
 	        if (idEntrance==option.value) {
-		        var editMarker = L.marker(L.latLng(lat,lng), {icon:editEntranceIcon,draggable:true})
+	        	const editMarker = L.marker(L.latLng(lat,lng), {icon:editEntranceIcon,draggable:true})
 		        	.addTo(isMap)
 		        	.bindPopup(txt).openPopup();
 		        editMarker.on('dragend', function(event) {
-		        	  var latlng = event.target.getLatLng();
+		        	 const latlng = event.target.getLatLng();
 		        	  console.log(latlng.lat, latlng.lng)
 
 	        		  document.getElementById("entranceLng").value=latlng.lng;
