@@ -14,6 +14,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> {
 

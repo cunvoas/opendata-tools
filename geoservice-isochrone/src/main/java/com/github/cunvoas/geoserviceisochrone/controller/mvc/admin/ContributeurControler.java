@@ -32,6 +32,9 @@ import com.github.cunvoas.geoserviceisochrone.service.admin.ContributeurService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Page controler for contributors.
+ */
 @Controller
 @RequestMapping("/mvc/management/contrib")
 @Slf4j

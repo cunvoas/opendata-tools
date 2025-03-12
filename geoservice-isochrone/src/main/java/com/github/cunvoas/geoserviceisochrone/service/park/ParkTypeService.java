@@ -15,6 +15,9 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkTypeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
+/**
+ * Business Service impl.
+ */
 @Service
 public class ParkTypeService {
 	@Autowired

@@ -12,6 +12,9 @@ import jakarta.persistence.IdClass;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Model ParkAreaComputed.
+ */
 @Data
 @Entity(name = "park_area_computed")
 @IdClass(ParkAreaComputedId.class)

@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
+/**
+ * REsT COntroler for Cadastre.
+ */
 @RestController
 @RequestMapping("/map/cadastre")
 public class GeoJsonCadastreController {
@@ -22,6 +25,15 @@ public class GeoJsonCadastreController {
     @Autowired
     private GeoMapServiceV2 geoMapService;
     
+    /**
+     * 
+     * get Cadastre by area.
+     * @param swLat
+     * @param swLng
+     * @param neLat
+     * @param neLng
+     * @return
+     */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area")
     public GeoJsonRoot getCadastreByArea(
@@ -34,6 +46,11 @@ public class GeoJsonCadastreController {
     }
     
 
+    /**
+     * get Cadastre by comm2co.
+     * @param id
+     * @return
+     */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area/{id}")
     public GeoJsonRoot getCadastreByCom2Com(@PathVariable ("id")Long id) {
@@ -41,6 +58,11 @@ public class GeoJsonCadastreController {
 	}
     
 
+    /**
+     * get Cadastre by city.
+     * @param id
+     * @return
+     */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area/city/{id}")
     public GeoJsonRoot getCadastreByCity(@PathVariable ("id")Long id) {

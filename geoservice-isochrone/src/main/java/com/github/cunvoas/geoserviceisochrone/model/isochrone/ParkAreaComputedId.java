@@ -5,6 +5,9 @@ import java.io.Serializable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Id for Model ParkAreaComputed.
+ */
 @Data
 @EqualsAndHashCode(of = {"annee", "id"})
 public class ParkAreaComputedId implements Serializable {

@@ -30,6 +30,9 @@ import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadRefere
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
 
 
+/**
+ * Page controler for park list.
+ */
 @Controller
 @RequestMapping("/mvc/park/list")
 public class ParkListControler {

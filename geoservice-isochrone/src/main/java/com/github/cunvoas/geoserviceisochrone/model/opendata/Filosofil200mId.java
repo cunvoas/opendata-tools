@@ -2,6 +2,9 @@ package com.github.cunvoas.geoserviceisochrone.model.opendata;
 
 import java.io.Serializable;
 
+/**
+ * Id for Model Filosofil200m.
+ */
 public class Filosofil200mId implements Serializable {
 	
 	/**

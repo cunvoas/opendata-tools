@@ -24,6 +24,9 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
 import lombok.extern.slf4j.Slf4j;
 
 
+/**
+ * Page controler for park.
+ */
 @Controller
 @RequestMapping("/mvc/park")
 @Slf4j

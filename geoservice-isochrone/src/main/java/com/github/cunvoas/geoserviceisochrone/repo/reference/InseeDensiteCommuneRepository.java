@@ -5,6 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeDensiteCommune;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
-public interface InseeDensiteCommuneRepository extends JpaRepository<InseeDensiteCommune, String>{
+public interface InseeDensiteCommuneRepository extends JpaRepository<InseeDensiteCommune, String> {
 }

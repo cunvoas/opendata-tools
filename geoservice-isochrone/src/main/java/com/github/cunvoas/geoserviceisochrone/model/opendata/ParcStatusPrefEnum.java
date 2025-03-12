@@ -1,7 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.model.opendata;
 	
 /**
- * Source du parc.
+ * Enum Source du parc.
  */
 public enum ParcStatusPrefEnum {
 	NO_MATCH("NO_MATCH"), 	  // 0 no match with opendata park

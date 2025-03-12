@@ -21,6 +21,7 @@ import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationSecurit
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * Setup user auth.
  * @author cunvoas
  * @see https://security.stackexchange.com/questions/247936/since-gpus-have-gigabytes-of-memory-does-argon2id-need-to-use-gigabytes-of-memo
  * @see https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html
@@ -46,6 +47,12 @@ public class AuthenticationConfig {
 	    return new RequestContextListener();
 	} 
 
+	/**
+	 * Chain for auth or public.
+	 * @param http
+	 * @return
+	 * @throws Exception
+	 */
 	@Bean
 	@Order(1)                                                        
 	public SecurityFilterChain mvcFilterChain(HttpSecurity http) throws Exception {
@@ -76,6 +83,10 @@ public class AuthenticationConfig {
 	}
 
 
+	/**
+	 * provider for creds.
+	 * @return
+	 */
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
 		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -84,12 +95,19 @@ public class AuthenticationConfig {
 		return authProvider;
 	}
 
+	/**
+	 * Manager for auth.
+	 * @param config
+	 * @return
+	 * @throws Exception
+	 */
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
 	}
 
 	/**
+	 * Password encoder setup.
 	 * @see https://www.ory.sh/choose-recommended-argon2-parameters-password-hashing/
 	 */
 	@Bean

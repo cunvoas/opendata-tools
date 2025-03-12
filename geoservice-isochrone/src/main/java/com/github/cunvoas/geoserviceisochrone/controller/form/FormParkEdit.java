@@ -13,6 +13,9 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Form for Park page.
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class FormParkEdit extends AbstractFormLocate {

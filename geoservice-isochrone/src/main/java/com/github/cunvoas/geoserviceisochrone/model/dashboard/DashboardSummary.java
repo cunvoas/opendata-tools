@@ -5,6 +5,9 @@ import java.util.Date;
 
 import lombok.Data;
 
+/**
+ * DTO DashboardSummary.
+ */
 @Data
 public class DashboardSummary {
 

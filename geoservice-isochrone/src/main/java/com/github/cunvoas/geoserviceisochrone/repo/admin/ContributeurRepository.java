@@ -9,6 +9,9 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Association;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface ContributeurRepository extends JpaRepository<Contributeur, Long>{
     Optional<Contributeur> findByLogin(String login);

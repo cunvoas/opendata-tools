@@ -5,6 +5,9 @@ import java.util.Date;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * DTO for park list page.
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class FormParkListItem extends AbstractFormLocate{

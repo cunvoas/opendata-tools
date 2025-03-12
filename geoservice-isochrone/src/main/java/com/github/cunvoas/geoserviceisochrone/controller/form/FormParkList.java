@@ -7,6 +7,9 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Form for Park List page.
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class FormParkList extends AbstractFormLocate{

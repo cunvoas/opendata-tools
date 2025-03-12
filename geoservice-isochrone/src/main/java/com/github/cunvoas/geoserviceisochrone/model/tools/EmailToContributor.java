@@ -2,6 +2,9 @@ package com.github.cunvoas.geoserviceisochrone.model.tools;
 
 import lombok.Data;
 
+/**
+ * DTO EmailToContributor.
+ */
 @Data
 public class EmailToContributor {
 	

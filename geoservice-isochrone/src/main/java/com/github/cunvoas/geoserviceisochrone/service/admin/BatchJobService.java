@@ -33,6 +33,9 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV2;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Business Service impl.
+ */
 @Service
 @Slf4j
 public class BatchJobService {
@@ -148,7 +151,7 @@ public class BatchJobService {
 	}
 	
 	// every minutes
-	@Scheduled(fixedDelay = 5000, initialDelay = 10000)
+	@Scheduled(fixedDelay = 600000, initialDelay = 10000)
 	public void processCarres() {
 		log.error("processCarres at {}", DF.format(new Date()));
 		

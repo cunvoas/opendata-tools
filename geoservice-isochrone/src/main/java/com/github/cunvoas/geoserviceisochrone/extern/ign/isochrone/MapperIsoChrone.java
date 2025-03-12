@@ -18,6 +18,9 @@ import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.Dt
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoIsoChrone;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 
+/**
+ * mapper.
+ */
 @Component
 public class MapperIsoChrone {
 
@@ -47,7 +50,9 @@ public class MapperIsoChrone {
 			model.setEntrancePoint(point);
 			
 			List<Coordinate> shape = map(dto.getGeometry().getCoordinates());
-			Polygon polygon = factory.createPolygon(shape.toArray(Coordinate[]::new));
+//			Polygon polygon = factory.createPolygon(shape.toArray(Coordinate[]::new));
+			Polygon polygon = factory.createPolygon(shape.toArray(new Coordinate[0]));
+			
 			model.setPolygon(polygon);
 		}
 		

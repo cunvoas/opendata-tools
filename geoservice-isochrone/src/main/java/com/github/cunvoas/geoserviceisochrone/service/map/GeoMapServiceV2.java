@@ -66,6 +66,9 @@ import com.google.common.primitives.Ints;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Business Service impl.
+ */
 @Service
 @Slf4j
 public class GeoMapServiceV2 {
@@ -952,8 +955,9 @@ public class GeoMapServiceV2 {
 	    	coords.add( new Coordinate(x2,y1) );
 	    	coords.add( new Coordinate(x1,y1) );
 	    	
-	    	Coordinate[] array = coords.toArray(Coordinate[]::new);
-//	    	polygon= (Polygon)factory.createPolygon(array).getEnvelope();
+//	    	Coordinate[] array = coords.toArray(Coordinate[]::new);
+	    	Coordinate[] array = coords.toArray(new Coordinate[0]);
+
 	    	polygon= factory.createPolygon(array);
     	}
     	

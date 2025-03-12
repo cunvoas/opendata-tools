@@ -12,6 +12,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Model Association.
+ */
 @Data
 @EqualsAndHashCode(of = {"id"})
 @ToString(onlyExplicitlyIncluded = true)

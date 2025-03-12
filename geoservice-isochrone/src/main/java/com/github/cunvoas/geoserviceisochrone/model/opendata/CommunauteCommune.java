@@ -20,6 +20,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+/**
+ * Model CommunauteCommune.
+ */
 @Data
 @Entity(name = "adm_com2commune")
 @EqualsAndHashCode(of = {"id"})

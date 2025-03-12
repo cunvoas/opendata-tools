@@ -16,6 +16,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
 
 /**
+ * CSV Exporter.
  * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */

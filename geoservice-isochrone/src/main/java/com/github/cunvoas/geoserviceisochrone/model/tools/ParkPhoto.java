@@ -13,6 +13,9 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Model ParkPhoto.
+ */
 @Data
 @EqualsAndHashCode(of = {"id"})
 @Entity(name = "parc_photo")

@@ -5,6 +5,9 @@ import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * DTO for geojson Isochrone.
+ */
 @Data
 @EqualsAndHashCode(callSuper=false, onlyExplicitlyIncluded = true)
 public class IsochroneView extends GeoJsonProperty {

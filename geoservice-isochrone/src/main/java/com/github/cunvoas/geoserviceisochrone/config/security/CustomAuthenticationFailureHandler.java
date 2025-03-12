@@ -29,11 +29,11 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
     private LocaleResolver localeResolver;
 
     @Autowired
-    private HttpServletRequest request;
-
-    @Autowired
     private LoginAttemptService loginAttemptService;
 
+    /**
+     * Auth failure messages.
+     */
     @Override
     public void onAuthenticationFailure(final HttpServletRequest request, final HttpServletResponse response, final AuthenticationException exception) throws IOException, ServletException {
         setDefaultFailureUrl("/login?error=true");

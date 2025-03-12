@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 
 import lombok.Data;
 
+/**
+ * set config as variables.
+ */
 @Component
 @Data
 public class ApplicationBusinessProperties {
@@ -64,6 +67,10 @@ public class ApplicationBusinessProperties {
 	private String sitePublique;
 	
 
+	/**
+	 * get current year.
+	 * @return
+	 */
 	public Integer getDerniereAnnee() {
 		List<Integer> annes = List.of(inseeAnnees);
 		Integer annee=null;

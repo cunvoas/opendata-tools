@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
+ * Model InseeDensiteCommune.
  * Grille communale de densité.
  * @see https://www.insee.fr/fr/information/6439600
  */

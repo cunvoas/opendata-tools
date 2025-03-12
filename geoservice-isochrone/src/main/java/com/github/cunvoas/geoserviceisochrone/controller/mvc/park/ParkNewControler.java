@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -47,8 +46,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.dto.PhotoDto;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Controler for prefecture reverse and reintegration.
- * 
+ * Page controler for park (new and current impl).
  */
 @Controller
 @RequestMapping("/mvc/park/new")

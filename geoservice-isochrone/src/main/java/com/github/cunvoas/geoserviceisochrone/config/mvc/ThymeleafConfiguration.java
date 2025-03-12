@@ -10,13 +10,20 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
+/**
+ * Configuration for Thymeleaf.
+ */
 @Configuration
 @EnableWebMvc
 public class ThymeleafConfiguration  implements WebMvcConfigurer, ApplicationContextAware {
 
 	private ApplicationContext applicationContext=null;
 	
+	/**
+	 * inject app ctx.
+	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
@@ -26,6 +33,9 @@ public class ThymeleafConfiguration  implements WebMvcConfigurer, ApplicationCon
         super();
     }
 
+    /**
+     * set handlers mapping.
+     */
     @Override
     public void addResourceHandlers(final ResourceHandlerRegistry registry) {
         WebMvcConfigurer.super.addResourceHandlers(registry);
@@ -39,8 +49,9 @@ public class ThymeleafConfiguration  implements WebMvcConfigurer, ApplicationCon
     }
     
 	 /**
-     *  Message externalization/internationalization
-     */
+     *  Message externalization/internationalization.
+ 	 * @return
+ 	 */
  	@Bean
  	@Description("WebMvc Message Resolver")
  	public ResourceBundleMessageSource messageSource() {
@@ -50,12 +61,16 @@ public class ThymeleafConfiguration  implements WebMvcConfigurer, ApplicationCon
  	}
  	
 
-//	@Bean
-//	public LocaleChangeInterceptor localeChangeInterceptor() {
-//		LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
-//		localeChangeInterceptor.setParamName("lang");
-//		return localeChangeInterceptor;
-//	}
+	/**
+	 * Language change setup.
+	 * @return
+	 */
+	@Bean
+	public LocaleChangeInterceptor localeChangeInterceptor() {
+		LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
+		localeChangeInterceptor.setParamName("lang");
+		return localeChangeInterceptor;
+	}
 
 
 

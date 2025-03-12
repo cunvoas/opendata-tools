@@ -2,6 +2,9 @@ package com.github.cunvoas.geoserviceisochrone.extern.csv;
 
 import lombok.Data;
 
+/**
+ * DTO.
+ */
 @Data
 public class CsvParkGeomUpdate {
 	

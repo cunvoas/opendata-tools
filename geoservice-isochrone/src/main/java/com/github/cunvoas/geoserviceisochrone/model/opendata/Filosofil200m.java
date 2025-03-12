@@ -9,6 +9,9 @@ import jakarta.persistence.IdClass;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Model Filosofil200m.
+ */
 @Data
 @Entity(name = "filosofi_200m")
 @IdClass(Filosofil200mId.class)

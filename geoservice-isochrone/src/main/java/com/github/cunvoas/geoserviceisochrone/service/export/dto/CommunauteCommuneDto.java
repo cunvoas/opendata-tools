@@ -8,6 +8,9 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 
 import lombok.Data;
 
+/**
+ * DTO.
+ */
 @Data
 public class CommunauteCommuneDto {
 	
@@ -23,8 +26,13 @@ public class CommunauteCommuneDto {
 		} else if (!CollectionUtils.isEmpty(model.getCities())) {
 			
 			// min and max with inverse of extremum
-			double minX=180, maxX=-180, minY=90, maxY=-90;
-			double curX, curY;
+			double minX=180;
+			double maxX=-180;
+			double minY=90;
+			double maxY=-90;
+			// loop memory
+			double curX;
+			double curY;
 			
 			for (City city : model.getCities()) {
 				if (city.getCoordinate()!=null) {
@@ -43,6 +51,7 @@ public class CommunauteCommuneDto {
 					if (curY>maxY) {
 						maxY=curY;
 					}
+					
 					if (curY<minY) {
 						minY=curY;
 					}

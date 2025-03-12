@@ -5,6 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.dashboard.DashboardCache;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface DashboardCacheRepository extends JpaRepository<DashboardCache, String> {
 	

@@ -1,7 +1,5 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/dwyl/hapi-auth-jwt2/badge.svg?targetFile=package.json)](https://snyk.io/test/github/dwyl/hapi-auth-jwt2?targetFile=package.json)
-
 [![DeepSource](https://deepsource.io/gh/cunvoas/opendata-tools.svg/?label=active)](https://deepsource.io/gh/cunvoas/opendata-tools/?ref=repository-badge)
-
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/0a8911c0ee04464b83490f95d04c84cf)](https://app.codacy.com/gh/cunvoas/opendata-tools/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 # Résumé

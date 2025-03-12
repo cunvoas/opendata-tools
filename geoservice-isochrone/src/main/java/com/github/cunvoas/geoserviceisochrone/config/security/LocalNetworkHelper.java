@@ -5,6 +5,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * helper for local IPs specific check.
+ * @TODO
+ */
 public class LocalNetworkHelper {
 
 //	public static void main(String[] args) throws Exception {

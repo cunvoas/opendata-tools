@@ -4,6 +4,9 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 
 import lombok.Data;
 
+/**
+ * DTO.
+ */
 @Data
 public class CityDto {
 	

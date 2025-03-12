@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * Page controler for park export.
  * /mvc/park/exportForCheck?communeId=2878
  */
 @Controller

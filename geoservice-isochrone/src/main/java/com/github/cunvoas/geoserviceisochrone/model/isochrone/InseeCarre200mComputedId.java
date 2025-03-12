@@ -5,6 +5,9 @@ import java.io.Serializable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Id for model InseeCarre200mComputed.
+ */
 @Data
 @EqualsAndHashCode(of = {"annee", "idInspire"})
 public class InseeCarre200mComputedId implements Serializable {

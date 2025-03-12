@@ -16,6 +16,9 @@ import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
+/**
+ * REsT COntroler for park.
+ */
 @RestController
 @RequestMapping("/map/park")
 public class GeoJsonParkController {
@@ -28,6 +31,12 @@ public class GeoJsonParkController {
     private ApplicationBusinessProperties applicationBusinessProperties;
 
 
+    /**
+     * get isochrone by polygon.
+     * @param polygon
+     * @param annee
+     * @return
+     */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/parkByPolygon")
     public GeoJsonRoot getParkIsochroneByArea(@RequestParam("polygon") Polygon polygon, @RequestParam("annee") Integer annee) {
@@ -38,6 +47,15 @@ public class GeoJsonParkController {
     }
     
 
+    /**
+     * get isochrone by area.
+     * @param swLat
+     * @param swLng
+     * @param neLat
+     * @param neLng
+     * @param annee
+     * @return
+     */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area")
     public GeoJsonRoot getParkIsochroneByArea(
@@ -54,6 +72,15 @@ public class GeoJsonParkController {
     }
     
 
+    /**
+     * get park outline by area.
+     * @param swLat
+     * @param swLng
+     * @param neLat
+     * @param neLng
+     * @param annee
+     * @return
+     */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/outline")
     public GeoJsonRoot getParkOutlineByArea(
@@ -71,9 +98,16 @@ public class GeoJsonParkController {
     
 
 
+    /**
+     * get park by city.
+     * @param coords
+     * @param zoom
+     * @param annee
+     * @return
+     * @see https://gis.stackexchange.com/questions/284880/get-the-lat-lng-values-of-lines-polygons-drawn-by-leaflet-drawing-tools
+     */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/parkByCoordsZoom")
-    //https://gis.stackexchange.com/questions/284880/get-the-lat-lng-values-of-lines-polygons-drawn-by-leaflet-drawing-tools
     public GeoJsonRoot getCityPage(
     		@RequestParam("coords") String coords, 
     		@RequestParam("zoom") Integer zoom,

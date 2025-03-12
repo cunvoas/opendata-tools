@@ -17,6 +17,9 @@ import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.Dt
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * json parser.
+ */
 @Component
 @Slf4j
 public class DtoIsoChroneParser {

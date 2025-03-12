@@ -9,6 +9,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurAction;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface ContributeurActionRepository extends JpaRepository<ContributeurAction, Long>{
 	

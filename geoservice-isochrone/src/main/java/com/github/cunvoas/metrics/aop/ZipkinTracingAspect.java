@@ -8,6 +8,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+/**
+ * AOP for Zipkin monitoring.
+ */
 @Aspect
 @Component
 @ConditionalOnProperty(
@@ -21,6 +24,12 @@ public class ZipkinTracingAspect {
         this.observationRegistry = observationRegistry;
     }
 
+    /**
+     * Embrace method call.
+     * @param joinPoint
+     * @return
+     * @throws Throwable
+     */
     @Around("execution(* com.github.cunvoas.geoserviceisochrone.*.*(..))")
     public Object traceMethod(ProceedingJoinPoint joinPoint) throws Throwable {
         String methodName = joinPoint.getSignature().getName();

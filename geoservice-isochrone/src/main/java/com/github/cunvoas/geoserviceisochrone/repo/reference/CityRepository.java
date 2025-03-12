@@ -10,6 +10,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface CityRepository extends JpaRepository<City, Long>{
 

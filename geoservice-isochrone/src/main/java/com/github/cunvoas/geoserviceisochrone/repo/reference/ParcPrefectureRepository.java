@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 
 /**
+ * Spring JPA repository.
  * @see https://postgis.net/docs/ST_Distance.html
  */
 @Repository

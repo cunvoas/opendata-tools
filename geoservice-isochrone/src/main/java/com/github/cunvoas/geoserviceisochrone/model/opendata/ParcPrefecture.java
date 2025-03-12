@@ -19,6 +19,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
+ * Model ParcPrefecture.
  * structure for initial data from prefecture.
  * Must be qualified to be plenty usable
  */

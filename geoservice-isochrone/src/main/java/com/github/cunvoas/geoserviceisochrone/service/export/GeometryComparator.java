@@ -6,6 +6,9 @@ import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 
+/**
+ * Comparator for sort.
+ */
 public class GeometryComparator implements Comparator<Geometry> {
 
 	@Override

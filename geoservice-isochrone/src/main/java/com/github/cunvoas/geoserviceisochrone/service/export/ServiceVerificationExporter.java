@@ -14,6 +14,9 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.export.dto.ParkExportLine;
 
+/**
+ * Business Service impl.
+ */
 @Service
 public class ServiceVerificationExporter {
 	

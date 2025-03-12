@@ -12,6 +12,9 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.AssociationRepository;
 
+/**
+ * Business Service impl.
+ */
 @Service
 public class AssociationService {
 	

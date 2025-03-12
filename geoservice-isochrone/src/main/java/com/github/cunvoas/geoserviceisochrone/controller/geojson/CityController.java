@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
 
+/**
+ * REsT COntroler for city.
+ */
 @RestController
 @RequestMapping("/map/city")
 public class CityController {

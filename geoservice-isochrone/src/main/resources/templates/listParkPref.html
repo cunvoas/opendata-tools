@@ -163,7 +163,7 @@
 	// th-field broke the datalist work
 	document.querySelector('#idCommune-filter').value=[[${formParkList.nameCommune}]];
 	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
-	    var input = e.target,
+		const input = e.target,
 	        list = input.getAttribute('list'),
 	        options = document.querySelectorAll('#' + list + ' option'),
 	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
@@ -171,8 +171,8 @@
 		    
 	    	hiddenInput.value = inputValue;
 		    
-		    for(var i = 0; i < options.length; i++) {
-		        var option = options[i];
+		    for(let i = 0; i < options.length; i++) {
+		    	const option = options[i];
 		        if(option.value === inputValue) {
 		        	hiddenInput.value = option.getAttribute('data-value');
 		        	document.querySelector("#formSelectCity").submit();
@@ -181,7 +181,7 @@
 		    }
 	});
 	document.querySelector('#idCommune-filter').addEventListener('focusout', function(e) {
-	    var input = e.target,
+		const input = e.target,
         list = input.getAttribute('list'),
         options = document.querySelectorAll('#' + list + ' option'),
         hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),

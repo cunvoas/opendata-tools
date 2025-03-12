@@ -5,6 +5,9 @@ import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * DTO for geojson Park.
+ */
 @Data
 @EqualsAndHashCode(callSuper=false, onlyExplicitlyIncluded = true)
 public class ParkView extends GeoJsonProperty {

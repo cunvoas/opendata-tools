@@ -21,6 +21,9 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
 import com.github.cunvoas.geoserviceisochrone.service.admin.AssociationService;
 
 
+/**
+ * Page controler for association.
+ */
 @Controller
 @RequestMapping("/mvc/management/asso")
 public class AssociationControler {

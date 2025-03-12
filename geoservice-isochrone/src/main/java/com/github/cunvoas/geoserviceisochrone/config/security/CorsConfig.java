@@ -12,6 +12,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * CORS setup.
+ */
 @Configuration
 @EnableWebSecurity
 @Slf4j

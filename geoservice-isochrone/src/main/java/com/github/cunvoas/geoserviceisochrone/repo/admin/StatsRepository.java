@@ -5,6 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.admin.Stats;
 
+/**
+ * Spring JPA repository.
+ */
 @Repository
 public interface StatsRepository extends JpaRepository<Stats, Long>{
 }

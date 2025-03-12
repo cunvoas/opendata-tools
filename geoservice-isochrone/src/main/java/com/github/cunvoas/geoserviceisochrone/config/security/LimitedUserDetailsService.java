@@ -34,6 +34,9 @@ public class LimitedUserDetailsService  implements UserDetailsService {
     private LoginAttemptService loginAttemptService;
  
     
+    /**
+     * add timehack mitigation.
+     */
     private void mitigateTimeHack() {
     	Double d = Math.random()*timeHack/7;
     	Long time = timeHack+d.longValue();
@@ -44,6 +47,9 @@ public class LimitedUserDetailsService  implements UserDetailsService {
 		}
     }
     
+    /**
+     * get user from db.
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (loginAttemptService.isBlocked()) {

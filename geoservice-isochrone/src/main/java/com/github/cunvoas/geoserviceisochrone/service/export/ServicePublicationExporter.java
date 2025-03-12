@@ -35,6 +35,9 @@ import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Business Service impl.
+ */
 @Service
 @Slf4j
 public class ServicePublicationExporter {
@@ -156,7 +159,9 @@ public class ServicePublicationExporter {
 		lCoords.add( new Coordinate(maxX,minY) );
 		lCoords.add( new Coordinate(minX,minY) );
     	
-    	Coordinate[] coords = lCoords.toArray(Coordinate[]::new);
+//    	Coordinate[] coords = lCoords.toArray(Coordinate[]::new);
+    	Coordinate[] coords = lCoords.toArray(new Coordinate[0]);
+    	
 		
 		return (Polygon)factory.createPolygon(coords).getEnvelope();
 	}

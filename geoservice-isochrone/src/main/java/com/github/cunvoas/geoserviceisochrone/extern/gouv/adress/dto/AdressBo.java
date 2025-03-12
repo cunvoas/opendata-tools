@@ -5,6 +5,9 @@ import org.locationtech.jts.geom.Point;
 
 import lombok.Data;
 
+/**
+ * DTO.
+ */
 @Data
 public class AdressBo implements Comparable<AdressBo>{
 	

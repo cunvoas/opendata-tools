@@ -11,6 +11,9 @@ import jakarta.persistence.IdClass;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Model ComputeJob.
+ */
 @Data
 @EqualsAndHashCode(of = {"annee", "idInspire"})
 @Entity(name = "compute_job")

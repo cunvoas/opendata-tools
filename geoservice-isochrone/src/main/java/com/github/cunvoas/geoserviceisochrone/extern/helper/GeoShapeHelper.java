@@ -23,7 +23,7 @@ import org.locationtech.jts.util.GeometricShapeFactory;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
 
 /**
- * 
+ * Geometry helper.
  */
 public class GeoShapeHelper {
 
@@ -117,7 +117,9 @@ public class GeoShapeHelper {
 					coords.add(dtoCoord);
 				}
 			}
-			Coordinate[] array = coords.toArray(Coordinate[]::new);
+//			Coordinate[] array = coords.toArray(Coordinate[]::new);
+			Coordinate[] array = coords.toArray(new Coordinate[0]);
+			
 			polygon = (Polygon)factory.createPolygon(array).getEnvelope();
 		}
 		

@@ -28,6 +28,9 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
 
+/**
+ * Page controler for entrance.
+ */
 @Controller
 @RequestMapping("/mvc/entrance")
 public class EntranceControler {

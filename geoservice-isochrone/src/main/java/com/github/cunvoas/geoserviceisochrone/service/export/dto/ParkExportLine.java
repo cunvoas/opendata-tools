@@ -12,6 +12,9 @@ import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import lombok.Data;
 
+/**
+ * DTO.
+ */
 @Data
 public class ParkExportLine implements Comparable<ParkExportLine> {
 	

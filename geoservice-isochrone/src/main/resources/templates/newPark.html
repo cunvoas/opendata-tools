@@ -289,14 +289,14 @@
 	
 	<script th:inline="javascript">
 	function changeType() {
-		var slct = document.getElementById("typeId");
-		var optSlct = slct.options[slct.selectedIndex];
-		var dOms= optSlct.getAttribute('data-oms');
-		var dStrict= optSlct.getAttribute('data-strict');
+		const slct = document.getElementById("typeId");
+		const optSlct = slct.options[slct.selectedIndex];
+		const dOms= optSlct.getAttribute('data-oms');
+		const dStrict= optSlct.getAttribute('data-strict');
 		
 		console.log("changeType: oms="+dOms+", strict="+dStrict);
-		var radioOmsT = document.getElementById("omsT");
-		var radioOmsF = document.getElementById("omsF");
+		const radioOmsT = document.getElementById("omsT");
+		const radioOmsF = document.getElementById("omsF");
 		
 		if (dOms==='true') {
 			radioOmsT.checked=true;
@@ -317,7 +317,7 @@
 	
 
 	// point icons
-	var editEntranceIcon = L.icon({
+	const editEntranceIcon = L.icon({
 	    iconUrl: [[@{/mvc/static/images/marker-icon-parkEdit-1x.png}]]
 	    ,iconAnchor:   [12, 41] // point of the icon which will correspond to marker's location
 	    ,popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
@@ -328,7 +328,7 @@
 	// th-field broke the datalist work
 	document.querySelector('#idCommune-filter').value=[[${newPark.nameCommune}]];
 	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
-	    var input = e.target,
+	    const input = e.target,
 	        list = input.getAttribute('list'),
 	        options = document.querySelectorAll('#' + list + ' option'),
 	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
@@ -336,8 +336,8 @@
 		    
 	    	hiddenInput.value = inputValue;
 		    
-		    for(var i = 0; i < options.length; i++) {
-		        var option = options[i];
+		    for(let i = 0; i < options.length; i++) {
+		        const option = options[i];
 		        if(option.value === inputValue) {
 		        	hiddenInput.value = option.getAttribute('data-value');
 		        	document.querySelector("#formSelectCity").submit();
@@ -347,7 +347,7 @@
 	});
 	
 	document.querySelector('#idCommune-filter').addEventListener('focusout', function(e) {
-	    var input = e.target,
+	    const input = e.target,
         list = input.getAttribute('list'),
         options = document.querySelectorAll('#' + list + ' option'),
         hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
@@ -358,7 +358,7 @@
 	    }
 	});
 
-	var photoIcon = L.icon({
+	const photoIcon = L.icon({
 	    iconUrl: [[@{/mvc/static/images/photo_picto.png}]]
 		,iconSize: [50, 50]
 	    ,iconAnchor:   [5, 5] // point of the icon which will correspond to marker's location
@@ -370,9 +370,9 @@
     function locatePlace(lat, lon) {
     	return L.latLng(lat, lon);
     }
-    var locateWorkPlace= L.latLng(50.626419,3.0719121);
-    var mLng = document.getElementById("mapLng").value;
-    var mLat = document.getElementById("mapLat").value;
+    let locateWorkPlace= L.latLng(50.626419,3.0719121);
+    const mLng = document.getElementById("mapLng").value;
+    const mLat = document.getElementById("mapLat").value;
     if (mLng!="" && mLat!="") {
     	locateWorkPlace = locatePlace(mLat, mLng);
     }
@@ -380,30 +380,30 @@
 
 
     // map layers
-    var mapMinZoom=11;
-    var mapMaxZoom=19;
+    let mapMinZoom=11;
+    let mapMaxZoom=19;
     
     // https://leaflet-extras.github.io/leaflet-providers/preview/
     // fonds de carte
-    var layerEsriWorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    const layerEsriWorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
 	    	name: 'Carte WorldStreetMap',
 	    	attribution: "ArcGIS World Street Map (Esri)",
 	        maxZoom: mapMaxZoom,
 	        minZoom: mapMinZoom
     });
-     var layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+     const layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
 			name: "Satellite ArcGisOnline",
 			attribution: '&copy; <a href="https://www.arcgis.com/">ArcGisOnline</a>',
 			maxZoom: mapMaxZoom,
             minZoom: mapMinZoom
         });
-    var layerStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const layerStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			name: 'Carte OpenStreetMap',
 			attribution: '&copy; <a target="_blank" rel="noopener noreferrer" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 			maxZoom: mapMaxZoom,
 			minZoom: mapMinZoom
         });
-    var layerAeroIgnMap = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
+    const layerAeroIgnMap = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
 			name: 'Vues Aérienne IGN',
 			attribution: '&copy; <a href="https://geoservices.ign.fr/services-geoplateforme-diffusion">IGN GeoPortail</a>',
 			tileSize: 256,
@@ -430,7 +430,7 @@
     	"Contours des parcs": dataAutmel
     };
     
-    var editMap = L.map('mapid', {
+    const editMap = L.map('mapid', {
     	zoom: 16,
         layers: [ layerStreetMap, layerEsriWorldStreetMap, layerSatellite, layerAeroIgnMap]
     }).setView(locateWorkPlace);
@@ -444,8 +444,8 @@
     const idParkRegex = /[0-9]/g;
     const idParkFound = idPark.match(idParkRegex);
     if (mLng!="" && mLat!="" && idParkFound) {
-    	var txt = document.querySelector('#name').value;
-    	var editMarker = L.marker(L.latLng(mLat,mLng), {icon:editEntranceIcon,draggable:false}).addTo(editMap)
+    	const txt = document.querySelector('#name').value;
+    	const editMarker = L.marker(L.latLng(mLat,mLng), {icon:editEntranceIcon,draggable:false}).addTo(editMap)
     		.bindPopup(txt).openPopup();
     }
     
@@ -467,7 +467,7 @@
         });
         
         if (feature.properties.name) {
-            var parcEdit = "<p>"+feature.properties.name+"</p>";
+            const parcEdit = "<p>"+feature.properties.name+"</p>";
             layer.bindPopup(parcEdit);
         }
         
@@ -530,7 +530,7 @@
 
         const sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/park/new/check}]]+'?idPark=';
         if (feature.properties.name) {
-        	var parcEdit = "<p>"+feature.properties.name+"</p>";
+        	let parcEdit = "<p>"+feature.properties.name+"</p>";
             if (feature.properties.id) {
                 parcEdit= "<p>"+ feature.properties.name + "<br /><a href='"+ sUrlEditPark + feature.properties.id +"' >Edit</a></p>";
             }
@@ -557,9 +557,9 @@
     	// check function fnParkPrefClicked(feat) {k is idParcJardin is null
     	
  		manageLocationDisabled();
- 		var props = feat.properties;
- 		var geom = feat.geometry;
-        var strPoly = JSON.stringify(geom);
+ 		const props = feat.properties;
+ 		const geom = feat.geometry;
+        const strPoly = JSON.stringify(geom);
         
         const curIdPark = document.getElementById("idPark").value;
         const curHadGeometry = document.getElementById("hadGeometry").value;
@@ -571,8 +571,8 @@
    				(curHadGeometry==="false" || curHadGeometry==="")
     		   ) {
     			
-    			var msg ="voulez vous recopier le détourage (bleu) du parc?";
-    			let choice=confirm( msg );
+    			const msg ="voulez vous recopier le détourage (bleu) du parc?";
+    			const choice=confirm( msg );
                 if (choice) {
                     document.getElementById("sGeometry").value=strPoly;
                     document.getElementById("etatAction").value="add";
@@ -641,9 +641,9 @@
     }
 
     
-    var geojsonPrefLayer = null;
-    var geojsonCadastreLayer = null;
-    var geojsonParkLayer = null;
+    let geojsonPrefLayer = null;
+    let geojsonCadastreLayer = null;
+    let geojsonParkLayer = null;
     // relead parks with map fit
     function loadPrefParks() {
         
@@ -668,7 +668,7 @@
         if (geojsonPrefLayer!==null) {
         	dataPrefecture.removeLayer(geojsonPrefLayer);
         }
-        var sUrlGeoPref= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkPrefectureByCorner}]]+'?'+sPos;
+        const sUrlGeoPref= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkPrefectureByCorner}]]+'?'+sPos;
         geojsonPrefLayer = new L.GeoJSON.AJAX(sUrlGeoPref, {onEachFeature: customOnEachFeaturePref});
         //geojsonPrefLayer.addTo(dataPrefecture);
         dataPrefecture.addLayer(geojsonPrefLayer);
@@ -677,13 +677,13 @@
         if (geojsonParkLayer!==null) {
         	dataAutmel.removeLayer(geojsonParkLayer);
         }
-        var sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenOutlineByCorner}]]+'?'+sPos;
+        const sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenOutlineByCorner}]]+'?'+sPos;
         geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {
         	   
         	   pointToLayer: function(feature, latlng) {
         		   if (feature.properties.name) {
 	        		   const sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/park/new/check}]]+'?idPark=';
-	        	       var parcEdit = "<p>"+feature.properties.name+"</p>";
+	        	       let parcEdit = "<p>"+feature.properties.name+"</p>";
 	       	            if (feature.properties.id) {
 	       	                parcEdit= parcEdit +"<p><a href='"+ sUrlEditPark + feature.properties.id +"' >Edit</a>&nbsp(contour non défini)</p>";
 	       	            }
@@ -702,7 +702,7 @@
         if (geojsonCadastreLayer!==null) {
         	dataCadastre.removeLayer(geojsonCadastreLayer);
         }
-        var sUrlGeoCadastre= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/cadastreByCorner}]]+'?'+sPos;
+        const sUrlGeoCadastre= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/cadastreByCorner}]]+'?'+sPos;
         geojsonCadastreLayer = new L.GeoJSON.AJAX(sUrlGeoCadastre, {onEachFeature: customOnEachFeatureCadastre});
         dataCadastre.addLayer(geojsonCadastreLayer);
         */
@@ -732,7 +732,7 @@
         	    console.log(e);
 
                 self_drawn = editMap.pm.getGeomanDrawLayers(true);
-                var strPoly = JSON.stringify(self_drawn.toGeoJSON());
+                const strPoly = JSON.stringify(self_drawn.toGeoJSON());
                 document.getElementById("sGeometry").value=strPoly;
                 document.getElementById("etatAction").value="edit";
                 
@@ -749,7 +749,7 @@
             document.getElementById("etatAction").value="new";
             
             self_drawn = editMap.pm.getGeomanDrawLayers(true);
-            var strPoly = JSON.stringify(self_drawn.toGeoJSON());
+            const strPoly = JSON.stringify(self_drawn.toGeoJSON());
             console.log(strPoly);
             document.getElementById("sGeometry").value=strPoly;
             
@@ -760,11 +760,11 @@
         // works! event after modify pref poly
         geojsonPrefLayer.on('pm:change', function (e) {
             console.log("pm:change ");
-              var layerToDraw = e.layer;   
+              const layerToDraw = e.layer;   
               console.log(layerToDraw);
               document.getElementById("etatAction").value="change";
               
-              var strPoly = JSON.stringify(layerToDraw.toGeoJSON());
+              const strPoly = JSON.stringify(layerToDraw.toGeoJSON());
               document.getElementById("sGeometry").value=strPoly;
               //want to check here whether the layerToDraw is valid
               //features.addLayer(layerToDraw);
@@ -773,11 +773,11 @@
         // works! event after modify autmel park poly
         geojsonParkLayer.on('pm:change', function (e) {
             console.log("pm:change ");
-              var layerToDraw = e.layer;   
+              const layerToDraw = e.layer;   
               console.log(layerToDraw);
               document.getElementById("etatAction").value="change";
               
-              var strPoly = JSON.stringify(layerToDraw.toGeoJSON());
+              const strPoly = JSON.stringify(layerToDraw.toGeoJSON());
               document.getElementById("sGeometry").value=strPoly;
               //want to check here whether the layerToDraw is valid
               //features.addLayer(layerToDraw);
@@ -829,9 +829,9 @@
 
     
     function presave() {
-    	var strPoly = JSON.stringify(L.PM.Utils.findLayers(map)[0].toGeoJSON());
+    	const strPoly = JSON.stringify(L.PM.Utils.findLayers(map)[0].toGeoJSON());
     }
-    var action_mode=null
+    let action_mode=null
     function manageCreateDisabled() {
     	
     	if (document.getElementById("idPark").value!=="") {
@@ -839,7 +839,7 @@
 		    			document.getElementById("name").value +
 		    			[[#{park.new.confirmQuestion2}]] + "\n\n" +
 		    			[[#{park.new.confirmYesNo}]] ;
-    		let choice=confirm( msg );
+    		const choice=confirm( msg );
     		if (!choice) {
     			return;
     		}
@@ -847,12 +847,12 @@
     	
     	action_mode = "CREATE";
     	document.getElementById("fsEditPark").disabled = false;
-    	var objBtnNew=document.getElementById("btnNew");
+    	const objBtnNew=document.getElementById("btnNew");
     	objBtnNew.classList.remove('btn-outline-secondary');
     	objBtnNew.classList.remove('btn-outline-success');
     	objBtnNew.classList.add('btn-success');
 
-    	var objBtnUpdate=document.getElementById("btnUpdate");
+    	const objBtnUpdate=document.getElementById("btnUpdate");
     	objBtnUpdate.classList.remove('btn-outline-secondary');
     	objBtnUpdate.classList.remove('btn-outline-success');
     	objBtnUpdate.classList.add('btn-outline-secondary');
@@ -885,11 +885,11 @@
     	}
     	action_mode = "UPDATE";
     	document.getElementById("fsEditPark").disabled = false;
-    	var objBtnUpdate=document.getElementById("btnUpdate");
+    	const objBtnUpdate=document.getElementById("btnUpdate");
     	objBtnUpdate.classList.remove('btn-outline-success');
     	objBtnUpdate.classList.add('btn-success');
 
-    	var objBtnNew=document.getElementById("btnNew");
+    	const objBtnNew=document.getElementById("btnNew");
     	objBtnNew.classList.remove('btn-outline-success');
     	objBtnNew.classList.add('btn-outline-secondary');
     }
@@ -898,18 +898,18 @@
     }
     
     function savePark() {
-    	var hasError=false;
+    	let hasError=false;
     	console.log("savePark");
     	// TODO continues
  	    if (document.getElementById("id").value==="" && document.getElementById("sGeometry").value==="") {
  	    	hasError=true;
- 	    	var item=document.getElementById("blkName");
+ 	    	const item=document.getElementById("blkName");
  	    	objBtnNew.classList.add("has-error");
     	}
     	
     	if (document.getElementById("id").value==="" && document.getElementById("sGeometry").value==="") {
     		hasError=true;
- 	    	var item=document.getElementById("blkMap");
+ 	    	const item=document.getElementById("blkMap");
  	    	objBtnNew.classList.add("has-error");
     	}
     	
@@ -919,7 +919,7 @@
     	}
     	
     	document.getElementById("saveParkSpinner").style = "display:block;";
-    	var objBtnSave=document.getElementById("btnSave");
+    	const objBtnSave=document.getElementById("btnSave");
     	objBtnSave.classList.remove('btn-outline-warning');
     	objBtnSave.classList.add('btn-warning');
     	
@@ -975,13 +975,13 @@
     	   		 minimumInputLength: 3,
     	         url: function (params) {
     	             console.log("change adresse select2");
-    	             var idCommune=document.getElementById('idCommune');
-    	             // var idCity = idCommune.options[idRegion.selectedIndex].value;
-    	             var idCity = idCommune.value;
+    	             const idCommune=document.getElementById('idCommune');
+    	             // const idCity = idCommune.options[idRegion.selectedIndex].value;
+    	             const idCity = idCommune.value;
     	             console.log("idCity"+idCity);
     	             
-    	             //var search = srcAdress.options[srcAdress.selectedIndex].value;
-    	             var search = params.term;
+    	             //const search = srcAdress.options[srcAdress.selectedIndex].value;
+    	             const search = params.term;
     	             
     	             console.log('adress?idCity='+ idCity +'&q='+ search);
     	             return  [[@{/mvc/ajax/dropdown/search_adress}]] +'?idCity='+ idCity +'&q='+search;//+'&q1='+ params.term;
@@ -1007,9 +1007,9 @@
 	
         $('#srcAdress').on("change", function(e) { 
             //locate on the adress
-            var selectedSelect2OptionSource = $("#srcAdress :selected");
-        	var lon = selectedSelect2OptionSource.attr('data-lon');
-        	var lat = selectedSelect2OptionSource.attr('data-lat');
+            const selectedSelect2OptionSource = $("#srcAdress :selected");
+        	const lon = selectedSelect2OptionSource.attr('data-lon');
+        	const lat = selectedSelect2OptionSource.attr('data-lat');
         	
         	// feedback on form
             document.getElementById("mapLng").value=lon;
@@ -1048,12 +1048,12 @@
 
  // prévalidation du fichier d'upload (type, conhérence, exif)
  function fileValidation() {
-     var fileInput =  document.getElementById('fileupload');
-     var filePath = fileInput.value;
+     const fileInput =  document.getElementById('fileupload');
+     const filePath = fileInput.value;
      
      // Allowing file type
-     //var allowedExtensions =  /(\.jpg|\.jpeg|\.png|\.gif)$/i;
-     var allowedExtensions =  /(\.jpg|\.jpeg)$/i;
+     //const allowedExtensions =  /(\.jpg|\.jpeg|\.png|\.gif)$/i;
+     const allowedExtensions =  /(\.jpg|\.jpeg)$/i;
      if (!allowedExtensions.exec(filePath)) {
     	 //console.log("fichier invalide");
          alert("Le fichier n'est pas une photo.");
@@ -1063,21 +1063,21 @@
      } else  {
          // Image preview
          if (fileInput.files && fileInput.files[0]) {
-        	 var blob = fileInput.files[0]; // See step 1 above
-        	 var extType=blob.type;
+        	 const blob = fileInput.files[0]; // See step 1 above
+        	 const extType=blob.type;
         	 //console.log("extType="+extType);
 
-        	 var fileReader = new FileReader();
+        	 const fileReader = new FileReader();
         	 fileReader.onloadend = function(e) {
-		 	   var arr = (new Uint8Array(e.target.result)).subarray(0, 4);
-		 	   var header = "";
-		 	   for(var i = 0; i < arr.length; i++) {
+		 	   const arr = (new Uint8Array(e.target.result)).subarray(0, 4);
+		 	   let header = "";
+		 	   for(let i = 0; i < arr.length; i++) {
 		 	      header += arr[i].toString(16);
 		 	   }
 		 	   //console.log("header="+header);
 		 	   
 		 	   // Check the file signature against known types
-		  	  var realType="unknown";
+		  	  let realType="unknown";
 		 	  switch (header) {
 		 	    case "89504e47":
 		 	    	realType = "image/png";
@@ -1107,11 +1107,11 @@
 					return false;
 				} else if (extType===realType) {
 					//console.log("Le format du fichier ne correspond pas à l'extention.");
-					var chkLoc=false;
+					let chkLoc=false;
 					
 					EXIF.getData(blob, function(chkLoc) {
-				        var extLat = EXIF.getTag(this, "GPSLatitude");
-				        var extLon = EXIF.getTag(this, "GPSLongitude");
+				        const extLat = EXIF.getTag(this, "GPSLatitude");
+				        const extLon = EXIF.getTag(this, "GPSLongitude");
 				        console.log(extLat);
 				        console.log(extLon);
 				        if (!extLat && !extLon) {
@@ -1122,18 +1122,18 @@
 				        	chkLoc= true;
 				        	
 				        	// get latitude from exif data and calculate latitude decimal
-				            var latDegree = extLat[0].numerator;
-				            var latMinute = extLat[1].numerator;
-				            var latSecond = extLat[2].numerator;
-				            var latDirection = EXIF.getTag(this, "GPSLatitudeRef");
-				            var latFinal = ConvertDMSToDD(latDegree, latMinute, latSecond, latDirection);
+				            const latDegree = extLat[0].numerator;
+				            const latMinute = extLat[1].numerator;
+				            const latSecond = extLat[2].numerator;
+				            const latDirection = EXIF.getTag(this, "GPSLatitudeRef");
+				            const latFinal = ConvertDMSToDD(latDegree, latMinute, latSecond, latDirection);
 				            
 				            // get longitude from exif data and calculate longitude decimal
-				            var lonDegree = extLon[0].numerator;
-				            var lonMinute = extLon[1].numerator;
-				            var lonSecond = extLon[2].numerator;
-				            var lonDirection = EXIF.getTag(this, "GPSLongitudeRef");
-				            var lonFinal = ConvertDMSToDD(lonDegree, lonMinute, lonSecond, lonDirection);
+				            const lonDegree = extLon[0].numerator;
+				            const lonMinute = extLon[1].numerator;
+				            const lonSecond = extLon[2].numerator;
+				            const lonDirection = EXIF.getTag(this, "GPSLongitudeRef");
+				            const lonFinal = ConvertDMSToDD(lonDegree, lonMinute, lonSecond, lonDirection);
 				            
 				            // centrage sur la carte
 				            locateWorkPlace=locatePlace(latFinal, lonFinal);
@@ -1153,7 +1153,7 @@
 				    });
 					
 					/*
-		        	 var previsuReader = new FileReader();
+		        	 const previsuReader = new FileReader();
 		        	 previsuReader.onloadend = function(e) {
 		        		 document.getElementById('imagePreview').innerHTML = '<img width="300" height="200" src="'+ blob +'"/>';
 		        	 }

@@ -12,7 +12,9 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
+/**
+ * Model Stats.
+ */
 @Data
 @EqualsAndHashCode(of = {"id"})
 @Entity(name = "adm_activity_stats")

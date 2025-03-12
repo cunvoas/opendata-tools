@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+/**
+ * Helper for BigDecimal.
+ */
 public class BigDecimalHelper {
 
 	public static BigDecimal integerFromDouble(Double d) {

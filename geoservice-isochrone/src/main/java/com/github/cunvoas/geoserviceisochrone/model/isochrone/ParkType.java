@@ -7,7 +7,7 @@ import jakarta.persistence.Transient;
 import lombok.Data;
 
 /**
- * Type od park.
+ * Model ParkType.
  * translations are in messages.propoerties, key park.type.*
  */
 @Data

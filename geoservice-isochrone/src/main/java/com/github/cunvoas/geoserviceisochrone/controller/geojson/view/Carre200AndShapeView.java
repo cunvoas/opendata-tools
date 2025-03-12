@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 
+/**
+ * DTO for geojson INSEE.
+ */
 @Data
 @EqualsAndHashCode(callSuper=false, onlyExplicitlyIncluded = true)
 public class Carre200AndShapeView extends GeoJsonProperty {

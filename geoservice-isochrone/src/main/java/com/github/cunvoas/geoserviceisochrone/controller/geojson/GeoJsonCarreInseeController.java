@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
+/**
+ * REsT Controler for Insee.
+ */
 @RestController
 @RequestMapping("/map/insee")
 public class GeoJsonCarreInseeController {
@@ -19,6 +22,15 @@ public class GeoJsonCarreInseeController {
     private GeoMapServiceV2 inseeCarre200mService;
 
 
+    /**
+     * get insee by area.
+     * @param swLat
+     * @param swLng
+     * @param neLat
+     * @param neLng
+     * @param annee
+     * @return
+     */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/carre200m/area")
     public GeoJsonRoot getCarreByArea(
@@ -36,6 +48,12 @@ public class GeoJsonCarreInseeController {
     }
 
 
+    /**
+     * get insee by polygon.
+     * @param polygon
+     * @param annee
+     * @return
+     */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/carre200m/polygon")
     public GeoJsonRoot getCarreByArea(@RequestParam("polygon") Polygon polygon, @RequestParam("annee") Integer annee) {
