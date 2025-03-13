@@ -49,6 +49,12 @@ public class EntranceControler {
 
 	
 	
+	/**
+	 * manage population then get page.
+	 * @param form form
+	 * @param model form
+	 * @return page name
+	 */
 	@GetMapping
 	public String getForm(@ModelAttribute FormParkEntrance form, Model model) {
 
@@ -57,6 +63,16 @@ public class EntranceControler {
 		return formName;
 	}
 	
+	/**
+	 * redirect park page.
+	 * @param idRegion region id
+	 * @param idComm2Co com2co id
+	 * @param idCommune city id
+	 * @param idPark park id
+	 * @param form form 
+	 * @return page name
+	 * @return page with population
+	 */
 	@GetMapping("/goto")
 	public String gotoEntrance(
 			@RequestParam(value="idRegion", required = false) Long idRegion, 
@@ -89,6 +105,11 @@ public class EntranceControler {
 		return getForm(form, model);
 	}
 
+	/**
+	 * model population.
+	 * @param model form
+	 * @param form form
+	 */
 	protected void populateModel(Model model, FormParkEntrance form) {
 		model.addAttribute(formName, form);
 		model.addAttribute("regions", form.getRegions());
@@ -99,6 +120,11 @@ public class EntranceControler {
 		model.addAttribute("parkEntranceDetail", form.getParkEntranceDetail());
 	}
 	
+	/**
+	 * form population.
+	 * @param form form
+	 * @return form
+	 */
 	protected FormParkEntrance populateForm( FormParkEntrance form) {
 		if (form==null || form.getIdRegion()==null) {
 			form = new FormParkEntrance();
@@ -174,10 +200,20 @@ public class EntranceControler {
 	
 
 	//SELECT Management
+	/**
+	 * get regions.
+	 * @return list
+	 */
 	@GetMapping("/region")
 	public List<Region> getRegion(){
 		return serviceReadReferences.getRegion();
 	}
+	/**
+	 * select region
+	 * @param form form
+	 * @param model form
+	 * @return page with population
+	 */
 	@PostMapping("/region")
 	public String changeRegion(@ModelAttribute FormParkEntrance form, Model model) {
 		form.setIdCommunauteDeCommunes(null);
@@ -185,6 +221,12 @@ public class EntranceControler {
 		return getForm(form, model);
 	}
 	
+	/**
+	 * get com2co list.
+	 * @param id region
+	 * @param txt search
+	 * @return list
+	 */
 	@GetMapping("/comm2co")
 	public List<CommunauteCommune> getCommunauteCommuneByRegion(@RequestParam("regionId") Long id, @RequestParam("txt") String txt){
 		
@@ -206,6 +248,12 @@ public class EntranceControler {
 		}
 	}
 	
+	/**
+	 * select com2co.
+	 * @param form form
+	 * @param model form
+	 * @return page with population
+	 */
 	@PostMapping("/commDeCo")
 	public String changeCommunauteDeCommune(@ModelAttribute FormParkEntrance form, Model model) {
 		form.setIdCommune(null);
@@ -216,6 +264,12 @@ public class EntranceControler {
 		return getForm(form, model);
 	}
 	
+	/**
+	 * select city 
+	 * @param form form
+	 * @param model form
+	 * @return page with population
+	 */
 	@PostMapping("/city")
 	public String changeCity(@ModelAttribute FormParkEntrance form, Model model) {
 		form.setIdPark(null);
@@ -225,6 +279,12 @@ public class EntranceControler {
 		return getForm(form, model);
 	}
 	
+	/**
+	 * select park.
+	 * @param form form
+	 * @param model form
+	 * @return page with population
+	 */
 	@PostMapping("/park")
 	public String changePark(@ModelAttribute FormParkEntrance form, Model model) {
 		form.setIdEntrance(null);
@@ -233,11 +293,23 @@ public class EntranceControler {
 		return getForm(form, model);
 	}
 
+	/**
+	 * select entrance
+	 * @param form form
+	 * @param model form
+	 * @return page with population
+	 */
 	@PostMapping("/entrance")
 	public String changeEntrance(@ModelAttribute FormParkEntrance form, Model model) {
 		return getForm(form, model);
 	}
 	
+	/**
+	 * compute isochrone merge.
+	 * @param formDetail form
+	 * @param model form
+	 * @return page with population
+	 */
 	@PostMapping("/mergeIsochrone")
 	public String mergeIsochrone(@ModelAttribute FormParkEntranceDetail formDetail, Model model) {
 		// rebuild parent form context
@@ -251,6 +323,12 @@ public class EntranceControler {
 	}
 	
 	
+	/**
+	 * save entrance.
+	 * @param formDetail form
+	 * @param model form
+	 * @return page with population
+	 */
 	@PostMapping("/editEntrance")
 	public String saveEntrance(@ModelAttribute FormParkEntranceDetail formDetail, Model model) {
 		// rebuild parent form context
@@ -292,6 +370,12 @@ public class EntranceControler {
 		return getForm(form, model);
 	}
 	
+	/**
+	 * get cities.
+	 * @param id com2co
+	 * @param txt search
+	 * @return list
+	 */
 	@GetMapping("/city")
 	public List<City> getCityByCommunauteCommune(@RequestParam("comm2coId") Long id, @RequestParam("txt") String txt){
 		List<City> cities = serviceReadReferences.getCityByCommunauteCommuneId(id);

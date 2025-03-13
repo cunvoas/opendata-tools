@@ -392,7 +392,7 @@ public class GeoShapeHelper {
 			
 			// controle polygon fermé
 			// si pas fermé, on ajoute le 1er pour le fermer
-			if (i==work.length-1 && pointXY!=memo1st) {
+			if (i==work.length-1 && !pointXY.equals(memo1st)) {
 				ret.append(", ").append(memo1st);
 			}
 		}

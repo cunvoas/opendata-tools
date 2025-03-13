@@ -14,8 +14,18 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.Association;
  */
 @Repository
 public interface AssociationRepository extends JpaRepository<Association, Long>{
+	
+    /**
+     * findByNom.
+     * @param nom Association
+     * @return opt Association
+     */
     Optional<Association> findByNom(String nom);
     
+    /**
+     * findAllOrderByNom.
+     * @return list Association
+     */
     @Query(value ="select * from adm_asso a order by a.nom" , nativeQuery = true)
     List<Association> findAllOrderByNom();
 }

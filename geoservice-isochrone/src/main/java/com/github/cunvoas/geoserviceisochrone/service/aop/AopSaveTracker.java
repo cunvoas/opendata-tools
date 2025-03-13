@@ -49,15 +49,17 @@ public class AopSaveTracker {
     private ContributeurAction extractArg(JoinPoint joinPoint) {
     	int pos=0;
     	ContributeurAction ca =new ContributeurAction();
-    	if (!Arrays.isNullOrEmpty(joinPoint.getArgs())) {
-    		if (joinPoint.getArgs()[pos] instanceof FormParkEntranceDetail) {
+    	
+    	if (!Arrays.isNullOrEmpty(joinPoint.getArgs())
+    		&& joinPoint.getArgs()[pos] instanceof FormParkEntranceDetail) {
+    		
     			FormParkEntranceDetail frm = (FormParkEntranceDetail)joinPoint.getArgs()[pos] ;
     			if (frm.getEntranceId()!=null) {
     				ca.setNbEntranceUpd(1L);
     			} else {
     				ca.setNbEntranceAdd(1L);
     			}
-    		}
+    		
     	}
     	return ca;
     }

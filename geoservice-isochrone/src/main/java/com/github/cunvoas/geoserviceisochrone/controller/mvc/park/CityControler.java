@@ -20,12 +20,23 @@ public class CityControler {
 	private String formName = "commingSoon";
 
 	 
+	/**
+	 * get page with population.
+	 * @param model
+	 * @return page populated
+	 */
 	@GetMapping
 	public String getForm(Model model) {
 		model.addAttribute(formName, new Association());
 		return formName;
 	}
 
+	/**
+	 * save.
+	 * @param asso BO
+	 * @param model form
+	 * @return page populated
+	 */
 	@PostMapping
 	public String save(@ModelAttribute Association asso, Model model) {
 		model.addAttribute("formName", asso);

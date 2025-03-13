@@ -32,26 +32,57 @@ public class MvcDashBoardControler {
 	@Autowired
 	private ContributeurService contributeurService;
 	
+	/**
+	 * info page.
+	 * @param model form
+	 * @param modelAndView form
+	 * @return page
+	 */
 	@GetMapping("/infos")
     public String infos(Model model, ModelAndView modelAndView) {
         return "infos";
     }
 
+	/**
+	 * release page.
+	 * @param model form
+	 * @param modelAndView form
+	 * @return page
+	 */
 	@GetMapping("/release-note")
     public String releaseNote(Model model, ModelAndView modelAndView) {
         return "releaseNote";
     }
 
+	/**
+	 * video page.
+	 * @param model form
+	 * @param modelAndView form
+	 * @return page
+	 */
 	@GetMapping("/video-help-pop")
     public String videoHelpPop(Model model, ModelAndView modelAndView) {
         return "videoHelp_popup";
     }
 	
+	/**
+	 * infosante page.
+	 * @param model form
+	 * @param modelAndView form
+	 * @return page
+	 */
 	@GetMapping("/infosante")
     public String infosante(Model model, ModelAndView modelAndView) {
         return "infosante";
     }
 	
+	/**
+	 * Dashboard page.
+	 * @param model form
+	 * @param refresh force 
+	 * @param modelAndView form
+	 * @return page
+	 */
 	@GetMapping("/dashboard")
 	public String dashboard(Model model, @RequestParam(name = "refresh", required = false) Boolean refresh, ModelAndView modelAndView) {
 		DashboardSummary data = null;
@@ -70,6 +101,12 @@ public class MvcDashBoardControler {
 	}
 	
 	
+	/**
+	 * log page.
+	 * @param model form
+	 * @param modelAndView form
+	 * @return page
+	 */
 	@GetMapping("/logs")
     public String logs(Model model, ModelAndView modelAndView) {
 		

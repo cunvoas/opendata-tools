@@ -371,11 +371,9 @@ public class ParkService {
 		Polygon merged=null;
 		
 		Optional<ParcEtJardin> oPj = parkJardinRepository.findById(parkArea.getIdParcEtJardin());
-		if (oPj.isPresent()) {
+		if (oPj.isPresent() && oPj.get().getContour() instanceof Polygon) {
 			// init with parc shape to unifify isochrone
-			if (oPj.get().getContour() instanceof Polygon) {
-				merged = (Polygon)oPj.get().getContour();
-			}
+			merged = (Polygon)oPj.get().getContour();
 		}
 		
 		List<ParkEntrance> entances = parkEntranceRepository.findByParkArea(parkArea);

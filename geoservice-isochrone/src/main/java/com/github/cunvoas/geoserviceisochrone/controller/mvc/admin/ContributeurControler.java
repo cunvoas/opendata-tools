@@ -61,6 +61,11 @@ public class ContributeurControler {
 	
 //	private static final Long ID_AUTMEL=1L;
 
+	/**
+	 * call list page.
+	 * @param model form
+	 * @return page name
+	 */
 	@GetMapping("/list")
 	public String getList(Model model) {
 		Contributeur contrib =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -76,6 +81,11 @@ public class ContributeurControler {
 	}
 	
 	
+	/**
+	 * call add page.
+	 * @param model forme
+	 * @return page name
+	 */
 	@GetMapping("/add")
 	public String getForm(Model model) {
 
@@ -88,8 +98,8 @@ public class ContributeurControler {
 
 	/**
 	 * edit other profil.
-	 * @param model
-	 * @return
+	 * @param model form
+	 * @return page name
 	 */
 	@GetMapping("/edit")
 	public String getForm(@RequestParam("id") Long id, Model model) {
@@ -113,8 +123,8 @@ public class ContributeurControler {
 
 	/**
 	 * edit my profil.
-	 * @param model
-	 * @return
+	 * @param model form
+	 * @return page name
 	 */
 	@GetMapping
 	public String getMyForm(Model model) {
@@ -133,6 +143,11 @@ public class ContributeurControler {
 
 	
 	
+	/**
+	 * reset passwd.
+	 * @param model form
+	 * @return page name
+	 */
 	@GetMapping("/resetMyPassword")
 	public String resetMyPassword(Model model) {
 		Contributeur contribConnected =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -150,6 +165,12 @@ public class ContributeurControler {
 		return formName;
 	}
 	
+	/**
+	 * reset passwd.
+	 * @param id contrib
+	 * @param model form
+	 * @return page name
+	 */
 	@GetMapping("/resetPassword")
 	public String resetUserPassword(@RequestParam("id") Long id, Model model) {
 		
@@ -168,6 +189,13 @@ public class ContributeurControler {
 		return formName;
 	}
 	
+	/**
+	 * save contrib.
+	 * @param fContrib BO
+	 * @param bindingResult binding
+	 * @param model form
+	 * @return page name
+	 */
 	@PostMapping("/edit")
 	public String save(@Valid @ModelAttribute(value = "editContributeur") FormContributor fContrib, 
 			final BindingResult bindingResult, final Model model)   {
@@ -210,8 +238,10 @@ public class ContributeurControler {
 	}
 	
 	/**
-	 * @param in
-	 * @return
+	 * mapper.
+	 * @param in BO
+	 * @param model form
+	 * @return form
 	 */
 	private FormContributor cloneToForm(Contributeur in, Model model) {
 		FormContributor clone = new FormContributor();
@@ -251,6 +281,11 @@ public class ContributeurControler {
 		return clone;
 	}
 	
+	/**
+	 * mapper.
+	 * @param in form
+	 * @return BO
+	 */
 	private Contributeur mapFromForm(FormContributor in) {
 		Contributeur clone = new Contributeur();
 		clone.setId(in.getId());

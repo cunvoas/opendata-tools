@@ -16,6 +16,12 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComp
 @Repository
 public interface ComputeJobRepository extends JpaRepository<ComputeJob, InseeCarre200mComputedId>{
 
+    /**
+     * findByStatusOrderByDemandAsc.
+     * @param status enum
+     * @param page page
+     * @return list ComputeJob
+     */
     List<ComputeJob> findByStatusOrderByDemandAsc(ComputeJobStatusEnum status, Pageable page);
     
 }

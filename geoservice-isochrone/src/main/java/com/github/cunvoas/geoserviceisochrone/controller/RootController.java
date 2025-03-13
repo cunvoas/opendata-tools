@@ -23,14 +23,16 @@ public class RootController {
 	
 	/**
 	 * root page.
-	 * @return
+	 * @return page key
 	 */
 	@GetMapping("/")
 	public String root() {
 		return "redirect:/mvc/dashboard";
 	}
 	
-	/** Login form. */
+	/** Login form. 
+	 * @return page key
+	 */
 	@GetMapping(value="/login")
 	public String login() {
 		return "login";
@@ -38,14 +40,16 @@ public class RootController {
 	
 	/**
 	 * Logout form.
-	 * @return
+	 * @return page key
 	 */
 	@GetMapping(value="/logout")
 	public String logout() {
 		return "login";
 	}
 
-	/** Error page. */
+	/** Error page. 
+	 * @return page key
+	 */
 	@GetMapping("/403.html")
 	public String forbidden() {
 		return "403";
@@ -53,7 +57,7 @@ public class RootController {
 
 	/**
 	 * home page.
-	 * @return
+	 * @return page key
 	 */
 	@GetMapping("/home")
 	public ResponseEntity<String> index() {
@@ -62,6 +66,8 @@ public class RootController {
 
 	/**
 	 * Health check.
+	 * @param request http req
+	 * @return response code
 	 */
 	@RequestMapping(value = "/awake", method = RequestMethod.HEAD)
 	public ResponseEntity<Void> awake(HttpServletRequest request) {

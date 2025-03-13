@@ -19,6 +19,11 @@ public class GeoJsonForMvcController {
     @Autowired
     private GeoMapServiceV2 geoMapService;
 	
+	/**
+	 * get entrance.
+	 * @param idPark id park
+	 * @return geojson
+	 */
 	@GetMapping("/isochrones/entrance")
 	public GeoJsonRoot getIsochroneEntrance(@RequestParam("idPark") Long idPark) {
 		GeoJsonRoot isochrones=geoMapService.findIsochroneParkEntrance(idPark);
@@ -26,12 +31,25 @@ public class GeoJsonForMvcController {
 	}
 
 	
+	/**
+	 * get parks
+	 * @param idPark id
+	 * @return geojson
+	 */
 	@GetMapping("/isochrones/park")
 	public GeoJsonRoot getIsochronePark(@RequestParam("idPark") Long idPark) {
 		GeoJsonRoot isochrones=geoMapService.findIsochronePark(idPark);
 		return isochrones;
 	}
 	
+	/**
+	 * get park from prefecture.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return geojson
+	 */
 	@GetMapping("/parkPrefectureByCorner")
     public GeoJsonRoot getParkPrefectureByArea(
     			@RequestParam("swLat") Double swLat,
@@ -42,6 +60,14 @@ public class GeoJsonForMvcController {
         return geoMapService.findParkPrefectureByArea(swLat, swLng, neLat, neLng);
     }
 	
+	/**
+     * get park.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return geosjon
+	 */
 	@GetMapping("/parkGardenByCorner")
     public GeoJsonRoot getParcJardinPyArea(
     			@RequestParam("swLat") Double swLat,
@@ -53,6 +79,14 @@ public class GeoJsonForMvcController {
     }
 
 	
+	/**
+     * get park outline.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return geosjon
+	 */
 	@GetMapping("/parkGardenOutlineByCorner")
     public GeoJsonRoot getParcJardinOutlineByArea(
     			@RequestParam("swLat") Double swLat,
@@ -64,6 +98,14 @@ public class GeoJsonForMvcController {
     }
 	
 	
+	/**
+     * get cadastre.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return geosjon
+	 */
 	@GetMapping("/cadastreByCorner")
     public GeoJsonRoot getCadastreByArea(
     			@RequestParam("swLat") Double swLat,
