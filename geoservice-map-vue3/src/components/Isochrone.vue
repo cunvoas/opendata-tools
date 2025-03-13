@@ -176,7 +176,7 @@ function  getSquareColor(zoneDense, densite) {
 function getColorLegend(legendeDense) {
 
   
-  console.log("getColorLegend");
+  
   const grades = ['0','3','7','10','12','25','45'];
 		const labels = [];
 		let from, to;
@@ -211,7 +211,7 @@ function getColorLegend(legendeDense) {
 		}
     
 
-  console.log("labels"+labels);
+  
     return labels.join('<br>');
   }
 
@@ -321,7 +321,7 @@ export default {
         if (newLocation) {
 
          if (newLocation.lonX && newLocation.latY) {
-            console.log("apply center [X,Y]");
+            
             this.center = [newLocation.latY, newLocation.lonX];
             //this.addTemporaryMarker(newLocation.latY, newLocation.lonX);
             if (newLocation.locType==='city') {
@@ -336,12 +336,12 @@ export default {
 
           if (newLocation.regionId && this.region!==newLocation.regionId) {
             this.region=newLocation.regionId;
-            console.log("this.region="+this.region);
+            
           }
 
           if (newLocation.com2coId && this.com2co!==newLocation.com2coId) {
             this.com2co = newLocation.com2coId;
-            console.log("this.com2co="+this.com2co)
+            
 
             this.callGeoJsonIsochrones();
             this.callGeoJsonCarres();
@@ -373,7 +373,7 @@ export default {
         "&swLng=" + this.boundSwLng +
         "&neLat=" + this.boundNeLng +
         "&annee=" + this.annee;
-      console.log(qryPrms);
+      
         this.callGeoJsonIsochrones(qryPrms);
         this.callGeoJsonCarres(qryPrms);
     },
@@ -398,7 +398,7 @@ export default {
           "&neLat=" + this.boundNeLat +
           "&neLng=" + this.boundNeLng +
           "&annee=" + this.annee;
-        console.log(qryPrms);
+        
 
         this.callGeoJsonIsochrones(qryPrms);
         this.callGeoJsonCarres(qryPrms);
@@ -406,7 +406,7 @@ export default {
 
         const lat =(bounds._northEast.lat + bounds._southWest.lat)/2;
         const lon =(bounds._northEast.lng + bounds._southWest.lng)/2;
-        console.log("lat="+lat+" lon="+lon);
+        
         //this.fetchCommune(lat, lon);
         this.debouncedFetchCommune(lat, lon);
         
@@ -423,11 +423,11 @@ export default {
         const dataCommune = response.data;
         
         if (!dataCommune || !dataCommune.length) {
-            console.log("No commune found for coordinates:", lat, lon);
+            
             return;
         }
         const codeInsee = dataCommune[0].code;
-        console.log("Found commune with INSEE code:", codeInsee);
+        
 
 
         // Get density data
@@ -438,18 +438,18 @@ export default {
         const densityItem = dataDensite.find(item => item[codeInsee] !== undefined);
         if (densityItem) {
             const codeDensite = densityItem[codeInsee];
-            console.log(`Found density code ${codeDensite} for INSEE code ${codeInsee}`);
+            
 
             // Update legend based on density code
             this.legendeDense = (codeDensite === "1" || codeDensite === "2");
 
             // Update legend if density classification changed
             if (memoIsDense !== this.legendeDense) {
-                console.log("Updating legend for density type:", this.legendeDense ? "dense" : "non-dense");
+                
                 this.htmlLegend = getColorLegend(this.legendeDense);
             }
         } else {
-            console.log(`No density data found for INSEE code ${codeInsee}`);
+            
         }
 
 
@@ -471,7 +471,7 @@ export default {
       if(qryPrms) {
         callUrl = base+qryPrms;
       }
-      console.log("callGeoJsonIsochrones" + callUrl);
+      
       const respIsochrone = await fetch(callUrl);
       const dataIsochrone = await respIsochrone.json();
       this.geojsonIsochrone = dataIsochrone;
@@ -485,7 +485,7 @@ export default {
       if(qryPrms) {
         callUrl = base+qryPrms;
       }
-      console.log("callGeoJsonCarres" + callUrl);
+      
       const respCarre = await fetch(callUrl);
       const dataCarre = await respCarre.json();
       this.geojsonCarre = dataCarre;
@@ -500,7 +500,7 @@ export default {
       if(qryPrms) {
         callUrl = base+qryPrms;
       }
-      console.log("callGeoJsonCadastre" + callUrl);
+      
       const respCadastre = await fetch(callUrl);
       const dataCadastre = await respCadastre.json();
       this.geojsonCadastre = dataCadastre;
@@ -695,7 +695,7 @@ export default {
     },
   },
   beforeMount() {
-    console.log("beforeMount");
+    
     const self = this;
     self.loading = true;
 
@@ -716,7 +716,7 @@ export default {
       this.callGeoJsonIsochrones(""),
       this.callGeoJsonCadastre(""),
     ]).then((response) => {
-      console.log(response);
+      
       // same as : this.loading = false;
       //    but this is not reachable
       self.loading = false;

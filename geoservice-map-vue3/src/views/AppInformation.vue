@@ -131,7 +131,7 @@ export default {
             const recipent = this.toPlain(recipentAsc)+this.toPlain(domainAsc);
             const subject= "Isochrone: Demande d'accès pour contribution"
 
-            console.log(`${prefix}:${recipent}?subject=${subject}`);
+            
             window.location.href = `${prefix}:${recipent}?subject=${subject}`;
         }
     }

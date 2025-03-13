@@ -42,7 +42,7 @@ export default {
         async updateLocation(newLocation) {
             //console.log("AppStatistics.updateLocation", JSON.stringify(newLocation));
             //this.location = JSON.parse(JSON.stringify(newLocation));
-            console.log("AppStatistics.updateLocation", newLocation);
+            
             this.location = newLocation;
             this.componentKey++; // Force re-render
         }
