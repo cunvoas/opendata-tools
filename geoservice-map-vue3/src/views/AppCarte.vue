@@ -34,7 +34,7 @@ export default {
     methods: {
         updateLocation(newLocation) {
             //alert(' appcarte. updateLocation(newLocation) '+JSON.stringify(newLocation) );
-            console.log("updateLocation= "+JSON.stringify(newLocation))
+            
         this.location = newLocation;
         }
     }

@@ -132,7 +132,7 @@ export default {
                 
                 // If we have a saved region, find it in the loaded data
                 if (this.selectedRegion) {
-                    console.log("preset this.selectedRegion "+this.selectedRegion);
+                    
                     const regionOption = this.regions.find(region => region.id === this.selectedRegion);
                     if (regionOption) {
                         // Simulate change event for fetchCom2cos
@@ -170,7 +170,7 @@ export default {
                 
                 // If we have a saved com2co, find it in the loaded data
                 if (this.selectedCom2co) {
-                    console.log("preset this.selectedCom2co "+this.selectedCom2co);
+                    
                     const com2coOption = this.com2cos.find(com2co => com2co.id === this.selectedCom2co);
                     if (com2coOption) {
                         // Simulate change event for fetchCities
@@ -209,7 +209,7 @@ export default {
                 
                 // Si nous sommes dans le contexte du chargement initial
                 if (this.selectedCity) {
-                    console.log("preset this.selectedCity "+this.selectedCity);
+                    
                     const cityOption = this.cities.find(city => city.id === this.selectedCity);
                     if (cityOption) {
                         // Simuler l'événement change pour déclencher handleCityChange
