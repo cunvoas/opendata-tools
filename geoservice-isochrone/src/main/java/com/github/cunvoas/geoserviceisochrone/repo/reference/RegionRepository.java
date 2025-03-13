@@ -14,8 +14,17 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 @Repository
 public interface RegionRepository extends JpaRepository<Region, Long>{
 
+	/**
+	 * findByName.
+	 * @param name name
+	 * @return Region
+	 */
 	Region findByName(String name);
 	
+	/**
+	 * findAllOrderByName.
+	 * @return list of Region
+	 */
 	@Query(nativeQuery = true,
 			value="select * from adm_region order by name",
 			countQuery="select count(1) from adm_region")
