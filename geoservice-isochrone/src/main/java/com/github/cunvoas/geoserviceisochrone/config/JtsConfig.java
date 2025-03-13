@@ -11,6 +11,10 @@ import com.bedatadriven.jackson.datatype.jts.JtsModule;
 @Configuration
 public class JtsConfig {
 
+	/**
+	 * Config Bean.
+	 * @return the json module configured.
+	 */
 	@Bean
 	public JtsModule jtsModule() {
 		JtsModule module = new JtsModule();
@@ -20,13 +24,4 @@ public class JtsConfig {
 	    return module;
 	}
 	
-//	@Bean
-//	public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {
-//		Module module = null;//new GeolatteGeomModule( WGS84 );
-//		
-//		return new Jackson2ObjectMapperBuilder()
-////				.modules( module )
-//				.serializers( new LocalDateTimeSerializer( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) )
-//				.deserializers( new LocalDateTimeDeserializer( DateTimeFormatter.ISO_LOCAL_DATE_TIME ) );
-//	}
 }

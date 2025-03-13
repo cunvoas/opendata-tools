@@ -1,3 +1,4 @@
+/*
 --2017
 idcar_200m,i_est_200,idcar_1km,i_est_1km,idcar_nat,groupe,ind,men_1ind,men_5ind,men_prop,men_fmp,ind_snv,men_surf,men_coll,men_mais,log_av45,log_45_70,log_70_90,log_ap90,log_inc,log_soc,ind_0_3,ind_4_5,ind_6_10,ind_11_17,ind_18_24,ind_25_39,ind_40_54,ind_55_64,ind_65_79,ind_80p,ind_inc,men_pauv,men,lcog_geo
 --2019
@@ -10,7 +11,7 @@ idcar_200m,i_est_200,idcar_1km,i_est_1km,idcar_nat,ind,men_1ind,men_5ind,men_pro
 --2019
 idcar_200m,idcar_1km,idcar_nat,i_est_200,i_est_1km,lcog_geo,ind,men,men_pauv,men_1ind,men_5ind,men_prop,men_fmp,ind_snv,men_surf,men_coll,men_mais,log_av45,log_45_70,log_70_90,log_ap90,log_inc,log_soc,ind_0_3,ind_4_5,ind_6_10,ind_11_17,ind_18_24,ind_25_39,ind_40_54,ind_55_64,ind_65_79,ind_80p,ind_inc
 
-
+*/
 
 
 CREATE TABLE filosofi_load (
