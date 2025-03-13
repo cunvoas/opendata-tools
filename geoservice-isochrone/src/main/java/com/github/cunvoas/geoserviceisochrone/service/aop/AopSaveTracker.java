@@ -22,30 +22,51 @@ public class AopSaveTracker {
 	@Autowired
     private ActivityTrackerService activityTrackerService;
     
+    /**
+     * trackMethodAfterAdmin.
+     * @param joinPoint joinPoint
+     */
     @After("execution( * com.github.cunvoas.geoserviceisochrone.controller.mvc.admin.*.save*(..) )")
     public void trackMethodAfterAdmin(JoinPoint joinPoint) {
     	ContributeurAction ca = extractArg(joinPoint);
         activityTrackerService.incrementNbAdminActivity(ca);
     }
     
+    /**
+     * trackMethodAfterPark.
+     * @param joinPoint joinPoint
+     */
     @After("execution( * com.github.cunvoas.geoserviceisochrone.controller.mvc.park.*.save*(..) )")
     public void trackMethodAfterPark(JoinPoint joinPoint) {
     	ContributeurAction ca = extractArg(joinPoint);
         activityTrackerService.incrementNbParkActivity(ca);
     }
     
+    /**
+     * trackMethodAfterEntrance.
+     * @param joinPoint joinPoint
+     */
     @After("execution( * com.github.cunvoas.geoserviceisochrone.controller.mvc.entrance.EntranceControler.saveEntrance(..) )")
     public void trackMethodAfterEntrance(JoinPoint joinPoint) {
     	ContributeurAction ca = extractArg(joinPoint);
         activityTrackerService.incrementNbEntranceActivity(ca);
     }
 
+    /**
+     * trackMethodAfterIsochrone.
+     * @param joinPoint joinPoint
+     */
     @After("execution( * com.github.cunvoas.geoserviceisochrone.controller.mvc.*.*Controler.mergeIsochrone(..) )")
     public void trackMethodAfterIsochrone(JoinPoint joinPoint) {
     	ContributeurAction ca = extractArg(joinPoint);
         activityTrackerService.incrementNbIsochroneActivity(ca);;
     }
     
+    /**
+     * extractArg.
+     * @param joinPoint joinPoint
+     * @return ContributeurAction
+     */
     private ContributeurAction extractArg(JoinPoint joinPoint) {
     	int pos=0;
     	ContributeurAction ca =new ContributeurAction();

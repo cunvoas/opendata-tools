@@ -27,16 +27,36 @@ public class GeometryQueryHelper {
 
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 	
+	/**
+	 * toText.
+	 * @param p polygon
+	 * @return text of polygon
+	 */
 	public static String toText(Polygon p) {
 		return "SRID=4326;"+p.toText();
 	}
+	/**
+	 * toText.
+	 * @param p Geometry
+	 * @return text of polygon
+	 */
 	public static String toText(Geometry p) {
 		return "SRID=4326;"+p.toText();
 	}
+	/**
+	 * toTextWoSrid.
+	 * @param p Geometry
+	 * @return text of polygon without SRID
+	 */
 	public static String toTextWoSrid(Geometry p) {
 		return p.toText();
 	}
 	
+	/**
+	 * cast geolatte into JTS.
+	 * @param in geolatte Geometry
+	 * @return jts Geometry
+	 */
 	public static Geometry cast(org.geolatte.geom.Geometry<?> in) {
 		Geometry ret =null;
 		if (in instanceof org.geolatte.geom.Polygon) {
@@ -49,7 +69,12 @@ public class GeometryQueryHelper {
 		
 		return ret;
 	}
-	
+
+	/**
+	 * cast geolatte into JTS.
+	 * @param in geolatte MultiPolygon
+	 * @return jts MultiPolygon
+	 */
 	public static MultiPolygon cast(org.geolatte.geom.MultiPolygon<?> in) {
 		
 		int nbPolys = in.getNumGeometries();
@@ -64,7 +89,12 @@ public class GeometryQueryHelper {
 		MultiPolygon mpoly = factory.createMultiPolygon(retPolys);
 		return mpoly;
 	}
-	
+
+	/**
+	 * cast geolatte into JTS.
+	 * @param in geolatte Polygon
+	 * @return jts Polygon
+	 */
 	public static Polygon cast(org.geolatte.geom.Polygon<?> in) {
 		Polygon poly = factory.createPolygon();
 		List<Coordinate> coords = new ArrayList<>();
@@ -102,7 +132,13 @@ public class GeometryQueryHelper {
 		return poly;
 	}
 	
-	
+
+	/**
+	 * generatePoly.
+	 * @param line of polygon
+	 * @param offset in meter at right of each point
+	 * @return Polygon
+	 */
 	private static Polygon generatePoly(LineString line, double offset) {
 
 	    Coordinate[] points = line.getCoordinates();

@@ -18,14 +18,26 @@ public interface ParkEntranceRepository extends JpaRepository<ParkEntrance, Long
 	
 	/**
 	 * get Entrance by ParkArea.
-	 * @param id
-	 * @return
+	 * @param id parkArea
+	 * @param description search
+	 * @return ParkEntrance
 	 */
-	//@Query("select * from ParkEntrance where parkArea.id=?1")
 	List<ParkEntrance> findByParkArea(ParkArea parkArea);
+	
+	/**
+	 * findByParkAreaAndDescription.
+	 * @param parkArea parkArea
+	 * @param description search
+	 * @return ParkEntrance
+	 */
 	ParkEntrance findByParkAreaAndDescription(ParkArea parkArea, String description);
 	
 
+	/**
+	 * findByParkId.
+	 * @param id  parkArea
+	 * @return list ParkEntrance
+	 */
 	@Query(nativeQuery = true, 
 			   value = "SELECT e.* FROM park_entrance e "
 			   				+ "INNER JOIN park_area a ON a.id=e.area_id "

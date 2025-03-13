@@ -36,10 +36,19 @@ public class ContributeurService {
 	@Autowired
 	private EmailSender emailSender;
 	
+	/**
+	 * findAll.
+	 * @return list Contributeur
+	 */
 	public List<Contributeur> findAll() {
 		return contributeurRepository.findAll();
 	}
 	
+	/**
+	 * findByAssociation.
+	 * @param asso Association
+	 * @return list Contributeur
+	 */
 	public List<Contributeur> findByAssociation(Association asso) {
 		if (asso!=null) {
 			return contributeurRepository.findByAssociation(asso);
@@ -50,6 +59,11 @@ public class ContributeurService {
 	
 	
 	
+	/**
+	 * get Contributeur.
+	 * @param id Contributeur
+	 * @return Contributeur
+	 */
 	public Contributeur get(Long id) {
 		Optional<Contributeur> oUser = contributeurRepository.findById(id);
 		if (oUser.isPresent()) {
@@ -59,6 +73,11 @@ public class ContributeurService {
 	}
 	
 
+	/**
+	 * getByEmail.
+	 * @param email Contributeur email
+	 * @return Contributeur
+	 */
 	public Contributeur getByEmail(String email) {
 		Optional<Contributeur> oUser = contributeurRepository.findByEmail(email);
 		if (oUser.isPresent()) {
@@ -67,6 +86,12 @@ public class ContributeurService {
 		return null;
 	}
 
+
+	/**
+	 * getByLogin.
+	 * @param email Contributeur login
+	 * @return Contributeur
+	 */
 	public Contributeur getByLogin(String login) {
 		Optional<Contributeur> oUser = contributeurRepository.findByLogin(login);
 		if (oUser.isPresent()) {
@@ -75,6 +100,12 @@ public class ContributeurService {
 		return null;
 	}
 	
+	/**
+	 * save.
+	 * @param contributeur Contributeur
+	 * @param pwdGenNeeded need password generation ?
+	 * @return Contributeur
+	 */
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public Contributeur save(Contributeur contributeur, boolean pwdGenNeeded) {
 		boolean newAccount=false;
