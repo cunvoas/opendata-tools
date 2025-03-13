@@ -51,7 +51,7 @@ export default {
     watch: {
         location: {
             async handler(newLocation) {
-              console.log("StatsGraph.watch.location.handler: ", newLocation);
+              
               if (newLocation) {
                   this.loaded = false;
                   
@@ -115,7 +115,7 @@ export default {
       this.dataPie= this.getChartData('Habitants par m² de parc', tLabels,  tHabitants, tFillColors);
     },
     async processLocation(newLocation) {
-      console.log("StatsGraph.processLocation", newLocation);
+      
 
       //this.location = newLocation;
 
@@ -130,12 +130,12 @@ export default {
       const baseTest= "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/test.json";
 
       callUrl = baseTest;
-      console.log("callUrl is "+callUrl);
+      
 
       this.loaded = false;
       const respData = await fetch(callUrl)
       if (!respData.ok) {
-          console.log("wrong url:", callUrl);
+          
           throw new Error(`HTTP error! status: ${respData.status}`);
       }   
       const newData = await respData.json();
