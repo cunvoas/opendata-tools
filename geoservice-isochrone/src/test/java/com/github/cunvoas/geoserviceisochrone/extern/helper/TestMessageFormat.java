@@ -64,8 +64,8 @@ class TestMessageFormat {
 	}
 	
 	public String apply(String tpl, Map<String, String> vals) {
-		
-		String ret = new String(tpl);
+		//make a clone
+		String ret =String.valueOf(tpl);
 		for (Entry<String, String> entry : vals.entrySet()) {
 			ret = ret.replaceAll(entry.getKey(), entry.getValue());
 		}

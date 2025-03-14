@@ -13,7 +13,11 @@ import lombok.Data;
  */
 @Data
 public class CommunauteCommuneDto {
-	
+
+	/**
+	 * Constructor
+	 * @param model BO
+	 */
 	public CommunauteCommuneDto(CommunauteCommune model) {
 		super();
 		this.id=model.getId();

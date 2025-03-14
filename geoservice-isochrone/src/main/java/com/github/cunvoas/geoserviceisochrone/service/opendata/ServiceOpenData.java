@@ -41,8 +41,8 @@ public class ServiceOpenData {
 	
 	/**
 	 * calcul de la distance à pied à retenir VS OMS et la densité urbaine.
-	 * @param city
-	 * @return
+	 * @param city City
+	 * @return distance
 	 */
 	public String getDistanceDense(City city) {
 		String ret = "300";
@@ -60,8 +60,9 @@ public class ServiceOpenData {
 	}
 	
 	/**
-	 * @param idInsee
-	 * @return
+	 * isDistanceDense.
+	 * @param idInsee code
+	 * @return Boolean
 	 */
 	public Boolean isDistanceDense(String idInsee) {
 		Boolean isdense=Boolean.TRUE;
@@ -78,10 +79,21 @@ public class ServiceOpenData {
 		}
 		return isdense;
 	}
+	
+	/**
+	 * isDistanceDense.
+	 * @param city City
+	 * @returnBoolean
+	 */
 	public Boolean isDistanceDense(City city) {
 		return isDistanceDense(city.getInseeCode());
 	}
 
+	/**
+	 * save.
+	 * @param region Region
+	 * @return Region
+	 */
 	public Region save(Region region) {
 		if (region != null) {
 			Region pRegion = null;
@@ -108,6 +120,11 @@ public class ServiceOpenData {
 
 	}
 
+	/**
+	 * save.
+	 * @param comm2co CommunauteCommune
+	 * @return CommunauteCommune
+	 */
 	public CommunauteCommune save(CommunauteCommune comm2co) {
 		if (comm2co != null) {
 			CommunauteCommune pComm2co = null;
@@ -128,8 +145,8 @@ public class ServiceOpenData {
 	
 	/**
 	 * calcule le carré dans lequel tiends la communauté de commune sur la carte.
-	 * @param comm2co
-	 * @return
+	 * @param comm2co CommunauteCommune
+	 * @return Polygon
 	 */
 	public Polygon computeSquareOnMap(CommunauteCommune comm2co) {
 		Polygon poly=null;

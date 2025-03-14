@@ -47,10 +47,11 @@ public class ParkJardinService {
 	private InseeCarre200mOnlyShapeRepository surfaceRepo;
 	
 	
-	/**ParkJardinService
+	/**
 	 * save ParcEtJardin.
-	 * @param parcEtJardin
-	 * @return
+	 * @param parcEtJardin model
+	 * @param updSurfaceShape recompute surface
+	 * @return ParcEtJardin
 	 */
 	public ParcEtJardin save(ParcEtJardin parcEtJardin, boolean updSurfaceShape) {
 		
@@ -158,9 +159,9 @@ public class ParkJardinService {
 	
 	/**
 	 * check if type or custom change.
-	 * @param pj
-	 * @param pa
-	 * @return
+	 * @param pj ParcEtJard 
+	 * @param pa ParkArea
+	 * @return data has change
 	 */
 	private Boolean omsChanged(ParcEtJardin pj, ParkArea pa) {
 		Boolean ret = Boolean.FALSE;

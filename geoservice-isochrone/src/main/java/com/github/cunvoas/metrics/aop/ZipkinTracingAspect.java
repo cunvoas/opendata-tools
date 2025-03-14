@@ -20,14 +20,18 @@ public class ZipkinTracingAspect {
 
     private final ObservationRegistry observationRegistry;
 
+    /**
+     * Constructor.
+     * @param observationRegistry registry
+     */
     public ZipkinTracingAspect(ObservationRegistry observationRegistry) {
         this.observationRegistry = observationRegistry;
     }
 
     /**
      * Embrace method call.
-     * @param joinPoint
-     * @return
+     * @param joinPoint join APP
+     * @return Object intercepted
      * @throws Throwable
      */
     @Around("execution(* com.github.cunvoas.geoserviceisochrone.*.*(..))")

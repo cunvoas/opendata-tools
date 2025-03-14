@@ -58,6 +58,10 @@ public class BatchJobService {
 	private ComputeServiceV2 computeService;
 	
 	
+	/**
+	 * request for a park.
+	 * @param pj ParcEtJardin
+	 */
 	public void requestProcessParc(ParcEtJardin pj) {
 		log.info("requestProcessParc");
 		
@@ -68,6 +72,10 @@ public class BatchJobService {
 		appendCarre(shapes);
 	}
 	
+	/**
+	 * appendCarre: factorization method.
+	 * @param shapes list of InseeCarre200mOnlyShape
+	 */
 	protected void appendCarre(List<InseeCarre200mOnlyShape> shapes) {
 		log.info("appendCarre");
 		List<ComputeJob> jobs = new ArrayList<>();	
@@ -106,6 +114,10 @@ public class BatchJobService {
 	}
 	
 	
+	/**
+	 * request for one city.
+	 * @param city city
+	 */
 	public void requestProcessCity(City city) {
 		log.info("requestProcessCity");
 		
@@ -117,6 +129,11 @@ public class BatchJobService {
 	
 	
 	private Boolean isRunning=false;
+	/**
+	 * manage run at once.
+	 * @param toLaunch true is want to start
+	 * @return true id autorized
+	 */
 	protected synchronized Boolean changeStatus(Boolean toLaunch) {
 		Boolean possibleLaunch = false;
 		log.info("changeStatus");
@@ -135,7 +152,6 @@ public class BatchJobService {
 			// job is stopped 
 			if (toLaunch) {
 				// start request
-				// start request
 				possibleLaunch = true;
 				isRunning=true;
 			} else {
@@ -150,7 +166,10 @@ public class BatchJobService {
 		return possibleLaunch;
 	}
 	
-	// every minutes
+	/**
+	 * scheduled task.
+	 * @FIXME need to be smartest by hours.
+	 */
 	@Scheduled(fixedDelay = 600000, initialDelay = 10000)
 	public void processCarres() {
 		log.error("processCarres at {}", DF.format(new Date()));

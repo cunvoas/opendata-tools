@@ -24,12 +24,12 @@ public class GeoJsonCarreInseeController {
 
     /**
      * get insee by area.
-     * @param swLat
-     * @param swLng
-     * @param neLat
-     * @param neLng
-     * @param annee
-     * @return
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+     * @param annee year of data
+     * @return list of carre insee
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/carre200m/area")
@@ -50,9 +50,9 @@ public class GeoJsonCarreInseeController {
 
     /**
      * get insee by polygon.
-     * @param polygon
-     * @param annee
-     * @return
+     * @param polygon seach polygon
+     * @param annee year
+     * @return  list of carre insee
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/carre200m/polygon")

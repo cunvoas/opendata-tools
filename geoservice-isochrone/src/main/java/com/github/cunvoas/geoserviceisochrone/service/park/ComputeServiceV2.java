@@ -89,6 +89,10 @@ public class ComputeServiceV2 {
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	
 	
+	/**
+	 * computeCarreByPostalCode.
+	 * @param postalCode code
+	 */
 	public void computeCarreByPostalCode(String postalCode) {
 		Set<Cadastre> uniques = new HashSet<>();
 		List<Laposte> postes = laposteRepository.findByPostalCode(postalCode);
@@ -102,11 +106,19 @@ public class ComputeServiceV2 {
 		
 	}
 	
+	/**
+	 * computeCarreByInseeCode.
+	 * @param inseeCode code
+	 */
 	public void computeCarreByInseeCode(String inseeCode) {
 		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
 		computeCarreByCadastreV2Optim(cadastre);
 	}
 	
+	/**
+	 * computeCarreByCarre200m.
+	 * @param idInspire id
+	 */
 	public void computeCarreByCarre200m(String idInspire) {
 		Optional<InseeCarre200mOnlyShape> oCarreShape = inseeCarre200mOnlyShapeRepository.findById(idInspire);
 		if (oCarreShape.isPresent()) {
@@ -116,6 +128,12 @@ public class ComputeServiceV2 {
 		}
 	}
 
+	/**
+	 * isActive.
+	 * @param pa ParkArea
+	 * @param annee year 
+	 * @return park is active?
+	 */
 	protected Boolean isActive(ParkArea pa, Integer annee) {
 		Boolean active=false;
 		
@@ -147,8 +165,8 @@ public class ComputeServiceV2 {
 	
 	/**
 	 * Compute the surface of parks availlable per capita in the square.
-	 * @param carreShape
-	 * @param isDense
+	 * @param carreShape shape
+	 * @param isDense witch density
 	 * @TODO make optim to not recompute all years ( before 2027 )
 	 */
 	protected void computeCarreShapeV2Optim(InseeCarre200mOnlyShape carreShape, Boolean isDense) {
@@ -315,12 +333,13 @@ public class ComputeServiceV2 {
 	
 	
 	/**
+	 * computePopAndDensityDetailOptim.
 	 * @param dto DTO with source data
 	 * @param crDto DTO with result data
-	 * @param carreShape  square on process
-	 * @param geometryToAnalyse
-	 * @param shapeParkOnSquare  shape of park isochrones
-	 * @return
+	 * @param carreShape square on process
+	 * @param geometryToAnalyse analysed
+	 * @param shapeParkOnSquare shape of park isochrones
+	 * @return ComputeResultDto
 	 */
 	protected ComputeResultDto computePopAndDensityDetailOptim(
 			ComputeDto dto, 
@@ -390,9 +409,10 @@ public class ComputeServiceV2 {
 	}
 	
 	/**
-	 * @param dto
-	 * @param carreShape
-	 * @param shapeParkOnSquare
+	 * computePopAndDensityOptim.
+	 * @param dto ComputeDto
+	 * @param carreShape shap
+	 * @param shapeParkOnSquare shape
 	 */
 	protected void computePopAndDensityOptim(ComputeDto dto, InseeCarre200mOnlyShape carreShape, Geometry shapeParkOnSquare) {
 
@@ -409,6 +429,11 @@ public class ComputeServiceV2 {
 		}
 	}
 	
+	/**
+	 * computeCarreByComputeJobV2Optim.
+	 * @param job ComputeJob
+	 * @return true if done
+	 */
 	public Boolean computeCarreByComputeJobV2Optim(ComputeJob job) {
 		log.info("begin computeCarre {}", job.getIdInspire());
 		Boolean ret = Boolean.FALSE;
@@ -430,12 +455,17 @@ public class ComputeServiceV2 {
 	}
 
 	/**
-	 * @param cadastre
+	 * computeCarreByCadastreV2Optim.
+	 * @param cadastre Cadastre
 	 */
 	public void computeCarreByCadastreV2Optim(Cadastre cadastre) {
 		this.computeCarreByGeoShapeV2Optim(cadastre.getIdInsee(), cadastre.getGeoShape());
 	}
 	
+	/**
+	 * computeCarreByParkId.
+	 * @param idPark ParcEtJardin
+	 */
 	public void computeCarreByParkId(Long idPark) {
 		Optional<ParcEtJardin> opj = parkJardinRepository.findById(idPark);
 		if( opj.isPresent())  {
@@ -447,13 +477,15 @@ public class ComputeServiceV2 {
 	
 	/**
 	 * Computes population that can access a park at once.
-	 * @param cadastre
 	 * 
 	 * Algorithm:
 	 *  step 1: Find city density.
 	 *  step 2: Find 200m squares that matches.
 	 *  step 3: for each, get surface and isochrone of parks.
 	 *  step 4: compute with OMS parks and others.
+
+	 * @param idInsee code
+	 * @param geoShape shape
 	 */
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public void computeCarreByGeoShapeV2Optim(String idInsee, Geometry geoShape) {
@@ -481,7 +513,7 @@ public class ComputeServiceV2 {
 	
 	/**
 	 *  Used for mass update and full recompute ParkAreaEntrance.
-	 *  @param inseeCode
+	 *  @param inseeCode code
 	 */
 	public void refreshParkEntrances(String inseeCode) {
 		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
@@ -490,7 +522,7 @@ public class ComputeServiceV2 {
 	
 	/**
 	 * Used for mass update and full recompute ParkAreaEntrance.
-	 * @param cadastre
+	 * @param cadastre Cadastre
 	 */
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public void refreshParkEntrances(Cadastre cadastre) {
@@ -511,6 +543,12 @@ public class ComputeServiceV2 {
 		log.warn("<< refreshParkEntrances");
 	}
 
+	/**
+	 * computeParkAreaV2.
+	 * @param park ParkArea
+	 * @param annee year
+	 * @return ParkAreaComputed
+	 */
 	protected ParkAreaComputed computeParkAreaV2(ParkArea park, Integer annee) {
 		ParkAreaComputed parcCpu=null;
 		log.info("computePark( {}-{} )",park.getId(), park.getName());
@@ -594,10 +632,9 @@ public class ComputeServiceV2 {
 	/**
 	 * Compute ParkEntrance from ParkArea and List<ParkEntrance>.
 	 * @param park
-	 * @return
+	 * @return ParkAreaComputed
 	 * @TODO to be reviewed
 	 */
-	
 	public ParkAreaComputed computeParkAreaV2(ParkArea park) {
 		ParkAreaComputed parcCpu=null;
 		log.info("computePark( {}-{} )",park.getId(), park.getName());
@@ -681,6 +718,11 @@ public class ComputeServiceV2 {
 	}
 
 	
+	/**
+	 * getSurface.
+	 * @param geom  Geometry
+	 * @return surface of Geometry
+	 */
 	public Long getSurface(Geometry geom) {
 		return inseeCarre200mOnlyShapeRepository.getSurface(geom);
 	}

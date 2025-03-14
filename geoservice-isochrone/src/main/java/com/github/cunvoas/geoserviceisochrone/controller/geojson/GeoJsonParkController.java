@@ -49,12 +49,12 @@ public class GeoJsonParkController {
 
     /**
      * get isochrone by area.
-     * @param swLat
-     * @param swLng
-     * @param neLat
-     * @param neLng
-     * @param annee
-     * @return
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+     * @param annee year
+     * @return list of isochrone
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area")
@@ -74,12 +74,12 @@ public class GeoJsonParkController {
 
     /**
      * get park outline by area.
-     * @param swLat
-     * @param swLng
-     * @param neLat
-     * @param neLng
-     * @param annee
-     * @return
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+     * @param annee year
+     * @return list of park outline
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/outline")
@@ -100,10 +100,10 @@ public class GeoJsonParkController {
 
     /**
      * get park by city.
-     * @param coords
-     * @param zoom
-     * @param annee
-     * @return
+     * @param coords of a point(lat, lng)
+     * @param zoom zoom index
+     * @param annee year
+     * @return list of city
      * @see https://gis.stackexchange.com/questions/284880/get-the-lat-lng-values-of-lines-polygons-drawn-by-leaflet-drawing-tools
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")

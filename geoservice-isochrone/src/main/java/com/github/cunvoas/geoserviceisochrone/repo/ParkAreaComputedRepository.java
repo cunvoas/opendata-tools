@@ -14,6 +14,12 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputedId
 @Repository
 public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComputed, ParkAreaComputedId>{
 	
+	/**
+	 * findByIdAndAnnee.
+	 * @param id ParkAreaComputed
+	 * @param annee yeay
+	 * @return ParkAreaComputed
+	 */
 	Optional<ParkAreaComputed> findByIdAndAnnee(Long id, Integer annee);
 	
 }

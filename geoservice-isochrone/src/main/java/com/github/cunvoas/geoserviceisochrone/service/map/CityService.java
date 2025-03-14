@@ -104,26 +104,46 @@ public class CityService {
 
 	}
 
+	/**
+	 * findAll.
+	 * @param page page
+	 * @return list City
+	 */
 	public Page<City> findAll(Pageable page) {
 		return cityRepository.findAll(page);
 	}
 
+	/**
+	 * findAround
+	 * @param lat latitude
+	 * @param lon longitude
+	 * @param distanceM in meter
+	 * @return list City
+	 */
+	
 	public List<City> findAround(double lat, double lon, double distanceM) {
 		// log.info("Looking for city around ({},{}) withing {} meters", lat, lon,
 		// distanceM);
 		Point p = factory.createPoint(new Coordinate(lon, lat));
 		return cityRepository.findNearWithinDistance(p, distanceM);
 	}
+	/**
+	 * findAround
+	 * @param p Point
+	 * @param distanceM in meter
+	 * @return list City
+	 */
 	public List<City> findAround(Point p, double distanceM) {
 		// log.info("Looking for city around ({},{}) withing {} meters", lat, lon,
 		// distanceM);
 		return cityRepository.findNearWithinDistance(p, distanceM);
 	}
 
-	
-	
-	
-
+	/**
+	 * getGzipCadastre.
+	 * @param insee code
+	 * @return bytes
+	 */
 	protected byte[] getGzipCadastre(String insee) {
 		byte[] gzipFile = null;
 
@@ -151,8 +171,8 @@ public class CityService {
 	 * 
 	 * @see https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/59/59001/cadastre-59001-communes.json.gz
 	 * @see https://commons.apache.org/proper/commons-compress/examples.html
-	 * @param insee
-	 * @return
+	 * @param gzipFile bytes of zip file
+	 * @return  geoJson
 	 */
 	protected String getGeoJsonCadastre(byte[] gzipFile) {
 

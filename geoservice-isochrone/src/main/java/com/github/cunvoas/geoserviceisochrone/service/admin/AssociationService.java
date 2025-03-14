@@ -22,6 +22,11 @@ public class AssociationService {
 	private AssociationRepository associationRepository;
 	
 	
+	/**
+	 * findById.
+	 * @param id Association
+	 * @return Association
+	 */
 	public Association findById(Long id){
 		Association asso = null;
 		Optional<Association> opt = associationRepository.findById(id);
@@ -32,6 +37,11 @@ public class AssociationService {
 		return asso;
 	}
 	
+	/**
+	 * findByContextUser.
+	 * @param contrib Contributeur
+	 * @return list Association
+	 */
 	public List<Association> findByContextUser(Contributeur contrib){
 		List<Association> asso = new ArrayList<>();
 		
@@ -52,10 +62,19 @@ public class AssociationService {
 		return asso;
 	}
 	
+	/**
+	 * findAll.
+	 * @return list Association
+	 */
 	public List<Association> findAll() {
 		return associationRepository.findAllOrderByNom();
 	}
 	
+	/**
+	 * save.
+	 * @param asso Association
+	 * @return Association
+	 */
 	public Association save(Association asso) {
 		return associationRepository.save(asso);
 	}

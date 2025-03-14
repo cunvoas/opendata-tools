@@ -43,28 +43,27 @@ public class MassUpdatePreProcess {
 		
 		for (CsvParkUpdate line : lines) {
 			String sRupt = line.getParkId()+line.getNom();
-			if (!StringUtils.isBlank(sRupt)) {
-				if (!parkRupt.equals(sRupt)) {
-					parkRupt = sRupt;
-					pivot = new CsvMassUpdatePivot();
-					preprocessed.add(pivot);
-					
-					if (!StringUtils.isBlank(line.getCityId())) {
-						City c = new City();
-						c.setId(Long.parseLong(line.getCityId()));
-						pivot.setCommune(c);
-					}
-					
-					ParcEtJardin pj = new ParcEtJardin();
-					if (line.getParkId().matches("[0-9]+")) {
-						pj.setId(Long.parseLong(line.getParkId()));
-					}
-					pj.setName(line.getNom());
-					if (!StringUtils.isBlank(line.getSurface())) {
-						pj.setSurface(Double.parseDouble(line.getSurface().replaceAll(",", ".")));
-					}
-					pivot.setParcEtJardin(pj);
+			
+			if (!StringUtils.isBlank(sRupt) && !parkRupt.equals(sRupt)) {
+				parkRupt = sRupt;
+				pivot = new CsvMassUpdatePivot();
+				preprocessed.add(pivot);
+				
+				if (!StringUtils.isBlank(line.getCityId())) {
+					City c = new City();
+					c.setId(Long.parseLong(line.getCityId()));
+					pivot.setCommune(c);
 				}
+				
+				ParcEtJardin pj = new ParcEtJardin();
+				if (line.getParkId().matches("[0-9]+")) {
+					pj.setId(Long.parseLong(line.getParkId()));
+				}
+				pj.setName(line.getNom());
+				if (!StringUtils.isBlank(line.getSurface())) {
+					pj.setSurface(Double.parseDouble(line.getSurface().replaceAll(",", ".")));
+				}
+				pivot.setParcEtJardin(pj);
 			}
 
 			ParkEntrance pa = new ParkEntrance();

@@ -17,37 +17,64 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 @Repository
 public interface ParcPrefectureRepository extends JpaRepository<ParcPrefecture, Long> {
 
+	/**
+	 * findByNamePrefecture.
+	 * @param name  name
+	 * @return ParcPrefecture
+	 */
 	ParcPrefecture findByNamePrefecture(String name);
 	
+	/**
+	 * findByCity.
+	 * @param id city 
+	 * @return list ParcPrefecture
+	 */
 	@Query(nativeQuery = true, 
 			   value = "SELECT pp.* FROM parc_prefecture pp WHERE pp.id_city=?")
 	List<ParcPrefecture> findByCity(Long id);
 	
-	/**
-	 * @param id cityId
-	 * @param radius ion meters
-	 * @return
-	 */
-//	@Query(nativeQuery = true, 
-//			   value = "SELECT pp.* FROM parc_prefecture pp WHERE ST_Distance(pp.point,(select c.coordinate from city c where c.id=:cityId), true)<:radius")
-//	List<ParcPrefecture> findNearCityAndRadius(Long id, Long radius);
 	
+	/**
+	 * findByArea.
+	 * @param searchArea shape
+	 * @return list ParcPrefecture
+	 */
 	@Query(nativeQuery = true, 
 			   value = "SELECT pp.* FROM parc_prefecture pp WHERE ST_Intersects(area, :searchArea")
 	List<ParcPrefecture> findByArea(@Param("searchArea")Polygon searchArea);
-	
+
+	/**
+	 * findByArea.
+	 * @param searchArea shape as string
+	 * @return list ParcPrefecture
+	 */
 	@Query(nativeQuery = true, 
 			   value = "SELECT pp.* FROM parc_prefecture pp WHERE ST_Intersects(pp.area, ?1)")
 	List<ParcPrefecture> findByArea(String searchArea);
 	
+	/**
+	 * findByParcEtJardinId.
+	 * @param id park
+	 * @return list ParcPrefecture
+	 */
 	@Query(nativeQuery = true, 
 			   value = "SELECT pp.* FROM parc_prefecture pp WHERE pp.id_parc=? limit 2")
 	List<ParcPrefecture> findByParcEtJardinId(Long id);
 
+	/**
+	 * getMaxDistanceFromCentroid.
+	 * @param id ParcPrefecture
+	 * @return distance
+	 */
 	@Query(nativeQuery = true, 
 			   value = "SELECT ST_Distance(pp.point ,ST_MakePoint(ST_X(pp.point)+ST_MaxDistance(pp.point ,pp.area), ST_Y(pp.point)), true) as maxi FROM parc_prefecture pp WHERE pp.identifiant=?")
 	Double getMaxDistanceFromCentroid(Long id);
 	
+	/**
+	 * getCircleDistance
+	 * @param id ParcPrefecture
+	 * @return distance
+	 */
 	@Query(nativeQuery = true, 
 			   value = "SELECT ST_Area(pp.area, true), sqrt(ST_Area(pp.area, true)/pi()) as mini FROM parc_prefecture pp WHERE pp.identifiant=?")
 	Double getCircleDistance(Long id);

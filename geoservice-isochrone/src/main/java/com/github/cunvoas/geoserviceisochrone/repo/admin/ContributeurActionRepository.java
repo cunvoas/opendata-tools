@@ -15,6 +15,11 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurAction;
 @Repository
 public interface ContributeurActionRepository extends JpaRepository<ContributeurAction, Long>{
 	
+	/**
+	 * findLastDays.
+	 * @param days nb
+	 * @return list ContributeurAction
+	 */
 	@Query(nativeQuery = true, value="select ca.* from adm_contrib_action ca where ca.last_date>= current_date-:days")
 	List<ContributeurAction> findLastDays(@Param("days") Integer days);
 	
