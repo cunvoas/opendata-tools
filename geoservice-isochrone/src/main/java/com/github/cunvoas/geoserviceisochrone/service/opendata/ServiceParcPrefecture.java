@@ -37,6 +37,9 @@ public class ServiceParcPrefecture {
 	@Autowired 
 	private CityService cityService;
 	
+	/**
+	 * update ParcPrefecture.
+	 */
 	public void update() {
 		List<ParcPrefecture> pps = parcPrefectureRepository.findAll();
 		for (ParcPrefecture pp : pps) {
@@ -44,6 +47,11 @@ public class ServiceParcPrefecture {
 		}
 	}
 	
+	/**
+	 * getById.
+	 * @param id ParcPrefecture
+	 * @return ParcPrefecture
+	 */
 	public ParcPrefecture getById(Long id) {
 		Optional<ParcPrefecture> opt = parcPrefectureRepository.findById(id);
 		if (opt.isPresent()) {
@@ -51,11 +59,21 @@ public class ServiceParcPrefecture {
 		}
 		return null;
 	}
-	
+
+	/**
+	 * update.
+	 * @param pp ParcPrefecture
+	 * @return ParcPrefecture
+	 */
 	public ParcPrefecture update(ParcPrefecture pp) {
 		return parcPrefectureRepository.save(pp);
 	}
-	
+
+	/**
+	 * computeAndUpdate.
+	 * @param pp ParcPrefecture
+	 * @return ParcPrefecture
+	 */
 	public ParcPrefecture computeAndUpdate(ParcPrefecture pp) {
 		boolean updated=false;
 		
@@ -105,7 +123,13 @@ public class ServiceParcPrefecture {
 		}
 		return pp;
 	}
-	
+
+	/**
+	 * prepareFromSite.
+	 * @param pp ParcPrefecture
+	 * @param polygon Polygon
+	 * @return ParcPrefecture
+	 */
 	public ParcPrefecture prepareFromSite(String name, Polygon polygon) {
 
 		ParcPrefecture pp = new ParcPrefecture();
@@ -139,9 +163,19 @@ public class ServiceParcPrefecture {
 	}
 	
 	
+	/**
+	 * normalize.
+	 * @param input string
+	 * @return string
+	 */
 	private static String normalize(String input) {
 	    return input == null ? null : Normalizer.normalize(input, Normalizer.Form.NFKD);
 	}
+	/**
+	 * removeAccents.
+	 * @param input string
+	 * @return string
+	 */
 	private static String removeAccents(String input) {
 	    return normalize(input).replaceAll("\\p{M}", "");
 	}

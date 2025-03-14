@@ -45,6 +45,9 @@ public class ActivityTrackerService {
     protected Set<Long> uniqueUserId = new HashSet<Long>();
     
      
+    /**
+     * constructor.
+     */
     public ActivityTrackerService() {
         for (int i = 0; i < HOUR_IN_DAY; i++) {
             dayDashboardItems.add(new DashboardLiveItem(i));
@@ -53,11 +56,16 @@ public class ActivityTrackerService {
         Collections.rotate(dayDashboardItems, -rotateIdx);
     }
     
+    /**
+     * currentItem.
+     * @return  DashboardLiveItem
+     */
     private DashboardLiveItem currentItem() {
         return dayDashboardItems.get(0);
     }
     
     /**
+     * changeHour.
      * executed every hour (H:00:00).
      */
     @Scheduled(cron="0 0 * * * *")
@@ -67,6 +75,7 @@ public class ActivityTrackerService {
     }
     
     /**
+     * changeDay.
      *  executed every day (0:00:01).
      */
     @Scheduled(cron="1 0 0 * * *")
@@ -77,6 +86,10 @@ public class ActivityTrackerService {
         }
     }
 
+    /**
+     * getActivityOfDay.
+     * @return DashboardLive
+     */
     public DashboardLive getActivityOfDay() {
         DashboardLive dayActivityDashboard = new DashboardLive();
         for (DashboardLiveItem item : dayDashboardItems) {
@@ -85,18 +98,27 @@ public class ActivityTrackerService {
         return dayActivityDashboard;
     }
     
+    /**
+     * getActivity.
+     * @return list ContributeurAction
+     */
     public List<ContributeurAction> getActivity() {
     	return contributeurActionRepository.findLastDays(10);
     }
 
     /**
-     * @see com.github.cunvoas.iam.service.DashBoardMonitor#getActivityByHour()
+     * getActivityByHour.
+     * @return list DashboardLiveItem
      */
     public List<DashboardLiveItem> getActivityByHour() {
         return dayDashboardItems;
     }
 
 
+    /**
+     * incrementUniqueUser.
+     * @param userId add user connected
+     */
     public void incrementUniqueUser(Long userId) {
         if (!uniqueUserId.contains(userId)) {
             uniqueUserId.add(userId);
@@ -104,23 +126,44 @@ public class ActivityTrackerService {
         }
     }
 
+    /**
+     * incrementNbAdminActivity.
+     * @param ca user action
+     */
     public void incrementNbAdminActivity(ContributeurAction ca) {
         currentItem().addNbAdminActivity();
         this.addStat(Stats.EVT_ADMIN, ca);
     }
+    /**
+     * incrementNbEntranceActivity.
+     * @param ca user action
+     */
     public void incrementNbEntranceActivity(ContributeurAction ca) {
         currentItem().addNbEntranceActivity();
         this.addStat(Stats.EVT_ENTRANCE, ca);
     }
+    /**
+     * incrementNbParkActivity.
+     * @param ca user action
+     */
     public void incrementNbParkActivity(ContributeurAction ca) {
         currentItem().addNbParkActivity();
         this.addStat(Stats.EVT_PARK, ca);
     }
+    /**
+     * incrementNbIsochroneActivity.
+     * @param ca user action
+     */
     public void incrementNbIsochroneActivity(ContributeurAction ca) {
         currentItem().addNbIsochroneActivity();
         this.addStat(Stats.EVT_ISOCHRONE, ca);
     }
     
+    /**
+     * addStat.
+     * @param action action
+     * @param ca user action
+     */
     private void addStat(String action, ContributeurAction ca) {
     	Long uid = getUserId();
     	if (uid!=null) {
@@ -145,6 +188,10 @@ public class ActivityTrackerService {
     	}
     }
     
+    /**
+     * getUserId.
+     * @return id user connectd
+     */
     private Long getUserId() {
     	Long id=null;
     	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

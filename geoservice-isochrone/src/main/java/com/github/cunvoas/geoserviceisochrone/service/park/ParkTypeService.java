@@ -29,6 +29,9 @@ public class ParkTypeService {
 	@Autowired
 	private ResourceBundleMessageSource messageSource;
 	
+	/**
+	 * @return list ParkType
+	 */
 	public List<ParkType> findAll() {
 		
 		List<ParkType> types = parkTypeRepository.findAll();
@@ -39,6 +42,10 @@ public class ParkTypeService {
 		return types;
 	}
 	
+	/**
+	 * setLabel.
+	 * @param parkType ParkType
+	 */
 	public void setLabel(ParkType parkType) {
 		Locale locale = LocaleContextHolder.getLocale();
 		String trad = "";
@@ -51,6 +58,10 @@ public class ParkTypeService {
 		parkType.setStrict(strict);
 	}
 	
+	/**
+	 * populate.
+	 * @param parkAreas list
+	 */
 	public void populate(List<ParkArea> parkAreas) {
 		if (!CollectionUtils.isEmpty(parkAreas)) {
 			for (ParkArea parkArea : parkAreas) {
@@ -59,6 +70,11 @@ public class ParkTypeService {
 		}
 	}
 	
+	/**
+	 * get.
+	 * @param parkTypeId id
+	 * @return ParkType
+	 */
 	public ParkType get(Long parkTypeId) {
 		ParkType pt = null;
 		Optional<ParkType> o = parkTypeRepository.findById(parkTypeId);
@@ -70,6 +86,10 @@ public class ParkTypeService {
 	}
 	
 	
+	/**
+	 * populate.
+	 * @param parkArea ParkArea
+	 */
 	public void populate(ParkArea parkArea) {
 		Locale locale = LocaleContextHolder.getLocale();
 		ParkType parkType = parkArea.getType();

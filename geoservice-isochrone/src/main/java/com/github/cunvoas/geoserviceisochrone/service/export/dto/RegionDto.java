@@ -9,7 +9,11 @@ import lombok.Data;
  */
 @Data
 public class RegionDto {
-	
+
+	/**
+	 * Constructor
+	 * @param model BO
+	 */
 	public RegionDto(Region model) {
 		super();
 		this.id=model.getId();

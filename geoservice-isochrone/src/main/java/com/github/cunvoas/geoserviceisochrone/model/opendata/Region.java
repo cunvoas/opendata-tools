@@ -44,7 +44,10 @@ public class Region implements Comparator<Region> {
 	
 	@OneToMany( targetEntity=City.class, mappedBy="region" )
 	private List<City> cities;
-
+	
+	/**
+	 * @see java.lang.Comparable.compareTo(java.lang.Object)
+	 */
 	@Override
 	public int compare(Region arg0, Region arg1) {
 		if (arg0!=null && arg0.getName()!=null && arg1!=null) {

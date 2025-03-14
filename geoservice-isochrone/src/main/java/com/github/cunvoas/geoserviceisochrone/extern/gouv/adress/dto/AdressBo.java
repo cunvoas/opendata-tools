@@ -18,6 +18,9 @@ public class AdressBo implements Comparable<AdressBo>{
     
 	private Point point; // geopoint
 
+	/**
+	 * @see java.lang.Comparable.compareTo(java.lang.Object)
+	 */
 	@Override
 	public int compareTo(AdressBo other) {
 		return (new CompareToBuilder())

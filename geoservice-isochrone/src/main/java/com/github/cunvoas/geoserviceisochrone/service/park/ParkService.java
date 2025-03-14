@@ -86,6 +86,11 @@ public class ParkService {
 	
 	
 	
+	/**
+	 * getParkAreaById.
+	 * @param id ParkArea
+	 * @return ParkArea
+	 */
 	public ParkArea getParkAreaById(Long id) {
 		Optional<ParkArea> opt=parkAreaRepository.findById(id);
 		if (opt.isPresent()) {
@@ -93,10 +98,20 @@ public class ParkService {
 		}
 		return null;
 	}
+	/**
+	 * getParkAreaByIdParcEtJardin.
+	 * @param id ParcEtJardin
+	 * @return arkArea
+	 */
 	public ParkArea getParkAreaByIdParcEtJardin(Long id) {
 		return parkAreaRepository.findByIdParcEtJardin(id);
 	}
 	
+	/**
+	 * getParcEtJardinById.
+	 * @param id ParcEtJardin
+	 * @return ParcEtJardin
+	 */
 	public ParcEtJardin getParcEtJardinById(Long id) {
 		Optional<ParcEtJardin> opt=parkJardinRepository.findById(id);
 		if (opt.isPresent()) {
@@ -106,10 +121,11 @@ public class ParkService {
 	}
 	
 	/**
-	 * @param parkEntrance
+	 * saveEdited.
+	 * @param parkEntrance entrance
 	 * @param withIgn true if isochrone request required
 	 * @param cityId city to get density of the city
-	 * @return
+	 * @return ParkEntrance
 	 */
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public ParkEntrance saveEdited(ParkEntrance parkEntrance,boolean withIgn, Long gardenId, Long cityId){
@@ -165,10 +181,10 @@ public class ParkService {
 	
 	
 	/**
-	 * refresh and save
-	 * @param parkEntrance
-	 * @param distance
-	 * @return
+	 * refresh and save.
+	 * @param parkEntrance  Entrance
+	 * @param distance in metre
+	 * @return ParkEntrance
 	 */
 	public ParkEntrance refreshIsochrone(ParkEntrance parkEntrance, String distance) {
 		log.warn("refreshIsochrone {}", parkEntrance);
@@ -199,8 +215,9 @@ public class ParkService {
 	
 	
 	/**
-	 * @param pivot
-	 * @throws IOException
+	 * importIsoChroneEntrance.
+	 * @param pivot CsvMassUpdatePivot
+	 * @throws IOException ex
 	 */
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public void importIsoChroneEntrance(CsvMassUpdatePivot pivot) throws IOException {
@@ -281,8 +298,9 @@ public class ParkService {
 	
 	
 	/**
-	 * @param listCsvMassUpdatePivot
-	 * @throws IOException
+	 * importIsoChroneEntrance.
+	 * @param listCsvMassUpdatePivot list
+	 * @throws IOException ex
 	 */
 	public void importIsoChroneEntrance(List<CsvMassUpdatePivot> listCsvMassUpdatePivot) throws IOException {
 		for (CsvMassUpdatePivot pivot : listCsvMassUpdatePivot) {
@@ -292,8 +310,8 @@ public class ParkService {
 	
 	/**
 	 * Import CSV file and generate iso-chrone.
-	 * @param file
-	 * @throws IOException
+	 * @param file csv file
+	 * @throws IOException ex
 	 * @see https://postgis.net/docs/reference.html#operators-distance
 	 */
 	public void importIsoChroneEntrance(File file) throws IOException {
@@ -352,6 +370,11 @@ public class ParkService {
 	}
 	
 	
+	/**
+	 * importOpenDataMelParcJardin.
+	 * @param csv file
+	 * @throws IOException ex
+	 */
 	public void importOpenDataMelParcJardin(File csv) throws IOException {
 		List<ParcEtJardin> parks = csvMelParkJardinParser.parseCsv(csv);
 		for (ParcEtJardin parcEtJardin : parks) {
@@ -360,6 +383,11 @@ public class ParkService {
 		}
 	}	
 	
+	/**
+	 * importParcJardin.
+	 * @param parks list
+	 * @throws IOException ex
+	 */
 	public void importParcJardin(List<ParcEtJardin> parks) throws IOException {
 		for (ParcEtJardin parcEtJardin : parks) {
 			parkJardinRepository.save(parcEtJardin);
@@ -367,6 +395,10 @@ public class ParkService {
 	}	
 		
 	
+	/**
+	 * mergeEntranceAreas.
+	 * @param parkArea shape
+	 */
 	private void mergeEntranceAreas(ParkArea parkArea) {
 		Polygon merged=null;
 		
@@ -398,11 +430,19 @@ public class ParkService {
 	}
 	
 	
+	/**
+	 * mergeParkAreaEntrance.
+	 * @param parkArea model
+	 * @return ParkArea
+	 */
 	public ParkArea mergeParkAreaEntrance(ParkArea parkArea) {
 		this.mergeEntranceAreas(parkArea);
 		return parkAreaRepository.save(parkArea);
 	}
 	
+	/**
+	 * mergeUpdatedEntranceAreas.
+	 */
 	public void mergeUpdatedEntranceAreas() {
 		List<ParkArea> areas = parkAreaRepository.polygonToUpdate();
 		for (ParkArea parkArea : areas) {

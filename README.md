@@ -23,7 +23,7 @@ Projet de traitement et données, contenant les calculs, les services web et la 
 
 ## geoservice-map-vue3
 Projet de l'interface graphique qui représente les données sous la forme de cartes.
-[Détail du projet](./geoservice-map/README.md)
+[Détail du projet](./geoservice-map-vue3/README.md)
 
 
 ## opendata-tool-spare-data

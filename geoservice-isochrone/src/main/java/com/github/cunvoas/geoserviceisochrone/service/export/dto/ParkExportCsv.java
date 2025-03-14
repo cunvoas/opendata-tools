@@ -47,10 +47,18 @@ public class ParkExportCsv {
 		
 		private String column;
 
+		/**
+		 * Constructor.
+		 * @param column
+		 */
 		ParkExportCsvHeaders(String column) {
 			this.column = column;
 		}
 
+		/**
+		 * getColumn.
+		 * @return column name
+		 */
 		public String getColumn() {
 			return column;
 		}
@@ -65,11 +73,19 @@ public class ParkExportCsv {
 			}
 		}
 
-		// This method can be used for reverse lookup purpose
+		/**
+		 * This method can be used for reverse lookup purpose.
+		 * @param column  columns
+		 * @return  ParkExportCsvHeaders
+		 */
 		public static ParkExportCsvHeaders get(String column) {
 			return lookup.get(column);
 		}
 		
+		/**
+		 * get header.
+		 * @return col names
+		 */
 		public static List<String> header() {
 			List<String> ret = new ArrayList<>();
 			ret.addAll(lookup.keySet());
@@ -78,12 +94,22 @@ public class ParkExportCsv {
 
 	}
 	
+	/**
+	 * initCSVFormat.
+	 * @return CSVFormat
+	 */
 	private CSVFormat initCSVFormat() {
 		return  CSVFormat.DEFAULT.builder()
 		        .setHeader(ParkExportCsvHeaders.class)
 	        	.build();
 	}
 	
+	/**
+	 * write.
+	 * @param csvFile file
+	 * @param rows list of rows
+	 * @throws IOException ex
+	 */
 	public void write(File csvFile, List<ParkExportLine> rows) throws IOException {
 		CSVFormat csvFormat = initCSVFormat();
 		
@@ -100,6 +126,12 @@ public class ParkExportCsv {
 		csvFilePrinter.close();
 	}
 
+	/**
+	 * steam.
+	 * @param lines ParkExportLine
+	 * @return OutputStream
+	 * @throws IOException
+	 */
 	public OutputStream steam(List<ParkExportLine> lines) throws IOException {
 		OutputStream os = new ByteArrayOutputStream();
 		
@@ -107,6 +139,13 @@ public class ParkExportCsv {
 		return os;
 	}
 	
+	/**
+	 * steam.
+	 * @param os OutputStream
+	 * @param lines ParkExportLine
+	 * @return OutputStream
+	 * @throws IOException ex
+	 */
 	public OutputStream steam(OutputStream os, List<ParkExportLine> lines) throws IOException {
 		CSVFormat csvFormat = initCSVFormat();
 		String encoding="UTF-8";
@@ -122,6 +161,12 @@ public class ParkExportCsv {
 		return os;
 	}
 	
+	/**
+	 * drawLine.
+	 * @param csvFormat format
+	 * @param cols columns
+	 * @return line
+	 */
 	private String drawLine(CSVFormat csvFormat , String[] cols) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < cols.length; i++) {

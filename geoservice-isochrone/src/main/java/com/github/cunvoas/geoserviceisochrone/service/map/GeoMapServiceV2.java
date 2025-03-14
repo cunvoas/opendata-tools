@@ -104,7 +104,6 @@ public class GeoMapServiceV2 {
 	public String THRESHOLD_NOT_COMPUTED="#4944f5";
 	
 	
-	
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
     @Autowired
@@ -135,8 +134,9 @@ public class GeoMapServiceV2 {
 	private ParkTypeService parkTypeService;
 	
 	/**
-	 * @param id
-	 * @return
+	 * findCadastreByCity.
+	 * @param id City
+	 * @return GeoJson of adastre
 	 */
 	public GeoJsonRoot findCadastreByCity(Long id) {
 		GeoJsonRoot root = new GeoJsonRoot();
@@ -163,7 +163,8 @@ public class GeoMapServiceV2 {
 	}
 	
 	/**
-	 * @param id
+	 * findAllCadastreByComm2Co.
+	 * @param id Comm2Co
 	 * @return Cadastre geojson
 	 */
 	public GeoJsonRoot findAllCadastreByComm2Co(Long id) {
@@ -206,10 +207,11 @@ public class GeoMapServiceV2 {
 	
 	
     /**
-     * @param swLat
-     * @param swLng
-     * @param neLat
-     * @param neLng
+     * findAllCadastreByArea.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
      * @return  Cadastre geojson
      */
 	public GeoJsonRoot findAllCadastreByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
@@ -237,10 +239,11 @@ public class GeoMapServiceV2 {
     
     
     /**
-     * @param swLat
-     * @param swLng
-     * @param neLat
-     * @param neLng
+     * findAllParkByArea.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
      * @return  Isochrone geojson
      */
     
@@ -250,17 +253,26 @@ public class GeoMapServiceV2 {
     }
 	
 	/**
-	 * @param annee
-	 * @param swLat
-	 * @param swLng
-	 * @param neLat
-	 * @param neLng
-	 * @return kOutline geojson
+	 * findAllParkOutlineByArea.
+	 * @param annee year
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return Outline geojson
 	 */
 	public GeoJsonRoot findAllParkOutlineByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllParkOutlineByArea(polygon, annee);
     }
+	/**
+     * findAllParkOutlineByArea.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return Outline geojson
+	 */
 	public GeoJsonRoot findAllParkOutlineByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllParkOutlineByArea(polygon);
@@ -268,11 +280,12 @@ public class GeoMapServiceV2 {
     
     
 	/**
-	 * @param swLat
-	 * @param swLng
-	 * @param neLat
-	 * @param neLng
-	 * @return   Park Prefecture geojson
+     * findParkPrefectureByArea.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return   ParcPrefecture geojson
 	 */
 	public GeoJsonRoot findParkPrefectureByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
@@ -281,10 +294,11 @@ public class GeoMapServiceV2 {
     
     
 	/**
-	 * @param swLat
-	 * @param swLng
-	 * @param neLat
-	 * @param neLng
+     * findParcEtJardinByArea.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
 	 * @return   Isochrone geojson
 	 */
 	public GeoJsonRoot findParcEtJardinByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
@@ -295,8 +309,8 @@ public class GeoMapServiceV2 {
     
     /**
      * shuffle color of polygons.
-     * @param index
-     * @return
+     * @param index idx
+     * @return 
      * @deprecated
      */
     @Deprecated
@@ -325,10 +339,9 @@ public class GeoMapServiceV2 {
     
     /**
      * isochrone of each entrance
-     * @param idPark
-     * @return   Isochrone geojson
+     * @param idPark Park
+     * @return Isochrone geojson
      */
-    
 	public GeoJsonRoot findIsochroneParkEntrance(Long idPark) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		List<ParkEntrance> entrances = parkEntranceRepository.findByParkId(idPark);
@@ -352,7 +365,8 @@ public class GeoMapServiceV2 {
     }
     
 	/**
-	 * @param idPark
+	 * findIsochronePark.
+	 * @param idPark parc
 	 * @return   Isochrone geojson
 	 */
 	public GeoJsonRoot findIsochronePark(Long idPark) {
@@ -376,9 +390,10 @@ public class GeoMapServiceV2 {
     
     
 	/**
-	 * @param polygon
-	 * @param annee
-	 * @return
+	 * findAllParkOutlineByArea.
+	 * @param polygon Polygon
+	 * @param annee year
+	 * @return ParkOutline geojson
 	 */
 	public GeoJsonRoot findAllParkOutlineByArea(Polygon polygon, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
@@ -405,9 +420,9 @@ public class GeoMapServiceV2 {
 	
 
 	/**
-	 * @param polygon
-	 * @param annee
-	 * @return
+	 * findAllParkOutlineByArea.
+	 * @param polygon Polygon
+	 * @return ParkOutline geojson
 	 */
 	public GeoJsonRoot findAllParkOutlineByArea(Polygon polygon) {
 		GeoJsonRoot root = new GeoJsonRoot();
@@ -449,7 +464,8 @@ public class GeoMapServiceV2 {
 	}
 	
 	/**
-	 * @param polygon
+	 * findAllParkByArea.
+	 * @param polygon Polygon
 	 * @return   Isochrone geojson
 	 */
 	public GeoJsonRoot findAllParkByArea(Polygon polygon, Integer annee) {
@@ -487,7 +503,8 @@ public class GeoMapServiceV2 {
 	
 	
 	/**
-	 * @param polygon
+	 * findParcEtJardinByArea.
+	 * @param polygon Polygon
 	 * @return   Parc Point geojson
 	 */
 	public GeoJsonRoot findParcEtJardinByArea(Polygon polygon) {
@@ -525,6 +542,11 @@ public class GeoMapServiceV2 {
 	}
 	
 	
+	/**
+	 * findParkPrefectureByArea.
+	 * @param polygon Polygon
+	 * @return  GeoJso ParkPrefecture
+	 */
 	public GeoJsonRoot findParkPrefectureByArea(Polygon polygon) {
 		GeoJsonRoot root = new GeoJsonRoot();
 
@@ -595,8 +617,9 @@ public class GeoMapServiceV2 {
 	}
 
 	/**
-	 * @param pv
-	 * @param areaCputed
+	 * getFillColorPark.
+	 * @param pv DTO
+	 * @param areaCputed ParkAreaComputed
 	 * @return color of an isochrone park.
 	 */
 	protected String getFillColorPark(ParkView pv, ParkAreaComputed areaCputed) {
@@ -634,10 +657,10 @@ public class GeoMapServiceV2 {
 	}
 	
 	/**
-	 * @param pv
-	 * @param pac
+	 * extraFeature.
+	 * @param pv DTO
+	 * @param pac ParkAreaComputed
 	 */
-	
 	protected void extraFeature(ParkView pv, ParkAreaComputed pac) {
 		
 		NumberFormat nf = new DecimalFormat("# ##0");
@@ -652,12 +675,23 @@ public class GeoMapServiceV2 {
 	}
 	
 
+	/**
+	 * fromDouble.
+	 * @param d Double
+	 * @return BigDecimal
+	 */
 	protected BigDecimal fromDouble(Double d) {
 		NumberFormat formatter = new DecimalFormat("#0");     
 		return new BigDecimal(formatter.format(d));
 	}
 	
 	
+	/**
+	 * getFillColorCarre.
+	 * @param v Carre200AndShapeView
+	 * @param pacEd InseeCarre200mComputedV2
+	 * @return color
+	 */
 	protected String getFillColorCarre(Carre200AndShapeView v, InseeCarre200mComputedV2 pacEd) {
 		String color = THRESHOLD_GREENWASHED;
 
@@ -709,9 +743,9 @@ public class GeoMapServiceV2 {
 		
 	}
 	
-	
 	/**
-	 * @param sph
+	 * getColorGrey.
+	 * @param sph number
 	 * @return gradient color
 	 */
 	protected String getColorGrey(Double sph) {
@@ -735,8 +769,8 @@ public class GeoMapServiceV2 {
 	
 	/**
 	 * format an integer .
-	 * @param v
-	 * @return
+	 * @param v  number
+	 * @return num as string
 	 */
 	protected String formatInt(BigDecimal v) {
 		if (v!=null) {
@@ -748,8 +782,8 @@ public class GeoMapServiceV2 {
 	
 	/**
 	 * format a decimal.
-	 * @param v
-	 * @return
+	 * @param v number
+	 * @return num as string
 	 */
 	public String formatDec(BigDecimal v) {
 		if (v!=null) {
@@ -759,9 +793,11 @@ public class GeoMapServiceV2 {
 	}
 	
 	 /**
-	 * @param polygon
-	 * @return
+	 * findAllCarreByArea.
+	 * @param polygon Polygon
+	 * @return GeoJson Carre
 	 * @FIXME until final front permit to change year.
+	 * @deprecated
 	 */
 	public GeoJsonRoot findAllCarreByArea(Polygon polygon) {
 		//FIXME until final front permit to change year
@@ -771,9 +807,10 @@ public class GeoMapServiceV2 {
 	 
     /**
      * GET ALL IRIS in the map.
-     * @param polygon
-     * @return
-     */
+	 * @param com2co CommunauteCommune
+	 * @param annee year
+	 * @return GeoJson carre 
+	 */
 	public GeoJsonRoot findAllCarreByCommunauteCommune(CommunauteCommune com2co, Integer annee) {
 		log.error("findAllCarreByArea(CommunauteCommune {}, Integer annee {})", com2co.getName(), annee);
     	GeoJsonRoot root = null;
@@ -792,6 +829,12 @@ public class GeoMapServiceV2 {
     	return root;
 	}
 	
+	/**
+	 * findAllCarreByArea.
+	 * @param carres shapes
+	 * @param annee year
+	 * @return GeoJson carre 
+	 */
 	protected GeoJsonRoot findAllCarreByArea(Collection<InseeCarre200mOnlyShape> carres, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		
@@ -864,6 +907,12 @@ public class GeoMapServiceV2 {
 		return root;
 	}
 	
+	/**
+	 * findAllCarreByArea.
+	 * @param polygon Polygon
+	 * @param annee year
+	 * @return GeoJson carre 
+	 */
 	public GeoJsonRoot findAllCarreByArea(Polygon polygon, Integer annee) {
 		log.error("findAllCarreByArea(Polygon polygon, Integer annee {})", annee);
 		GeoJsonRoot root = null;
@@ -874,11 +923,28 @@ public class GeoMapServiceV2 {
     	return root;
     }
     
+	/**
+     * findAllCarreByArea.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return GeoJson carre 
+	 */
 	public GeoJsonRoot findAllCarreByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
 		Integer annee = applicationBusinessProperties.getDerniereAnnee();
     	return this.findAllCarreByArea(annee, swLat, swLng, neLat, neLng);
     }
     
+	/**
+	 * findAllCarreByArea.
+	 * @param annee year
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return GeoJson carre 
+	 */
 	public GeoJsonRoot findAllCarreByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllCarreByArea(polygon, annee);
@@ -887,10 +953,9 @@ public class GeoMapServiceV2 {
     
     /**
      * Truncate decimal values ti reduce response size.
-     * @param inssePop
-     * @return
+     * @param inssePop population
+     * @return  population
      */
-    
 	protected String formatPopulation(String inssePop) {
     	String ret = "";
     	if (StringUtils.isNotBlank(inssePop)) {
@@ -930,10 +995,11 @@ public class GeoMapServiceV2 {
     
 
     /**
-     * @param swLat
-     * @param swLng
-     * @param neLat
-     * @param neLng
+     * getPolygonFromBounds.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
      * @return
      */
     protected Polygon getPolygonFromBounds(Double swLat, Double swLng, Double neLat, Double neLng) {
