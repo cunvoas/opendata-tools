@@ -82,6 +82,12 @@ public class ParkNewControler {
 	
 	private String formName = "newPark";
 
+	/**
+	 * select region.
+	 * @param form form
+	 * @param model form
+	 * @return page name populated
+	 */
 	@PostMapping("/region")
 	public String changeRegion(@ModelAttribute FormParkNew form, Model model) {
 		form.setIdCommunauteDeCommunes(null);
@@ -89,6 +95,12 @@ public class ParkNewControler {
 		return getForm(form, model);
 	}
 	
+	/**
+	 * list com2co.
+	 * @param id region
+	 * @param txt search
+	 * @return list
+	 */
 	@GetMapping("/comm2co")
 	public List<CommunauteCommune> getCommunauteCommuneByRegion(@RequestParam("regionId") Long id, @RequestParam("txt") String txt){
 		
@@ -109,13 +121,25 @@ public class ParkNewControler {
 					.collect(Collectors.toList());
 		}
 	}
-	
+
+	/**
+	 * select com2co.
+	 * @param form form
+	 * @param model form
+	 * @return page name populated
+	 */
 	@PostMapping("/commDeCo")
 	public String changeCommunauteDeCommune(@ModelAttribute FormParkNew form, Model model) {
 		form.setIdCommune(null);
 		return getForm(form, model);
 	}
-	
+
+	/**
+	 * select city.
+	 * @param form form
+	 * @param model form
+	 * @return page name populated
+	 */
 	@PostMapping("/city")
 	public String changeCity(@ModelAttribute FormParkNew form, Model model) {
 		Coordinate location = serviceReadReferences.getCoordinate(form.getIdCommune());
@@ -125,6 +149,13 @@ public class ParkNewControler {
 	}
 	
 	
+	/**
+	 * get for check.
+	 * @param idPark park
+	 * @param form form
+	 * @param model form
+	 * @return page name populated
+	 */
 	@GetMapping("/check")
 	public String checkPark(
 			@RequestParam("idPark") Long idPark,
@@ -135,6 +166,11 @@ public class ParkNewControler {
 		return getForm(form, model, pj);
 	}
 	
+	/**
+	 * mapper 
+	 * @param form form
+	 * @return BO
+	 */
 	protected ParcEtJardin map(final FormParkNew form) {
 		ParcEtJardin pj=null;
 		if (form.getIdPark()!=null) {
@@ -210,6 +246,13 @@ public class ParkNewControler {
 	}
 	
 	
+	/**
+	 * save.
+	 * @param form form
+	 * @param model form
+	 * @param bindingResult binding
+	 * @return page name populated
+	 */
 	@PostMapping("/save")
 	@Transactional //(isolation = Isolation.READ_COMMITTED) //(noRollbackFor = ExceptionGeo.class)
 	public String save(@ModelAttribute FormParkNew form, Model model, BindingResult bindingResult) {
@@ -259,44 +302,44 @@ public class ParkNewControler {
 		return getForm(form, model, pj);
 	}
 	
-	protected void addPark( FormParkNew form, Model model) {
-		//TODO
-		
-		 if("pref".equals(form.getEtat())) {
-			 
-			 
-		 } else if ("p&j".equals(form.getEtat())) {
-			 
-		 }
-		
-	}
-	
-	protected void updPark( FormParkNew form, Model model) {
-		//TODO
-		
-	}
-	
-	protected void delPark( FormParkNew form, Model model) {
-		//TODO
-		
-		 if("pref".equals(form.getEtat())) {
-			 Optional<ParcPrefecture> opt = serviceReadReferences.getParcPrefectureById( form.getId());
-			 if (opt.isPresent()) {
-				 ParcPrefecture pp = opt.get();
-				 // logical delete
-				 pp.setStatus(ParcStatusPrefEnum.CANCEL);
-				 serviceParcPrefecture.update(pp);
-			 }
-			 form.setId(null);
-			 form.setEtat(null);
-			 form.setEtatAction(null);
-			 
-			 
-		 } else if ("p&j".equals(form.getEtat())) {
-			 
-		 }
-		
-	}
+//	protected void addPark( FormParkNew form, Model model) {
+//		//TODO
+//		
+//		 if("pref".equals(form.getEtat())) {
+//			 
+//			 
+//		 } else if ("p&j".equals(form.getEtat())) {
+//			 
+//		 }
+//		
+//	}
+//	
+//	protected void updPark( FormParkNew form, Model model) {
+//		//TODO
+//		
+//	}
+//	
+//	protected void delPark( FormParkNew form, Model model) {
+//		//TODO
+//		
+//		 if("pref".equals(form.getEtat())) {
+//			 Optional<ParcPrefecture> opt = serviceReadReferences.getParcPrefectureById( form.getId());
+//			 if (opt.isPresent()) {
+//				 ParcPrefecture pp = opt.get();
+//				 // logical delete
+//				 pp.setStatus(ParcStatusPrefEnum.CANCEL);
+//				 serviceParcPrefecture.update(pp);
+//			 }
+//			 form.setId(null);
+//			 form.setEtat(null);
+//			 form.setEtatAction(null);
+//			 
+//			 
+//		 } else if ("p&j".equals(form.getEtat())) {
+//			 
+//		 }
+//		
+//	}
 	
 	
 	

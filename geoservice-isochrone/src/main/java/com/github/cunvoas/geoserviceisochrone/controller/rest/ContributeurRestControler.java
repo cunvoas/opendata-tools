@@ -43,9 +43,9 @@ public class ContributeurRestControler {
 	
 	 /**
 	 * search c2c.
-	 * @param idRegion
-	 * @param query
-	 * @return
+	 * @param idRegion idRegion
+	 * @param query query
+	 * @return DTO list
 	 */
 	@GetMapping("/search_c2c")
 	 public List<SearchListDto> searchC2C(
@@ -70,10 +70,10 @@ public class ContributeurRestControler {
 
 	 /**
 	 * search city.
-	 * @param idRegion
-	 * @param idC2C
-	 * @param query
-	 * @return
+	 * @param idRegion idRegion
+	 * @param idC2C idC2C
+	 * @param query request
+	 * @return DTO list
 	 */
 	@GetMapping("/search_city")
 	 public List<SearchListDto> searchCity(
@@ -140,12 +140,12 @@ public class ContributeurRestControler {
     }
 
 
-    // Generic function to convert a list to stream
+    // 
     /**
-     * make a stream.
-     * @param <T>
-     * @param list
-     * @return
+     * Generic function to convert a list to stream.
+     * @param <T> genric
+     * @param list list of items
+     * @return steam from items
      */
     private static <T> Stream<T> convertListToStream(List<T> list) {
         return list.stream();
@@ -153,8 +153,8 @@ public class ContributeurRestControler {
     
     /**
      * mapper.
-     * @param bean
-     * @return
+     * @param bean model
+     * @return DTO list
      */
     private SearchListDto mapToDto(CommunauteCommune bean) {
         return SearchListDto.builder()
@@ -165,8 +165,8 @@ public class ContributeurRestControler {
     
     /**
      * mapper.
-     * @param bean
-     * @return
+     * @param bean model
+     * @return DTO list
      */
     private SearchListDto mapToDto(City bean) {
         return SearchListDto.builder()
@@ -177,8 +177,8 @@ public class ContributeurRestControler {
     
     /**
      * letter normalizer.
-     * @param q
-     * @return
+     * @param q query
+     * @return normalised string
      */
     private String normalise(String q) {
     	if (q!=null) {

@@ -33,7 +33,7 @@ public class GeoserviceIsochroneApplication {
 		
 	/**
 	 * main.
-	 * @param args
+	 * @param args params
 	 */
 	public static void main(String[] args) {
 		SpringApplication.run(GeoserviceIsochroneApplication.class, args);
@@ -41,7 +41,7 @@ public class GeoserviceIsochroneApplication {
 	
     /**
      * activate tasks.
-     * @return
+     * @return Executor
      */
     @Bean
     public Executor taskExecutor() {
@@ -51,7 +51,7 @@ public class GeoserviceIsochroneApplication {
 
     /**
      * setup schduler.
-     * @return
+     * @return TaskScheduler
      */
     @Bean
     public TaskScheduler taskScheduler() {

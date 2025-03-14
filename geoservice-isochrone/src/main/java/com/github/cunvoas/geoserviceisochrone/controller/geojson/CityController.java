@@ -23,11 +23,23 @@ public class CityController {
     @Autowired
     private CityService service;
 
+    /**
+     * list all city.
+     * @param pageable page
+     * @return cities
+     */
     @GetMapping
     public Page<City> getCityPage(Pageable pageable) {
         return service.findAll(pageable);
     }
 
+    /**
+     * list all city.
+     * @param lat latitude
+     * @param lon longitune
+     * @param distanceM distance by meters
+     * @return cities
+     */
     @GetMapping("{lat}/{lon}/{distanceM}")
     public List<City> getCityNear(
             @PathVariable double lat,

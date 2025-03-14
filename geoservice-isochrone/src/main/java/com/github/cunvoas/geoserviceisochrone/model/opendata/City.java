@@ -67,7 +67,9 @@ public class City implements Comparator<City> {
 		return postalCode+" - "+name;
 	}
 
-
+	/**
+	 * @see java.lang.Comparable.compareTo(java.lang.Object)
+	 */
 	@Override
 	public int compare(City arg0, City arg1) {
 		if (arg0!=null && arg0.getName()!=null && arg1!=null) {

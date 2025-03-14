@@ -34,6 +34,11 @@ public class AssociationControler {
 	@Autowired
 	private AssociationService associationService;
 
+	/**
+	 * call list page.
+	 * @param model form model
+	 * @return page name
+	 */
 	@GetMapping("/list")
 	public String getList(Model model) {
 		Contributeur contrib =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -42,6 +47,10 @@ public class AssociationControler {
 		return listName;
 	}
 	
+	/**
+	 * @param model form model
+	 * @return page name
+	 */
 	@GetMapping("/add")
 	public String add(Model model) {
 		Association association = new Association();
@@ -51,6 +60,12 @@ public class AssociationControler {
 	}
 	
 	
+	/**
+	 * call edit page.
+	 * @param id of asso
+	 * @param model form model
+	 * @return page name
+	 */
 	@GetMapping("/edit")
 	public String edit(@RequestParam Long id, Model model) {
 		Association association = associationService.findById(id);
@@ -59,6 +74,14 @@ public class AssociationControler {
 		return formName;
 	}
 
+	/**
+	 * save methode.
+	 * @param asso BO
+	 * @param bindingResult html bind
+	 * @param modelMap map
+	 * @param model form
+	 * @return page name
+	 */
 	@PostMapping("/edit")
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public String save(@ModelAttribute Association asso, 

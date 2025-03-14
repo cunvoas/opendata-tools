@@ -13,10 +13,17 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyS
  */
 public class ComputeDto {
 	
+	/**
+	 * Constructor.
+	 */
 	public ComputeDto() {
 		super();
 	}
 	
+	/**
+	 * Constructor.
+	 * @param carreShape shape
+	 */
 	public ComputeDto(InseeCarre200mOnlyShape carreShape) {
 		super();
 		this.polygonParkAreas=carreShape.getGeoShape();

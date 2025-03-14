@@ -12,5 +12,10 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.Laposte;
  */
 @Repository
 public interface LaposteRepository extends JpaRepository<Laposte, String>{
+	/**
+	 * findByPostalCode
+	 * @param postalCode code
+	 * @return list Laposte
+	 */
 	List<Laposte> findByPostalCode(String postalCode);
 }

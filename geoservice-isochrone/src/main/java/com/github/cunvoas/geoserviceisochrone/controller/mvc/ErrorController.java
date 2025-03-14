@@ -29,6 +29,12 @@ public class ErrorController  extends ResponseEntityExceptionHandler{
 
 
 
+	/**
+	 * exception controler.
+	 * @param throwable the exception
+	 * @param model form 
+	 * @return error page
+	 */
 	@ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String exception(final Throwable throwable, final Model model) {

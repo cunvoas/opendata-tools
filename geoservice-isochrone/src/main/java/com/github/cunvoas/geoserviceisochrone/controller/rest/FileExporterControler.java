@@ -37,9 +37,9 @@ public class FileExporterControler {
 	
 	/**
 	 * write geojson.
-	 * @param credKey
-	 * @param request
-	 * @return
+	 * @param credKey creds
+	 * @param request http req
+	 * @return http status
 	 */
 	@GetMapping("/json")
 	public ResponseEntity<Boolean> exportLocations( @RequestParam("key") String credKey, HttpServletRequest request) {
@@ -85,9 +85,9 @@ public class FileExporterControler {
 	
 
 	/**
-	 * check autoriezd IPs.
-	 * @param ip
-	 * @return
+	 * check autorized IPs.
+	 * @param ip ip to check
+	 * @return checked or not
 	 */
 	private Boolean matchOk(String ip) {
 		log.info("exportLocations->matchOk: {}", ip);
@@ -102,7 +102,7 @@ public class FileExporterControler {
 			boolean mem=true;
 			for (int i = 0; i < 3; i++) {
 				// OR at least one false, all is false
-				mem=mem || creds[i]==ips[i];
+				mem = mem || creds[i].equals(ips[i]);
 			}
 			ret=mem;
 		}
@@ -125,8 +125,8 @@ public class FileExporterControler {
 	
 	/**
 	 * get IP.
-	 * @param request
-	 * @return
+	 * @param request http req
+	 * @return IP of http client
 	 */
 	protected static String getClientIp(HttpServletRequest request) {
         for (String header: IP_HEADER_CANDIDATES) {

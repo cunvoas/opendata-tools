@@ -14,6 +14,12 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComp
 @Repository
 public interface InseeCarre200mComputedV2Repository extends JpaRepository<InseeCarre200mComputedV2, InseeCarre200mComputedId>{
 
+	/**
+	 * findByAnneeAndIdInspire.
+	 * @param annee year
+	 * @param idInspire code inspire
+	 * @return InseeCarre200mComputedV2
+	 */
 	Optional<InseeCarre200mComputedV2> findByAnneeAndIdInspire(Integer annee, String idInspire);
 	
 }

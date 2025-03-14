@@ -52,6 +52,9 @@ public class DashboadService {
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	
+	/**
+	 * refresh.
+	 */
 	public void refresh() {
 		List<DashboardCache> cache = new ArrayList<>();
 		
@@ -70,11 +73,19 @@ public class DashboadService {
 		dashboardCacheRepository.saveAll(cache);
 	}
 
+	/**
+	 * getDashboardAndRefresh.
+	 * @return DashboardSummary
+	 */
 	public DashboardSummary getDashboardAndRefresh() {
 		refresh();
 		return getDashboard();
 	}
-	
+
+	/**
+	 * getDashboard.
+	 * @return DashboardSummary
+	 */
 	public DashboardSummary getDashboard() {
 		
 		if (11!=dashboardCacheRepository.count()) {

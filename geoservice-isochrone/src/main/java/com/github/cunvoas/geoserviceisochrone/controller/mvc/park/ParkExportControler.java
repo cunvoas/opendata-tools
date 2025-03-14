@@ -41,10 +41,17 @@ public class ParkExportControler {
 	@Autowired
 	private ParkExportCsv parkExportCsv;
 	
+	/**
+	 * export parks.
+	 * @param com2coId com2co
+	 * @param communeId city 
+	 * @param response http response
+	 * @return CSV file to download
+	 */
 	@GetMapping("/exportForCheck")
 	public ResponseEntity<OutputStream> exportForCheck(
 			@RequestParam(name = "com2coId", required = false) Long com2coId,
-			@RequestParam("communeId") Long communeId, HttpServletResponse reponse){
+			@RequestParam("communeId") Long communeId, HttpServletResponse response){
 		
 		City city = serviceReadReferences.getCityById(communeId);
 		
@@ -61,7 +68,7 @@ public class ParkExportControler {
 		    			.filename("PARCS_"+name+".csv").build()
 		    		);
 		    
-			bos = parkExportCsv.steam(reponse.getOutputStream(), lines);
+			bos = parkExportCsv.steam(response.getOutputStream(), lines);
 			
 			 return ResponseEntity.ok()
 			            .headers(headers)

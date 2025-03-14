@@ -510,7 +510,76 @@ GROUP BY annee, surface_min, surface_max
 order by r.surface_min;
 
 
+--============================
+-- ANALYSE POPULATION : création des classes
 
+
+
+WITH series AS (
+    SELECT generate_series(0, 500, 1) AS surface_min
+), range AS (
+    SELECT surface_min, (surface_min + 1) AS surface_max
+    FROM series 
+), stats AS (
+    SELECT 
+        cc.annee, f.lcog_geo, coalesce(round(surface_park_pcapita, 2), 0) as surface_park_pcapita,
+        coalesce(round(sum(cc.pop_inc), 0), 0) as pop_inc, 
+        coalesce(round(sum(cc.pop_exc), 0), 0) as pop_exc,
+        /*
+        coalesce(round(sum(f.ind), 0), 0) as ind,
+        coalesce(round(sum(f.ind_0_3), 0), 0) as ind_0_3,
+        coalesce(round(sum(f.ind_4_5), 0), 0) as ind_4_5,
+        coalesce(round(sum(f.ind_6_10), 0), 0) as ind_6_10,
+        coalesce(round(sum(f.ind_11_17), 0), 0) as ind_11_17,
+        coalesce(round(sum(f.ind_18_24), 0), 0) as ind_18_24,
+        coalesce(round(sum(f.ind_25_39), 0), 0) as ind_25_39,
+        coalesce(round(sum(f.ind_40_54), 0), 0) as ind_40_54,
+        coalesce(round(sum(f.ind_55_64), 0), 0) as ind_55_64,
+        coalesce(round(sum(f.ind_65_79), 0), 0) as ind_65_79,
+        coalesce(round(sum(f.ind_80p), 0), 0) as ind_80p,
+        coalesce(round(sum(f.men), 0), 0) as men,
+        coalesce(round(sum(f.men-f.men_pauv), 0), 0) as men_rich,
+        coalesce(round(sum(f.men_pauv), 0), 0) as men_pauv,
+        */
+         count(cc.id_inspire) AS nb_inspire
+
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    group by
+        cc.annee,
+        f.lcog_geo,
+        coalesce(round(surface_park_pcapita, 2), 0)
+)
+
+SELECT 
+    annee, surface_min, surface_max,
+    sum(pop_inc) as pop_inc,
+    sum(pop_exc) as pop_exc,
+    count(nb_inspire)
+    /*
+   , sum(ind) as ind,
+    sum(ind_0_3) as ind_0_3,
+    sum(ind_4_5) as ind_4_5,
+    sum(ind_6_10) as ind_6_10,
+    sum(ind_11_17) as ind_11_17,
+    sum(ind_18_24) as ind_18_24,
+    sum(ind_25_39) as ind_25_39,
+    sum(ind_40_54) as ind_40_54,
+    sum(ind_55_64) as ind_55_64,
+    sum(ind_65_79) as ind_65_79,
+    sum(ind_80p) as ind_80p,
+    sum(men) as men,
+    sum(men-men_pauv) as men_rich,
+    sum(men_pauv) as men_pauv
+*/
+FROM range r, stats
+WHERE 
+    stats.annee=2019 AND
+    lcog_geo like '%59350%'
+    AND surface_park_pcapita >= r.surface_min AND surface_park_pcapita < r.surface_max
+GROUP BY annee, surface_min, surface_max
+order by r.surface_min;
 
 
 

@@ -19,9 +19,16 @@ import com.github.cunvoas.geoserviceisochrone.extern.helper.BarcodeHelper;
 @RestController
 @RequestMapping("/mvc/barcodes")
 public class BarcodesController {
+	
 	@Autowired
 	private BarcodeHelper barcodeHelper;
 
+	/**
+	 * gen QRcode
+	 * @param barcode qrcode value
+	 * @return BufferedImage
+	 * @throws Exception
+	 */
 	@GetMapping(value = "/qrcode/{barcode}", produces = MediaType.IMAGE_PNG_VALUE)
 	public ResponseEntity<BufferedImage> barcode(@PathVariable("barcode") String barcode)
 			throws Exception {

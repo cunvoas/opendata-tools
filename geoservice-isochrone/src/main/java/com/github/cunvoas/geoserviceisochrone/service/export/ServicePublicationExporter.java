@@ -46,6 +46,9 @@ public class ServicePublicationExporter {
 	private ObjectMapper objectMapper = new ObjectMapper();
 	
 	
+	/**
+	 * Constructor.
+	 */
 	public ServicePublicationExporter() {
 		super();
 		objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, DtoCoordinate.class);
@@ -75,9 +78,9 @@ public class ServicePublicationExporter {
 
 	/**
 	 * Write INSEE files.
-	 * @throws StreamWriteException
-	 * @throws DatabindException
-	 * @throws IOException
+	 * @throws StreamWriteException ex
+	 * @throws DatabindException ex
+	 * @throws IOException ex
 	 */
 	public void writeGeoJsonCarreaux() throws StreamWriteException, DatabindException, IOException {
 		File file = new File(applicationBusinessProperties.getJsonFileFolder()+"/geojson/carres");
@@ -108,8 +111,8 @@ public class ServicePublicationExporter {
 	 * Generate a square that contains the global shape of CommunauteCommune.
 	 * fast select but slower after because too many item after.
 	 * efficient for isochrones
-	 * @param com2co
-	 * @return
+	 * @param com2co CommunauteCommune
+	 * @return Polygon
 	 */
 	Polygon getCom2CoSquareShape(CommunauteCommune com2co) {
 
@@ -168,9 +171,9 @@ public class ServicePublicationExporter {
 	
     /**
 	 * Write Isochrone files.
-     * @throws StreamWriteException
-     * @throws DatabindException
-     * @throws IOException
+     * @throws StreamWriteException ex
+     * @throws DatabindException ex
+     * @throws IOException ex
      */
     public void writeGeoJsonIsochrone() throws StreamWriteException, DatabindException, IOException {
 
@@ -198,9 +201,9 @@ public class ServicePublicationExporter {
 	
 	/**
 	 * Write Cadastre files.
-	 * @throws StreamWriteException
-	 * @throws DatabindException
-	 * @throws IOException
+	 * @throws StreamWriteException ex
+	 * @throws DatabindException ex
+	 * @throws IOException ex
 	 */
 	public void writeGeoJsonCadastres() throws StreamWriteException, DatabindException, IOException {
 	
@@ -219,9 +222,9 @@ public class ServicePublicationExporter {
 	
 	/**
 	 * Write region files.
-	 * @throws StreamWriteException
-	 * @throws DatabindException
-	 * @throws IOException
+	 * @throws StreamWriteException ex
+	 * @throws DatabindException ex
+	 * @throws IOException ex
 	 */
 	public void writeRegions() throws StreamWriteException, DatabindException, IOException {
 		

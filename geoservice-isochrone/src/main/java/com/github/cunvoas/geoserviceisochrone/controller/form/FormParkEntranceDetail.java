@@ -22,6 +22,10 @@ public class FormParkEntranceDetail {
 		super();
 	}
 	
+	/**
+	 * constructor.
+	 * @param form from form
+	 */
 	public FormParkEntranceDetail(FormParkEntrance form) {
 		idRegion = form.getIdRegion();
 		idCommunauteDeCommunes = form.getIdCommunauteDeCommunes();
@@ -29,6 +33,11 @@ public class FormParkEntranceDetail {
 		idPark = form.getIdPark();
 	}
 	
+	/**
+	 * constructor.
+	 * @param bo from BO 
+	 * @param form and form
+	 */
 	public FormParkEntranceDetail(ParkEntrance bo, FormParkEntrance form) {
 		super();
 		idRegion = form.getIdRegion();

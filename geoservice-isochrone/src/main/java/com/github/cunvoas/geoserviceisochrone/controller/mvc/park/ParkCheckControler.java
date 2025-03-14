@@ -41,6 +41,16 @@ public class ParkCheckControler {
 	@Autowired
 	private ParkTypeService parkTypeService;
 
+	/**
+	 * control page.
+	 * @param idRegion region 
+	 * @param idComm2Co com2co
+	 * @param idCommune city
+	 * @param idPark park
+	 * @param form form
+	 * @param model form
+	 * @return page name
+	 */
 	@GetMapping("/check")
 	public String checkPark(
 			@RequestParam("idRegion") Long idRegion, 
@@ -63,6 +73,12 @@ public class ParkCheckControler {
 	
 	
 	
+	/**
+	 * form population.
+	 * @param form form
+	 * @param model form
+	 * @return page
+	 */
 	protected String populateForm( FormParkEdit form, Model model) {
 		
 		List<Region> regions = serviceReadReferences.getRegion();

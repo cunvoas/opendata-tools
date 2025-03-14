@@ -13,6 +13,9 @@ public class CustomMetricsService {
 
     private final Counter customMetricCounter;
 
+    /**
+     * @param meterRegistry the registry.
+     */
     public CustomMetricsService(MeterRegistry meterRegistry) {
         customMetricCounter = Counter.builder("custom_metric_name")
           .description("Description of custom metric")

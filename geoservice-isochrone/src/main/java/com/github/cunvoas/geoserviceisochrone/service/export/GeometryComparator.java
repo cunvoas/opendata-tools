@@ -10,7 +10,10 @@ import org.locationtech.jts.geom.Point;
  * Comparator for sort.
  */
 public class GeometryComparator implements Comparator<Geometry> {
-
+	
+	/**
+	 * @see java.lang.Comparable.compareTo(java.lang.Object)
+	 */
 	@Override
 	public int compare(Geometry g0, Geometry g1) {
 		CompareToBuilder ctb = new CompareToBuilder();

@@ -14,6 +14,11 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
  */
 @Repository
 public interface CommunauteCommuneRepository extends JpaRepository<CommunauteCommune, Long>{
+	/**
+	 * findByRegionId.
+	 * @param id region
+	 * @return list of com2co
+	 */
 	@Query(	nativeQuery = true,
 			value = "select * from adm_com2commune where id_region=:id order by name",
 			countQuery = "select count(1) from adm_com2commune where id_region=:id")

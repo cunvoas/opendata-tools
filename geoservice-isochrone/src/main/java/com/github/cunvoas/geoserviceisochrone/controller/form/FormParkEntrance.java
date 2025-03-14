@@ -17,9 +17,16 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=false)
 public class FormParkEntrance extends AbstractFormLocate {
 	
+	/**
+	 * constructor.
+	 */
 	public FormParkEntrance() {
 		super();
 	}
+	/**
+	 * constructor by detail.
+	 * @param detail entry
+	 */
 	public FormParkEntrance(FormParkEntranceDetail detail) {
 		super();
 		super.idRegion=detail.getIdRegion();

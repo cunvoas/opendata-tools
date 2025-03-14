@@ -64,9 +64,9 @@ UPDATE public.carre200onlyshape  cs200
     FROM  public.filosofi_200m f    
     WHERE cs200.id_inspire = f.idcar_200m and f.annee in (2017, 2015) and cs200.avec_pop is null;  
 
--- tag les carreaux sans population (10 min)  11333945 UPDATED
+-- tag les carreaux sans population (10 min)  11333945 UPDATED (1h27)
   UPDATE public.carre200onlyshape SET avec_pop = false WHERE avec_pop is null;
-1h27
+
   
  -- restructuration de la table (4 min)
  VACUUM (FULL, ANALYZE) public.carre200onlyshape;

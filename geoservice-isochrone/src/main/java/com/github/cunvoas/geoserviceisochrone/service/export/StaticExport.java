@@ -133,6 +133,9 @@ public class StaticExport {
     	}
     }
     
+    /**
+     * exportCarre.
+     */
     public void exportCarre() {
     	List<CommunauteCommune> com2cos = communauteCommuneRepository.findAll();
     	for (CommunauteCommune com2co : com2cos) {

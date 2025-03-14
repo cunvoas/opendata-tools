@@ -41,9 +41,9 @@ public class AdressRestControler {
 
 	 /**
 	 * search.
-	 * @param idCity
-	 * @param query
-	 * @return
+	 * @param idCity  id City
+	 * @param query search query
+	 * @return list of dto
 	 */
 	@GetMapping("/search_adress")
 	 public List<SearchListDto> searchAdress(
@@ -79,6 +79,11 @@ public class AdressRestControler {
 //        return list.stream();
 //    }
     
+    /**
+     * mapper from BO to dto list .
+     * @param bean BO
+     * @return list of dto
+     */
     private SearchListDto mapToDto(AdressBo bean) {
         return SearchListDto.builder()
                         .id(Long.valueOf(bean.hashCode()))
@@ -89,6 +94,11 @@ public class AdressRestControler {
                         .build();
     }
     
+    /**
+     * extract point value.
+     * @param point geo point
+     * @return formated sting
+     */
     private String getValue(Point point) {
     	StringBuilder sb = new StringBuilder();
     	sb.append("lon|").append(point.getX());
@@ -96,6 +106,11 @@ public class AdressRestControler {
     	return sb.toString();
     }
     
+    /**
+     * normaliser.
+     * @param q query request
+     * @return normalized query
+     */
     private String normalise(String q) {
     	if (q!=null) {
 	    	String work = StringUtils.stripAccents(q);

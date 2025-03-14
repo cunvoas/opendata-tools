@@ -26,13 +26,12 @@ public class GeoJsonCadastreController {
     private GeoMapServiceV2 geoMapService;
     
     /**
-     * 
      * get Cadastre by area.
-     * @param swLat
-     * @param swLng
-     * @param neLat
-     * @param neLng
-     * @return
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+     * @return list of Cadastre
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area")
@@ -48,8 +47,8 @@ public class GeoJsonCadastreController {
 
     /**
      * get Cadastre by comm2co.
-     * @param id
-     * @return
+     * @param id of com2co
+     * @return  list of Cadastre
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area/{id}")
@@ -60,8 +59,8 @@ public class GeoJsonCadastreController {
 
     /**
      * get Cadastre by city.
-     * @param id
-     * @return
+     * @param id of city
+     * @return  list of Cadastre
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/area/city/{id}")

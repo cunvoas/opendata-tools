@@ -26,6 +26,11 @@ public class ServiceVerificationExporter {
 	@Autowired
 	private ParkAreaRepository parkAreaRepository;
 	
+	/**
+	 * export4verif.
+	 * @param com2co CommunauteCommune
+	 * @return list ParkExportLine
+	 */
 	public List<ParkExportLine> export4verif(CommunauteCommune com2co) {
 		List<ParkExportLine> ret = new ArrayList<>();
 		
@@ -34,7 +39,12 @@ public class ServiceVerificationExporter {
 		}
 		return ret;
 	}
-	
+
+	/**
+	 * export4verif.
+	 * @param city City
+	 * @return list ParkExportLine
+	 */
 	public List<ParkExportLine> export4verif(City city) {
 		List<ParkExportLine> ret = new ArrayList<>();
 		
@@ -45,6 +55,12 @@ public class ServiceVerificationExporter {
 		return ret;
 	}
 	
+	/**
+	 * map.
+	 * @param city City
+	 * @param parcEtJardin ParcEtJardin
+	 * @return ParkExportLine
+	 */
 	private ParkExportLine map(City city, ParcEtJardin parcEtJardin) {
 		ParkExportLine prl = new ParkExportLine();
 		prl.setIdRegion(city.getRegion().getId());

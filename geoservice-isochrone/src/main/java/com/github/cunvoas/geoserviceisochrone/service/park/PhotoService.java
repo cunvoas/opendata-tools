@@ -34,6 +34,11 @@ public class PhotoService {
 	@Autowired
 	private PhotoHelper photoHelper;
 	
+	/**
+	 * savePhoto.
+	 * @param dto DTO
+	 * @return path
+	 */
 	public String savePhoto(PhotoDto dto) {
 		String savedPath = null;
 		
@@ -72,6 +77,14 @@ public class PhotoService {
 		return savedPath;
 	}
 	
+	/**
+	 * Mapper.
+	 * @param dto DTO 
+	 * @return BO
+	 * @throws IllegalStateException ex
+	 * @throws IOException ex
+	 * @throws ImageProcessingException ex
+	 */
 	private ParkPhoto map(PhotoDto dto) throws IllegalStateException, IOException, ImageProcessingException {
 		
 		// injection check
@@ -119,6 +132,13 @@ public class PhotoService {
 	}
 	
 
+	/**
+	 * getHash.
+	 * @param originalFile source file
+	 * @return hash
+	 * @throws IOException ex
+	 * @FIXME use better Hash
+	 */
 	private String getHash(File originalFile) throws IOException {
 		String sha256hex = null;
 		if (originalFile.exists()) {

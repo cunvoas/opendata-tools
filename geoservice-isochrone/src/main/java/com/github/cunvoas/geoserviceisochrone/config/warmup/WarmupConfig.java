@@ -11,7 +11,7 @@ public class WarmupConfig {
 	
 	/**
 	 * Warmup bean for Spring context initialisation.
-	 * @return
+	 * @return warmed-up when OK.
 	 */
 	@Bean(name = "warmup")
 	public String getWarmup() {

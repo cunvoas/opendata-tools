@@ -39,6 +39,9 @@ public class ParkExportLine implements Comparable<ParkExportLine> {
 	private Integer nbParkEntrance;
 	private Date parkAreaComputedDate;
 
+	/**
+	 * @see java.lang.Comparable.compareTo(java.lang.Object)
+	 */
 	@Override
 	public int compareTo(ParkExportLine other) {
 		CompareToBuilder ctb = new CompareToBuilder();
@@ -53,6 +56,10 @@ public class ParkExportLine implements Comparable<ParkExportLine> {
 	private static final NumberFormat NF = new DecimalFormat("#.##O");
 	private static final DateFormat DF =new SimpleDateFormat("dd/MM/yyyy");
 	
+	/**
+	 * mapper
+	 * @return array
+	 */
 	public String[] map() {
 		List<String> rec = new ArrayList<>(14);
 		rec.add(String.valueOf(idRegion));

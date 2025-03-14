@@ -10,6 +10,10 @@ import lombok.Data;
 @Data
 public class CityDto {
 	
+	/**
+	 * Constructor
+	 * @param model BO
+	 */
 	public CityDto(City model) {
 		super();
 		this.id=model.getId();

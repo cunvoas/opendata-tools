@@ -82,12 +82,15 @@ public class FormParkNew extends AbstractFormLocate{
 	private String namePrefecture;
 	private String status;
 	
+	/**
+	 * constructor.
+	 */
 	public FormParkNew() {
 		super();
 	}
 	/**
 	 * Constucteur et Mapper.
-	 * @param pj
+	 * @param pj from model
 	 */
 	public FormParkNew(ParcEtJardin pj) {
 		super();
@@ -122,6 +125,11 @@ public class FormParkNew extends AbstractFormLocate{
 		
 	}
 	
+	/**
+	 * gen mapped Model.
+	 * @return model
+	 * @throws ParseException execption on parsing
+	 */
 	public ParcEtJardin mapper() throws ParseException {
 		ParcEtJardin pj = new ParcEtJardin();
 		pj.setId(this.idPark);

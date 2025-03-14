@@ -375,6 +375,11 @@ public class GeoShapeHelper {
 		return ret.toString();
 	}
 	
+	/**
+	 * performPoints.
+	 * @param data points
+	 * @return StringBuilder
+	 */
 	private static StringBuilder performPoints(String data) {
 		StringBuilder ret=new StringBuilder();
 		String memo1st=null;
@@ -390,12 +395,10 @@ public class GeoShapeHelper {
 			}
 			ret.append(pointXY);
 			
-			if (i==work.length-1) {
-				// controle polygon fermé
-				if (pointXY!=memo1st)  {
-					// si pas fermé, on ajoute le 1er pour le fermer
-					ret.append(", ").append(memo1st);
-				}
+			// controle polygon fermé
+			// si pas fermé, on ajoute le 1er pour le fermer
+			if (i==work.length-1 && !pointXY.equals(memo1st)) {
+				ret.append(", ").append(memo1st);
 			}
 		}
 		return ret;

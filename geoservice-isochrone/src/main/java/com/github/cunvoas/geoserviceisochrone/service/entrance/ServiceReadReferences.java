@@ -74,13 +74,28 @@ public class ServiceReadReferences {
 	
 	
 	
+	/**
+	 * getRegion.
+	 * @return list Region
+	 */
 	public List<Region> getRegion() {
 		return regionRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
 	}
 	
+	/**
+	 * getParkAreaComputedById.
+	 * @param id ParkAreaComputed
+	 * @return ParkAreaComputed
+	 */
 	public ParkAreaComputed getParkAreaComputedById(Long id) {
 		return this.getParkAreaComputedById(id, applicationBusinessProperties.getDerniereAnnee());
 	}
+	/**
+	 * getParkAreaComputedById.
+	 * @param id ParkAreaComputed
+	 * @param annee year
+	 * @return ParkAreaComputed
+	 */
 	public ParkAreaComputed getParkAreaComputedById(Long id, Integer annee) {
 		Optional<ParkAreaComputed> opt = parkAreaComputedRepository.findByIdAndAnnee(id, annee);
 		if (opt.isPresent()) {
@@ -88,6 +103,11 @@ public class ServiceReadReferences {
 		}
 		return null;
 	}
+	/**
+	 * getParkAreaById.
+	 * @param id ParkArea
+	 * @return ParkArea
+	 */
 	public ParkArea getParkAreaById(Long id) {
 		Optional<ParkArea> opt = parkAreaRepository.findById(id);
 		if (opt.isPresent()) {
@@ -95,28 +115,46 @@ public class ServiceReadReferences {
 		}
 		return null;
 	}
+	/**
+	 * getByIdParcEtJardin.
+	 * @param id ParcEtJardin
+	 * @return ParkArea
+	 */
 	public ParkArea getByIdParcEtJardin(Long id) {
 		return  parkAreaRepository.findByIdParcEtJardin(id);
 	}
 	
 	
+	/**
+	 * getCommunauteCommune.
+	 * @return list CommunauteCommune
+	 */
 	public List<CommunauteCommune> getCommunauteCommune() {
 		return communauteCommuneRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
 	}
-//	public List<CommunauteCommune> getCommunauteByRegion(Region region) {
-//		return this.getCommunauteByRegionId(region.getId());
-//	}
+	/**
+	 * getCommunauteByRegionId.
+	 * @param id Region
+	 * @return list CommunauteCommune
+	 */
 	public List<CommunauteCommune> getCommunauteByRegionId(Long id) {
 		return communauteCommuneRepository.findByRegionId(id);
 	}
 	
-	
-//	public List<City> getCityByRegion(Region region) {
-//		return this.getCityByRegionId(region.getId());
-//	}
+	/**
+	 * getCityByRegionId.
+	 * @param id Region
+	 * @return list City
+	 */
 	public List<City> getCityByRegionId(Long id) {
 		return cityRepository.findByRegionId(id);
 	}
+	
+	/**
+	 * getCityById.
+	 * @param id City
+	 * @return City
+	 */
 	public City getCityById(Long id) {
 		Optional<City> opt=cityRepository.findById(id);
 		if (opt.isPresent()) {
@@ -125,10 +163,21 @@ public class ServiceReadReferences {
 		return null;
 	}
 
+
+	/**
+	 * getCity.
+	 * @param id City
+	 * @return City
+	 */
 	public City getCity(Long id) {
 		return cityRepository.getReferenceById(id);
 	}
 	
+	/**
+	 * getCoordinate.
+	 * @param id Coordinate
+	 * @return Coordinate
+	 */
 	public Coordinate getCoordinate(Long id) {
 		Coordinate location=null;
 		
@@ -164,17 +213,40 @@ public class ServiceReadReferences {
 	}
 	
 	
+	/**
+	 * getCityByCommunauteCommuneId.
+	 * @param id CommunauteCommune
+	 * @return list City
+	 */
 	public List<City> getCityByCommunauteCommuneId(Long id) {
 		return cityRepository.findByCommunauteCommuneId(id);
 	}
 
+	/**
+	 * getParcEtJardinByCityId.
+	 * @param id City
+	 * @return list ParcEtJardin
+	 */
 	public List<ParcEtJardin> getParcEtJardinByCityId(Long id) {
 		return parkJardinRepository.findByCityId(id);
 	}
+	/**
+	 * getParcEtJardinByCityId.
+	 * @param idCommune City
+	 * @param pageable page
+	 * @return list ParcEtJardin
+	 */
 	public Page<ParcEtJardin> getParcEtJardinByCityId(Long idCommune, Pageable pageable) {
 		return parkJardinRepository.findByCityId(idCommune, pageable);
 	}
 	
+	/**
+	 * getParcEtJardinByComm2coId.
+	 * @param idComm2co CommunauteCommune
+	 * @param parkCase use case
+	 * @param pageable page
+	 * @return list ParcEtJardin
+	 */
 	public Page<ParcEtJardin> getParcEtJardinByComm2coId(Long idComm2co, String parkCase, Pageable pageable) {
 		Page<ParcEtJardin> rets = null;
 		
@@ -188,6 +260,13 @@ public class ServiceReadReferences {
 		
 		return rets;
 	}
+	/**
+	 * getParcEtJardinByCityId.
+	 * @param id city
+	 * @param parkCase use case
+	 * @param pageable page
+	 * @return list ParcEtJardin
+	 */
 	public Page<ParcEtJardin> getParcEtJardinByCityId(Long id, String parkCase, Pageable pageable) {
 		if ("merge".equalsIgnoreCase(parkCase)) {
 			return parkJardinRepository.findByCityIdToMerge(id, pageable);
@@ -198,6 +277,11 @@ public class ServiceReadReferences {
 		}
 	}
 	
+	/**
+	 * getParcEtJardinById.
+	 * @param id ParcEtJardin
+	 * @return ParcEtJardin
+	 */
 	public ParcEtJardin getParcEtJardinById(Long id) {
 		Optional<ParcEtJardin> opt=parkJardinRepository.findById(id);
 		if (opt.isPresent()) {
@@ -206,11 +290,21 @@ public class ServiceReadReferences {
 		return null;
 	}
 
+	/**
+	 * getParcPrefectureById.
+	 * @param id ParcPrefecture
+	 * @return ParcPrefecture
+	 */
 	public Optional<ParcPrefecture> getParcPrefectureById(Long id) {
 		Optional<ParcPrefecture> opt=parcPrefectureRepository.findById(id);
 		return opt;
 	}
 	
+	/**
+	 * getParcPrefectureByParcEtJardinId.
+	 * @param id  ParcEtJardin
+	 * @return ParcPrefecture
+	 */
 	public ParcPrefecture getParcPrefectureByParcEtJardinId(Long id) {
 		List<ParcPrefecture> lst=parcPrefectureRepository.findByParcEtJardinId(id);
 		if (!CollectionUtils.isEmpty(lst)) {
@@ -219,9 +313,19 @@ public class ServiceReadReferences {
 		return null;
 	}
 
+	/**
+	 * getEntranceByParkId.
+	 * @param id Park
+	 * @return list ParkEntrance
+	 */
 	public List<ParkEntrance> getEntranceByParkId(Long id) {
 		return parkEntranceRepository.findByParkId(id);
 	}
+	/**
+	 * getEntranceById.
+	 * @param id ParkEntrance
+	 * @return ParkEntrance
+	 */
 	public ParkEntrance getEntranceById(Long id) {
 		Optional<ParkEntrance> opt=parkEntranceRepository.findById(id);
 		if (opt.isPresent()) {
@@ -231,6 +335,10 @@ public class ServiceReadReferences {
 		
 	}
 	
+	/**
+	 * getParcSource.
+	 * @return list enum
+	 */
 	public List<ParcSourceEnum> getParcSource() {
 		List<ParcSourceEnum> l = new ArrayList<>();
 		l.add(ParcSourceEnum.OPENDATA);

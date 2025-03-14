@@ -47,6 +47,12 @@ public class ParkListControler {
 	
 	
 
+	/**
+	 * select region.
+	 * @param form form
+	 * @param model form
+	 * @return page name
+	 */
 	@PostMapping("/region")
 	public String changeRegion(@ModelAttribute FormParkList form, Model model) {
 		form.setIdCommunauteDeCommunes(null);
@@ -54,6 +60,12 @@ public class ParkListControler {
 		return getForm(form, model);
 	}
 	
+	/**
+	 * get com2co
+	 * @param id region
+	 * @param txt search
+	 * @return page name
+	 */
 	@GetMapping("/comm2co")
 	public List<CommunauteCommune> getCommunauteCommuneByRegion(@RequestParam("regionId") Long id, @RequestParam("txt") String txt){
 		
@@ -75,23 +87,47 @@ public class ParkListControler {
 		}
 	}
 	
+	/**
+	 * select com2co.
+	 * @param form form
+	 * @param model form
+	 * @return page name populated
+	 */
 	@PostMapping("/commDeCo")
 	public String changeCommunauteDeCommune(@ModelAttribute FormParkList form, Model model) {
 		form.setIdCommune(null);
 		return getForm(form, model);
 	}
-	
+
+	/**
+	 * select city.
+	 * @param form form
+	 * @param model form
+	 * @return page name populated
+	 */
 	@PostMapping("/city")
 	public String changeCity(@ModelAttribute FormParkList form, Model model) {
 		return getForm(form, model);
 	}
 	
+	/**
+	 * TODO remember ?.
+	 * @param form form
+	 * @param model form
+	 * @return page name populated
+	 */
 	@PostMapping("/case")
 	public String changeCase(@ModelAttribute FormParkList form, Model model) {
 		return getForm(form, model);
 	}
 	
 	
+	/**
+	 * get page.
+	 * @param form form
+	 * @param model form
+	 * @return page name populated
+	 */
 	@GetMapping
 	public String getForm(@ModelAttribute FormParkList form, Model model) {
 		
@@ -119,6 +155,11 @@ public class ParkListControler {
 	}
 
 	
+	/**
+	 * mapper.
+	 * @param form form
+	 * @return form list
+	 */
 	protected FormParkList populateForm( FormParkList form) {
 		
 		if (form==null || form.getIdRegion()==null) {

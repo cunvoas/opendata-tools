@@ -48,6 +48,12 @@ public class ParkPrefControler {
 
 	
 
+	/**
+	 * select region.
+	 * @param form form
+	 * @param model form
+	 * @return page name populated
+	 */
 	@PostMapping("/region")
 	public String changeRegion(@ModelAttribute FormParkList form, Model model) {
 		form.setIdCommunauteDeCommunes(null);
@@ -55,6 +61,12 @@ public class ParkPrefControler {
 		return getForm(form, model);
 	}
 	
+	/**
+	 * list com2co.
+	 * @param id region 
+	 * @param txt search
+	 * @return list
+	 */
 	@GetMapping("/comm2co")
 	public List<CommunauteCommune> getCommunauteCommuneByRegion(@RequestParam("regionId") Long id, @RequestParam("txt") String txt){
 		
@@ -76,18 +88,36 @@ public class ParkPrefControler {
 		}
 	}
 	
+	/**
+	 * select com2co.
+	 * @param form form
+	 * @param model form
+	 * @return page name populated
+	 */
 	@PostMapping("/commDeCo")
 	public String changeCommunauteDeCommune(@ModelAttribute FormParkList form, Model model) {
 		form.setIdCommune(null);
 		return getForm(form, model);
 	}
 	
+	/**
+	 * select city.
+	 * @param form form
+	 * @param model form
+	 * @return page name populated
+	 */
 	@PostMapping("/city")
 	public String changeCity(@ModelAttribute FormParkList form, Model model) {
 		return getForm(form, model);
 	}
 	
 	
+	/**
+	 * populate form.
+	 * @param form form
+	 * @param model form
+	 * @return page populated
+	 */
 	@GetMapping
 	public String getForm(@ModelAttribute FormParkList form, Model model) {
 		
@@ -107,6 +137,11 @@ public class ParkPrefControler {
 	}
 	
 
+	/**
+	 * populate list.
+	 * @param form form
+	 * @return form
+	 */
 	protected FormParkList populateForm( FormParkList form) {
 		
 		if (form==null || form.getIdRegion()==null) {
@@ -142,6 +177,12 @@ public class ParkPrefControler {
 	}
 		
 
+	/**
+	 * populate.
+	 * @param idCity city
+	 * @param page page
+	 * @return item list
+	 */
 	private Page<FormParkListItem> populateTableList(Long idCity, Pageable page) {
 		City city = serviceReadReferences.getCityById(idCity);
 		

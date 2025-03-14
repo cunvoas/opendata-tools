@@ -8,7 +8,7 @@ CREATE INDEX idx_pj_geom
   ON public.parc_jardin
   USING GIST (contour, coordonnee);
     
-:  index row requires 23760 bytes, maximum size is 8191 
+--  index row requires 23760 bytes, maximum size is 8191 
 ALTER TABLE public.parc_jardin
   ALTER COLUMN coordonnee
    TYPE geometry(Point, 4326)

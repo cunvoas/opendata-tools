@@ -33,12 +33,11 @@ FROM public.carre200onlyshape
 
 
     
-CRS3035RES200mN3079800E3833800
+-- CRS3035RES200mN3079800E3833800
+-- /localization/inspire/CRS3035RES200m/N3079/E3833/CRS3035RES200mN3079800E3833800.json
 
-/localization/inspire/CRS3035RES200m/N3079/E3833/CRS3035RES200mN3079800E3833800.json
 
-
-==========================
+--==========================
     copy (
     SELECT json_build_object(
     id_inspire, 
@@ -58,7 +57,7 @@ CRS3035RES200mN3079800E3833800
 
 
 
-=============
+--=============
 
 SELECT cc.*
 FROM public.carre200_computed_v2 cc 

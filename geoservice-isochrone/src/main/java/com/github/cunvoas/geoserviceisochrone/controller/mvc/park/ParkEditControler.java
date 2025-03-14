@@ -43,6 +43,16 @@ public class ParkEditControler {
 	@Autowired
 	private ParkTypeService parkTypeService;
 
+	/**
+	 * edit page
+	 * @param idRegion region
+	 * @param idComm2Co com2co
+	 * @param idCommune city
+	 * @param idPark park
+	 * @param form form
+	 * @param model form
+	 * @return page name
+	 */
 	@GetMapping("/edit")
 	public String editPark(
 			@RequestParam("idRegion") Long idRegion, 
@@ -64,6 +74,12 @@ public class ParkEditControler {
 	}
 	
 	
+	/**
+	 * save.
+	 * @param form form
+	 * @param model form
+	 * @return page name
+	 */
 	@PostMapping("/edit")
 	public String savePark( @ModelAttribute FormParkEdit form, Model model) {
 		
@@ -86,6 +102,12 @@ public class ParkEditControler {
 	}
 	
 	
+	/**
+	 * populate form.
+	 * @param form form
+	 * @param model form
+	 * @return page name
+	 */
 	protected String populateForm( FormParkEdit form, Model model) {
 		
 		List<Region> regions = serviceReadReferences.getRegion();

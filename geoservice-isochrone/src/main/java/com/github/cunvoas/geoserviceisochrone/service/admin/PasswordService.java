@@ -21,6 +21,11 @@ public class PasswordService {
 	@Autowired
 	private final PasswordEncoder passwordEncoder=null;
 	
+	/**
+	 * Encode the password.
+	 * @param plain text
+	 * @return cypher
+	 */
 	public String securizePassword(String plain) {
 	    return passwordEncoder.encode(plain);
 	}
@@ -28,6 +33,11 @@ public class PasswordService {
 	// https://uibakery.io/regex-library/password
 	// https://mkyong.com/regular-expressions/how-to-validate-password-with-regular-expression/
 	private static final String CHECK_REGEX= "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[-!%µ@#&_()–[{}]:;\\\"'`,?/*~$^+=<>]).{12,}$";
+	/**
+	 * check isSafe.
+	 * @param newPass new pwd
+	 * @return Boolean
+	 */
 	public Boolean isSafe(String newPass) {
 		Boolean ret = Boolean.FALSE;
 		if (newPass.matches(CHECK_REGEX)) {
@@ -39,6 +49,11 @@ public class PasswordService {
 		return ret;
 	}
 
+    /**
+     * generatePassword.
+     * @param length requested
+     * @return new passwd
+     */
     public String generatePassword(int length) {
     	if (length<12) {
     		length= 12;
@@ -65,17 +80,41 @@ public class PasswordService {
         return password;
     }
     
+    /**
+     * generateCharactersInRange.
+     * @param length requested
+     * @param rangeStart asscii start
+     * @param rangeEnd asscii stop
+     * @return chars
+     */
     protected String generateCharactersInRange(int length,int rangeStart, int rangeEnd) {
         RandomStringGenerator pwdGenerator = new RandomStringGenerator.Builder().withinRange(rangeStart, rangeEnd)
                 .build();
         return pwdGenerator.generate(length);
     }
+    
+    /**
+     * generateRandomSpecialCharacters
+     * @param length requested
+     * @return chars
+     */
     protected String generateRandomSpecialCharacters(int length) {
         return generateCharactersInRange(length, 33, 47);
     }
+    /**
+     * generateRandomNumbers
+     * @param length requested
+     * @return chars
+     */
     protected String generateRandomNumbers(int length) {
         return generateCharactersInRange(length, 48, 57);
     }
+    /**
+     * generateRandomAlphabet.
+     * @param length requested
+     * @param upperCase upper or not
+     * @return chars
+     */
     protected String generateRandomAlphabet(int length, boolean upperCase) {
         return generateCharactersInRange(length, upperCase ? 65 : 90, upperCase ? 90 : 122);
     }
