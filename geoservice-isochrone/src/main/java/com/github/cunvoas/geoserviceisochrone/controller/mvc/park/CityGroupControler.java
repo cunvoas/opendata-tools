@@ -22,7 +22,7 @@ public class CityGroupControler {
 
 	/**
 	 * get page with population.
-	 * @param model
+	 * @param model form
 	 * @return page populated
 	 */
 	@GetMapping

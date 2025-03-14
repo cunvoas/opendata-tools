@@ -106,7 +106,7 @@ public class CityService {
 
 	/**
 	 * findAll.
-	 * @param page
+	 * @param page page
 	 * @return list City
 	 */
 	public Page<City> findAll(Pageable page) {

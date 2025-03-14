@@ -375,6 +375,11 @@ public class GeoShapeHelper {
 		return ret.toString();
 	}
 	
+	/**
+	 * performPoints.
+	 * @param data points
+	 * @return StringBuilder
+	 */
 	private static StringBuilder performPoints(String data) {
 		StringBuilder ret=new StringBuilder();
 		String memo1st=null;

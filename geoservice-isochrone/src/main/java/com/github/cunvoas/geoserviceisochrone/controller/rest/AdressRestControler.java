@@ -81,7 +81,7 @@ public class AdressRestControler {
     
     /**
      * mapper from BO to dto list .
-     * @param bean
+     * @param bean BO
      * @return list of dto
      */
     private SearchListDto mapToDto(AdressBo bean) {

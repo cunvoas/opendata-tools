@@ -89,7 +89,7 @@ public class ContributeurService {
 
 	/**
 	 * getByLogin.
-	 * @param email Contributeur login
+	 * @param login Contributeur
 	 * @return Contributeur
 	 */
 	public Contributeur getByLogin(String login) {

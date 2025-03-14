@@ -23,7 +23,7 @@ public class PasswordService {
 	
 	/**
 	 * Encode the password.
-	 * @param plain
+	 * @param plain text
 	 * @return cypher
 	 */
 	public String securizePassword(String plain) {

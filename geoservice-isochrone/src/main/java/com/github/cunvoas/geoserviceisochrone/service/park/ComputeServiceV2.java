@@ -336,9 +336,9 @@ public class ComputeServiceV2 {
 	 * computePopAndDensityDetailOptim.
 	 * @param dto DTO with source data
 	 * @param crDto DTO with result data
-	 * @param carreShape  square on process
-	 * @param geometryToAnalyse
-	 * @param shapeParkOnSquare  shape of park isochrones
+	 * @param carreShape square on process
+	 * @param geometryToAnalyse analysed
+	 * @param shapeParkOnSquare shape of park isochrones
 	 * @return ComputeResultDto
 	 */
 	protected ComputeResultDto computePopAndDensityDetailOptim(

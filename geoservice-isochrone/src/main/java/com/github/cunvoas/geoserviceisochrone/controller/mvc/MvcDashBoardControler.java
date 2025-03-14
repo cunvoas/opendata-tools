@@ -19,6 +19,9 @@ import com.github.cunvoas.geoserviceisochrone.service.dashboard.ActivityTrackerS
 import com.github.cunvoas.geoserviceisochrone.service.dashboard.DashboadService;
 
 
+/**
+ * Home Controller.
+ */
 @Controller
 @RequestMapping("/mvc")
 public class MvcDashBoardControler {

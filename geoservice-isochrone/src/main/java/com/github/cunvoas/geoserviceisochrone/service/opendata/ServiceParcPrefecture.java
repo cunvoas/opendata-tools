@@ -126,7 +126,7 @@ public class ServiceParcPrefecture {
 
 	/**
 	 * prepareFromSite.
-	 * @param pp ParcPrefecture
+	 * @param name NamePrefecture
 	 * @param polygon Polygon
 	 * @return ParcPrefecture
 	 */

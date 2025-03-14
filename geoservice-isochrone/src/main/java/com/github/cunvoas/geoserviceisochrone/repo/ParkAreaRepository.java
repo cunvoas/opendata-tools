@@ -24,7 +24,7 @@ public interface ParkAreaRepository extends JpaRepository<ParkArea, Long>{
 	
 	/**
 	 * findByPolygon.
-	 * @param polygon
+	 * @param polygon Polygon
 	 * @return
 	 */
 	List<ParkArea> findByPolygon(Polygon polygon);
