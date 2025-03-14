@@ -18,8 +18,8 @@ public interface ParkEntranceRepository extends JpaRepository<ParkEntrance, Long
 	
 	/**
 	 * get Entrance by ParkArea.
-	 * @param id parkArea
-	 * @return ParkEntrance
+	 * @param parkArea parkArea
+	 * @return list ParkEntrance
 	 */
 	List<ParkEntrance> findByParkArea(ParkArea parkArea);
 	
