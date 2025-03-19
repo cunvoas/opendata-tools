@@ -4,7 +4,6 @@
 //import Router from 'vue-router';
 import { createWebHistory, createRouter } from "vue-router";
 import AppCarte from "../views/AppCarte.vue";
-import AppSurface from "../views/AppSurface.vue";
 import AppStatistics from "../views/AppStatistics.vue";
 import AppInformation from "../views/AppInformation.vue";
 
@@ -16,12 +15,6 @@ const routes = [
     name: 'appCarte',
     title: 'Carte',
     component: AppCarte,
-  },
-  {
-    path: '/surface',
-    name: 'appSurface',
-    title: 'Analyse',
-    component: AppSurface,
   },
   
   {

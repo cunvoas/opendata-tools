@@ -19,9 +19,11 @@ import com.github.cunvoas.geoserviceisochrone.extern.mel.CsvLyonParkJardinParser
 import com.github.cunvoas.geoserviceisochrone.extern.mel.CsvNantesParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.extern.mel.JsonToulouseParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.service.admin.BatchJobService;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV2;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
@@ -43,6 +45,10 @@ class TestGeoserviceIsochroneApplication {
 
 	@Autowired
 	private ParkService parkService;
+	
+	@Autowired
+	private BatchJobService batchJobService;
+	
 	@Autowired
 	private CityService cityService;
 
@@ -102,11 +108,23 @@ class TestGeoserviceIsochroneApplication {
 			
 	}
 	
+	
 	/**
 	 * calcule des carre vs aire des parcs
 	 */
 	@Test
 //	@Disabled
+	@Order(22)
+	void batchCarreFix() {
+		
+		//batchJobService.requestProcessCity("59346");
+		batchJobService.requestProcessCity("27022");
+	}
+	/**
+	 * calcule des carre vs aire des parcs
+	 */
+	@Test
+	@Disabled
 	@Order(21)
 	void computeCarreFix() {
 
@@ -125,7 +143,7 @@ WHERE code_insee='59346'
 
  */
 			// v'ascq
-			computeServiceV2.computeCarreByInseeCode("59009");
+			//computeServiceV2.computeCarreByInseeCode("59009");
 //			computeServiceV2.computeCarreByInseeCode("59328");
 //			computeServiceV2.computeCarreByInseeCode("59128");
 			

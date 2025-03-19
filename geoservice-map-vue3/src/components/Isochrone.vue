@@ -130,68 +130,76 @@ import debounce from 'lodash/debounce';
 
 // needs to be here for map coloring
 function  getSquareColor(zoneDense, densite) {
-        let sqColor = '#a5a5a5';
-        if (densite===null || densite==='N/A' || densite==='' ) {
-          return sqColor;
-        }
-        densite = (""+densite).replace(",", ".");
+  //const grey     = '#a5a5a5';
+  let color     = '#959595';
 
-        const greenMin = '#57dd17';
-        const greenMax = '#579917';
-        const densiteMinDense=10;
-        const densiteMaxDense=12;
-        const densiteMinNoDense=25;
-        const densiteMaxNoDense=45;
+  if (densite===null || densite==='N/A' || densite==='' ) {
+    return color;
+  }
+  densite = (""+densite).replace(",", ".");
 
-        let modColor=null;
-        if (zoneDense===false) {
-          if (densite>=densiteMaxNoDense) {
-            sqColor=greenMax;
-          } else if (densite>=densiteMinNoDense) {
-            sqColor=greenMin;
-          } else {
-            modColor=6;
-          }
-        } else if (zoneDense===true) {
-          if (densite>=densiteMaxDense) {
-            sqColor=greenMax;
-          } else if (densite>=densiteMinDense) {
-            sqColor=greenMin;
-          } else {
-            modColor=15;
-          }
+  const blue25   = '#0000e8';
+  const blue50   = '#6060e8';
+  const blue75   = '#b0b0e8';
+  const greenMin = '#57ee17';
+  const greenMax = '#578817';
+
+  const densiteMinDense=10;
+  const densiteMaxDense=12;
+  const densiteMinNoDense=25;
+  const densiteMaxNoDense=45;
+
+  // default == dense
+  let p25 = 3;
+  let p50 = 6;
+  let densiteMin = densiteMinDense;
+  let densiteMax = densiteMaxDense;
+  if (zoneDense===false) {
+      densiteMin = densiteMinNoDense;
+      densiteMax = densiteMaxNoDense;
+      
+      p25 = 8;
+      p50 = 17;
+  }
+
+
+  if (zoneDense===false || zoneDense===true) {
+      if (densite>=densiteMax) {
+          color=greenMax;
+      } else if (densite>=densiteMin) {
+          color=greenMin;
+      } else {
+        
+        color = blue75;
+        if (densite < p25) {
+          color = blue25;
+        } else if (densite < p50) {
+          color = blue50;
         }
-        if (modColor!==null) {
-          const i_onecolor = 30+Math.round(densite*modColor);
-          const s_onecolor = i_onecolor.toString(16);
-          // FIXME: Color Square
-          // bad = red
-          //sqColor = '#'+ "cc" + s_onecolor  + s_onecolor;
-          // bad = blue
-          sqColor = '#' + s_onecolor  + s_onecolor + "cc";
-        }
-        return sqColor;
+      }
+  }
+  return color;
 }
 
 function getColorLegend(legendeDense) {
-
   
-  
-  const grades = ['0','3','7','10','12','25','45'];
+  const gradesDense = ['0','3','7','10','12'];
+  const gradesSubur = ['0','8','17','25','45'];
 		const labels = [];
 		let from, to;
+    let grades = [];
 
     if (legendeDense) {
-      labels.push(`<i id="rotate-text-d">dense</i> `);
+      //labels.push(`<i id="rotate-text-d">dense</i> `);
+      labels.push(`<i style="background:#ffffff"></i> <b>dense</b>`);
+      grades =  gradesDense;
     } else {
-      labels.push(`<i id="rotate-text-p">périurbain</i> `);
+      labels.push(`<i style="background:#ffffff"></i> <b>périurbain</b>`);
+     // labels.push(`<i id="rotate-text-p">périurbain</i> `);
+      grades = gradesSubur;
     }
     labels.push(`<i style="background:${getSquareColor(true,null)}"></i> non calculé`);
 
-
-
-    //labels.push(`<i id="rotate-text-d">dense</i> <i id="rotate-text-p">périurbain</i> `);
-		//labels.push(`<i style="background:${getSquareColor(true,"N/A")}"></i> <i style="background:${getSquareColor(true,null)}"></i> non calculé`);
 
 
  		for (let i = 0; i < grades.length; i++) {
@@ -199,15 +207,18 @@ function getColorLegend(legendeDense) {
 			to = grades[i + 1];
 
       let tSurface = `${from}${to ? `&ndash;${to}` : '+'}`
-      let dense = `<i style="opacity:0.4;background:${getSquareColor(true, from)}"></i> `;
-			let subur = `<i style="opacity:0.4;background:${getSquareColor(false, from)}"></i> `;
+      let tColors = `<i style="opacity:0.4;background:${getSquareColor(legendeDense, from)}"></i> `;
 			
+      labels.push(tColors+tSurface);
+
       //labels.push(dense+subur+tSurface);
+      /*
       if (legendeDense) {
         labels.push(dense+tSurface);
       } else {
         labels.push(subur+tSurface);
       }
+        */
 		}
     
 
@@ -357,6 +368,11 @@ export default {
   },
 
   methods: {
+    detectSelfDomain() {
+      let onMyServer=false;
+      const siteUrl = window.location.href;
+      return siteUrl.indexOf(".ovh/")>0 || siteUrl.indexOf(":5173/geolocation/")>0;
+    },
     addTemporaryMarker(lat, lng) {
       /*
       const map = leafletMap.value.leafletObject
@@ -399,6 +415,7 @@ export default {
           "&neLng=" + this.boundNeLng +
           "&annee=" + this.annee;
         
+      console.log("boundsUpdated :"+ qryPrms);
 
         this.callGeoJsonIsochrones(qryPrms);
         this.callGeoJsonCarres(qryPrms);
@@ -477,13 +494,19 @@ export default {
       this.geojsonIsochrone = dataIsochrone;
     },
     async callGeoJsonCarres(qryPrms) {
+
+      console.log("callGeoJsonCarres: "+ qryPrms);
+
       // data carreau 200m
-      const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/carres/" +  this.com2co + "/carre_" + this.annee + "_" + this.com2co + ".json";
-      //const base = this.restUrlCarre;
+      //const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/carres/" +  this.com2co + "/carre_" + this.annee + "_" + this.com2co + ".json";
+      const base = this.restUrlCarre;
 
       let callUrl = base;
       if(qryPrms) {
         callUrl = base+qryPrms;
+      }
+      if (!this.detectSelfDomain()) {
+        callUrl = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/carres/" +  this.com2co + "/carre_" + this.annee + "_" + this.com2co + ".json";
       }
       
       const respCarre = await fetch(callUrl);

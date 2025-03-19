@@ -105,6 +105,7 @@ public class BatchJobService {
 					job = new ComputeJob();
 					job.setIdInspire(carreShape.getIdInspire());
 					job.setAnnee(anne);
+					job.setCodeInsee(carreShape.getCodeInsee());
 				}
 				jobs.add(job);
 				
@@ -122,8 +123,15 @@ public class BatchJobService {
 		log.info("requestProcessCity");
 		
 		String inseeCode = city.getInseeCode();
-		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
-		List<InseeCarre200mOnlyShape> shapes = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(cadastre.getGeoShape()));
+		this.requestProcessCity(inseeCode);
+	}
+	
+	public void requestProcessCity(String inseeCode) {
+		log.info("requestProcessCity");
+		
+		//Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
+		//List<InseeCarre200mOnlyShape> shapes = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(cadastre.getGeoShape()));
+		List<InseeCarre200mOnlyShape> shapes = inseeCarre200mOnlyShapeRepository.findByCodeInsee(inseeCode);
 		appendCarre(shapes);
 	}
 	
