@@ -85,7 +85,7 @@ public class GeoJson2GeometryHelper {
 	}
 	
 	
-	public GeoJsonTmp parseInspire(String geoJson) throws JsonProcessingException {
+	public GeoJsonInspire parseInspire(String geoJson) throws JsonProcessingException {
 		//JSonNode of root
 		JsonNode rootNode = mapper.readTree(geoJson);
 		
@@ -96,7 +96,7 @@ public class GeoJson2GeometryHelper {
 		GenericGeometryParser parser = new GenericGeometryParser(factory);
 		Geometry geo = parser.geometryFromJson(geometryNode);
 		
-		GeoJsonTmp ret = new GeoJsonTmp();
+		GeoJsonInspire ret = new GeoJsonInspire();
 		
 		if (geo instanceof MultiPolygon) {
 			MultiPolygon mp = (MultiPolygon)geo;
@@ -105,7 +105,6 @@ public class GeoJson2GeometryHelper {
 			Polygon polygon = (Polygon)factory.createPolygon(coords).getEnvelope();
 			ret.geometry = polygon;
 			
-
 			//JSonNode of idINSPIRE
 			JsonNode idInspireNode = rootNode.findValue("idINSPIRE");
 			ret.idInspire = idInspireNode.asText();
@@ -119,9 +118,78 @@ public class GeoJson2GeometryHelper {
 		return ret;
 	}
 	
-	public class GeoJsonTmp {
+	public GeoJsonIris parseIris(String geoJson) throws JsonProcessingException {
+		//JSonNode of root
+		JsonNode rootNode = mapper.readTree(geoJson);
+		
+
+		//JSonNode of geometry
+		JsonNode geometryNode = rootNode.findValue("geometry");
+		
+		GenericGeometryParser parser = new GenericGeometryParser(factory);
+		Geometry geo = parser.geometryFromJson(geometryNode);
+		
+		GeoJsonIris ret = new GeoJsonIris();
+		
+		if (geo instanceof MultiPolygon) {
+			MultiPolygon mp = (MultiPolygon)geo;
+//			Coordinate[] coords = mp.getCoordinates();
+//			Polygon polygon = (Polygon)factory.createPolygon(coords).getEnvelope();
+			ret.geometry = mp;
+			
+			//JSonNode of xxx
+			JsonNode node = rootNode.findValue("fid");
+			ret.fid = node.asInt();
+
+			node = rootNode.findValue("cleabs");
+			ret.cleabs = node.asText();
+
+			node = rootNode.findValue("code_insee");
+			ret.codeInsee = node.asText();
+
+			node = rootNode.findValue("nom_commune");
+			ret.nomCommune = node.asText();
+			node = rootNode.findValue("iris");
+			ret.irisCourt = node.asText();
+			node = rootNode.findValue("code_iris");
+			ret.codeIris = node.asText();
+			node = rootNode.findValue("nom_iris");
+			ret.nomIris = node.asText();
+			node = rootNode.findValue("type_iris");
+			ret.typeIris = node.asText();
+			
+		}
+		
+		return ret;
+	}
+	
+	public class GeoJsonInspire {
 		public String idInspire;
 		public String id1km;
 		public Polygon geometry;
+	}
+	
+	/**
+	 *  { 
+	 *  "fid": 14683, 
+	 *  "cleabs": "IRIS____0000000674822804", 
+	 *  "code_insee": "67482", 
+	 *  "nom_commune": "Strasbourg", 
+	 *  "iris": "2804", 
+	 *  "code_iris": 
+	 *  "674822804", "nom_iris": "Polygone Ouest", 
+	 *  "type_iris": "H"
+	 *   }, 
+	 */
+	public class GeoJsonIris {
+		public Integer fid;
+		public String cleabs;
+		public String codeInsee;
+		public String nomCommune;
+		public String irisCourt;
+		public String codeIris;
+		public String nomIris;
+		public String typeIris;
+		public Geometry geometry;
 	}
 }

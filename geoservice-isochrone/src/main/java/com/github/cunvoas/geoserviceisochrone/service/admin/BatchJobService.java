@@ -19,17 +19,15 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJob;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
-import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ComputeJobRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
-import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV2;
+import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV3;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,7 +53,7 @@ public class BatchJobService {
 	private ParkAreaRepository parkAreaRepository;
 
 	@Autowired
-	private ComputeServiceV2 computeService;
+	private ComputeServiceV3 computeService;
 	
 	
 	/**
@@ -173,6 +171,38 @@ public class BatchJobService {
 		log.info("\tpossibleLaunch = {}", possibleLaunch);
 		return possibleLaunch;
 	}
+	
+	
+	/**
+	 * process one (debug).
+	 * @param idInspire
+	 */
+	public void processCarres(Integer annee, String idInspire) {
+		
+		InseeCarre200mComputedId id = new InseeCarre200mComputedId();
+		id.setAnnee(annee);
+		id.setIdInspire(idInspire);
+		
+		Optional<ComputeJob> oJob = computeJobRepository.findById(id);
+		if (oJob.isPresent()) {
+			ComputeJob job = oJob.get();
+			Boolean processed = computeService.computeCarreByComputeJobV2Optim(job);
+			
+			// tag end
+			if ( Boolean.TRUE.equals(processed)) {
+				job.setStatus(ComputeJobStatusEnum.PROCESSED);
+			} else {
+				job.setStatus(ComputeJobStatusEnum.IN_ERROR);
+			}
+
+			job.setProcessed(new Date());
+			computeJobRepository.save(job);
+		}
+		
+		
+		
+	}
+	
 	
 	/**
 	 * scheduled task.

@@ -18,7 +18,6 @@ public class InseeDensiteCommune {
 	
 	public static final String header = "CODGEO,LIBGEO,DENS,LIBDENS,PMUN20,P1,P2,P3,P4,P5,P6,P7";
 
-	
 	@Id
 	@Column(name = "codgeo", length = 5)
 	private String codgeo;

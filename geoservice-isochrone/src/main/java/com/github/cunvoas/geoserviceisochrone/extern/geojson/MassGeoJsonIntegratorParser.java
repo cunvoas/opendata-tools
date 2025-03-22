@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
-import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper.GeoJsonTmp;
+import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper.GeoJsonInspire;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
@@ -96,7 +96,7 @@ public class MassGeoJsonIntegratorParser {
 	public InseeCarre200mOnlyShape processLine(String theLine) {
 		InseeCarre200mOnlyShape shape = null;
 		try {
-			GeoJsonTmp idInspire = geoParser.parseInspire(theLine);
+			GeoJsonInspire idInspire = geoParser.parseInspire(theLine);
 
 			shape = new InseeCarre200mOnlyShape();
 			shape.setIdInspire(idInspire.idInspire);

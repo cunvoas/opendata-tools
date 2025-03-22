@@ -15,25 +15,36 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvCarre200ShapeParser;
+import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvIrisDataParser;
+import com.github.cunvoas.geoserviceisochrone.extern.geojson.IrisGeoJsonIntegratorParser;
 import com.github.cunvoas.geoserviceisochrone.extern.mel.CsvLyonParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.extern.mel.CsvNantesParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.extern.mel.JsonToulouseParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisData;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.admin.BatchJobService;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
+import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
 import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV2;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
 
 @SpringBootTest
-@ActiveProfiles({"secret","pi"})
+@ActiveProfiles({"secret","dev"})
 class TestGeoserviceIsochroneApplication {
 
+	@Autowired
+	private IrisGeoJsonIntegratorParser irisGeoJsonIntegratorParser;
 
+	@Autowired
+	private CsvIrisDataParser csvIrisDataParser;
+
+	@Autowired
+	private ServiceIris serviceIris;
+	
 	@Autowired
 	private ComputeServiceV2 computeServiceV2;
 
@@ -107,13 +118,52 @@ class TestGeoserviceIsochroneApplication {
 		}
 			
 	}
+
+	@Test
+//	@Disabled
+	@Order(24)
+	void importIrisData() {
+		
+		try {
+			List<IrisData> data = csvIrisDataParser.parseIrisData(2020, new File("/work/PERSO/ASSO/data/iris_base-ic-evol-struct-pop-2020.CSV"));
+			System.out.println(data!=null?data.size():0);
+			
+			serviceIris.saveAllData(data);
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail();
+		}
+		
+	}
+
+	@Test
+	@Disabled
+	@Order(23)
+	void importIris() {
+		
+		irisGeoJsonIntegratorParser.parseAndSave("/work/PERSO/ASSO/data/fond_iris.json");
+	}
 	
 	
 	/**
 	 * calcule des carre vs aire des parcs
 	 */
 	@Test
-//	@Disabled
+	@Disabled
+	@Order(23)
+	void batchCarreFixOne() {
+		batchJobService.processCarres(2019, "CRS3035RES200mN2933000E3687600");
+	}
+	
+	
+	
+	
+	/**
+	 * calcule des carre vs aire des parcs
+	 */
+	@Test
+	@Disabled
 	@Order(22)
 	void batchCarreFix() {
 		
