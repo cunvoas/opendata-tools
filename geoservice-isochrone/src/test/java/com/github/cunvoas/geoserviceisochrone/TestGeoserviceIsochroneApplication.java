@@ -33,7 +33,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
 
 @SpringBootTest
-@ActiveProfiles({"secret","dev"})
+@ActiveProfiles({"secret","pi"})
 class TestGeoserviceIsochroneApplication {
 
 	@Autowired
@@ -120,7 +120,7 @@ class TestGeoserviceIsochroneApplication {
 	}
 
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(24)
 	void importIrisData() {
 		
@@ -163,12 +163,13 @@ class TestGeoserviceIsochroneApplication {
 	 * calcule des carre vs aire des parcs
 	 */
 	@Test
-	@Disabled
+	//@Disabled
 	@Order(22)
-	void batchCarreFix() {
+	void batchCarreRequestProcessCity() {
 		
 		//batchJobService.requestProcessCity("59346");
-		batchJobService.requestProcessCity("27022");
+		//batchJobService.requestProcessCity("27022");
+		batchJobService.requestProcessCity("59350");
 	}
 	/**
 	 * calcule des carre vs aire des parcs
@@ -180,7 +181,7 @@ class TestGeoserviceIsochroneApplication {
 
 		try {
 			//lille
-	//		computeServiceV2.computeCarreByInseeCode("59350");
+//			computeServiceV2.computeCarreByInseeCode("59350");
 			//lezennes					
 			computeServiceV2.computeCarreByInseeCode("59346");
 			

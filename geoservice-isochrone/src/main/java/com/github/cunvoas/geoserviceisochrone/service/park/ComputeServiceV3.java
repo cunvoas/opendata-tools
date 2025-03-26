@@ -196,6 +196,7 @@ public class ComputeServiceV3 {
 		for (ParkArea parkArea : parkAreas) {
 			log.info("\tcompose {}", parkArea);
 			
+			// CHECK if park exists for the INSEE data
 			if (!isActive(parkArea, annee)) {
 				// TODO add full testing
 				continue;

@@ -1,8 +1,11 @@
 package com.github.cunvoas.geoserviceisochrone.service.admin;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJob;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStat;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
@@ -203,39 +207,179 @@ public class BatchJobService {
 		
 	}
 	
+	/**
+	 * reset in queue jobs.
+	 * arrives when when another app connection to DB.
+	 * @see https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html
+	 *		    second
+	 *		    minute
+	 *		    hour
+	 *		    day of month
+	 *		    month
+	 *		    day of week
+     *
+	 * ie. all jobs from prev day 18:00
+	 */
+	@Scheduled(cron = "0 15 4 * * *")
+	public void recycleCarres() {
+		Date newDate = new Date();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.HOUR, -10);
+		cal.add(Calendar.MINUTE, -15);
+		Date oldDate = cal.getTime();
+		
+		List<ComputeJob> jobs = computeJobRepository.findOnErrorAndProcessed(oldDate);
+		if (!jobs.isEmpty()) {
+			log.warn("{} jobs runs incorrecly , new demande time is {}", jobs.size(), newDate);
+			
+			for (ComputeJob computeJob : jobs) {
+				computeJob.setDemand(newDate);
+				computeJob.setStatus(ComputeJobStatusEnum.TO_PROCESS);
+				computeJobRepository.save(computeJob);
+			}
+		}
+	}
 	
 	/**
 	 * scheduled task.
 	 * @FIXME need to be smartest by hours.
+	 * fixedDelay = 400_000 few times more to process 10 squares
 	 */
-	@Scheduled(fixedDelay = 600000, initialDelay = 10000)
+	@Scheduled(fixedDelay = 400_000, initialDelay = 60_000)
 	public void processCarres() {
+		int pageSize=10;
+		
 		log.error("processCarres at {}", DF.format(new Date()));
 		
 		if (this.changeStatus(true)) {
-			Pageable page = Pageable.ofSize(10);
-			List<ComputeJob> jobs = computeJobRepository.findByStatusOrderByDemandAsc(ComputeJobStatusEnum.TO_PROCESS, page);
-			for (ComputeJob job : jobs) {
-				
-				// tag begin
-				job.setProcessed(new Date());
-				job.setStatus(ComputeJobStatusEnum.IN_PROCESS);
-				computeJobRepository.save(job);
-				
-				// process
-				Boolean processed = computeService.computeCarreByComputeJobV2Optim(job);
-				
-				// tag end
-				if ( Boolean.TRUE.equals(processed)) {
-					job.setStatus(ComputeJobStatusEnum.PROCESSED);
+			Pageable page = Pageable.ofSize(pageSize);
+
+			// safe infinite loop, so make a limit
+			int possibleMax=100;
+			// true by default for 1st iteration
+			boolean possibleNext=true;
+			while (possibleNext && possibleMax>0) {
+				possibleMax--;
+			
+				List<ComputeJob> jobs = null;
+				if (onDev()) {
+					jobs = computeJobRepository.findByStatusOrderByDemandDesc(ComputeJobStatusEnum.TO_PROCESS, page);
 				} else {
-					job.setStatus(ComputeJobStatusEnum.IN_ERROR);
+					jobs = computeJobRepository.findByStatusOrderByDemandAsc(ComputeJobStatusEnum.TO_PROCESS, page);
 				}
-				job.setProcessed(new Date());
-				computeJobRepository.save(job);
-			}
+				possibleNext = jobs!=null?jobs.size()==pageSize:false;
+				
+				for (ComputeJob job : jobs) {
+					
+					// tag begin
+					job.setProcessed(new Date());
+					job.setStatus(ComputeJobStatusEnum.IN_PROCESS);
+					computeJobRepository.save(job);
+					
+					// process
+					Boolean processed = computeService.computeCarreByComputeJobV2Optim(job);
+					
+					// tag end
+					if ( Boolean.TRUE.equals(processed)) {
+						job.setStatus(ComputeJobStatusEnum.PROCESSED);
+					} else {
+						job.setStatus(ComputeJobStatusEnum.IN_ERROR);
+					}
+					job.setProcessed(new Date());
+					computeJobRepository.save(job);
+				}
+			}//while
 		}
 		this.changeStatus(false);
+	}
+	
+	/**
+	 * detect dev platform.
+	 * @return true if on dev
+	 */
+	private boolean onDev() {
+		boolean ret = false;
+		try {
+			String name = InetAddress.getLocalHost().getHostName();
+			ret = "P20230205".equalsIgnoreCase(name);
+		} catch (UnknownHostException ignore) {
+		}
+		return ret;
+	}
+	
+	
+	/**
+	 * getGlobalStats.
+	 * @return list of stats
+	 */
+	public List<ComputeJobStat> getGlobalStats() {
+		List<Object[]> objs = computeJobRepository.getGlobalStats();
+		return map(objs);
+	}
+	
+	/**
+	 * getStatsByCity.
+	 * @param insee city code
+	 * @return list of stats
+	 */
+	public List<ComputeJobStat> getStatsByCity(String insee) {
+		List<Object[]> objs = computeJobRepository.getStatsByCodeInsee(insee);
+		return map(objs);
+	}
+	
+	/**
+	 * map
+	 * @param objs lost of columns 
+	 * @return  List<ComputeJobStat>
+	 */
+	public List<ComputeJobStat> map(List<Object[]> objs) {
+		List<ComputeJobStat> stats = new ArrayList<>();
+		if (objs!=null) {
+			for (Object[] objects : objs) {
+				ComputeJobStat stat = new ComputeJobStat();
+				stats.add(stat);
+				
+				stat.setNb((Integer)objects[0]);
+				Integer status = (Integer)objects[1];
+				stat.setStatus(this.map(status));	
+				
+				if (objects.length>2) {
+					stat.setCodeInsee((String)objects[2]);	
+				}
+			}
+		}
+		return stats;
+	}
+	
+	/**
+	 * map for enum.
+	 * @param idx idc from DB.
+	 * @return ComputeJobStatusEnum
+	 */
+	private ComputeJobStatusEnum map(int idx) {
+		ComputeJobStatusEnum theEnum=ComputeJobStatusEnum.TO_PROCESS;
+		switch (idx) {
+			case 0: {
+				theEnum=ComputeJobStatusEnum.TO_PROCESS;
+				break;
+			}
+			case 1: {
+				theEnum=ComputeJobStatusEnum.IN_PROCESS;
+				break;
+			}
+			case 2: {
+				theEnum=ComputeJobStatusEnum.PROCESSED;
+				break;
+			}
+			case 3: {
+				theEnum=ComputeJobStatusEnum.IN_ERROR;
+				break;
+			}
+			default:
+				throw new IllegalArgumentException("Unexpected value: " + idx);
+		}
+		return theEnum;
 	}
 	
 }

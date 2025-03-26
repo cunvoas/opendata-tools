@@ -368,6 +368,21 @@ export default {
   },
 
   methods: {
+    getRootUrl() {
+      const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
+
+      console.log("mode: "+import.meta.env.VITE_MODE);
+      console.log("rest_url: "+import.meta.env.VITE_REST_URL);
+
+      if (import.meta.env.VITE_MODE==='dynamic') {
+        return  import.meta.env.VITE_REST_URL;
+      } else {
+        return staticOnGit;
+      }
+    },
+    isDynamic() {
+      return import.meta.env.VITE_MODE==='dynamic';
+    },
     detectSelfDomain() {
       let onMyServer=false;
       const siteUrl = window.location.href;
@@ -479,55 +494,77 @@ export default {
     debouncedFetchCommune: debounce(async function(lat, lon) {
       await this.fetchCommune(lat, lon);
     }, 400), // 500ms debounce delay
+    async fetchGeoJson(url) {
+      const response = await fetch(url);
+      return await response.json();
+    },
+
+    debouncedFetchIsochrone: debounce(async function(url, callback) {
+      try {
+        console.log("debouncedFetchIsochrone: "+url);
+        const data = await this.fetchGeoJson(url);
+        callback(data);
+      } catch (error) {
+        console.error('Error fetching GeoJSON:', error);
+      }
+    }, 380), // debounce delay
     async callGeoJsonIsochrones(qryPrms) {
-      // data isochrones
-      const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/isochrones/" +  this.com2co + "/isochrone_" +  this.annee + "_" +  this.com2co + ".json";
-      //const base = this.restUrlIsochrones;
-
-      let callUrl = base;
-      if(qryPrms) {
-        callUrl = base+qryPrms;
+      const rootUrl = this.getRootUrl();
+      let callUrl='';
+      if (this.isDynamic()) {
+        callUrl = `${rootUrl}/map/park/area${qryPrms}`;
+      } else {
+        callUrl = `${rootUrl}/geojson/isochrones/${this.com2co}/isochrone_${this.annee}_${this.com2co}.json`;
       }
-      
-      const respIsochrone = await fetch(callUrl);
-      const dataIsochrone = await respIsochrone.json();
-      this.geojsonIsochrone = dataIsochrone;
+      this.debouncedFetchIsochrone(callUrl, (data) => {
+        this.geojsonIsochrone = data;
+      });
     },
+
+    debouncedFetchCarre: debounce(async function(url, callback) {
+      try {
+        console.log("debouncedFetchCarre: "+url);
+        const data = await this.fetchGeoJson(url);
+        callback(data);
+      } catch (error) {
+        console.error('Error fetching GeoJSON:', error);
+      }
+    }, 400), // 400ms debounce delay
     async callGeoJsonCarres(qryPrms) {
-
-      console.log("callGeoJsonCarres: "+ qryPrms);
-
-      // data carreau 200m
-      //const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/carres/" +  this.com2co + "/carre_" + this.annee + "_" + this.com2co + ".json";
-      const base = this.restUrlCarre;
-
-      let callUrl = base;
-      if(qryPrms) {
-        callUrl = base+qryPrms;
+      const rootUrl = this.getRootUrl();
+      let callUrl='';
+      if (this.isDynamic()) {
+        callUrl = `${rootUrl}/map/insee/carre200m/area${qryPrms}`;
+      } else {
+        callUrl = `${rootUrl}/geojson/carres/${this.com2co}/carre_${this.annee}_${this.com2co}.json`;
       }
-      if (!this.detectSelfDomain()) {
-        callUrl = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/geojson/carres/" +  this.com2co + "/carre_" + this.annee + "_" + this.com2co + ".json";
-      }
-      
-      const respCarre = await fetch(callUrl);
-      const dataCarre = await respCarre.json();
-      this.geojsonCarre = dataCarre;
+      this.debouncedFetchCarre(callUrl, (data) => {
+        this.geojsonCarre = data;
+      });
     },
+
+    debouncedFetchCadastre: debounce(async function(url, callback) {
+      try {
+        console.log("debouncedFetchCadastre: "+url);
+        const data = await this.fetchGeoJson(url);
+        callback(data);
+      } catch (error) {
+        console.error('Error fetching GeoJSON:', error);
+      }
+    }, 450), // debounce delay
     async callGeoJsonCadastre(qryPrms) {
-      // data Cadastre
-      const base = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/cadastres/"+this.region+"/cadastre_c2c_" + this.com2co + ".json";
-      //const base = this.restUrlCadastre;
-      
-      
-      let callUrl = base;
-      if(qryPrms) {
-        callUrl = base+qryPrms;
+      const rootUrl = this.getRootUrl();
+      let callUrl='';
+      if (this.isDynamic()) {
+        callUrl = `${rootUrl}/map/cadastre/area${qryPrms}`;
+      } else {
+        callUrl = `${rootUrl}/data/cadastres/${this.region}/cadastre_c2c_${this.com2co}.json`;
       }
-      
-      const respCadastre = await fetch(callUrl);
-      const dataCadastre = await respCadastre.json();
-      this.geojsonCadastre = dataCadastre;
+      this.debouncedFetchCadastre(callUrl, (data) => {
+        this.geojsonCadastre = data;
+      });
     },
+
   },
   mounted() {      // Add custom HTML content to the l-control
       const customControl = document.getElementById('customControl');

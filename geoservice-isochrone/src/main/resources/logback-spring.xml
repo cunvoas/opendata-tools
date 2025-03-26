@@ -31,6 +31,7 @@
 	
   <logger name="com.zaxxer.hikari.HikariConfig" level="info"/>
   <logger name="com.zaxxer.hikari" level="error"/>
+  <logger name="org.springframework.web.client.RestTemplate" level="warn"/>
   
   <logger name="com.github.cunvoas.geoserviceisochrone" level="warn"/>
   <logger name="com.github.cunvoas.geoserviceisochrone.GeoserviceIsochroneApplication" level="info"/>

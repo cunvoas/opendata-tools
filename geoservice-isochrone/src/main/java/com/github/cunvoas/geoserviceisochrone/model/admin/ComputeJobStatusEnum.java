@@ -20,7 +20,7 @@ public enum ComputeJobStatusEnum {
 	ComputeJobStatusEnum(String status) {
 		this.status = status;
 	}
-
+		
 	/**
 	 * @return status value
 	 */

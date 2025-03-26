@@ -3,7 +3,10 @@ package com.github.cunvoas.geoserviceisochrone;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +23,20 @@ class TestExporterApplication {
 	@Autowired
 	private ServicePublicationExporter servicePublicationExporter;
 
-
+	@Test
+	@Order(1)
+	void hostname() {
+		try {
+			System.out.println(
+					InetAddress.getLocalHost().getHostName()
+					);
+		} catch (UnknownHostException e) {
+			fail(e);
+		}
+	}
 
 	@Test
+	@Disabled
 	@Order(10)
 	void loadParks() {
 		try {

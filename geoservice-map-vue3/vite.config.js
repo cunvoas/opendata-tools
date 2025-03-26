@@ -9,7 +9,10 @@ export default defineConfig({
   },
   base: '/geolocation/',
   server: {
-    historyApiFallback: true
-  }
+    historyApiFallback: true,
+    cors: {
+      origin: false,
+    },
+  },
   
 })
