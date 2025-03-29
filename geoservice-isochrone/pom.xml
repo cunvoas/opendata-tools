@@ -7,7 +7,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.4.3</version><!-- 3.2.2 3.4.1 -->
-		<relativePath /> <!-- lookup parent from repository -->
+		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.github.cunvoas</groupId>
 	<artifactId>geoservice-isochrone</artifactId>
@@ -138,7 +138,7 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.78</version>
+			<version>1.80</version>
 		</dependency>
 		<!-- basics DTOs & Fast calls to get external data -->
 		<dependency>
