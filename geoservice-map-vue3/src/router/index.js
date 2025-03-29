@@ -33,10 +33,14 @@ const routes = [
     path: '/',
     redirect: { name: 'appCarte' },
   },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/carte'
+  }
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.VITE_APP_BASE_URL),
   routes,
 });
 

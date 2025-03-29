@@ -13,6 +13,9 @@ export default defineConfig({
     cors: {
       origin: false,
     },
+
+    //middlewareMode: "html"
   },
+  
   
 })

@@ -594,9 +594,9 @@ export default {
         return {
           weight: 2,
           color: "#406C40",
-          opacity: 0.95,
+          opacity: 0.15,
           fillColor: fillColor,
-          fillOpacity: 0.6,
+          fillOpacity: 0.1,
         };
       };
     },
