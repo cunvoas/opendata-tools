@@ -649,8 +649,11 @@ export default {
           });
         } else {
           layer.setStyle({
+            weight: 2,
+            color: "#406C40",
+            opacity: 0.90,
             fillColor: feature.properties.fillColor,
-            fillOpacity: 0.6,
+            fillOpacity: 0.09,
           });
         }
       };

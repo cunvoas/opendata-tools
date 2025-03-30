@@ -6,6 +6,7 @@ import { createWebHistory, createRouter } from "vue-router";
 import AppCarte from "../views/AppCarte.vue";
 import AppStatistics from "../views/AppStatistics.vue";
 import AppInformation from "../views/AppInformation.vue";
+import AppVideoAdmin from "../views/AppVideoAdmin.vue";
 
 //Vue.use(Router);
 
@@ -28,6 +29,12 @@ const routes = [
     name: 'appInformation',
     title: 'Informations',
     component: AppInformation,
+  },
+  {
+    path: '/aideoVideo',
+    name: 'appVideoAdmin',
+    title: 'Video d\'aide',
+    component: AppVideoAdmin,
   },
   {
     path: '/',

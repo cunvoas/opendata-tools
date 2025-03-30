@@ -46,7 +46,9 @@
                     <router-link class="router-links" to="/stats">Statistiques</router-link>
                     &nbsp;
                     <router-link class="router-links" to="/Information">Information</router-link>
-                </nav>
+                    &nbsp;
+                    <router-link class="router-links" to="/aideoVideo">Aide en video</router-link>
+                 </nav>
             </b-col>
         </b-row>
             
