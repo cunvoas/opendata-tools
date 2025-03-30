@@ -17,7 +17,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
-import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV2;
+import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV3;
 
 /**
  * Business Service impl.
@@ -32,7 +32,7 @@ public class ServiceParcPrefecture {
 	private ParkJardinRepository parkJardinRepository;
 
 	@Autowired 
-	private ComputeServiceV2 computeService;
+	private ComputeServiceV3 computeService;
 
 	@Autowired 
 	private CityService cityService;

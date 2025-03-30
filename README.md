@@ -30,5 +30,5 @@ Projet de l'interface graphique qui représente les données sous la forme de ca
 
 Ce projet contient un copie de sécurité des fichiers de données sources afin de pouvoir reconstruire la base de données.
 Cette copie a été décidée car les données du passé deviennent souvent indisponibles ou le format des données évoluent dans le temps. 
-[Détail du projet](https://github.com/cunvoas/opendata-tool-spare-data/README.md)
+[Détail du projet](https://github.com/cunvoas/opendata-tool-spare-data/)
 

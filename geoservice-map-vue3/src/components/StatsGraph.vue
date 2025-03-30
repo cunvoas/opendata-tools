@@ -14,6 +14,9 @@
 
 
 <script>
+
+console.log("StatsGraph");
+
 import { 
     Chart as ChartJS, 
     ArcElement, 

@@ -27,8 +27,8 @@
 </template>
 
 <script>
-import BarGraph from "../components/BarGraph.vue";
-import PieGraph from "../components/PieGraph.vue";
+import BarGraph from "../components/old/BarGraph.vue";
+import PieGraph from "../components/old/PieGraph.vue";
 
 export default {
     name: "AppSurface",

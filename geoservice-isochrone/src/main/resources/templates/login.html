@@ -6,6 +6,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com/"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const submitButton = document.querySelector('input[type="submit"]');
+            const loginForm = document.querySelector('form');
+
+            loginForm.addEventListener('submit', function(event) {
+                submitButton.disabled = true;
+                // Change the button text
+                submitButton.value = [[#{login.auth}]];
+                
+                setTimeout(function() {
+                    submitButton.disabled = false;
+                    // Restore original text
+                    submitButton.value = [[#{login.submit}]]; 
+                }, 6000); // 6000 milliseconds = 6 seconds
+            });
+        });
+    </script>
 </head>
 <body class="bg-slate-100">
     <div class="flex flex-col justify-center lg:px-8 min-h-full px-6 py-12">

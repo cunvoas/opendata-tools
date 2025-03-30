@@ -4,9 +4,9 @@
 //import Router from 'vue-router';
 import { createWebHistory, createRouter } from "vue-router";
 import AppCarte from "../views/AppCarte.vue";
-import AppSurface from "../views/AppSurface.vue";
 import AppStatistics from "../views/AppStatistics.vue";
 import AppInformation from "../views/AppInformation.vue";
+import AppVideoAdmin from "../views/AppVideoAdmin.vue";
 
 //Vue.use(Router);
 
@@ -16,12 +16,6 @@ const routes = [
     name: 'appCarte',
     title: 'Carte',
     component: AppCarte,
-  },
-  {
-    path: '/surface',
-    name: 'appSurface',
-    title: 'Analyse',
-    component: AppSurface,
   },
   
   {
@@ -37,13 +31,23 @@ const routes = [
     component: AppInformation,
   },
   {
+    path: '/aideoVideo',
+    name: 'appVideoAdmin',
+    title: 'Video d\'aide',
+    component: AppVideoAdmin,
+  },
+  {
     path: '/',
     redirect: { name: 'appCarte' },
   },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/carte'
+  }
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.VITE_APP_BASE_URL),
   routes,
 });
 

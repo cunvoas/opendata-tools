@@ -554,7 +554,7 @@
     
     function fnParkPrefClicked(feat) {
     	//TODO detect CREATE MODE
-    	// check function fnParkPrefClicked(feat) {k is idParcJardin is null
+    	// check function fnParkPrefClicked(feat) { k is idParcJardin is null
     	
  		manageLocationDisabled();
  		const props = feat.properties;
@@ -1020,18 +1020,7 @@
         });
     });
 
-    
-    
-/*
- https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/file-upload-Spring-Boot-Ajax-example
 
-	 <!-- HTML5 Input Form Elements -->
-	 <input id="fileupload" type="file" name="fileupload" /> 
-	 <button id="upload-button" onclick="uploadFile()"> Upload </button>
-
-	 <!-- Ajax JavaScript File Upload to Spring Boot Logic -->
-	 <script>
- */
     async function uploadFile() {
       let formData = new FormData(); 
       formData.append("file", fileupload.files[0]);

@@ -39,4 +39,7 @@ public class ComputeJob {
 
 	@Column(name="status")
 	private ComputeJobStatusEnum status = ComputeJobStatusEnum.TO_PROCESS;
+
+	@Column(name="insee",length=5)
+	private String codeInsee;
 }

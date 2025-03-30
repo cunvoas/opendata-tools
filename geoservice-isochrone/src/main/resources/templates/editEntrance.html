@@ -617,12 +617,14 @@
     
     
     const idPark = document.getElementById("idPark").value;
+    let geojsonEntranceLayer = null;
+    let geojsonParkLayer = null;
 	if (!isEmpty(idPark) && idPark!='') {
 		const sUrlGeoEntrance= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones/entrance}]]+'?idPark='+idPark;
-		const geojsonEntranceLayer = new L.GeoJSON.AJAX(sUrlGeoEntrance, {onEachFeature: customOnEachFeature});
+		geojsonEntranceLayer = new L.GeoJSON.AJAX(sUrlGeoEntrance, {onEachFeature: customOnEachFeature});
 		
 		const sUrlGeoPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones/park}]]+'?idPark='+idPark;
-		const geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoPark, {onEachFeature: customOnEachFeature});
+		geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoPark, {onEachFeature: customOnEachFeature});
 		
 	}
 	

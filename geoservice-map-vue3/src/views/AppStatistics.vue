@@ -22,6 +22,9 @@
 </template>
 
 <script>
+
+console.log("AppStatistics");
+
 import SearchLocation from "../components/SearchLocation.vue";
 import StatsGraph from "../components/StatsGraph.vue";
 

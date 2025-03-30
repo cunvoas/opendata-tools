@@ -24,6 +24,13 @@ public interface InseeCarre200mOnlyShapeRepository extends JpaRepository<InseeCa
 	 */
 	@Query(nativeQuery = true, value =  "SELECT * FROM carre200onlyshape WHERE ST_Intersects(geo_shape, ?1)")
 	List<InseeCarre200mOnlyShape> findCarreInMapArea(String geometry);
+	
+	/**
+	 * findCarreInMapArea.
+	 * @param codeInsee
+	 * @return list InseeCarre200mOnlyShape
+	 */
+	List<InseeCarre200mOnlyShape> findByCodeInsee(String codeInsee);
 
 	/**
 	 * findCarreInMapArea.
