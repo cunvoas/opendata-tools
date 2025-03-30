@@ -1,6 +1,5 @@
 package com.github.cunvoas.geoserviceisochrone;
 
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -12,8 +11,6 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
 

@@ -53,8 +53,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 //@ConditionalOnProperty(
 //		name="application.feature-flipping.carre200m-impl", 
-//		havingValue="v2")
-public class ComputeServiceV2 {
+//		havingValue="v3")
+public class ComputeServiceV3 {
 
 	// 200m x 200m = 4 10^4: insee data is 40000 +-1 accuracy
 	private static final Double SURFACE_CARRE = 40_000d;
@@ -93,40 +93,40 @@ public class ComputeServiceV2 {
 	 * computeCarreByPostalCode.
 	 * @param postalCode code
 	 */
-	public void computeCarreByPostalCode(String postalCode) {
-		Set<Cadastre> uniques = new HashSet<>();
-		List<Laposte> postes = laposteRepository.findByPostalCode(postalCode);
-		for (Laposte laposte : postes) {
-			Cadastre cadastre = cadastreRepository.findById(laposte.getIdInsee()).get();
-			uniques.add(cadastre);
-		}
-		for (Cadastre cadastre : uniques) {
-			computeCarreByCadastreV2Optim(cadastre);
-		}
-		
-	}
+//	public void computeCarreByPostalCode(String postalCode) {
+//		Set<Cadastre> uniques = new HashSet<>();
+//		List<Laposte> postes = laposteRepository.findByPostalCode(postalCode);
+//		for (Laposte laposte : postes) {
+//			Cadastre cadastre = cadastreRepository.findById(laposte.getIdInsee()).get();
+//			uniques.add(cadastre);
+//		}
+//		for (Cadastre cadastre : uniques) {
+//			computeCarreByCadastreV2Optim(cadastre);
+//		}
+//		
+//	}
 	
 	/**
 	 * computeCarreByInseeCode.
 	 * @param inseeCode code
 	 */
-	public void computeCarreByInseeCode(String inseeCode) {
-		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
-		computeCarreByCadastreV2Optim(cadastre);
-	}
+//	public void computeCarreByInseeCode(String inseeCode) {
+//		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
+//		computeCarreByCadastreV2Optim(cadastre);
+//	}
 	
-	/**
-	 * computeCarreByCarre200m.
-	 * @param idInspire id
-	 */
-	public void computeCarreByCarre200m(String idInspire) {
-		Optional<InseeCarre200mOnlyShape> oCarreShape = inseeCarre200mOnlyShapeRepository.findById(idInspire);
-		if (oCarreShape.isPresent()) {
-			InseeCarre200mOnlyShape carreShape = oCarreShape.get();
-			Boolean isDense = serviceOpenData.isDistanceDense(carreShape.getCodeInsee());
-			computeCarreShapeV2Optim(carreShape, isDense);
-		}
-	}
+//	/**
+//	 * computeCarreByCarre200m.
+//	 * @param idInspire id
+//	 */
+//	public void computeCarreByCarre200m(String idInspire) {
+//		Optional<InseeCarre200mOnlyShape> oCarreShape = inseeCarre200mOnlyShapeRepository.findById(idInspire);
+//		if (oCarreShape.isPresent()) {
+//			InseeCarre200mOnlyShape carreShape = oCarreShape.get();
+//			Boolean isDense = serviceOpenData.isDistanceDense(carreShape.getCodeInsee());
+//			computeCarreShapeV2Optim(carreShape, isDense);
+//		}
+//	}
 
 	/**
 	 * isActive.
@@ -169,166 +169,168 @@ public class ComputeServiceV2 {
 	 * @param isDense witch density
 	 * @TODO make optim to not recompute all years ( before 2027 )
 	 */
-	protected void computeCarreShapeV2Optim(InseeCarre200mOnlyShape carreShape, Boolean isDense) {
+	protected void computeCarreShapeV2Optim(ComputeJob job, InseeCarre200mOnlyShape carreShape, Boolean isDense) {
 		
 		log.warn(">> InseeCarre200mOnlyShape {}", carreShape.getIdInspire());
 
-		List<Integer> annees = List.of(applicationBusinessProperties.getInseeAnnees());
 		
 		// find parks in square shape
 		List<ParkArea> parkAreas = parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(carreShape.getGeoShape()));
 		parkTypeService.populate(parkAreas);
 		
-		Map<Integer, ComputeDto> mapDto = new HashMap<>();
+//		Map<Integer, ComputeDto> mapDto = new HashMap<>();
 		
 		Geometry shapeParkOnSquare=null;
 		
 		// prepare surface and polygons for parks coverage
-		for (Integer annee : annees) {
-			int count4checkOms=parkAreas.size();
-			ComputeDto dto = new ComputeDto(carreShape);
-			dto.isDense = isDense;
-			dto.annee=annee;
-			
-			mapDto.put(annee, dto);
+		Integer annee = job.getAnnee();
 		
-			for (ParkArea parkArea : parkAreas) {
-				log.info("\tcompose {}", parkArea);
+		
+		int count4checkOms=parkAreas.size();
+		ComputeDto dto = new ComputeDto(carreShape);
+		dto.isDense = isDense;
+		dto.annee=annee;
+		
+//		mapDto.put(annee, dto);
+	
+		for (ParkArea parkArea : parkAreas) {
+			log.info("\tcompose {}", parkArea);
+			
+			// CHECK if park exists for the INSEE data
+			if (!isActive(parkArea, annee)) {
+				// TODO add full testing
+				continue;
+			}
+			
+			ParkAreaComputed pac;
+			Optional<ParkAreaComputed> opac = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
+			if (opac.isPresent()) {
+				pac = opac.get();
+			} else {
+				// rebuid
+				pac = this.computeParkAreaV2(parkArea, annee);
+			}
+			
+			//decrement for all
+			count4checkOms--;
+			
+			// prepare ALL
+			dto.result.surfaceTotalParks = dto.result.surfaceTotalParks.add(pac.getSurface());
+			// merge areas for parks
+			dto.polygonParkAreas = dto.polygonParkAreas.union(parkArea.getPolygon());
+			
+			// prepare with OMS compliance
+			if (pac.getOms()) {
 				
-				if (!isActive(parkArea, annee)) {
-					// TODO add full testing
-					continue;
-				}
-				
-				ParkAreaComputed pac;
-				Optional<ParkAreaComputed> opac = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
-				if (opac.isPresent()) {
-					pac = opac.get();
+				if (shapeParkOnSquare==null) {
+					shapeParkOnSquare = parkArea.getPolygon();
 				} else {
-					// rebuid
-					pac = this.computeParkAreaV2(parkArea, annee);
+					shapeParkOnSquare = shapeParkOnSquare.union(parkArea.getPolygon());
 				}
 				
-				//decrement for all
-				count4checkOms--;
-				
-				// prepare ALL
-				dto.result.surfaceTotalParks = dto.result.surfaceTotalParks.add(pac.getSurface());
-				// merge areas for parks
-				dto.polygonParkAreas = dto.polygonParkAreas.union(parkArea.getPolygon());
-				
-				// prepare with OMS compliance
-				if (pac.getOms()) {
+				String sufficient="";
+				Double rs = applicationBusinessProperties.getRecoAtLeastParkSurface();
+				if (rs<=pac.getSurface().doubleValue()) {
+					sufficient="✓ ";
+					dto.withSufficient=Boolean.TRUE;
 					
-					if (shapeParkOnSquare==null) {
-						shapeParkOnSquare = parkArea.getPolygon();
+					if (dto.polygonParkAreasSustainableOms==null)  {
+						dto.polygonParkAreasSustainableOms =parkArea.getPolygon(); 
 					} else {
-						shapeParkOnSquare = shapeParkOnSquare.union(parkArea.getPolygon());
+						dto.polygonParkAreasSustainableOms = dto.polygonParkAreasSustainableOms.union(parkArea.getPolygon());
 					}
-					
-					String sufficient="";
-					Double rs = applicationBusinessProperties.getRecoAtLeastParkSurface();
-					if (rs<=pac.getSurface().doubleValue()) {
-						sufficient="✓ ";
-						dto.withSufficient=Boolean.TRUE;
-						
-						if (dto.polygonParkAreasSustainableOms==null)  {
-							dto.polygonParkAreasSustainableOms =parkArea.getPolygon(); 
-						} else {
-							dto.polygonParkAreasSustainableOms = dto.polygonParkAreasSustainableOms.union(parkArea.getPolygon());
-						}
-					}
+				}
+			
+				dto.parcNames.add(sufficient+ parkArea.getName());
+				//increment for oms
+				count4checkOms++;
+				dto.resultOms.surfaceTotalParks = dto.resultOms.surfaceTotalParks.add(pac.getSurface());
 				
-					dto.parcNames.add(sufficient+ parkArea.getName());
-					//increment for oms
-					count4checkOms++;
-					dto.resultOms.surfaceTotalParks = dto.resultOms.surfaceTotalParks.add(pac.getSurface());
-					
-					// merge areas for parks
-					dto.polygonParkAreasOms = dto.polygonParkAreasOms.union(parkArea.getPolygon());
-				} else {
-					dto.parcNames.add("(✖ "+parkArea.getName()+")");
-				}
-			}  // end merge
-			
-			// all parks are OMS compliant
-			dto.allAreOms = count4checkOms==parkAreas.size();
-			
-			// si shapeParkOnSquare est null; pas de parc OMS, on considère un point
-			if (shapeParkOnSquare==null) {
-				shapeParkOnSquare = carreShape.getGeoPoint2d();
+				// merge areas for parks
+				dto.polygonParkAreasOms = dto.polygonParkAreasOms.union(parkArea.getPolygon());
+			} else {
+				dto.parcNames.add("(✖ "+parkArea.getName()+")");
 			}
-			
-			
-			StringBuilder sbParcName = new StringBuilder();
-			if (!dto.parcNames.isEmpty()) {
-				Collections.sort(dto.parcNames);
-				for (String name : dto.parcNames) {
-					if (name!=null) {
-						if (sbParcName.length()>0) {
-							sbParcName.append("<br />");
-						}
-						sbParcName.append(" - ");
-						sbParcName.append(name);
-					}
-				}
-				dto.parcName = sbParcName.toString();
-			}
+		}  // end merge
+		
+		// all parks are OMS compliant
+		dto.allAreOms = count4checkOms==parkAreas.size();
+		
+		// si shapeParkOnSquare est null; pas de parc OMS, on considère un point
+		if (shapeParkOnSquare==null) {
+			shapeParkOnSquare = carreShape.getGeoPoint2d();
 		}
+		
+		
+		StringBuilder sbParcName = new StringBuilder();
+		if (!dto.parcNames.isEmpty()) {
+			Collections.sort(dto.parcNames);
+			for (String name : dto.parcNames) {
+				if (name!=null) {
+					if (sbParcName.length()>0) {
+						sbParcName.append("<br />");
+					}
+					sbParcName.append(" - ");
+					sbParcName.append(name);
+				}
+			}
+			dto.parcName = sbParcName.toString();
+		}
+		
 		
 		
 		
 		// get for each years, all square in parks area
-		for (Integer annee : annees) {
-			ComputeDto dto = mapDto.get(annee);	
-			
-			// get already computed square results
-			InseeCarre200mComputedV2 computed = null;
-			Optional<InseeCarre200mComputedV2> opt = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, carreShape.getIdInspire());
-			if (opt.isPresent()) {
-				computed = opt.get();
-			} else {
-				// or create it
-				computed = new InseeCarre200mComputedV2();
-				computed.setIdInspire(carreShape.getIdInspire());
-				computed.setAnnee(annee);	
-			}
-			computed.setIsDense(isDense);
-			computed.setUpdated(new Date());
-			
 
-			log.info("\tprocess merge isochrone");
-			
-			//Compute all the population which is present in the isochrones of the current square.
-			// and the park surface of these isochrones.
-			// then, I compute the surface per capita (m²/inhabitant)
-			this.computePopAndDensityOptim(dto, carreShape, shapeParkOnSquare);
-			
-			computed.setSurfaceParkPerCapita(dto.result.surfaceParkPerCapita);
-			computed.setSurfaceTotalPark(dto.result.surfaceTotalParks);
-			computed.setPopulationInIsochrone(dto.result.populationInIsochrone);
-			computed.setPopIncluded(dto.result.popInc);
-			computed.setPopExcluded(dto.result.popExc);
-			
-			computed.setSurfaceParkPerCapitaOms(dto.resultOms.surfaceParkPerCapita);
-			computed.setSurfaceTotalParkOms(dto.resultOms.surfaceTotalParks);
-			computed.setPopulationInIsochroneOms(dto.resultOms.populationInIsochrone);
-			computed.setPopIncludedOms(dto.resultOms.popInc);
-			computed.setPopExcludedOms(dto.resultOms.popExc);
-			
-			if (Boolean.TRUE.equals(dto.withSufficient)) {
-				computed.setIsSustainablePark(Boolean.TRUE);
-				//TODO 
-				computed.setPopulationWithSustainablePark(null);
-			} else {
-				computed.setIsSustainablePark(Boolean.FALSE);
-				computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
-			}
-
-			log.info("\tsave computed {}\n", computed.getIdInspire());
-			inseeCarre200mComputedV2Repository.save(computed);
-
+//		ComputeDto dto = mapDto.get(annee);	
+		
+		// get already computed square results
+		InseeCarre200mComputedV2 computed = null;
+		Optional<InseeCarre200mComputedV2> opt = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, carreShape.getIdInspire());
+		if (opt.isPresent()) {
+			computed = opt.get();
+		} else {
+			// or create it
+			computed = new InseeCarre200mComputedV2();
+			computed.setIdInspire(carreShape.getIdInspire());
+			computed.setAnnee(annee);	
 		}
+		computed.setIsDense(isDense);
+		computed.setUpdated(new Date());
+		
+
+		log.info("\tprocess merge isochrone");
+		
+		//Compute all the population which is present in the isochrones of the current square.
+		// and the park surface of these isochrones.
+		// then, I compute the surface per capita (m²/inhabitant)
+		this.computePopAndDensityOptim(dto, carreShape, shapeParkOnSquare);
+		
+		computed.setSurfaceParkPerCapita(dto.result.surfaceParkPerCapita);
+		computed.setSurfaceTotalPark(dto.result.surfaceTotalParks);
+		computed.setPopulationInIsochrone(dto.result.populationInIsochrone);
+		computed.setPopIncluded(dto.result.popInc);
+		computed.setPopExcluded(dto.result.popExc);
+		
+		computed.setSurfaceParkPerCapitaOms(dto.resultOms.surfaceParkPerCapita);
+		computed.setSurfaceTotalParkOms(dto.resultOms.surfaceTotalParks);
+		computed.setPopulationInIsochroneOms(dto.resultOms.populationInIsochrone);
+		computed.setPopIncludedOms(dto.resultOms.popInc);
+		computed.setPopExcludedOms(dto.resultOms.popExc);
+		
+		if (Boolean.TRUE.equals(dto.withSufficient)) {
+			computed.setIsSustainablePark(Boolean.TRUE);
+			//TODO 
+			computed.setPopulationWithSustainablePark(null);
+		} else {
+			computed.setIsSustainablePark(Boolean.FALSE);
+			computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
+		}
+
+		log.info("\tsave computed {}\n", computed.getIdInspire());
+		inseeCarre200mComputedV2Repository.save(computed);
+
+		
 	}
 	
 	
@@ -397,9 +399,12 @@ public class ComputeServiceV2 {
 		crDto.popExc = new BigDecimal(inhabitant-popIn);
 		
 
+		Long surfaceSustainable = 0L;
 		// compute surface with accessible parks
-		Geometry parkSustainable = carreShape.getGeoShape().intersection(dto.polygonParkAreasSustainableOms);
-		Long surfaceSustainable = getSurface(parkSustainable);
+		if (dto.polygonParkAreasSustainableOms!=null) {
+			Geometry parkSustainable = carreShape.getGeoShape().intersection(dto.polygonParkAreasSustainableOms);
+			surfaceSustainable = getSurface(parkSustainable);
+		}
 
 		// protata des surfaces pour habitants avec un parc
 		Long popSustainable = Math.round(inhabitant*surfaceSustainable/SURFACE_CARRE);
@@ -443,7 +448,7 @@ public class ComputeServiceV2 {
 			try {
 				InseeCarre200mOnlyShape carre = oCarre.get();
 				Boolean isDense = serviceOpenData.isDistanceDense(carre.getCodeInsee());
-				this.computeCarreShapeV2Optim(carre, isDense);
+				this.computeCarreShapeV2Optim(job, carre, isDense);
 				ret = Boolean.TRUE;
 				
 			} catch (Exception e) {
@@ -458,22 +463,22 @@ public class ComputeServiceV2 {
 	 * computeCarreByCadastreV2Optim.
 	 * @param cadastre Cadastre
 	 */
-	public void computeCarreByCadastreV2Optim(Cadastre cadastre) {
-		this.computeCarreByGeoShapeV2Optim(cadastre.getIdInsee(), cadastre.getGeoShape());
-	}
+//	public void computeCarreByCadastreV2Optim(Cadastre cadastre) {
+//		this.computeCarreByGeoShapeV2Optim(cadastre.getIdInsee(), cadastre.getGeoShape());
+//	}
 	
 	/**
 	 * computeCarreByParkId.
 	 * @param idPark ParcEtJardin
 	 */
-	public void computeCarreByParkId(Long idPark) {
-		Optional<ParcEtJardin> opj = parkJardinRepository.findById(idPark);
-		if( opj.isPresent())  {
-			ParcEtJardin pj = opj.get();
-			Cadastre cadastre = cadastreRepository.findMyCadastre(pj.getCoordonnee());
-			this.computeCarreByGeoShapeV2Optim(cadastre.getIdInsee(), pj.getContour());
-		}
-	}
+//	public void computeCarreByParkId(Long idPark) {
+//		Optional<ParcEtJardin> opj = parkJardinRepository.findById(idPark);
+//		if( opj.isPresent())  {
+//			ParcEtJardin pj = opj.get();
+//			Cadastre cadastre = cadastreRepository.findMyCadastre(pj.getCoordonnee());
+//			this.computeCarreByGeoShapeV2Optim(cadastre.getIdInsee(), pj.getContour());
+//		}
+//	}
 	
 	/**
 	 * Computes population that can access a park at once.
@@ -487,28 +492,28 @@ public class ComputeServiceV2 {
 	 * @param idInsee code
 	 * @param geoShape shape
 	 */
-	@Transactional(isolation = Isolation.READ_COMMITTED)
-	public void computeCarreByGeoShapeV2Optim(String idInsee, Geometry geoShape) {
-			
-		log.warn(">> computeCarreByCadastreV2Optim");
-		
-		// STEP 1: city density
-		Boolean isDense = serviceOpenData.isDistanceDense(idInsee);
-		
-		// STEP 2: squares
-		// find all square that fits the city area
-		List<InseeCarre200mOnlyShape> shapes = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(geoShape));
-		
-		// iterate on each
-		//STEP 3: foreach
-		for (InseeCarre200mOnlyShape carreShape : shapes) {
-			//STEP 4: compute
-			computeCarreShapeV2Optim(carreShape, isDense);
-		}
-
-		log.warn("<< computeCarreByCadastreV2Optim");
-		
-	}
+//	@Transactional(isolation = Isolation.READ_COMMITTED)
+//	public void computeCarreByGeoShapeV2Optim(String idInsee, Geometry geoShape) {
+//			
+//		log.warn(">> computeCarreByCadastreV2Optim");
+//		
+//		// STEP 1: city density
+//		Boolean isDense = serviceOpenData.isDistanceDense(idInsee);
+//		
+//		// STEP 2: squares
+//		// find all square that fits the city area
+//		List<InseeCarre200mOnlyShape> shapes = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(geoShape));
+//		
+//		// iterate on each
+//		//STEP 3: foreach
+//		for (InseeCarre200mOnlyShape carreShape : shapes) {
+//			//STEP 4: compute
+//			computeCarreShapeV2Optim(carreShape, isDense);
+//		}
+//
+//		log.warn("<< computeCarreByCadastreV2Optim");
+//		
+//	}
 
 	
 	/**

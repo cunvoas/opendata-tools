@@ -90,5 +90,9 @@ UPDATE public.carre200onlyshape SET code_insee=c.id_insee
     WHERE ST_intersects(public.carre200onlyshape.geo_shape, c.geo_shape) 
     and code_insee is null and c.id_insee like '9%';
 
-
+UPDATE public.compute_job as j 
+    SET  insee=c.code_insee
+    FROM public.carre200onlyshape c
+    WHERE j.id_inspire=c.id_inspire;
+    
     
