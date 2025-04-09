@@ -1,6 +1,12 @@
 <template>
     <div id="appVideoAdmin" valign="top" align="left">
-        <h4 id="videoTitle">{{ currentVideo.videoTitle }}</h4>
+      <h5>Saisie des parcs et des entrés</h5>
+      <p>
+        Les vidéos ci-dessous vous montrent comment saisir les contours des parcs et les entrées de parc.
+        <br />
+        L'application des parcs est à disposition des associations contributrices.</p>
+        
+
     <div class="video-controls">
       <button v-for="(source, index) in sources" 
               :key="index" 
@@ -11,6 +17,8 @@
       </button>
     </div>
     <div class="player-wrapper">
+      <h5 id="videoTitle">{{ currentVideo.videoTitle }}</h5>
+
       <video
         id="videoPlayer"
         ref="videoPlayer"

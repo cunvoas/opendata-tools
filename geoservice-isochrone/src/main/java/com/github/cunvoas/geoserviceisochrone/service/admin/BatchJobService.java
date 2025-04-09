@@ -55,7 +55,6 @@ public class BatchJobService {
 	private ComputeJobRepository computeJobRepository;
 	@Autowired
 	private ParkAreaRepository parkAreaRepository;
-
 	@Autowired
 	private ComputeServiceV3 computeService;
 	
