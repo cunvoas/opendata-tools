@@ -371,7 +371,6 @@ export default {
     getRootUrl() {
       const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
       const dynamicOnLocal = 'http://localhost:8980/isochrone/geolocation/';
-
       console.log("mode: "+this.MODE);
 
       if (this.MODE==='dynamic') {

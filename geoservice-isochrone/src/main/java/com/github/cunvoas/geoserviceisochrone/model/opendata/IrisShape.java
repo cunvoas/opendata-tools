@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+
 /**
  * Fond IRIS.
  * @see https://geoservices.ign.fr/contoursiris

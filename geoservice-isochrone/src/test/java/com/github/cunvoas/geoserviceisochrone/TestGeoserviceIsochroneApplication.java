@@ -168,11 +168,11 @@ class TestGeoserviceIsochroneApplication {
 	void batchCarreRequestProcessCity() {
 // TODO en attendant une IHM pour lancer le recalcul. 
 		
-		
 //		batchJobService.requestProcessCity("59346");
 		batchJobService.requestProcessCity("59009");
 		//batchJobService.requestProcessCity("27022");
 //		batchJobService.requestProcessCity("59350");
+
 	}
 	/**
 	 * calcule des carre vs aire des parcs

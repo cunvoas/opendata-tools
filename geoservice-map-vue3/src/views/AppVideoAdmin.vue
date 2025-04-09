@@ -6,6 +6,7 @@
         <br />
         L'application des parcs est à disposition des associations contributrices.</p>
         
+
     <div class="video-controls">
       <button v-for="(source, index) in sources" 
               :key="index" 
@@ -17,6 +18,7 @@
     </div>
     <div class="player-wrapper">
       <h5 id="videoTitle">{{ currentVideo.videoTitle }}</h5>
+
       <video
         id="videoPlayer"
         ref="videoPlayer"
