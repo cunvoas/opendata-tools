@@ -326,11 +326,12 @@ public class ComputeServiceV3 {
 			computed.setIsSustainablePark(Boolean.FALSE);
 			computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
 		}
+		
+		computed.setComments(dto.parcName);
 
 		log.info("\tsave computed {}\n", computed.getIdInspire());
 		inseeCarre200mComputedV2Repository.save(computed);
 
-		
 	}
 	
 	

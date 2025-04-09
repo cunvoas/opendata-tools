@@ -128,6 +128,9 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 
+
+const MODE='static';
+
 // needs to be here for map coloring
 function  getSquareColor(zoneDense, densite) {
   //const grey     = '#a5a5a5';
@@ -276,9 +279,6 @@ export default {
       annee: "2019",
       region: "9",
       com2co: "1",
-      restUrlCadastre: "http://localhost:8980/isochrone/map/cadastre/area",
-      restUrlCarre: "http://localhost:8980/isochrone/map/insee/carre200m/area",
-      restUrlIsochrones: "http://localhost:8980/isochrone/map/park/area",
       fillColor: "#A0DCA0",
       tileProviders: [
         {
@@ -370,18 +370,18 @@ export default {
   methods: {
     getRootUrl() {
       const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
+      const dynamicOnLocal = 'http://localhost:8980/isochrone/geolocation/';
 
-      console.log("mode: "+import.meta.env.VITE_MODE);
-      console.log("rest_url: "+import.meta.env.VITE_REST_URL);
+      console.log("mode: "+this.MODE);
 
-      if (import.meta.env.VITE_MODE==='dynamic') {
-        return  import.meta.env.VITE_REST_URL;
+      if (this.MODE==='dynamic') {
+        return  dynamicOnLocal;
       } else {
         return staticOnGit;
       }
     },
     isDynamic() {
-      return import.meta.env.VITE_MODE==='dynamic';
+      return this.MODE;
     },
     detectSelfDomain() {
       let onMyServer=false;

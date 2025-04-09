@@ -2,9 +2,15 @@ package com.github.cunvoas.geoserviceisochrone.model.opendata;
 
 import java.io.Serializable;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 /**
  * Id for Model Filosofil200m.
  */
+
+@Data
+@EqualsAndHashCode(of = {"annee", "idInspire"})
 public class Filosofil200mId implements Serializable {
 	
 	/**

@@ -27,27 +27,23 @@ const routes = [
   {
     path: '/information',
     name: 'appInformation',
-    title: 'Informations',
+    title: 'informations',
     component: AppInformation,
   },
   {
     path: '/aideoVideo',
     name: 'appVideoAdmin',
-    title: 'Video d\'aide',
+    title: 'video d\'aide',
     component: AppVideoAdmin,
   },
   {
     path: '/',
     redirect: { name: 'appCarte' },
   },
-  {
-    path: '/:pathMatch(.*)*',
-    redirect: '/carte'
-  }
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.VITE_APP_BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 });
 
