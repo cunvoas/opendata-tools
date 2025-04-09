@@ -166,10 +166,13 @@ class TestGeoserviceIsochroneApplication {
 	//@Disabled
 	@Order(22)
 	void batchCarreRequestProcessCity() {
+// TODO en attendant une IHM pour lancer le recalcul. 
 		
-		//batchJobService.requestProcessCity("59346");
+//		batchJobService.requestProcessCity("59346");
+		batchJobService.requestProcessCity("59009");
 		//batchJobService.requestProcessCity("27022");
-		batchJobService.requestProcessCity("59350");
+//		batchJobService.requestProcessCity("59350");
+
 	}
 	/**
 	 * calcule des carre vs aire des parcs
@@ -183,7 +186,7 @@ class TestGeoserviceIsochroneApplication {
 			//lille
 //			computeServiceV2.computeCarreByInseeCode("59350");
 			//lezennes					
-			computeServiceV2.computeCarreByInseeCode("59346");
+//			computeServiceV2.computeCarreByInseeCode("59346");
 			
 /*
  * 

@@ -27,7 +27,7 @@ const routes = [
   {
     path: '/information',
     name: 'appInformation',
-    title: 'Informations',
+    title: 'informations',
     component: AppInformation,
   },
   {

@@ -2,9 +2,14 @@ package com.github.cunvoas.geoserviceisochrone.model.opendata;
 
 import java.io.Serializable;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 /**
  * Id for Model Iris**.
  */
+@Data
+@EqualsAndHashCode(of = {"annee", "iris"})
 public class IrisId implements Serializable {
 	
 	/** serialVersionUID. */
