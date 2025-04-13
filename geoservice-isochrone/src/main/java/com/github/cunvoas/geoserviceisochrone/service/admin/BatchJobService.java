@@ -81,9 +81,12 @@ public class BatchJobService {
 		log.info("appendCarre");
 		List<ComputeJob> jobs = new ArrayList<>();	
 		List<Integer> annes = List.of(applicationBusinessProperties.getInseeAnnees());
-		
-		for (InseeCarre200mOnlyShape carreShape : shapes) {
-			for (Integer anne : annes) {
+
+		//TODO Optim here, do not recompute old years.
+		for (Integer anne : annes) {
+			
+			
+			for (InseeCarre200mOnlyShape carreShape : shapes) {
 				InseeCarre200mComputedId id = new InseeCarre200mComputedId();
 				id.setIdInspire(carreShape.getIdInspire());
 				id.setAnnee(anne);
