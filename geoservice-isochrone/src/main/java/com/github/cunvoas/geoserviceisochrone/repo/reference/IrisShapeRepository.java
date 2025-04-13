@@ -1,8 +1,13 @@
 package com.github.cunvoas.geoserviceisochrone.repo.reference;
 
+import java.util.List;
+
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisId;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisShape;
 
@@ -11,7 +16,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisShape;
  * Repo for IrisShape
  */
 @Repository
-public interface IrisShapeRepository extends JpaRepository< IrisShape,IrisId> {
+public interface IrisShapeRepository extends JpaRepository< IrisShape,String> {
 	
 	/**
 	 * findByAnneeAndIdInspire.
@@ -36,4 +41,21 @@ public interface IrisShapeRepository extends JpaRepository< IrisShape,IrisId> {
 	*/
 
 
+	
+	
+	/**
+	 * findCarreInMapArea.
+	 * @param geometry shape
+	 * @return list InseeCarre200mOnlyShape
+	 */
+	@Query(nativeQuery = true, value =  "SELECT * FROM iris_shape WHERE ST_Intersects(contour, ?1)")
+	List<IrisShape> findIrisInMapArea(String geometry);
+	
+	/**
+	 * getSurface.
+	 * @param polygon shape
+	 * @return surface of shape
+	 */
+	@Query(nativeQuery = true,  value = "SELECT ST_Area(?1, true)")
+	Long getSurface(Geometry polygon);
 }
