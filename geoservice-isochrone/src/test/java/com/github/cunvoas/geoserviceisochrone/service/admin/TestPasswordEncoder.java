@@ -7,9 +7,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class TestPasswordEncoder {
 
-	static private PasswordEncoder passwordEncoder1;
-	static private PasswordEncoder passwordEncoder2;
-	static private PasswordEncoder passwordEncoder3;
+	private PasswordEncoder passwordEncoder1;
+	private PasswordEncoder passwordEncoder2;
+	private PasswordEncoder passwordEncoder3;
 
 	static int saltLen=12;
 	static int hashLen=30;
@@ -18,8 +18,7 @@ public class TestPasswordEncoder {
 	String samplPass="1234567890POIU%ùYTRE°09";
 
 	@BeforeAll
-	static void init() {
-		
+	void init() {
 		passwordEncoder1 = new Argon2PasswordEncoder(saltLen, hashLen, nbThreads, 32768, nbIter);
 		passwordEncoder2 = new Argon2PasswordEncoder(128, 128, 1, 32768, nbIter);
 		passwordEncoder3 = new Argon2PasswordEncoder(128, 128, 4, 32768, nbIter);

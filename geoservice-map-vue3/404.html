@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="refresh" content="0; url=./">
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+    <script>
+      const segment = 1;
+      const repo = "geolocation";
+      
+      sessionStorage.redirect = location.href;
+      location.href = location.protocol + '//' + location.hostname +
+        (location.port ? ':' + location.port : '') +
+        '/' + repo + '/?p=' + location.pathname.slice(1);
+    </script>
   </head>
-  <body>
-    redirect page for github pages.
-  </body>
 </html>

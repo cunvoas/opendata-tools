@@ -12,7 +12,7 @@ SELECT json_build_object(
     where id_inspire='CRS3035RES200mN3079800E3833800'
     limit 10;
     
-=============
+--=============
 select id_inspire,
 	json_build_object(
 	    'loc', json_build_array(  st_y(geo_point_2d) , st_x(geo_point_2d))
@@ -22,7 +22,7 @@ FROM public.carre200onlyshape
 where id_inspire='CRS3035RES200mN3079800E3833800'
     limit 10;
     
-    =========================
+--    =========================
 copy (
  select id_inspire,
     json_build_object(

@@ -97,6 +97,10 @@ public class ServicePublicationExporter {
 			
 			for (int i = 0; i < tAnnees.length; i++) {
 				Integer annee=tAnnees[i];
+				
+				// check if park data are changed !
+				// TODO
+				
 				GeoJsonRoot geojson = geoMapServiceV2.findAllCarreByCommunauteCommune(com2co, annee);
 				if (geojson!=null && !geojson.getFeatures().isEmpty()) {
 					file = new File(path+"/carre_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
@@ -169,6 +173,37 @@ public class ServicePublicationExporter {
 		return (Polygon)factory.createPolygon(coords).getEnvelope();
 	}
 	
+
+    /**
+	 * Write  ParkOutline files.
+     * @throws StreamWriteException ex
+     * @throws DatabindException ex
+     * @throws IOException ex
+     */
+    public void writeGeoJsonParkOutline() throws StreamWriteException, DatabindException, IOException {
+
+		Integer[] tAnnees = applicationBusinessProperties.getInseeAnnees();
+		
+    	List<CommunauteCommune> com2cos = serviceReadReferences.getCommunauteCommune();
+    	for (CommunauteCommune com2co : com2cos) {
+    		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/parkOutline/"+String.valueOf(com2co.getId());
+    		File file = new File(path);
+    		file.mkdirs();
+			
+			Polygon polygon = getCom2CoSquareShape(com2co);
+			
+			for (int i = 0; i < tAnnees.length; i++) {
+				Integer annee=tAnnees[i];
+				GeoJsonRoot geojson = geoMapServiceV2.findAllParkOutlineByArea(polygon, annee);
+				
+				if (!geojson.getFeatures().isEmpty()) {
+					file = new File(path+"/parkOutline_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
+					objectMapper.writeValue(file, geojson);
+				}
+			}
+    	}
+    }
+    
     /**
 	 * Write Isochrone files.
      * @throws StreamWriteException ex
