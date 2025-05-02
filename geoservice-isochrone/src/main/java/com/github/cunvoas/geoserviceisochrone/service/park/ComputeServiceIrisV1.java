@@ -320,10 +320,10 @@ public class ComputeServiceIrisV1 {
 				log.info("Filosofil200m     found,{},{}", dto.annee, carreWithIso.getIris());
 				// nb habitant au carre
 				if (carreShape.getIris().equals(carreData.getIris())) {
-					dto.popAll = carreData.getP20pop();
+					dto.popAll = carreData.getPop();
 				}
 				
-				Double nbHabCarre = carreData.getP20pop().doubleValue();
+				Double nbHabCarre = carreData.getPop().doubleValue();
 				// proratisation à la surface intersection(carre, isochrne)
 				Geometry isoOnCarre = carreWithIso.getContour().intersection(geometryToAnalyse);
 				Long surfaceIsoSurCarre = getSurface(isoOnCarre);
@@ -484,7 +484,7 @@ public class ComputeServiceIrisV1 {
 			IrisData carre = irisDataRepository.findByAnneeAndIris(annee, carreShape.getIris());
 			Long popCar = 0L;
 			if (carre!=null) {
-				popCar =Math.round(carre.getP20pop().doubleValue());
+				popCar =Math.round(carre.getPop().doubleValue());
 			}
 			Long popIntersect = Math.round(popCar*surfIntersect/carreShape.getSurface());
 			population = population.add(new BigDecimal(popIntersect));
@@ -574,7 +574,7 @@ public class ComputeServiceIrisV1 {
 				IrisData carre = irisDataRepository.findByAnneeAndIris(annee, carreShape.getIris());
 				Long popCar = 0L;
 				if (carre!=null) {
-					popCar =Math.round(carre.getP20pop().doubleValue());
+					popCar =Math.round(carre.getPop().doubleValue());
 				}
 				Long popIntersect = Math.round(popCar*surfIntersect/carreShape.getSurface());
 				population = population.add(new BigDecimal(popIntersect));

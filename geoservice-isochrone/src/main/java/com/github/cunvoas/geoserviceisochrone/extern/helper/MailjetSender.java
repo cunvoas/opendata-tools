@@ -90,6 +90,13 @@ public class MailjetSender {
 	}
 	
 	
+	/**
+	 * put the file attached.
+	 * @param filePath path to file
+	 * @return json structure
+	 * @throws JSONException ex
+	 * @throws IOException ex
+	 */
 	private static JSONObject getAttachement(String filePath) throws JSONException, IOException {
 		JSONObject attachement=null;
 		File file = new File(filePath);
@@ -103,17 +110,31 @@ public class MailjetSender {
 	}
 	
 	
+	/**
+	 * Get file content type.
+	 * @param file to analyse
+	 * @return content type
+	 * @throws IOException
+	 */
 	private static String getContentType(File file) throws IOException {		
 		Path path = file.toPath();
 		String contentType = Files.probeContentType(path);		
 		return contentType;
 	}
 	
+	/**
+	 * tranform binary file to base64.
+	 * @param file to encode
+	 * @return base64 file content
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	private static String encoder(File file) throws FileNotFoundException, IOException  {
 		String base64File = "";
         try (FileInputStream imageInFile = new FileInputStream(file)) {
             // Reading a file from file system
-            byte fileData[] = new byte[(int) file.length()];
+        	int len = (int)file.length();
+            byte fileData[] = new byte[len];
             imageInFile.read(fileData);
             base64File = Base64.getEncoder().encodeToString(fileData);
         }

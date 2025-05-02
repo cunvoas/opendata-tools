@@ -397,7 +397,6 @@ public class GeoMapServiceV2 {
 	 */
 	public GeoJsonRoot findAllParkOutlineByArea(Polygon polygon, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
-		
 
     	if (polygon!=null) {
     		List<ParcEtJardin> parcEtJardins = parkJardinRepository.findByAreaAndYear(annee, polygon);

@@ -65,7 +65,7 @@ public class IrisShape {
 	private Geometry contour;
 
 	/** surface de l'iris.*/
-	@NumberFormat(pattern = "#,##0.0")
+	//@NumberFormat(pattern = "#,##0.0")
 	@Column(name="surface")
 	private Double surface;
 	

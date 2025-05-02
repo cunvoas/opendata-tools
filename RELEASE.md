@@ -8,6 +8,15 @@ Futures fonctionnalités (à prioriser)
     Refonte graphique du site publique (tailwind)?
 
 
+V1.0.20-20250416
+
+    videos d'aide à la saisie
+    service de calcul v3
+    methodes d'export des GeoJsons publique
+    préparation des travaux pour les IRIS
+    fix sécurité:  diverses librairies
+    documentation
+    
 
 V1.0.19-20250311
 

@@ -17,7 +17,7 @@ import com.github.cunvoas.geoserviceisochrone.service.export.ServicePublicationE
 
 
 @SpringBootTest
-@ActiveProfiles({"prod","dev"})
+@ActiveProfiles({"rep"})
 class TestExporterApplication {
 	
 	@Autowired
@@ -38,7 +38,7 @@ class TestExporterApplication {
 	@Test
 	@Disabled
 	@Order(10)
-	void loadParks() {
+	void writeRegions() {
 		try {
 			servicePublicationExporter.writeRegions();
 
@@ -48,5 +48,69 @@ class TestExporterApplication {
 			fail(e.getMessage());
 		}
 	}
+
+
+	@Test
+	@Disabled
+	@Order(11)
+	void writeGeoJsonCadastres() {
+		try {
+			servicePublicationExporter.writeGeoJsonCadastres();;
+
+
+		} catch (IOException e) {
+			System.err.println(e);
+			fail(e.getMessage());
+		}
+	}
+
+
+	@Test
+	@Disabled
+	@Order(21)
+	void writeGeoJsonCarreaux() {
+		try {
+			servicePublicationExporter.writeGeoJsonCarreaux();
+
+
+		} catch (IOException e) {
+			System.err.println(e);
+			fail(e.getMessage());
+		}
+	}
+	
+
+
+
+	@Test
+	@Disabled
+	@Order(22)
+	void writeGeoJsonParkOutline() {
+		try {
+			servicePublicationExporter.writeGeoJsonParkOutline();
+
+
+		} catch (IOException e) {
+			System.err.println(e);
+			fail(e.getMessage());
+		}
+	}
+
+	@Test
+	@Disabled
+	@Order(23)
+	void writeGeoJsonIsochrone() {
+		try {
+			servicePublicationExporter.writeGeoJsonIsochrone();
+
+		} catch (IOException e) {
+			System.err.println(e);
+			fail(e.getMessage());
+		}
+	}
+
+	
+	
+	
 	
 }
