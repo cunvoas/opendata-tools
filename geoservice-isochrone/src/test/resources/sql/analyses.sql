@@ -10,7 +10,7 @@ SELECT distinct b.identifiant, b.nom_parc, c.identifiant, c.nom_parc
 from base b, ctrl c
 where 
  b.identifiant<> c.identifiant and 
- ST_intersects(b.contour, c.contour)
+ ST_intersects(b.contour, c.contour);
  
  
  
@@ -32,7 +32,7 @@ where
  b.identifiant<> c.identifiant and 
  ST_intersects(b.contour, c.contour)
  order by b.nom_parc
- , c.nom_parc
+ , c.nom_parc ;
  
 
 -- parcs
@@ -48,7 +48,7 @@ SELECT
         ON pj.identifiant = pa.id_parc_jardin
 
 WHERE 
-    pac.annee=2019
+    pac.annee=2019 ;
     
 -- carreaux
 
@@ -68,7 +68,7 @@ WHERE
 cc.annee=2019
 AND f.lcog_geo like '%59350%'
 
-order by surface_park_pcapita_oms
+order by surface_park_pcapita_oms ;
 
 --LIMIT 10
 
@@ -130,8 +130,7 @@ FROM range
 order by surface_min;
  
  
----
- bar graph OMS
+---  bar graph OMS
  
  WITH series AS (
     SELECT generate_series(0, 11, 1) AS surface_min
@@ -497,7 +496,7 @@ SELECT
     sum(ind_55_64) as ind_55_64,
     sum(ind_65_79) as ind_65_79,
     sum(ind_80p) as ind_80p,
-    sum(men) as men,,
+    sum(men) as men,
     sum(men-men_pauv) as men_rich
     sum(men_pauv) as men_pauv
 

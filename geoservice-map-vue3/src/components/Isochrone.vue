@@ -614,10 +614,10 @@ export default {
       return () => {
         return {
           weight: 2,
-          color: "#CB9800",
+          color: "#AB7800",
           opacity: 0.95,
-          fillColor: "#FFFF99",
-          fillOpacity: 0.3,
+          fillColor: "#FFFFBB",
+          fillOpacity: 0.2,
         };
       };
     },
