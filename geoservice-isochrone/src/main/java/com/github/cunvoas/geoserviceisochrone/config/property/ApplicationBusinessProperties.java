@@ -37,6 +37,9 @@ public class ApplicationBusinessProperties {
 
 	@Value("${application.business.insee.annees}")
 	private Integer[] inseeAnnees;
+	
+	@Value("${application.business.iris.annees}")
+	private Integer[] irisAnnees;
 
 	@Value("${application.admin.export-path}")
 	private String exportPath;

@@ -19,6 +19,13 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisShape;
 public interface IrisShapeRepository extends JpaRepository< IrisShape,String> {
 	
 	/**
+	 * findByCodeInsee.
+	 * @param codeInsee code
+	 * @return List<IrisShape>
+	 */
+	List<IrisShape> findByCodeInsee(String codeInsee);
+	
+	/**
 	 * findByAnneeAndIdInspire.
 	 * @param annee annee
 	 * @param idIris code Iris

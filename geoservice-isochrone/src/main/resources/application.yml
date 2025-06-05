@@ -110,13 +110,15 @@ application:
     insee:
       densite: 1,2
       annees: 2015, 2017, 2019
+    iris:
+        annees: 2022
   feature-flipping:
     parkAnalysisEnabled: true
     sendEmail: false
     salaryAnalysisEnabled: false
     pollutionAnalysisEnabled: false
     isochrone-impl: ign-api-v2
-    carre200m-impl: v2
+    carre200m-impl: v3
     sample.zipkin.enable: false
     
   admin:

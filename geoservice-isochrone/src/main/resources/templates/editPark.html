@@ -37,29 +37,29 @@
          </div>
          <div class="col-3">
              <div class="card" style="text-align: center">
-                	<!-- comm2co -->
-						<div class="form-floating">
-							<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
-								<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
-								<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
-							</select>
-							<label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
-							<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
-						</div>
+               	<!-- comm2co -->
+				<div class="form-floating">
+					<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+						<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
+						<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+					</select>
+					<label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
+					<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+				</div>
              </div>
          </div>
          <div class="col-6">
              <div class="card" style="text-align: center">
              	<!-- commune -->
-					<div class="form-floating">
-	
-						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
-						<datalist id="communes" class="form-label">
-							<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
-						</datalist>
-						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
-						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
-						<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+				<div class="form-floating">
+
+					<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
+					<datalist id="communes" class="form-label">
+						<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
+					</datalist>
+					<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+					<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+					<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
 	             </div>
 	         </div>
 	     </div>
@@ -264,6 +264,7 @@
                     </div>
                 </div>
             </div>
+            
         </div>
         
 </fieldset>

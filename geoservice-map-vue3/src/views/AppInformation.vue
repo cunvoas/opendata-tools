@@ -106,6 +106,19 @@
                 publique.
             </p>
 
+            <h2>Contributions et remerciements</h2>
+            <p>
+                Philippe de Deul'air pour le contrôles des calculs.
+                <br />
+                Mathilde d'Entrelianes pour la catégorisation des populations et la déductions des légendes et couleurs.
+                <br />
+                Fabien de Lm-Oxygène pour les convertions Lambert 93 vers WGS 84 (4326).
+                <br />
+                Christophe de Lm-Oxygène pour le développement des applications.
+                <br />
+                Les bénévoles des associations et les utilisateurs de l'application pour la saisie des données.
+            </p>
+
 
         </span>
 

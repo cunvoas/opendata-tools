@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,10 +46,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service
 @Slf4j
-//@ConditionalOnProperty(
-//		name="application.feature-flipping.carre200m-impl", 
-//		havingValue="v3")
-public class ComputeServiceV3 {
+@ConditionalOnProperty(
+		name="application.feature-flipping.carre200m-impl", 
+		havingValue="v3")
+public class ComputeCarreServiceV3 implements IComputeCarreService {
 
 	// 200m x 200m = 4 10^4: insee data is 40000 +-1 accuracy
 	private static final Double SURFACE_CARRE = 40_000d;
@@ -95,7 +96,7 @@ public class ComputeServiceV3 {
 //			uniques.add(cadastre);
 //		}
 //		for (Cadastre cadastre : uniques) {
-//			computeCarreByCadastreV2Optim(cadastre);
+//			computeCarreByCadastre(cadastre);
 //		}
 //		
 //	}
@@ -106,7 +107,7 @@ public class ComputeServiceV3 {
 	 */
 //	public void computeCarreByInseeCode(String inseeCode) {
 //		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
-//		computeCarreByCadastreV2Optim(cadastre);
+//		computeCarreByCadastre(cadastre);
 //	}
 	
 //	/**
@@ -118,7 +119,7 @@ public class ComputeServiceV3 {
 //		if (oCarreShape.isPresent()) {
 //			InseeCarre200mOnlyShape carreShape = oCarreShape.get();
 //			Boolean isDense = serviceOpenData.isDistanceDense(carreShape.getCodeInsee());
-//			computeCarreShapeV2Optim(carreShape, isDense);
+//			computeCarreShape(carreShape, isDense);
 //		}
 //	}
 
@@ -163,7 +164,7 @@ public class ComputeServiceV3 {
 	 * @param isDense witch density
 	 * @TODO make optim to not recompute all years ( before 2027 )
 	 */
-	protected void computeCarreShapeV2Optim(ComputeJob job, InseeCarre200mOnlyShape carreShape, Boolean isDense) {
+	protected void computeCarreShape(ComputeJob job, InseeCarre200mOnlyShape carreShape, Boolean isDense) {
 		
 		log.warn(">> InseeCarre200mOnlyShape {}", carreShape.getIdInspire());
 
@@ -298,7 +299,7 @@ public class ComputeServiceV3 {
 		//Compute all the population which is present in the isochrones of the current square.
 		// and the park surface of these isochrones.
 		// then, I compute the surface per capita (m²/inhabitant)
-		this.computePopAndDensityOptim(dto, carreShape, shapeParkOnSquare);
+		this.computePopAndDensity(dto, carreShape, shapeParkOnSquare);
 		
 		computed.setSurfaceParkPerCapita(dto.result.surfaceParkPerCapita);
 		computed.setSurfaceTotalPark(dto.result.surfaceTotalParks);
@@ -338,7 +339,7 @@ public class ComputeServiceV3 {
 	 * @param shapeParkOnSquare shape of park isochrones
 	 * @return ComputeResultDto
 	 */
-	protected ComputeResultDto computePopAndDensityDetailOptim(
+	protected ComputeResultDto computePopAndDensityDetail(
 			ComputeDto dto, 
 			ComputeResultDto crDto,
 			InseeCarre200mOnlyShape carreShape,
@@ -409,32 +410,32 @@ public class ComputeServiceV3 {
 	}
 	
 	/**
-	 * computePopAndDensityOptim.
+	 * computePopAndDensity.
 	 * @param dto ComputeDto
 	 * @param carreShape shap
 	 * @param shapeParkOnSquare shape
 	 */
-	protected void computePopAndDensityOptim(ComputeDto dto, InseeCarre200mOnlyShape carreShape, Geometry shapeParkOnSquare) {
+	protected void computePopAndDensity(ComputeDto dto, InseeCarre200mOnlyShape carreShape, Geometry shapeParkOnSquare) {
 
 		Geometry geometryToAnalyse =dto.polygonParkAreas;
-		ComputeResultDto rDto = this.computePopAndDensityDetailOptim(dto, dto.result, carreShape, geometryToAnalyse, shapeParkOnSquare);
+		ComputeResultDto rDto = this.computePopAndDensityDetail(dto, dto.result, carreShape, geometryToAnalyse, shapeParkOnSquare);
 		dto.result = rDto;
 		
 		if (dto.allAreOms) {
 			dto.resultOms = rDto;
 		} else {
 			geometryToAnalyse =dto.polygonParkAreasOms;
-			rDto = this.computePopAndDensityDetailOptim(dto, dto.resultOms, carreShape, geometryToAnalyse, shapeParkOnSquare);
+			rDto = this.computePopAndDensityDetail(dto, dto.resultOms, carreShape, geometryToAnalyse, shapeParkOnSquare);
 			dto.resultOms = rDto;
 		}
 	}
 	
 	/**
-	 * computeCarreByComputeJobV2Optim.
+	 * computeCarreByComputeJob.
 	 * @param job ComputeJob
 	 * @return true if done
 	 */
-	public Boolean computeCarreByComputeJobV2Optim(ComputeJob job) {
+	public Boolean computeCarreByComputeJob(ComputeJob job) {
 		log.info("begin computeCarre {}", job.getIdInspire());
 		Boolean ret = Boolean.FALSE;
 		
@@ -443,7 +444,7 @@ public class ComputeServiceV3 {
 			try {
 				InseeCarre200mOnlyShape carre = oCarre.get();
 				Boolean isDense = serviceOpenData.isDistanceDense(carre.getCodeInsee());
-				this.computeCarreShapeV2Optim(job, carre, isDense);
+				this.computeCarreShape(job, carre, isDense);
 				ret = Boolean.TRUE;
 				
 			} catch (Exception e) {
@@ -578,7 +579,7 @@ public class ComputeServiceV3 {
 	 * @return ParkAreaComputed
 	 * @TODO to be reviewed
 	 */
-	public ParkAreaComputed computeParkAreaV2(ParkArea park) {
+	public ParkAreaComputed computeParkArea(ParkArea park) {
 		ParkAreaComputed parcCpu=null;
 		log.info("computePark( {}-{} )",park.getId(), park.getName());
 		
@@ -669,5 +670,6 @@ public class ComputeServiceV3 {
 	public Long getSurface(Geometry geom) {
 		return inseeCarre200mOnlyShapeRepository.getSurface(geom);
 	}
+
 
 }
