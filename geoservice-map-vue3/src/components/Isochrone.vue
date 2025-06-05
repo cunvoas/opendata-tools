@@ -7,6 +7,9 @@
       <option value="2015">2015</option>
     </select>
 
+    <label for="checkbox"> | Parcs</label>
+    <input id="checkbox" v-model="showParcs" type="checkbox" />
+
     <label for="checkbox"> | Isochrones</label>
     <input id="checkbox" v-model="showIsochrones" type="checkbox" />
 
@@ -74,6 +77,12 @@
         :geojson="geojsonIsochrone"
         :options="detailIsochrone"
         :options-style="styleIsochroneFunction"
+      />
+      <l-geo-json
+        v-if="showParcs"
+        :geojson="geojsonParcs"
+        :options="detailParcs"
+        :options-style="styleParcFunction"
       />
       <l-geo-json
         v-if="showCadastre"
@@ -262,6 +271,7 @@ export default {
       loading: false,
       showIsochrones: false,
       showCarre: true,
+      showParcs: false,
       showCadastre: false,
       legendeDense: true,
       zoom: 14,
@@ -273,9 +283,10 @@ export default {
       boundSwLng: 0,
       boundNeLat: 0,
       boundNeLng: 0,
-      geojsonIsochrone: null,
-      geojsonCarre: null,
       geojsonCadastre: null,
+      geojsonCarre: null,
+      geojsonIsochrone: null,
+      geojsonParcs: null,
       annee: "2019",
       region: "9",
       com2co: "1",
@@ -353,7 +364,7 @@ export default {
           if (newLocation.com2coId && this.com2co!==newLocation.com2coId) {
             this.com2co = newLocation.com2coId;
             
-
+            this.callGeoJsonParcs();
             this.callGeoJsonIsochrones();
             this.callGeoJsonCarres();
             this.callGeoJsonCadastre();         
@@ -381,11 +392,6 @@ export default {
     },
     isDynamic() {
       return this.MODE;
-    },
-    detectSelfDomain() {
-      let onMyServer=false;
-      const siteUrl = window.location.href;
-      return siteUrl.indexOf(".ovh/")>0 || siteUrl.indexOf(":5173/geolocation/")>0;
     },
     addTemporaryMarker(lat, lng) {
       /*
@@ -498,6 +504,7 @@ export default {
       return await response.json();
     },
 
+
     debouncedFetchIsochrone: debounce(async function(url, callback) {
       try {
         console.log("debouncedFetchIsochrone: "+url);
@@ -519,6 +526,30 @@ export default {
         this.geojsonIsochrone = data;
       });
     },
+
+
+  debouncedFetchParcs: debounce(async function(url, callback) {
+    try {
+      console.log("debouncedFetchParc: "+url);
+      const data = await this.fetchGeoJson(url);
+      callback(data);
+    } catch (error) {
+      console.error('Error fetching GeoJSON:', error);
+    }
+  }, 380), // debounce delay
+  async callGeoJsonParcs(qryPrms) {
+    const rootUrl = this.getRootUrl();
+    let callUrl='';
+    if (this.isDynamic()) {
+      callUrl = `${rootUrl}/map/park/area${qryPrms}`;
+    } else {
+      callUrl = `${rootUrl}/geojson/parkOutline/${this.com2co}/parkOutline_${this.annee}_${this.com2co}.json`;
+    }
+    this.debouncedFetchParcs(callUrl, (data) => {
+      this.geojsonParcs = data;
+    });
+  },
+
 
     debouncedFetchCarre: debounce(async function(url, callback) {
       try {
@@ -572,6 +603,11 @@ export default {
       }
   },
   computed: {
+    detailParcs() {
+      return {
+        onEachFeature: this.onDetailPark,
+      };
+    },
     detailIsochrone() {
       return {
         onEachFeature: this.onDetailIsochrone,
@@ -595,6 +631,18 @@ export default {
           color: "#406C40",
           opacity: 0.15,
           fillColor: fillColor,
+          fillOpacity: 0.1,
+        };
+      };
+    },
+    styleParcFunction() {
+      //const fillColor = this.fillColor; // important! need touch fillColor in computed for re-calculate when change fillColor
+      return () => {
+        return {
+          weight: 2,
+          color: "#608C60",
+          opacity: 0.5,
+          fillColor: "#608C60",
           fillOpacity: 0.1,
         };
       };
@@ -752,6 +800,15 @@ export default {
           "</div><div>Commune: " + feature.properties.nom +
            "</div>",
           //{ permanent: false, sticky: true }
+        );
+      };
+    },
+
+    onDetailPark() {
+      return (feature, layer) => {
+        layer.bindTooltip(
+          "<div>Nom: " + feature.properties.name +
+          "</div>",
         );
       };
     },

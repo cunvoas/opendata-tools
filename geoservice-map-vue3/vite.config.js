@@ -7,7 +7,7 @@ export default defineConfig({
   build: {
     target: "ES2022"
   },
-  base: '/geolocation/',
+  base: '/parcs-et-jardins/',
   server: {
     historyApiFallback: true,
     cors: {

@@ -14,6 +14,7 @@ import lombok.EqualsAndHashCode;
 
 /**
  * Model ParkAreaComputed.
+ * Compute of one park.
  */
 @Data
 @Entity(name = "park_area_computed")
@@ -42,6 +43,13 @@ public class ParkAreaComputed {
 	
 	@Column(name = "surface_population", precision = 10, scale =2)
 	private BigDecimal surfacePerInhabitant;
+	
+
+	@Column(name = "population_iris", precision = 7, scale = 2)
+	private BigDecimal populationIris;
+	
+	@Column(name = "surface_population_iris", precision = 10, scale =2)
+	private BigDecimal surfacePerInhabitantIris;
 	
 	@Column(name = "dense")
 	private Boolean isDense = Boolean.TRUE;

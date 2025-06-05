@@ -24,6 +24,7 @@ import lombok.ToString;
 
 /**
  * Model ParkArea.
+ * Represents the accessibility zone of a park.
  */
 @Data
 @ToString(onlyExplicitlyIncluded = true)
