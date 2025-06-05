@@ -22,6 +22,10 @@
 	  <span class="visually-hidden">Loading...</span>
 	</div>
 
+    <sec:authorize access="hasRole('ADMINISTRATOR')">
+      <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{park.new.requestCompute}">requestCompute</button>
+    </sec:authorize>
+
   <a th:text="#{park.new.help}" class="btn btn-danger" style="position:absolute;right:10px" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
     help
   </a>
@@ -895,6 +899,37 @@
     }
     if (document.getElementById("idPark").value!=="") {
     	manageUpdateDisabled();
+    }
+
+    async function doPost(requestPrms) {
+    	const payload = {
+    		    token: '',
+    			parkId: requestPrms
+    		};
+
+       let rawResponse = await fetch('/upload', {
+         method: "POST", 
+         headers: {
+             'Accept': 'application/json',
+             'Content-Type': 'application/json'
+           },
+         body: JSON.stringify(payload)
+       });
+
+       if (response.status == 202) {
+         const content = await rawResponse.json();
+         alert("Calcul demandé pour\n\t nb de carrés: "+content.nbCarre+"\n\t nb d'IRIS: "+content.nbIris);
+       }
+     }
+    
+    function requestCompute() {
+        console.log("requestCompute");
+        if (document.getElementById("id").value==="" ) {
+           console.log("requestCompute hasError");
+           return;
+        }
+        // async call controler compute
+        this.doPost(rq);
     }
     
     function savePark() {

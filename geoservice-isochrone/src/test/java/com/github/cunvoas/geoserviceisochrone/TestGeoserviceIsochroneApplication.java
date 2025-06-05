@@ -28,7 +28,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyS
 import com.github.cunvoas.geoserviceisochrone.service.admin.BatchJobService;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
-import com.github.cunvoas.geoserviceisochrone.service.park.ComputeServiceV2;
+import com.github.cunvoas.geoserviceisochrone.service.park.ComputeCarreServiceV3;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
 
@@ -46,7 +46,7 @@ class TestGeoserviceIsochroneApplication {
 	private ServiceIris serviceIris;
 	
 	@Autowired
-	private ComputeServiceV2 computeServiceV2;
+	private ComputeCarreServiceV3 computeService;
 
 	@Autowired
 	private CsvCarre200ShapeParser csvParser;
@@ -94,6 +94,7 @@ class TestGeoserviceIsochroneApplication {
 	@Test
 	@Disabled
 	@Order(10)
+	@Deprecated
 	void computeParkArea() {
 
 		try {
@@ -101,7 +102,7 @@ class TestGeoserviceIsochroneApplication {
 			
 			for (Iterator<ParkArea> iterator = ll.iterator(); iterator.hasNext();) {
 				ParkArea parkArea = iterator.next();
-				computeServiceV2.computeParkAreaV2(parkArea);
+				computeService.computeParkArea(parkArea);
 			}	
 			
 			
@@ -168,8 +169,8 @@ class TestGeoserviceIsochroneApplication {
 	void batchCarreRequestProcessCity() {
 // TODO en attendant une IHM pour lancer le recalcul. 
 		
-//		batchJobService.requestProcessCity("59346");
-		batchJobService.requestProcessCity("59009");
+		batchJobService.requestProcessCity("59346");
+//		batchJobService.requestProcessCity("59009");
 		//batchJobService.requestProcessCity("27022");
 //		batchJobService.requestProcessCity("59350");
 
@@ -224,9 +225,9 @@ WHERE code_insee='59346'
 	void computeParkAreAndEntranceFix() {
 
 		try {
-			computeServiceV2.refreshParkEntrances("59350");
-			computeServiceV2.refreshParkEntrances("59328");
-			computeServiceV2.refreshParkEntrances("59128");
+			computeService.refreshParkEntrances("59350");
+			computeService.refreshParkEntrances("59328");
+			computeService.refreshParkEntrances("59128");
 			
 			System.out.println("bla");
 		} catch (Exception e) {

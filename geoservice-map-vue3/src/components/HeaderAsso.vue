@@ -29,6 +29,19 @@
             </b-col>
             <b-col>
                 <a
+                    href="https://www.helloasso.com/associations/entrelianes"
+                    target="_blank" rel="noopener noreferrer">
+                    <img
+                        alt="Deul'Air"
+                        src="../assets/logo-entrelianes.jpg"
+                        width="120px"
+                        style="border: 2px"
+                        valign="middle"
+                        
+                /></a>
+            </b-col>
+            <b-col>
+                <a
                     href="https://www.helloasso.com/associations/lm-oxygene"
                     target="_blank" rel="noopener noreferrer">
                     <img

@@ -22,6 +22,21 @@
 	</appender> 
 	
 	
+	<appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>./debug_isochrone.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>isochrone.%d{yyyy-MM-dd}.gz</fileNamePattern>
+    
+            <maxHistory>2</maxHistory>
+            <totalSizeCap>10MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender> 
+	
+	
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
@@ -45,8 +60,9 @@
 
   <!-- Local & CI environment (local-custom is a reference to application-local-custom.yml -> see : .gitignore) -->
   <springProfile name="local,compose,secret,dev">
-    <root level="INFO">
+    <root level="DEBUG">
       <appender-ref ref="CONSOLE"/>
+     <!--  <appender-ref ref="DEBUG_FILE"/> -->
     </root>
   </springProfile>
 

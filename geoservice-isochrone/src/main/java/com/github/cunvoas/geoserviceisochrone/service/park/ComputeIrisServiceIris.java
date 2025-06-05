@@ -2,7 +2,6 @@ package com.github.cunvoas.geoserviceisochrone.service.park;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -10,28 +9,23 @@ import java.util.Optional;
 
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeIrisJob;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.IrisDataComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisData;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisShape;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.IrisDataComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisDataRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.LaposteRepository;
@@ -45,20 +39,24 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service
 @Slf4j
-//@ConditionalOnProperty(
-//		name="application.feature-flipping.carre200m-impl", 
-//		havingValue="v3")
-public class ComputeServiceIrisV1 {
-
-	// 200m x 200m = 4 10^4: insee data is 40000 +-1 accuracy
-	//private static final Double SURFACE_CARRE = 40_000d;
+@ConditionalOnProperty(
+		name="application.feature-flipping.carre200m-impl", 
+		havingValue="v3")
+public class ComputeIrisServiceIris extends AbstractComputeService {
 	
+	@Autowired
+	public ComputeIrisServiceIris(
+			ParkJardinRepository parkJardinRepository,
+			InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository
+			) {
+		super(parkJardinRepository, inseeCarre200mOnlyShapeRepository);
+	}
+
+
 	@Autowired
 	private LaposteRepository laposteRepository;
 	@Autowired
 	private CadastreRepository cadastreRepository;
-	
-	
 	
 	@Autowired
 	private ParkAreaRepository parkAreaRepository;
@@ -85,41 +83,10 @@ public class ComputeServiceIrisV1 {
 	private IrisShapeRepository irisShapeRepository;
 	@Autowired
 	private IrisDataRepository irisDataRepository;
-	
-	/**
-	 * isActive.
-	 * @param pa ParkArea
-	 * @param annee year 
-	 * @return park is active?
-	 */
-	protected Boolean isActive(ParkArea pa, Integer annee) {
-		Boolean active=false;
-		
-		Optional<ParcEtJardin> oPj = parkJardinRepository.findById(pa.getIdParcEtJardin());
-		if (oPj.isPresent()) {
-			ParcEtJardin pj = oPj.get();
-			Date dd = pj.getDateDebut();
-			Date df = pj.getDateFin();
-			
-			Calendar cal = Calendar.getInstance();
-			
-			int d = 1900;
-			if (dd!=null) {
-				cal.setTime(dd);
-				d = cal.get(Calendar.YEAR);
-			}
-			
-			int f = 2100;
-			if (df!=null) {
-				cal.setTime(df);
-				f = cal.get(Calendar.YEAR);
-			}
-			
-			active = d<=annee && annee<=f;
-		}
-	
-		return active;
-	}
+
+	@Autowired
+	private ComputeParkAreaV2 computeParkAreaV2;
+
 	
 	/**
 	 * Compute the surface of parks available per capita in the square.
@@ -130,28 +97,26 @@ public class ComputeServiceIrisV1 {
 	protected void computeIrisShapeV2Optim(ComputeIrisJob job, IrisShape carreShape, Boolean isDense) {
 		
 		log.warn(">> computeIrisShapeV2Optim {}", carreShape.getIris());
-
 		
-		// find parks in square shape
-		List<ParkArea> parkAreas = parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(carreShape.getContour()));
-		parkTypeService.populate(parkAreas);
+		// find parks in iris shape
+		List<ParkArea> parkAreasInIris = parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(carreShape.getContour()));
+		parkTypeService.populate(parkAreasInIris);
 		
 //		Map<Integer, ComputeIrisDto> mapDto = new HashMap<>();
 		
-		Geometry shapeParkOnSquare=null;
+		Geometry shapeParkOnIris=null;
 		
 		// prepare surface and polygons for parks coverage
 		Integer annee = job.getAnnee();
 		
-		
-		int count4checkOms=parkAreas.size();
+		int count4checkOms=parkAreasInIris.size();
 		ComputeIrisDto dto = new ComputeIrisDto(carreShape);
 		dto.isDense = isDense;
 		dto.annee=annee;
 		
 //		mapDto.put(annee, dto);
 	
-		for (ParkArea parkArea : parkAreas) {
+		for (ParkArea parkArea : parkAreasInIris) {
 			log.info("\tcompose {}", parkArea);
 			
 			// CHECK if park exists for the INSEE data
@@ -166,7 +131,7 @@ public class ComputeServiceIrisV1 {
 				pac = opac.get();
 			} else {
 				// rebuid
-				pac = this.computeParkAreaV2(parkArea, annee);
+				pac = computeParkAreaV2.computeGenericParkAreaV2(parkArea, annee);
 			}
 			
 			//decrement for all
@@ -180,10 +145,10 @@ public class ComputeServiceIrisV1 {
 			// prepare with OMS compliance
 			if (pac.getOms()) {
 				
-				if (shapeParkOnSquare==null) {
-					shapeParkOnSquare = parkArea.getPolygon();
+				if (shapeParkOnIris==null) {
+					shapeParkOnIris = parkArea.getPolygon();
 				} else {
-					shapeParkOnSquare = shapeParkOnSquare.union(parkArea.getPolygon());
+					shapeParkOnIris = shapeParkOnIris.union(parkArea.getPolygon());
 				}
 				
 				String sufficient="";
@@ -212,11 +177,11 @@ public class ComputeServiceIrisV1 {
 		}  // end merge
 		
 		// all parks are OMS compliant
-		dto.allAreOms = count4checkOms==parkAreas.size();
+		dto.allAreOms = count4checkOms==parkAreasInIris.size();
 		
 		// si shapeParkOnSquare est null; pas de parc OMS, on considère un point
-		if (shapeParkOnSquare==null) {
-			shapeParkOnSquare = carreShape.getCoordonnee();
+		if (shapeParkOnIris==null) {
+			shapeParkOnIris = carreShape.getCoordonnee();
 		}
 		
 		
@@ -243,15 +208,15 @@ public class ComputeServiceIrisV1 {
 //		ComputeIrisDto dto = mapDto.get(annee);	
 		
 		// get already computed square results
-		IrisDataComputed computed = inseeCarre200mComputedV2Repository.findByAnneeAndIris(annee, carreShape.getIris());
-		if (computed==null) {
+		IrisDataComputed irisComputed = inseeCarre200mComputedV2Repository.findByAnneeAndIris(annee, carreShape.getIris());
+		if (irisComputed==null) {
 			// or create it
-			computed = new IrisDataComputed();
-			computed.setIris(carreShape.getIris());
-			computed.setAnnee(annee);	
+			irisComputed = new IrisDataComputed();
+			irisComputed.setIris(carreShape.getIris());
+			irisComputed.setAnnee(annee);	
 		}
-		computed.setIsDense(isDense);
-		computed.setUpdated(new Date());
+		irisComputed.setIsDense(isDense);
+		irisComputed.setUpdated(new Date());
 		
 
 		log.info("\tprocess merge isochrone");
@@ -259,33 +224,33 @@ public class ComputeServiceIrisV1 {
 		//Compute all the population which is present in the isochrones of the current square.
 		// and the park surface of these isochrones.
 		// then, I compute the surface per capita (m²/inhabitant)
-		this.computePopAndDensityOptim(dto, carreShape, shapeParkOnSquare);
+		this.computePopAndDensityOptim(dto, carreShape, shapeParkOnIris);
 		
-		computed.setSurfaceParkPerCapita(dto.result.surfaceParkPerCapita);
-		computed.setSurfaceTotalPark(dto.result.surfaceTotalParks);
-		computed.setPopulationInIsochrone(dto.result.populationInIsochrone);
-		computed.setPopIncluded(dto.result.popInc);
-		computed.setPopExcluded(dto.result.popExc);
+		irisComputed.setSurfaceParkPerCapita(dto.result.surfaceParkPerCapita);
+		irisComputed.setSurfaceTotalPark(dto.result.surfaceTotalParks);
+		irisComputed.setPopulationInIsochrone(dto.result.populationInIsochrone);
+		irisComputed.setPopIncluded(dto.result.popInc);
+		irisComputed.setPopExcluded(dto.result.popExc);
 		
-		computed.setSurfaceParkPerCapitaOms(dto.resultOms.surfaceParkPerCapita);
-		computed.setSurfaceTotalParkOms(dto.resultOms.surfaceTotalParks);
-		computed.setPopulationInIsochroneOms(dto.resultOms.populationInIsochrone);
-		computed.setPopIncludedOms(dto.resultOms.popInc);
-		computed.setPopExcludedOms(dto.resultOms.popExc);
+		irisComputed.setSurfaceParkPerCapitaOms(dto.resultOms.surfaceParkPerCapita);
+		irisComputed.setSurfaceTotalParkOms(dto.resultOms.surfaceTotalParks);
+		irisComputed.setPopulationInIsochroneOms(dto.resultOms.populationInIsochrone);
+		irisComputed.setPopIncludedOms(dto.resultOms.popInc);
+		irisComputed.setPopExcludedOms(dto.resultOms.popExc);
 		
 		if (Boolean.TRUE.equals(dto.withSufficient)) {
-			computed.setIsSustainablePark(Boolean.TRUE);
+			irisComputed.setIsSustainablePark(Boolean.TRUE);
 			//TODO 
-			computed.setPopulationWithSustainablePark(null);
+			irisComputed.setPopulationWithSustainablePark(null);
 		} else {
-			computed.setIsSustainablePark(Boolean.FALSE);
-			computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
+			irisComputed.setIsSustainablePark(Boolean.FALSE);
+			irisComputed.setPopulationWithSustainablePark(BigDecimal.ZERO);
 		}
 		
-		computed.setComments(dto.parcName);
+		irisComputed.setComments(dto.parcName);
 
-		log.info("\tsave computed {}\n", computed.getIris());
-		inseeCarre200mComputedV2Repository.save(computed);
+		log.info("\tsave computed {}\n", irisComputed.getIris());
+		inseeCarre200mComputedV2Repository.save(irisComputed);
 
 	}
 	
@@ -314,16 +279,16 @@ public class ComputeServiceIrisV1 {
 		// recherche des population sur l'ensembles des isochrones mergées
 		List<IrisShape>  shapesWithIso = irisShapeRepository.findIrisInMapArea(GeometryQueryHelper.toText(geometryToAnalyse));
 		for (IrisShape carreWithIso : shapesWithIso) {
-			IrisData carreData = irisDataRepository.findByAnneeAndIris(dto.annee, carreWithIso.getIris());
+			IrisData irisData = irisDataRepository.findByAnneeAndIris(dto.annee, carreWithIso.getIris());
 			
-			if (carreData!=null) {
+			if (irisData!=null) {
 				log.info("Filosofil200m     found,{},{}", dto.annee, carreWithIso.getIris());
 				// nb habitant au carre
-				if (carreShape.getIris().equals(carreData.getIris())) {
-					dto.popAll = carreData.getPop();
+				if (carreShape.getIris().equals(irisData.getIris())) {
+					dto.popAll = irisData.getPop();
 				}
 				
-				Double nbHabCarre = carreData.getPop().doubleValue();
+				Double nbHabCarre = irisData.getPop().doubleValue();
 				// proratisation à la surface intersection(carre, isochrne)
 				Geometry isoOnCarre = carreWithIso.getContour().intersection(geometryToAnalyse);
 				Long surfaceIsoSurCarre = getSurface(isoOnCarre);
@@ -395,16 +360,16 @@ public class ComputeServiceIrisV1 {
 	 * @param job ComputeJob
 	 * @return true if done
 	 */
-	public Boolean computeCarreByComputeJobV2Optim(ComputeIrisJob job) {
+	public Boolean computeIrisByComputeJobV2Optim(ComputeIrisJob job) {
 		log.info("begin computeCarre {}", job.getIris());
 		Boolean ret = Boolean.FALSE;
 		
-		Optional<IrisShape> oCarre = irisShapeRepository.findById(job.getIris());
-		if (oCarre.isPresent()) {
+		Optional<IrisShape> oIris = irisShapeRepository.findById(job.getIris());
+		if (oIris.isPresent()) {
 			try {
-				IrisShape carre = oCarre.get();
-				Boolean isDense = serviceOpenData.isDistanceDense(carre.getCodeInsee());
-				this.computeIrisShapeV2Optim(job, carre, isDense);
+				IrisShape iris = oIris.get();
+				Boolean isDense = serviceOpenData.isDistanceDense(iris.getCodeInsee());
+				this.computeIrisShapeV2Optim(job, iris, isDense);
 				ret = Boolean.TRUE;
 				
 			} catch (Exception e) {
@@ -415,182 +380,8 @@ public class ComputeServiceIrisV1 {
 		return ret;
 	}
 
-
-
-	/**
-	 * computeParkAreaV2.
-	 * @param park ParkArea
-	 * @param annee year
-	 * @return ParkAreaComputed
-	 */
-	protected ParkAreaComputed computeParkAreaV2(ParkArea park, Integer annee) {
-		ParkAreaComputed parcCpu=null;
-		log.info("computePark( {}-{} )",park.getId(), park.getName());
-		
-		// skip un-precalculated park
-		if(park.getPolygon()==null) {
-			log.warn("please process {}-{}  first", park.getId(), park.getName());
-			return null;
-//			throw new ExceptionGeo("park not merge"+park.toString());
-		}
-		
-		// get type parameters
-		parkTypeService.populate(park);
-		
-		
-		
-		Optional<ParkAreaComputed> parcCpuOpt = parkAreaComputedRepository.findByIdAndAnnee(park.getId(), annee);
-		if (parcCpuOpt.isPresent()) {
-			parcCpu = parcCpuOpt.get();
-		} else {
-			parcCpu = new ParkAreaComputed();
-			parcCpu.setId(park.getId());
-			parcCpu.setAnnee(annee);
-		}
-
-		// process OMS feature
-		ParkType type = park.getType();
-		if (type.getStrict()) {
-			parcCpu.setOms(type.getOms());
-		} else {
-			parcCpu.setOms(type.getOms());
-			
-			if (park.getOmsCustom()!=null) {
-				parcCpu.setOms(park.getOmsCustom());
-			}
-		}
-		
-		Optional<ParcEtJardin> pjOpt = parkJardinRepository.findById(park.getIdParcEtJardin());
-		if (pjOpt.isPresent()) {
-			ParcEtJardin pj = pjOpt.get();
-			parcCpu.setSurface(new BigDecimal(Math.round(pj.getSurface())));
-			
-			Boolean isDense = serviceOpenData.isDistanceDense(pj.getCommune());
-			parcCpu.setIsDense(isDense);
-		}
-		
-		
-		
-		// surface intersection algorithm
-		BigDecimal population = BigDecimal.ZERO;
-		// find carre200m shapes that match the park
-		List<IrisShape> shapes = irisShapeRepository.findIrisInMapArea(GeometryQueryHelper.toText(park.getPolygon()));
-				
-		for (IrisShape carreShape : shapes) {
-			Geometry parkOnCarre = carreShape.getContour().intersection(park.getPolygon());
-			Long surfIntersect = getSurface(parkOnCarre);
-			
-			//lookup for carre200m data
-			IrisData carre = irisDataRepository.findByAnneeAndIris(annee, carreShape.getIris());
-			Long popCar = 0L;
-			if (carre!=null) {
-				popCar =Math.round(carre.getPop().doubleValue());
-			}
-			Long popIntersect = Math.round(popCar*surfIntersect/carreShape.getSurface());
-			population = population.add(new BigDecimal(popIntersect));
-		}
-		parcCpu.setPopulation(population);
-		if (! BigDecimal.ZERO.equals(population)) {
-			parcCpu.setSurfacePerInhabitant(parcCpu.getSurface().divide(population, 1, RoundingMode.HALF_EVEN));
-		}
-		parcCpu.setUpdated(new Date());
-		
-		log.warn("surface per inhabitant: {}- {}", annee, parcCpu.getSurfacePerInhabitant());
-		parcCpu = parkAreaComputedRepository.save(parcCpu);
-		
-		return parcCpu;
-		
-		
-	}
 	
-	
-	/**
-	 * Compute ParkEntrance from ParkArea and List<ParkEntrance>.
-	 * @param park
-	 * @return ParkAreaComputed
-	 * @TODO to be reviewed
-	 */
-	public ParkAreaComputed computeParkAreaV2(ParkArea park) {
-		ParkAreaComputed parcCpu=null;
-		log.info("computePark( {}-{} )",park.getId(), park.getName());
-		
-		// skip un-precalculated park
-		if(park.getPolygon()==null) {
-			log.warn("please process {}-{}  first", park.getId(), park.getName());
-			return null;
-//			throw new ExceptionGeo("park not merge"+park.toString());
-		}
-		
-		// get type parameters
-		parkTypeService.populate(park);
-		
-		List<Integer> annees = List.of(applicationBusinessProperties.getInseeAnnees());
-		
-		
-		// find carre200m shapes that match the park
-		
-		List<IrisShape> shapes = irisShapeRepository.findIrisInMapArea(GeometryQueryHelper.toText(park.getPolygon()));
-		for (Integer annee : annees) {
-		
-			Optional<ParkAreaComputed> parcCpuOpt = parkAreaComputedRepository.findByIdAndAnnee(park.getId(), annee);
-			if (parcCpuOpt.isPresent()) {
-				parcCpu = parcCpuOpt.get();
-			} else {
-				parcCpu = new ParkAreaComputed();
-				parcCpu.setId(park.getId());
-				parcCpu.setAnnee(annee);
-			}
-	
-			// process OMS feature
-			ParkType type = park.getType();
-			if (type.getStrict()) {
-				parcCpu.setOms(type.getOms());
-			} else {
-				parcCpu.setOms(type.getOms());
-				
-				if (park.getOmsCustom()!=null) {
-					parcCpu.setOms(park.getOmsCustom());
-				}
-			}
-			
-			Optional<ParcEtJardin> pjOpt = parkJardinRepository.findById(park.getIdParcEtJardin());
-			if (pjOpt.isPresent()) {
-				ParcEtJardin pj = pjOpt.get();
-				parcCpu.setSurface(new BigDecimal(Math.round(pj.getSurface())));
-				
-				Boolean isDense = serviceOpenData.isDistanceDense(pj.getCommune());
-				parcCpu.setIsDense(isDense);
-			}
-			
-			
-			
-			// surface intersection algorithm
-			BigDecimal population = BigDecimal.ZERO;
-			for (IrisShape carreShape : shapes) {
-				Geometry parkOnCarre = carreShape.getContour().intersection(park.getPolygon());
-				Long surfIntersect = getSurface(parkOnCarre);
-				
-				//lookup for carre200m data
-				IrisData carre = irisDataRepository.findByAnneeAndIris(annee, carreShape.getIris());
-				Long popCar = 0L;
-				if (carre!=null) {
-					popCar =Math.round(carre.getPop().doubleValue());
-				}
-				Long popIntersect = Math.round(popCar*surfIntersect/carreShape.getSurface());
-				population = population.add(new BigDecimal(popIntersect));
-			}
-			parcCpu.setPopulation(population);
-			if (! BigDecimal.ZERO.equals(population)) {
-				parcCpu.setSurfacePerInhabitant(parcCpu.getSurface().divide(population, 1, RoundingMode.HALF_EVEN));
-			}
-			parcCpu.setUpdated(new Date());
-			
-			log.warn("surface per inhabitant: {}- {}", annee, parcCpu.getSurfacePerInhabitant());
-			parcCpu = parkAreaComputedRepository.save(parcCpu);
-		
-		}
-		return parcCpu;
-	}
+
 
 	
 	/**

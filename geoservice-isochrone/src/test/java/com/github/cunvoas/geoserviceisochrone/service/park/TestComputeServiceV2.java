@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 class TestComputeServiceV2 {
 
 	
-	ComputeServiceV2 tested = new ComputeServiceV2();
+	ComputeCarreServiceV3 tested = new ComputeCarreServiceV3();
 	
 
 	@Test

@@ -10,6 +10,8 @@ import java.util.Optional;
 
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +36,6 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.LaposteRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
@@ -44,23 +45,30 @@ import lombok.extern.slf4j.Slf4j;
  * Business Service impl.
  */
 @Service
+@Qualifier("ComputeCarreService")
 @Slf4j
-//@ConditionalOnProperty(
-//		name="application.feature-flipping.carre200m-impl", 
-//		havingValue="v3")
-public class ComputeServiceV3 {
+@ConditionalOnProperty(
+		name="application.feature-flipping.carre200m-impl", 
+		havingValue="v3")
+public class ComputeCarreServiceV3 implements IComputeCarreService {
 
 	// 200m x 200m = 4 10^4: insee data is 40000 +-1 accuracy
 	private static final Double SURFACE_CARRE = 40_000d;
 	
 	@Autowired
-	private LaposteRepository laposteRepository;
+	private ApplicationBusinessProperties applicationBusinessProperties;
+	@Autowired
+	private CityRepository cityRepository;
 	@Autowired
 	private CadastreRepository cadastreRepository;
+	@Autowired
+	private ParkJardinRepository parkJardinRepository;
+	@Autowired
+	private ParkTypeService parkTypeService;
 	
 	@Autowired
 	private InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;
-	@Autowired	//inseeCare200mRepository
+	@Autowired
 	private Filosofil200mRepository filosofil200mRepository;
 	@Autowired
 	private InseeCarre200mComputedV2Repository inseeCarre200mComputedV2Repository;
@@ -69,58 +77,15 @@ public class ComputeServiceV3 {
 	private ParkAreaRepository parkAreaRepository;
 	@Autowired
 	private ParkAreaComputedRepository parkAreaComputedRepository;
-	@Autowired
-	private ParkJardinRepository parkJardinRepository;
-	@Autowired
-	private ParkTypeService parkTypeService;
+	
 	@Autowired
 	private ServiceOpenData serviceOpenData;
+	
 	@Autowired
 	private ParkService parkService;
-	@Autowired
-	private CityRepository cityRepository;
-	@Autowired
-	private ApplicationBusinessProperties applicationBusinessProperties;
 	
 	
-	/**
-	 * computeCarreByPostalCode.
-	 * @param postalCode code
-	 */
-//	public void computeCarreByPostalCode(String postalCode) {
-//		Set<Cadastre> uniques = new HashSet<>();
-//		List<Laposte> postes = laposteRepository.findByPostalCode(postalCode);
-//		for (Laposte laposte : postes) {
-//			Cadastre cadastre = cadastreRepository.findById(laposte.getIdInsee()).get();
-//			uniques.add(cadastre);
-//		}
-//		for (Cadastre cadastre : uniques) {
-//			computeCarreByCadastreV2Optim(cadastre);
-//		}
-//		
-//	}
 	
-	/**
-	 * computeCarreByInseeCode.
-	 * @param inseeCode code
-	 */
-//	public void computeCarreByInseeCode(String inseeCode) {
-//		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
-//		computeCarreByCadastreV2Optim(cadastre);
-//	}
-	
-//	/**
-//	 * computeCarreByCarre200m.
-//	 * @param idInspire id
-//	 */
-//	public void computeCarreByCarre200m(String idInspire) {
-//		Optional<InseeCarre200mOnlyShape> oCarreShape = inseeCarre200mOnlyShapeRepository.findById(idInspire);
-//		if (oCarreShape.isPresent()) {
-//			InseeCarre200mOnlyShape carreShape = oCarreShape.get();
-//			Boolean isDense = serviceOpenData.isDistanceDense(carreShape.getCodeInsee());
-//			computeCarreShapeV2Optim(carreShape, isDense);
-//		}
-//	}
 
 	/**
 	 * isActive.
@@ -434,7 +399,8 @@ public class ComputeServiceV3 {
 	 * @param job ComputeJob
 	 * @return true if done
 	 */
-	public Boolean computeCarreByComputeJobV2Optim(ComputeJob job) {
+	@Override
+	public Boolean computeCarreByComputeJob(ComputeJob job) {
 		log.info("begin computeCarre {}", job.getIdInspire());
 		Boolean ret = Boolean.FALSE;
 		
@@ -458,6 +424,7 @@ public class ComputeServiceV3 {
 	 *  Used for mass update and full recompute ParkAreaEntrance.
 	 *  @param inseeCode code
 	 */
+	@Override
 	public void refreshParkEntrances(String inseeCode) {
 		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
 		refreshParkEntrances(cadastre);
@@ -467,6 +434,7 @@ public class ComputeServiceV3 {
 	 * Used for mass update and full recompute ParkAreaEntrance.
 	 * @param cadastre Cadastre
 	 */
+	@Override
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public void refreshParkEntrances(Cadastre cadastre) {
 		log.warn(">> refreshParkEntrances");
@@ -578,7 +546,8 @@ public class ComputeServiceV3 {
 	 * @return ParkAreaComputed
 	 * @TODO to be reviewed
 	 */
-	public ParkAreaComputed computeParkAreaV2(ParkArea park) {
+	@Override
+	public ParkAreaComputed computeParkArea(ParkArea park) {
 		ParkAreaComputed parcCpu=null;
 		log.info("computePark( {}-{} )",park.getId(), park.getName());
 		
@@ -666,6 +635,7 @@ public class ComputeServiceV3 {
 	 * @param geom  Geometry
 	 * @return surface of Geometry
 	 */
+	@Override
 	public Long getSurface(Geometry geom) {
 		return inseeCarre200mOnlyShapeRepository.getSurface(geom);
 	}

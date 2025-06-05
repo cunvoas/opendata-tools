@@ -110,6 +110,8 @@ application:
     insee:
       densite: 1,2
       annees: 2015, 2017, 2019
+    iris:
+        annees: 2022
   feature-flipping:
     parkAnalysisEnabled: true
     sendEmail: false
