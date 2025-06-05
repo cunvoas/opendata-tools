@@ -94,9 +94,9 @@ public class ComputeIrisServiceIris extends AbstractComputeService {
 	 * @param isDense witch density
 	 * @TODO make optim to not recompute all years ( before 2027 )
 	 */
-	protected void computeIrisShapeV2Optim(ComputeIrisJob job, IrisShape carreShape, Boolean isDense) {
+	protected void computeIrisShape(ComputeIrisJob job, IrisShape carreShape, Boolean isDense) {
 		
-		log.warn(">> computeIrisShapeV2Optim {}", carreShape.getIris());
+		log.warn(">> computeIrisShape {}", carreShape.getIris());
 		
 		// find parks in iris shape
 		List<ParkArea> parkAreasInIris = parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(carreShape.getContour()));
@@ -224,7 +224,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService {
 		//Compute all the population which is present in the isochrones of the current square.
 		// and the park surface of these isochrones.
 		// then, I compute the surface per capita (m²/inhabitant)
-		this.computePopAndDensityOptim(dto, carreShape, shapeParkOnIris);
+		this.computePopAndDensity(dto, carreShape, shapeParkOnIris);
 		
 		irisComputed.setSurfaceParkPerCapita(dto.result.surfaceParkPerCapita);
 		irisComputed.setSurfaceTotalPark(dto.result.surfaceTotalParks);
@@ -256,7 +256,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService {
 	
 	
 	/**
-	 * computePopAndDensityDetailOptim.
+	 * computePopAndDensityDetail.
 	 * @param dto DTO with source data
 	 * @param crDto DTO with result data
 	 * @param carreShape square on process
@@ -264,7 +264,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService {
 	 * @param shapeParkOnSquare shape of park isochrones
 	 * @return ComputeResultDto
 	 */
-	protected ComputeResultDto computePopAndDensityDetailOptim(
+	protected ComputeResultDto computePopAndDensityDetail(
 			ComputeIrisDto dto, 
 			ComputeResultDto crDto,
 			IrisShape carreShape,
@@ -335,32 +335,32 @@ public class ComputeIrisServiceIris extends AbstractComputeService {
 	}
 	
 	/**
-	 * computePopAndDensityOptim.
+	 * computePopAndDensity.
 	 * @param dto ComputeIrisDto
 	 * @param carreShape shap
 	 * @param shapeParkOnIris shape
 	 */
-	protected void computePopAndDensityOptim(ComputeIrisDto dto, IrisShape carreShape, Geometry shapeParkOnIris) {
+	protected void computePopAndDensity(ComputeIrisDto dto, IrisShape carreShape, Geometry shapeParkOnIris) {
 
 		Geometry geometryToAnalyse =dto.polygonParkAreas;
-		ComputeResultDto rDto = this.computePopAndDensityDetailOptim(dto, dto.result, carreShape, geometryToAnalyse, shapeParkOnIris);
+		ComputeResultDto rDto = this.computePopAndDensityDetail(dto, dto.result, carreShape, geometryToAnalyse, shapeParkOnIris);
 		dto.result = rDto;
 		
 		if (dto.allAreOms) {
 			dto.resultOms = rDto;
 		} else {
 			geometryToAnalyse =dto.polygonParkAreasOms;
-			rDto = this.computePopAndDensityDetailOptim(dto, dto.resultOms, carreShape, geometryToAnalyse, shapeParkOnIris);
+			rDto = this.computePopAndDensityDetail(dto, dto.resultOms, carreShape, geometryToAnalyse, shapeParkOnIris);
 			dto.resultOms = rDto;
 		}
 	}
 	
 	/**
-	 * computeCarreByComputeJobV2Optim.
+	 * computeCarreByComputeJob.
 	 * @param job ComputeJob
 	 * @return true if done
 	 */
-	public Boolean computeIrisByComputeJobV2Optim(ComputeIrisJob job) {
+	public Boolean computeIrisByComputeJob(ComputeIrisJob job) {
 		log.info("begin computeCarre {}", job.getIris());
 		Boolean ret = Boolean.FALSE;
 		
@@ -369,7 +369,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService {
 			try {
 				IrisShape iris = oIris.get();
 				Boolean isDense = serviceOpenData.isDistanceDense(iris.getCodeInsee());
-				this.computeIrisShapeV2Optim(job, iris, isDense);
+				this.computeIrisShape(job, iris, isDense);
 				ret = Boolean.TRUE;
 				
 			} catch (Exception e) {

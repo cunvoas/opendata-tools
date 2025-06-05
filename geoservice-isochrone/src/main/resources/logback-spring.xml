@@ -60,7 +60,7 @@
 
   <!-- Local & CI environment (local-custom is a reference to application-local-custom.yml -> see : .gitignore) -->
   <springProfile name="local,compose,secret,dev">
-    <root level="DEBUG">
+    <root level="INFO">
       <appender-ref ref="CONSOLE"/>
      <!--  <appender-ref ref="DEBUG_FILE"/> -->
     </root>

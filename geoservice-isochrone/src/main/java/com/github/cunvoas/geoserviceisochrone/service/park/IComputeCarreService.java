@@ -13,7 +13,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 public interface IComputeCarreService {
 
 	/**
-	 * computeCarreByComputeJobV2Optim.
+	 * computeCarreByComputeJob.
 	 * @param job ComputeJob
 	 * @return true if done
 	 */
