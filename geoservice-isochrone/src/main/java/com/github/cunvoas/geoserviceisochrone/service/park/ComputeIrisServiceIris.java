@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @ConditionalOnProperty(
 		name="application.feature-flipping.carre200m-impl", 
 		havingValue="v3")
-public class ComputeIrisServiceIris extends AbstractComputeService {
+public class ComputeIrisServiceIris extends AbstractComputeService implements IComputeIrisService {
 	
 	@Autowired
 	public ComputeIrisServiceIris(
@@ -360,6 +360,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService {
 	 * @param job ComputeJob
 	 * @return true if done
 	 */
+	@Override
 	public Boolean computeIrisByComputeJob(ComputeIrisJob job) {
 		log.info("begin computeCarre {}", job.getIris());
 		Boolean ret = Boolean.FALSE;
