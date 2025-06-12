@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeIrisJob;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.IrisDataComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
@@ -23,6 +24,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.IrisDataComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.admin.ComputeJobIrisRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
@@ -52,11 +54,8 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		super(parkJardinRepository, inseeCarre200mOnlyShapeRepository);
 	}
 
-
 	@Autowired
-	private LaposteRepository laposteRepository;
-	@Autowired
-	private CadastreRepository cadastreRepository;
+	private ComputeJobIrisRepository computeJobIrisRepository;
 	
 	@Autowired
 	private ParkAreaRepository parkAreaRepository;
@@ -251,6 +250,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 
 		log.info("\tsave computed {}\n", irisComputed.getIris());
 		inseeCarre200mComputedV2Repository.save(irisComputed);
+		
 
 	}
 	
@@ -375,6 +375,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 				
 			} catch (Exception e) {
 				log.error("computeCarre in error: {} {}", job.getIris(), job.getAnnee());
+				log.error("stacktrace", e);
 			}
 		}
 		

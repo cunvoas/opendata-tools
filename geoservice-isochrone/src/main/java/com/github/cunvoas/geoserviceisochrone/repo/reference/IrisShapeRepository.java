@@ -18,7 +18,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisShape;
 @Repository
 public interface IrisShapeRepository extends JpaRepository< IrisShape,String> {
 	
-	
+
 	/**
 	 * findByFootprintIsNull.
 	 * @return List<IrisShape>

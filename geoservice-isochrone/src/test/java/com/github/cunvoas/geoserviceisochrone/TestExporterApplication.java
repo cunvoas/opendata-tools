@@ -18,7 +18,7 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
 
 
 @SpringBootTest
-@ActiveProfiles({"secret","dev"})
+@ActiveProfiles({"secret","rep"})
 class TestExporterApplication {
 	
 	@Autowired
@@ -113,19 +113,21 @@ class TestExporterApplication {
 		}
 	}
 
-	
-	
 
 	@Test
-	@Order(30)
-	void setFootPrint() {
+	@Disabled
+	@Order(24)
+	void writeGeoJsonIris() {
 		try {
-			serviceIris.computeFootprint();
+			servicePublicationExporter.writeGeoJsonIris();
 
-		} catch (Exception e) {
+
+		} catch (IOException e) {
 			System.err.println(e);
 			fail(e.getMessage());
 		}
 	}
+
+
 	
 }
