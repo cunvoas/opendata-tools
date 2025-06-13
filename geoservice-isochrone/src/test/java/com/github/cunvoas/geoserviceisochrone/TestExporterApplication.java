@@ -14,14 +14,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.github.cunvoas.geoserviceisochrone.service.export.ServicePublicationExporter;
+import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
 
 
 @SpringBootTest
-@ActiveProfiles({"rep"})
+@ActiveProfiles({"secret","rep"})
 class TestExporterApplication {
 	
 	@Autowired
 	private ServicePublicationExporter servicePublicationExporter;
+	
+	@Autowired
+	private ServiceIris serviceIris;
 
 	@Test
 	@Order(1)
@@ -109,8 +113,21 @@ class TestExporterApplication {
 		}
 	}
 
-	
-	
-	
+
+	@Test
+	@Disabled
+	@Order(24)
+	void writeGeoJsonIris() {
+		try {
+			servicePublicationExporter.writeGeoJsonIris();
+
+
+		} catch (IOException e) {
+			System.err.println(e);
+			fail(e.getMessage());
+		}
+	}
+
+
 	
 }

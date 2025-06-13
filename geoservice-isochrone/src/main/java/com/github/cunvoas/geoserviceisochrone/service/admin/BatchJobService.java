@@ -37,8 +37,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.park.IComputeCarreService;
+import com.github.cunvoas.geoserviceisochrone.service.park.IComputeIrisService;
 
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -63,12 +63,15 @@ public class BatchJobService {
 	@Autowired
 	private ComputeJobRepository computeJobCarreRepository;
 	@Autowired
-	private ComputeJobIrisRepository computeJobIrisRepository;
-	@Autowired
 	private ParkAreaRepository parkAreaRepository;
 	
 	@Autowired
-	private IComputeCarreService computeService;
+	private IComputeCarreService computeCarreService;
+
+	@Autowired
+	private ComputeJobIrisRepository computeJobIrisRepository;
+	@Autowired
+	private IComputeIrisService computeIrisService;
 	
 	
 	/**
@@ -118,7 +121,7 @@ public class BatchJobService {
 
 					// check if update on source, if not, skip
 					boolean skip = upd!=null?upd.before(job.getProcessed()):false;
-					
+					skip=false;
 					// if already processed, relaunch
 					if (!skip && ComputeJobStatusEnum.PROCESSED.equals(job.getStatus()) ) {
 						job.setStatus(ComputeJobStatusEnum.TO_PROCESS);
@@ -291,7 +294,7 @@ public class BatchJobService {
 		Optional<ComputeJob> oJob = computeJobCarreRepository.findById(id);
 		if (oJob.isPresent()) {
 			ComputeJob job = oJob.get();
-			Boolean processed = computeService.computeCarreByComputeJob(job);
+			Boolean processed = computeCarreService.computeCarreByComputeJob(job);
 			
 			// tag end
 			if ( Boolean.TRUE.equals(processed)) {
@@ -303,9 +306,6 @@ public class BatchJobService {
 			job.setProcessed(new Date());
 			computeJobCarreRepository.save(job);
 		}
-		
-		
-		
 	}
 	
 	/**
@@ -390,7 +390,7 @@ public class BatchJobService {
 					computeJobCarreRepository.save(job);
 					
 					// process
-					Boolean processed = computeService.computeCarreByComputeJob(job);
+					Boolean processed = computeCarreService.computeCarreByComputeJob(job);
 					
 					// tag end
 					if ( Boolean.TRUE.equals(processed)) {
@@ -400,6 +400,34 @@ public class BatchJobService {
 					}
 					job.setProcessed(new Date());
 					computeJobCarreRepository.save(job);
+				}
+				
+				// same for IRIS
+				List<ComputeIrisJob> irisJobs = null;
+				if (onDev()) {
+					irisJobs = computeJobIrisRepository.findByStatusOrderByDemandDesc(ComputeJobStatusEnum.TO_PROCESS, page);
+				} else {
+					irisJobs = computeJobIrisRepository.findByStatusOrderByDemandAsc(ComputeJobStatusEnum.TO_PROCESS, page);
+				}
+				possibleNext = irisJobs!=null?jobs.size()==pageSize:false;
+				
+				for (ComputeIrisJob irisJob : irisJobs) {
+					// tag begin
+					irisJob.setProcessed(new Date());
+					irisJob.setStatus(ComputeJobStatusEnum.IN_PROCESS);
+					computeJobIrisRepository.save(irisJob);
+					
+					// process
+					Boolean processed = computeIrisService.computeIrisByComputeJob(irisJob);
+					
+					// tag end
+					if ( Boolean.TRUE.equals(processed)) {
+						irisJob.setStatus(ComputeJobStatusEnum.PROCESSED);
+					} else {
+						irisJob.setStatus(ComputeJobStatusEnum.IN_ERROR);
+					}
+					irisJob.setProcessed(new Date());
+					computeJobIrisRepository.save(irisJob);
 				}
 			}//while
 		}

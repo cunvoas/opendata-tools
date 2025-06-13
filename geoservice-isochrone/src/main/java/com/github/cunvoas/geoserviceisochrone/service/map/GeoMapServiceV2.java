@@ -44,6 +44,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisShape;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
@@ -58,6 +59,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
@@ -110,6 +112,8 @@ public class GeoMapServiceV2 {
     private InseeCarre200mComputedV2Repository inseeCarre200mComputedV2Repository;
     @Autowired
     private InseeCarre200mOnlyShapeRepository inseeCarre200osRepository;
+    @Autowired
+    private IrisShapeRepository irisShapeRepository;
     @Autowired
     private Filosofil200mRepository filosofil200mRepository;
     @Autowired
@@ -805,7 +809,7 @@ public class GeoMapServiceV2 {
 	 }
 	 
     /**
-     * GET ALL IRIS in the map.
+     * GET ALL Carre in the map.
 	 * @param com2co CommunauteCommune
 	 * @param annee year
 	 * @return GeoJson carre 
@@ -826,6 +830,47 @@ public class GeoMapServiceV2 {
     	root = findAllCarreByArea(carres, annee);
     	
     	return root;
+	}
+
+    /**
+     * GET ALL IRIS in the map.
+	 * @param com2co CommunauteCommune
+	 * @param annee year
+	 * @return GeoJson carre 
+	 */
+	public GeoJsonRoot findAllIrisByCommunauteCommune(CommunauteCommune com2co, Integer annee) {
+		log.error("findAllCarreByArea(CommunauteCommune {}, Integer annee {})", com2co.getName(), annee);
+    	GeoJsonRoot root = null;
+		
+    	Set<IrisShape> carres = new HashSet<>();
+    	
+    	for (City city : com2co.getCities()) {
+    		List<IrisShape> cShapes = irisShapeRepository.findByCodeInsee(
+    				city.getInseeCode() );
+    		carres.addAll(cShapes);
+    	}
+    	
+    	root = findAllIrisByArea(carres, annee);
+    	
+    	return root;
+	}
+	
+	
+	
+	
+	/**
+	 * findAllIrisByArea.
+	 * @param carres shapes
+	 * @param annee year
+	 * @return GeoJson carre 
+	 */
+	protected GeoJsonRoot findAllIrisByArea(Collection<IrisShape> carres, Integer annee) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
+		//TODO IRIS make the implem
+		
+		
+		return root;
 	}
 	
 	/**

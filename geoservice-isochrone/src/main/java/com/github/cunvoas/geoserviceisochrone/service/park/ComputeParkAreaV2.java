@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -97,6 +98,12 @@ public class ComputeParkAreaV2 {
 		Optional<ParcEtJardin> pjOpt = parkJardinRepository.findById(park.getIdParcEtJardin());
 		if (pjOpt.isPresent()) {
 			ParcEtJardin pj = pjOpt.get();
+			
+			if (pj.getSurface()==null && pj.getContour()!=null) {
+				pj.setSurface(this.getSurface(pj.getContour()).doubleValue());
+				parkJardinRepository.save(pj);
+			}
+			
 			parcCpu.setSurface(new BigDecimal(Math.round(pj.getSurface())));
 			
 			Boolean isDense = serviceOpenData.isDistanceDense(pj.getCommune());
@@ -177,6 +184,12 @@ public class ComputeParkAreaV2 {
 		return this.computeGenericParkAreaV2(park, null);
 	}
 	public ParkAreaComputed computeGenericParkAreaV2(ParkArea park, Integer wAnnee) {
+		Calendar c1 = Calendar.getInstance();
+		c1.set(1970, Calendar.JANUARY, 1, 0, 0, 0);
+		
+		Date defaultData = c1.getTime();
+		
+		
 		ParkAreaComputed parcCpu=null;
 		log.info("computePark( {}-{} )",park.getId(), park.getName());
 		
@@ -202,33 +215,31 @@ public class ComputeParkAreaV2 {
 		
 		if (wAnnee!=null) {
 			Optional<ParkAreaComputed> parcCpuOpt = parkAreaComputedRepository.findByIdAndAnnee(park.getId(), wAnnee);
+				
 			if (parcCpuOpt.isPresent()) {
-				
-				if (parcCpuOpt.isPresent()) {
-					parcCpu = parcCpuOpt.get();
-				} else {
-					parcCpu = new ParkAreaComputed();
-					parcCpu.setId(park.getId());
-					parcCpu.setAnnee(wAnnee);
-					parcCpu.setUpdated(Date.from(Instant.MIN));
-				}
-				
-				Boolean alreadyProcessed = this.computeGenericHead(parcCpu, park, wAnnee);
-				if (alreadyProcessed) {
-					return parcCpu;
-				}
-				
-				if (carreAnnees.indexOf(wAnnee)!=-1) {
-					this.computeGenericCarre(parcCpu, park, wAnnee);
-				}
-
-				if (irisAnnees.indexOf(wAnnee)!=-1) {
-					this.computeGenericIris(parcCpu, park, wAnnee);
-				}
-				 
-				parcCpu = parkAreaComputedRepository.save(parcCpu);
+				parcCpu = parcCpuOpt.get();
+			} else {
+				parcCpu = new ParkAreaComputed();
+				parcCpu.setId(park.getId());
+				parcCpu.setAnnee(wAnnee);
+				parcCpu.setUpdated(defaultData);
+			}
+			
+			Boolean alreadyProcessed = this.computeGenericHead(parcCpu, park, wAnnee);
+			if (alreadyProcessed) {
 				return parcCpu;
 			}
+			
+			if (carreAnnees.indexOf(wAnnee)!=-1) {
+				this.computeGenericCarre(parcCpu, park, wAnnee);
+			}
+
+			if (irisAnnees.indexOf(wAnnee)!=-1) {
+				this.computeGenericIris(parcCpu, park, wAnnee);
+			}
+			 
+			parcCpu = parkAreaComputedRepository.save(parcCpu);
+			return parcCpu;
 		} else {
 			
 			for (Integer annee : allAnnees) {
@@ -240,7 +251,7 @@ public class ComputeParkAreaV2 {
 					parcCpu = new ParkAreaComputed();
 					parcCpu.setId(park.getId());
 					parcCpu.setAnnee(annee);
-					parcCpu.setUpdated(Date.from(Instant.MIN));
+					parcCpu.setUpdated(defaultData);
 				}
 
 				Boolean alreadyProcessed = this.computeGenericHead(parcCpu, park, wAnnee);

@@ -111,7 +111,7 @@ public class InseeCarre200mComputedV2 {
 	@Column(name="updated")
 	private Date updated;
 	
-	@Column(name="parc_comment",length=500)
+	@Column(name="parc_comment",length=2500)
 	private String comments;
 	
 	
