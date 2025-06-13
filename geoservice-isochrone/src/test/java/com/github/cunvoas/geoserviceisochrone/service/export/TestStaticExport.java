@@ -27,7 +27,7 @@ class TestStaticExport {
 	}
 
 	@Test
-//	@Disabled
+	@Disabled
 	void testExportIsochrone() {
 		tested.exportIsochrone();;
 	}

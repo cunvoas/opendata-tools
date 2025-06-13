@@ -57,6 +57,11 @@ SELECT setval('public.seq_park_pref', (select max(identifiant)+1 from public.par
 SELECT setval('public.seq_region', (select max(id)+1 from public.adm_region), true);
 
 
-
+UPDATE public.iris_shape
+    SET
+        coordonnee= ST_PointFromText( ST_asText( ST_Centroid(contour, true))) ,
+        surface = ST_Area(contour, true)
+    WHERE coordonnee is null or surface is null;
+ 
 
 
