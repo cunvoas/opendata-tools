@@ -64,10 +64,18 @@ public class IrisShape {
 	@Column(name="contour")
 	private Geometry contour;
 
+	
+	// Extention fields
+//	@Id
+//	@Column(name="annee",length=4)
+//  private Integer annee;
+	
 	/** surface de l'iris.*/
 	//@NumberFormat(pattern = "#,##0.0")
 	@Column(name="surface")
 	private Double surface;
 	
+	@Column(name="footprint")
+	private Integer footprint;
 	
 }

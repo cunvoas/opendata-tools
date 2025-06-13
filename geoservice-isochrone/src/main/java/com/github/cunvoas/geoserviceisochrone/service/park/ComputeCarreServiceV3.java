@@ -203,7 +203,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 				pac = opac.get();
 			} else {
 				// rebuid
-				pac = this.computeParkAreaV2(parkArea, annee);
+				pac = this.computeParkArea(parkArea, annee);
 			}
 			
 			//decrement for all
@@ -493,7 +493,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 	 * @param annee year
 	 * @return ParkAreaComputed
 	 */
-	protected ParkAreaComputed computeParkAreaV2(ParkArea park, Integer annee) {
+	protected ParkAreaComputed computeParkArea(ParkArea park, Integer annee) {
 		ParkAreaComputed parcCpu=null;
 		log.info("computePark( {}-{} )",park.getId(), park.getName());
 		

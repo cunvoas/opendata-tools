@@ -164,7 +164,7 @@ class TestGeoserviceIsochroneApplication {
 	 * calcule des carre vs aire des parcs
 	 */
 	@Test
-	//@Disabled
+	@Disabled
 	@Order(22)
 	void batchCarreRequestProcessCity() {
 // TODO en attendant une IHM pour lancer le recalcul. 
@@ -253,6 +253,7 @@ WHERE code_insee='59346'
 
 	@Autowired
 	private CsvNantesParkJardinParser parserNantes;
+	
 	@Test
 	@Disabled
 	void loadNantesParks() {
@@ -267,6 +268,7 @@ WHERE code_insee='59346'
 
 	@Autowired
 	private CsvLyonParkJardinParser parserLyon;
+	
 	@Test
 	@Disabled
 	void loadLyonParks() {
@@ -281,6 +283,7 @@ WHERE code_insee='59346'
 
 	@Autowired
 	private JsonToulouseParkJardinParser parserToulouse;
+	
 	@Test
 	@Disabled
 	void loadToulouseParks() {
