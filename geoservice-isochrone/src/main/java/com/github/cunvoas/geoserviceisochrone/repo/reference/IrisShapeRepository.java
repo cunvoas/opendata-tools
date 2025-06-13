@@ -34,6 +34,13 @@ public interface IrisShapeRepository extends JpaRepository< IrisShape,String> {
 	List<IrisShape> findByCodeInsee(String codeInsee);
 	
 	/**
+	 * findByCodeInsee.
+	 * @param codeInsee code
+	 * @return List<IrisShape>
+	 */
+	List<IrisShape> findByCodeInsee(String codeInsee);
+	
+	/**
 	 * findByAnneeAndIdInspire.
 	 * @param annee annee
 	 * @param idIris code Iris
