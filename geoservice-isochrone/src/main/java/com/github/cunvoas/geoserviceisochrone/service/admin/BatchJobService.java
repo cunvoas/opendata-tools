@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.locationtech.jts.geom.Geometry;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -46,9 +47,19 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service
 @Slf4j
-public class BatchJobService {
+public class BatchJobService implements DisposableBean{
 
 	private static final DateFormat DF =new SimpleDateFormat("yyyy-MM-dd_hh:mm:ss");
+	
+	private Boolean shutdownRequired = Boolean.FALSE;
+	private Boolean shutdownReady = Boolean.FALSE;
+	private Boolean jobRunning = Boolean.FALSE;
+	public void shutdown() {
+		this.shutdownRequired=Boolean.TRUE;
+	}
+	public Boolean shutdownReady() {
+		return shutdownReady;
+	}
 
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
@@ -139,10 +150,21 @@ public class BatchJobService {
 				}
 				jobs.add(job);
 				
+				if (this.shutdownRequired) {
+					break;
+				}
+				
+			}
+
+			if (this.shutdownRequired) {
+				break;
 			}
 		}
 		computeJobIrisRepository.saveAll(jobs);
-		
+
+		if (this.shutdownRequired) {
+			this.shutdownReady=Boolean.TRUE;
+		}
 	}
 	
 	/**
@@ -188,8 +210,10 @@ public class BatchJobService {
 				jobs.add(job);
 				
 			}
+
 		}
 		computeJobCarreRepository.saveAll(jobs);
+
 	}
 	
 
@@ -323,6 +347,11 @@ public class BatchJobService {
 	 */
 	@Scheduled(cron = "0 15 4 * * *")
 	public void recycleShapes() {
+		
+		if (this.shutdownRequired) {
+			return;
+		}
+		
 		Date newDate = new Date();
 		
 		Calendar cal = Calendar.getInstance();
@@ -360,11 +389,19 @@ public class BatchJobService {
 	 */
 	@Scheduled(fixedDelay = 400_000, initialDelay = 60_000)
 	public void processCarres() {
+
+		if (this.shutdownRequired) {
+			return;
+		}
+		
 		int pageSize=10;
 		
 		log.error("processCarres at {}", DF.format(new Date()));
 		
 		if (this.changeStatus(true)) {
+
+			this.jobRunning=Boolean.TRUE;
+			
 			Pageable page = Pageable.ofSize(pageSize);
 
 			// safe infinite loop, so make a limit
@@ -430,6 +467,9 @@ public class BatchJobService {
 					computeJobIrisRepository.save(irisJob);
 				}
 			}//while
+			
+
+			this.jobRunning=Boolean.FALSE;
 		}
 		this.changeStatus(false);
 	}
@@ -520,6 +560,17 @@ public class BatchJobService {
 				throw new IllegalArgumentException("Unexpected value: " + idx);
 		}
 		return theEnum;
+	}
+	
+	@Override
+	public void destroy() throws Exception {
+		log.error("Gracefull BatchJobService.destroy");
+		this.shutdown();
+		
+		while (this.jobRunning && !this.shutdownReady()) {
+			Thread.sleep(100L);
+		}
+		log.error("BatchJobService DONE");
 	}
 	
 }

@@ -34,9 +34,10 @@ public class IrisGeoJsonIntegratorParser {
 	/**
 	 * Parse INSPIRE geojson file.
 	 * 
-	 * @param fGeojson
+	 * @param fGeojson integration year
+	 * @param fGeojson geojson file
 	 */
-	public void parseAndSave(String fGeojson) {
+	public void parseAndSave(Integer annee, String fGeojson) {
 
 		String theLine = null;
 		BufferedReader br = null;
@@ -53,6 +54,7 @@ public class IrisGeoJsonIntegratorParser {
 			while ((theLine = br.readLine()) != null) {
 
 				IrisShape shape = this.processLine(theLine);
+				//shape.setAnnee(annee);
 				if (shape != null) {
 					shapes.add(shape);
 					i++;
