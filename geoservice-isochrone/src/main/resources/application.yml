@@ -3,12 +3,22 @@
 server:
   port: ${APP_PORT:8980}
   error.whitelabel.enabled: true
-
+  shutdown: graceful
+  shutdown.grace-period: 60s
+  
 spring:
   application.name: isochrone
   
-  task.scheduling.pool.size: 1
-  
+  # graceful mode
+  task:
+    scheduling:
+      pool.size: 1
+      shutdown.await-termination: true
+      shutdown.await-termination-period: 50s
+    execution:
+      shutdown.await-termination: true
+      shutdown.await-termination-period: 30s
+
   # Hardening
   server-header:
   servlet:
