@@ -356,7 +356,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 	}
 	
 	/**
-	 * computeCarreByComputeJob.
+	 * computeCarreByComputeJob entry point for batch.
 	 * @param job ComputeJob
 	 * @return true if done
 	 */
@@ -368,9 +368,9 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		Optional<IrisShape> oIris = irisShapeRepository.findById(job.getIris());
 		if (oIris.isPresent()) {
 			try {
-				IrisShape iris = oIris.get();
-				Boolean isDense = serviceOpenData.isDistanceDense(iris.getCodeInsee());
-				this.computeIrisShape(job, iris, isDense);
+				IrisShape irisShape = oIris.get();
+				Boolean isDense = serviceOpenData.isDistanceDense(irisShape.getCodeInsee());
+				this.computeIrisShape(job, irisShape, isDense);
 				ret = Boolean.TRUE;
 				
 			} catch (Exception e) {

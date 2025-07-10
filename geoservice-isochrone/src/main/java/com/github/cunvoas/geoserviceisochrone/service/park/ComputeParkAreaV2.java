@@ -156,9 +156,12 @@ public class ComputeParkAreaV2 {
 		// surface intersection algorithm
 		BigDecimal population = BigDecimal.ZERO;
 		for (IrisShape shapeIris : shapesIris) {
-			//TODO optim ici avec la surface en base.
-			Long lSurface = this.getSurface(shapeIris.getContour());
-			Double surfaceIris = lSurface.doubleValue();
+			
+			Double surfaceIris = shapeIris.getSurface();
+			if (surfaceIris==null) {
+				Long lSurface = this.getSurface(shapeIris.getContour());
+				surfaceIris = lSurface.doubleValue();
+			}
 			
 			Geometry parkOnCarre = shapeIris.getContour().intersection(park.getPolygon());
 			Long surfIntersect = getSurface(parkOnCarre);
