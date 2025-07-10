@@ -359,6 +359,8 @@ public class BatchJobService implements DisposableBean{
 		cal.add(Calendar.MINUTE, -15);
 		Date oldDate = cal.getTime();
 		
+		
+		//recycle carres
 		List<ComputeJob> jobs = computeJobCarreRepository.findOnErrorAndProcessed(oldDate);
 		if (!jobs.isEmpty()) {
 			log.warn("{} jobs runs incorrecly , new demande time is {}", jobs.size(), newDate);
@@ -370,6 +372,7 @@ public class BatchJobService implements DisposableBean{
 			}
 		}
 		
+		//recycle iris
 		List<ComputeIrisJob> irisJobs = computeJobIrisRepository.findOnErrorAndProcessed(oldDate);
 		if (!jobs.isEmpty()) {
 			log.warn("{} jobs runs incorrecly , new demande time is {}", jobs.size(), newDate);
@@ -383,12 +386,12 @@ public class BatchJobService implements DisposableBean{
 	}
 	
 	/**
-	 * scheduled task.
+	 * scheduled task for Carres & Iris.
 	 * @FIXME need to be smartest by hours.
 	 * fixedDelay = 400_000 few times more to process 10 squares
 	 */
 	@Scheduled(fixedDelay = 400_000, initialDelay = 60_000)
-	public void processCarres() {
+	public void processShapes() {
 
 		if (this.shutdownRequired) {
 			return;
@@ -396,7 +399,7 @@ public class BatchJobService implements DisposableBean{
 		
 		int pageSize=10;
 		
-		log.error("processCarres at {}", DF.format(new Date()));
+		log.error("processShapes at {}", DF.format(new Date()));
 		
 		if (this.changeStatus(true)) {
 
@@ -419,6 +422,7 @@ public class BatchJobService implements DisposableBean{
 				}
 				possibleNext = jobs!=null?jobs.size()==pageSize:false;
 				
+				// compute for CARRE
 				for (ComputeJob job : jobs) {
 					
 					// tag begin
@@ -439,7 +443,7 @@ public class BatchJobService implements DisposableBean{
 					computeJobCarreRepository.save(job);
 				}
 				
-				// same for IRIS
+				// compute for IRIS
 				List<ComputeIrisJob> irisJobs = null;
 				if (onDev()) {
 					irisJobs = computeJobIrisRepository.findByStatusOrderByDemandDesc(ComputeJobStatusEnum.TO_PROCESS, page);
@@ -564,13 +568,14 @@ public class BatchJobService implements DisposableBean{
 	
 	@Override
 	public void destroy() throws Exception {
-		log.error("Gracefull BatchJobService.destroy");
+		log.error("GracefulShutdown|DETECTED|BatchJobService.destroy");
 		this.shutdown();
 		
 		while (this.jobRunning && !this.shutdownReady()) {
+			log.error("GracefulShutdown|PROCESSING|BatchJobService.destroy");
 			Thread.sleep(100L);
 		}
-		log.error("BatchJobService DONE");
+		log.error("GracefulShutdown|READY2STOP|BatchJobService.destroy ");
 	}
 	
 }
