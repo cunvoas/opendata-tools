@@ -11,6 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Servlet for GCP warm-up.
+ * 
+ * In Server Engine, when the app is too slow to start, 
+ * it can be automatically killed by launcher.
+ * This component permits a good startup.
+ * 
  * @see https://cloud.google.com/appengine/docs/standard/go/configuring-warmup-requests
  * @author cunvoas
  */

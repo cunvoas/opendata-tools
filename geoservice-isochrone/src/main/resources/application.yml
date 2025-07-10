@@ -17,7 +17,7 @@ spring:
       shutdown.await-termination-period: 50s
     execution:
       shutdown.await-termination: true
-      shutdown.await-termination-period: 30s
+      shutdown.await-termination-period: 50s
 
   # Hardening
   server-header:
