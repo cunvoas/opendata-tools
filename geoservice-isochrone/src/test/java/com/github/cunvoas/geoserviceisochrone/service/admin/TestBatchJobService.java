@@ -12,14 +12,14 @@ class TestBatchJobService {
 	void testChangeStatus() {
 		BatchJobService tested = new BatchJobService();
 
-		Boolean ret = tested.changeStatus(true);
+		Boolean ret = tested.launchOrFinish(true);
 		assertEquals(true, ret, "first launch");
 		
-		ret = tested.changeStatus(true);
+		ret = tested.launchOrFinish(true);
 		assertEquals(false, ret, "block new launch");
 		
 
-		ret = tested.changeStatus(false);
+		ret = tested.launchOrFinish(false);
 		assertEquals(false, ret, "stop launch");
 		
 	}

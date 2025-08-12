@@ -53,13 +53,11 @@ public class BatchJobService implements DisposableBean{
 	
 	private Boolean shutdownRequired = Boolean.FALSE;
 	private Boolean shutdownReady = Boolean.FALSE;
-	private Boolean jobRunning = Boolean.FALSE;
+	private Boolean jobIsRunning=Boolean.FALSE;
 	public void shutdown() {
 		this.shutdownRequired=Boolean.TRUE;
 	}
-	public Boolean shutdownReady() {
-		return shutdownReady;
-	}
+	
 
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
@@ -266,32 +264,32 @@ public class BatchJobService implements DisposableBean{
 	}
 	
 	
-	private Boolean isRunning=false;
+	
 	/**
-	 * manage run at once.
-	 * @param toLaunch true is want to start
-	 * @return true id autorized
+	 * manage treatments without competition.
+	 * @param toLaunch true is want to start, false at finishing
+	 * @return true if Launch is autorized
 	 */
-	protected synchronized Boolean changeStatus(Boolean toLaunch) {
+	protected synchronized Boolean launchOrFinish(Boolean toLaunch) {
 		Boolean possibleLaunch = false;
 		log.info("changeStatus");
 		
 		// job is running 
-		if (isRunning) {
+		if (jobIsRunning) {
 			if (toLaunch) {
 				// start request
 				possibleLaunch = false;
 			} else {
 				// stop request
 				possibleLaunch = true;
-				isRunning=false;
+				jobIsRunning=false;
 			}
 		} else {
 			// job is stopped 
 			if (toLaunch) {
 				// start request
 				possibleLaunch = true;
-				isRunning=true;
+				jobIsRunning=true;
 			} else {
 				// stop request
 				possibleLaunch = false;
@@ -401,10 +399,8 @@ public class BatchJobService implements DisposableBean{
 		
 		log.error("processShapes at {}", DF.format(new Date()));
 		
-		if (this.changeStatus(true)) {
+		if (this.launchOrFinish(true)) {
 
-			this.jobRunning=Boolean.TRUE;
-			
 			Pageable page = Pageable.ofSize(pageSize);
 
 			// safe infinite loop, so make a limit
@@ -471,11 +467,9 @@ public class BatchJobService implements DisposableBean{
 					computeJobIrisRepository.save(irisJob);
 				}
 			}//while
-			
 
-			this.jobRunning=Boolean.FALSE;
 		}
-		this.changeStatus(false);
+		this.launchOrFinish(false);
 	}
 	
 	/**
@@ -568,14 +562,15 @@ public class BatchJobService implements DisposableBean{
 	
 	@Override
 	public void destroy() throws Exception {
-		log.error("GracefulShutdown|DETECTED|BatchJobService.destroy");
+		log.warn("SIGTERM detected");
 		this.shutdown();
 		
-		while (this.jobRunning && !this.shutdownReady()) {
-			log.error("GracefulShutdown|PROCESSING|BatchJobService.destroy");
+		log.warn("SIGTERM gracefull termination initiated");
+		while (this.jobIsRunning && !this.shutdownReady) {
+			log.info("SIGTERM gracefull termination is running");
 			Thread.sleep(100L);
 		}
-		log.error("GracefulShutdown|READY2STOP|BatchJobService.destroy ");
+		log.warn("SIGTERM gracefull termination done");
 	}
 	
 }

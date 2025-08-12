@@ -832,6 +832,37 @@ public class GeoMapServiceV2 {
     	return root;
 	}
 
+	/**
+	 * findAllIrisByArea.
+	 * @param annee year
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return GeoJson carre 
+	 */
+	public GeoJsonRoot findAllIrisByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
+    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	return this.findAllIrisByArea(polygon, annee);
+    }
+	
+	/**
+	 * findAllIrisByArea.
+	 * @param polygon Polygon
+	 * @param annee year
+	 * @return GeoJson carre 
+	 */
+	public GeoJsonRoot findAllIrisByArea(Polygon polygon, Integer annee) {
+		log.error("findAllIrisByArea(Polygon polygon, Integer annee {})", annee);
+		GeoJsonRoot root = null;
+    	if (polygon!=null) {
+	    	List<IrisShape> iris = irisShapeRepository.findIrisInMapArea(GeometryQueryHelper.toText(polygon));
+	    	root = findAllIrisByArea(iris, annee);
+    	}
+    	return root;
+    }
+    
+	
     /**
      * GET ALL IRIS in the map.
 	 * @param com2co CommunauteCommune
