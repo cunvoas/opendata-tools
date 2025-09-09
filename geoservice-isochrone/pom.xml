@@ -27,7 +27,7 @@
 		
 		
 		<!--<hibernate.version>6.6.1.Final</hibernate.version>-->
-		<hibernate.version>6.6.24.Final</hibernate.version>
+		<hibernate.version>6.6.25.Final</hibernate.version>
 
         
     </properties>
