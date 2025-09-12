@@ -7,7 +7,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisData;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisId;
 
 /**
- * Spring JPA repository.
+ * Repository Spring Data JPA pour l'accès aux données IRIS (découpage statistique INSEE).
  * Repo for IrisData
  */
 @Repository

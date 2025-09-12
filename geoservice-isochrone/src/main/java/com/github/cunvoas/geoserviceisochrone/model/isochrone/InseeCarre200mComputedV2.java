@@ -11,7 +11,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Model InseeCarre200mComputed.
+ * Modèle représentant un carreau de 200m calculé (version 2).
+ * <p>
+ * Contient les informations démographiques et de surface liées à l'accès aux parcs,
+ * ainsi que des indicateurs OMS et de durabilité.
+ * </p>
+ * 
+ * @author 
  */
 @Data
 @EqualsAndHashCode(of = {"annee", "idInspire"})

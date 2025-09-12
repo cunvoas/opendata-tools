@@ -338,6 +338,11 @@ export default {
   },
   watch: {
     location: { 
+      /**
+       * Vue watcher handler for location changes.
+       * Triggered when the observed location property changes.
+       * @param {Object} newLocation - The updated location object.
+       */
       handler(newLocation) {
         //console.log("location handler= "+JSON.stringify(newLocation));
         if (newLocation) {
@@ -450,6 +455,13 @@ export default {
 
       }
     },
+    /**
+     * Fetches commune information based on the provided latitude and longitude.
+     * 
+     * @param {number} lat - The latitude of the location.
+     * @param {number} lon - The longitude of the location.
+     * @returns {Promise<Object>} A promise that resolves to the commune data.
+     */
     async fetchCommune (lat, lon){
       try {
 
@@ -496,6 +508,14 @@ export default {
           console.error('Error fetching addresses:', error);
         }
     },
+    /**
+     * Debounced function to fetch commune data based on latitude and longitude.
+     * Prevents excessive API calls by delaying execution until user input stabilizes.
+     *
+     * @param {number} lat - The latitude coordinate.
+     * @param {number} lon - The longitude coordinate.
+     * @returns {Promise<void>} Resolves when the commune data has been fetched.
+     */
     debouncedFetchCommune: debounce(async function(lat, lon) {
       await this.fetchCommune(lat, lon);
     }, 400), // 500ms debounce delay
@@ -505,6 +525,14 @@ export default {
     },
 
 
+    /**
+     * Debounced function to fetch isochrone data from the specified URL.
+     * Executes the provided callback with the fetched data once the request completes.
+     * Useful for limiting the frequency of API calls when user input changes rapidly.
+     *
+     * @param {string} url - The endpoint URL to fetch isochrone data from.
+     * @param {Function} callback - The function to execute with the fetched data.
+     */
     debouncedFetchIsochrone: debounce(async function(url, callback) {
       try {
         console.log("debouncedFetchIsochrone: "+url);
@@ -528,6 +556,14 @@ export default {
     },
 
 
+  /**
+   * Debounced function to fetch park data from the specified URL.
+   * Executes the provided callback with the fetched data.
+   * Uses debounce to limit the rate of API calls.
+   *
+   * @param {string} url - The endpoint URL to fetch park data from.
+   * @param {Function} callback - Function to execute with the fetched data.
+   */
   debouncedFetchParcs: debounce(async function(url, callback) {
     try {
       console.log("debouncedFetchParc: "+url);
@@ -537,6 +573,11 @@ export default {
       console.error('Error fetching GeoJSON:', error);
     }
   }, 380), // debounce delay
+  /**
+   * Asynchronously fetches GeoJSON data for parks based on the provided query parameters.
+   * @param {Object} qryPrms - The query parameters used to filter or request specific park data.
+   * @returns {Promise<Object>} The fetched GeoJSON data for parks.
+   */
   async callGeoJsonParcs(qryPrms) {
     const rootUrl = this.getRootUrl();
     let callUrl='';
@@ -551,6 +592,13 @@ export default {
   },
 
 
+    /**
+     * Debounced function to fetch data from the specified URL and execute a callback.
+     * This method is wrapped with a debounce to limit the rate of execution.
+     *
+     * @param {string} url - The endpoint URL to fetch data from.
+     * @param {Function} callback - The function to execute with the fetched data.
+     */
     debouncedFetchCarre: debounce(async function(url, callback) {
       try {
         console.log("debouncedFetchCarre: "+url);
@@ -560,6 +608,12 @@ export default {
         console.error('Error fetching GeoJSON:', error);
       }
     }, 400), // 400ms debounce delay
+    /**
+     * Asynchronously calls a service to retrieve GeoJSON data for carres (grid squares) based on the provided query parameters.
+     * 
+     * @param {Object} qryPrms - The query parameters used to request GeoJSON carres data.
+     * @returns {Promise<Object>} - A promise that resolves to the GeoJSON data for carres.
+     */
     async callGeoJsonCarres(qryPrms) {
       const rootUrl = this.getRootUrl();
       let callUrl='';
@@ -573,6 +627,14 @@ export default {
       });
     },
 
+    /**
+     * Debounced function to fetch cadastre data from the specified URL.
+     * Executes the provided callback with the fetched data once the request completes.
+     * Uses debounce to limit the frequency of API calls.
+     *
+     * @param {string} url - The endpoint URL to fetch cadastre data from.
+     * @param {Function} callback - The function to execute with the fetched data.
+     */
     debouncedFetchCadastre: debounce(async function(url, callback) {
       try {
         console.log("debouncedFetchCadastre: "+url);
@@ -582,6 +644,12 @@ export default {
         console.error('Error fetching GeoJSON:', error);
       }
     }, 450), // debounce delay
+    /**
+     * Asynchronously calls the GeoJSON Cadastre service with the provided query parameters.
+     * 
+     * @param {Object} qryPrms - The query parameters to send to the GeoJSON Cadastre service.
+     * @returns {Promise<Object>} The response data from the GeoJSON Cadastre service.
+     */
     async callGeoJsonCadastre(qryPrms) {
       const rootUrl = this.getRootUrl();
       let callUrl='';
@@ -596,6 +664,10 @@ export default {
     },
 
   },
+  /**
+   * Vue lifecycle hook called after the component has been mounted to the DOM.
+   * Used here to add custom HTML content to the Leaflet control element.
+   */
   mounted() {      // Add custom HTML content to the l-control
       const customControl = document.getElementById('customControl');
       if (customControl) {
@@ -603,6 +675,11 @@ export default {
       }
   },
   computed: {
+    /**
+     * Retrieves and displays detailed information about parks within the map area.
+     * Typically called after isochrone calculation to show relevant park details on the map.
+     * May involve fetching data from an API or filtering existing park data.
+     */
     detailParcs() {
       return {
         onEachFeature: this.onDetailPark,

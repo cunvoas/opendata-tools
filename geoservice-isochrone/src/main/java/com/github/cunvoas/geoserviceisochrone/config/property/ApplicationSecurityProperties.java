@@ -10,7 +10,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Setup for password factory.
+ * Propriétés de configuration de sécurité de l’application.
+ * Gère les paramètres liés à l’authentification, au chiffrement et à la sécurité des mots de passe.
  */
 @Getter
 @Setter

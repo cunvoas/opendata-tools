@@ -12,7 +12,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Model Cadastre.
+ * Représente une entité cadastrale correspondant à une commune.
+ * Contient les informations principales du cadastre, y compris la géométrie.
  */
 @Data
 @Entity(name = "cadastre")
@@ -20,17 +21,37 @@ import lombok.EqualsAndHashCode;
 public class Cadastre {
 	@Id
 	@Column(name="id_insee", length=5)
+	/**
+	 * Code INSEE de la commune.
+	 */
 	private String idInsee;
 	@Column(name="nom", length=50)
+	/**
+	 * Nom de la commune.
+	 */
 	private String nom;
 	@Column(name="created")
+	/**
+	 * Date de création de l'entrée.
+	 */
 	private Date created;
 	@Column(name="updated")
+	/**
+	 * Date de mise à jour de l'entrée.
+	 */
 	private Date updated;
 	
 	@Column(name="geo_shape", columnDefinition = "geometry(MultiPolygon,4326)")
+	/**
+	 * Géométrie du cadastre (MultiPolygon).
+	 */
     private Geometry geoShape;
 
+	/**
+	 * Calcule et retourne le centre géométrique de la commune.
+	 *
+	 * @return le point central (Point) ou null si la géométrie n'est pas définie
+	 */
 	public Point getCenter() {
 		if (geoShape!=null) {
 			return geoShape.getInteriorPoint();

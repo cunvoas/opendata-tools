@@ -24,10 +24,9 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 
 
 /**
- * @author cunvoas
- * @see https://commons.apache.org/proper/commons-csv/user-guide.html
- * 
- * @see https://opendata.roubaix.fr/explore/dataset/liste-des-jardins-familiaux-et-partages-de-roubaix/api/
+ * Analyseur de fichiers CSV pour les parcs et jardins de Nantes.
+ * Permet d'extraire les informations des espaces verts à partir d'un fichier CSV.
+ * Utilise les entêtes définies dans l'énumération CsvHeaders.
  */
 @Component
 public class CsvNantesParkJardinParser {
@@ -80,10 +79,10 @@ public class CsvNantesParkJardinParser {
 	
 
 	/**
-	 * Parse CSV.
-	 * @param csvFile
-	 * @return
-	 * @throws IOException
+	 * Analyse le fichier CSV fourni et retourne la liste des parcs et jardins extraits.
+	 * @param csvFile Fichier CSV à analyser
+	 * @return Liste des objets ParcEtJardin extraits
+	 * @throws IOException en cas d'erreur de lecture du fichier
 	 */
 	public List<ParcEtJardin> parseCsv(File csvFile) throws IOException {
 		List<ParcEtJardin> parks = new ArrayList<>();

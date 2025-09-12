@@ -23,7 +23,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * REsT Controler for adress dropdown.
+ * Contrôleur REST pour la recherche d'adresses dans les listes déroulantes.
+ * Fournit un point d'accès pour rechercher des adresses à partir d'une ville et d'une requête utilisateur.
  */
 @RestController
 @RequestMapping("/mvc/ajax/dropdown")
@@ -40,10 +41,11 @@ public class AdressRestControler {
 	
 
 	 /**
-	 * search.
-	 * @param idCity  id City
-	 * @param query search query
-	 * @return list of dto
+	 * Recherche d'adresses à partir d'un identifiant de ville et d'une chaîne de recherche.
+	 *
+	 * @param idCity Identifiant de la ville (optionnel)
+	 * @param query Chaîne de recherche (optionnelle)
+	 * @return Liste de DTO correspondant aux adresses trouvées
 	 */
 	@GetMapping("/search_adress")
 	 public List<SearchListDto> searchAdress(
@@ -80,9 +82,10 @@ public class AdressRestControler {
 //    }
     
     /**
-     * mapper from BO to dto list .
-     * @param bean BO
-     * @return list of dto
+     * Convertit un objet métier AdressBo en DTO pour l'affichage dans une liste déroulante.
+     *
+     * @param bean Objet métier représentant une adresse
+     * @return DTO pour la liste déroulante
      */
     private SearchListDto mapToDto(AdressBo bean) {
         return SearchListDto.builder()
@@ -95,9 +98,10 @@ public class AdressRestControler {
     }
     
     /**
-     * extract point value.
-     * @param point geo point
-     * @return formated sting
+     * Extrait la valeur d'un point géographique sous forme de chaîne formatée.
+     *
+     * @param point Point géographique
+     * @return Chaîne formatée "lon|<longitude>|lat|<latitude>"
      */
     private String getValue(Point point) {
     	StringBuilder sb = new StringBuilder();
@@ -107,9 +111,10 @@ public class AdressRestControler {
     }
     
     /**
-     * normaliser.
-     * @param q query request
-     * @return normalized query
+     * Normalise une chaîne de requête (suppression des accents, mise en majuscules).
+     *
+     * @param q Requête utilisateur
+     * @return Chaîne normalisée
      */
     private String normalise(String q) {
     	if (q!=null) {

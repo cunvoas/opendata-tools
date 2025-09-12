@@ -22,7 +22,10 @@ import com.google.common.hash.Hashing;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Business Service impl.
+ * Service métier pour la gestion des photos de parcs.
+ * <p>
+ * Ce service fournit des méthodes pour la sauvegarde, la gestion et l'extraction des métadonnées des photos associées aux parcs.
+ * Les dépendances sont injectées via l'annotation @Autowired de Spring.
  */
 @Service
 @Slf4j

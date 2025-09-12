@@ -10,25 +10,27 @@ import jakarta.servlet.annotation.WebListener;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Servlet for GCP warm-up.
- * 
- * In Server Engine, when the app is too slow to start, 
- * it can be automatically killed by launcher.
- * This component permits a good startup.
- * 
+ * Servlet de warmup pour GCP.
+ * <p>
+ * Dans Server Engine, si l'application démarre trop lentement, elle peut être automatiquement arrêtée par le lanceur.
+ * Ce composant permet d'assurer un bon démarrage.
+ * </p>
  * @see https://cloud.google.com/appengine/docs/standard/go/configuring-warmup-requests
- * @author cunvoas
  */
 @Component
 @WebListener
 @Slf4j
 public class WarmupListener implements ServletContextListener  {
 
+	/**
+	 * Bean de warmup injecté pour vérifier l'initialisation du contexte.
+	 */
 	@Autowired
 	private String warmup;
 
 	/**
-	 * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
+	 * Méthode appelée lors de l'initialisation du contexte servlet.
+	 * @param sce événement d'initialisation du contexte
 	 */
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
@@ -47,7 +49,8 @@ public class WarmupListener implements ServletContextListener  {
 	}
 
 	/**
-	 * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
+	 * Méthode appelée lors de la destruction du contexte servlet.
+	 * @param sce événement de destruction du contexte
 	 */
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {

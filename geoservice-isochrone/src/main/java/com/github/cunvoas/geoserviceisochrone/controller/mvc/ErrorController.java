@@ -9,7 +9,11 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Error controler advice.
+ * Contrôleur de gestion des erreurs (advice).
+ * <p>
+ * Cette classe permet d'intercepter les exceptions non gérées dans l'application MVC
+ * et d'afficher une page d'erreur personnalisée avec le message d'erreur et le statut HTTP.
+ * </p>
  */
 //@ControllerAdvice
 @Slf4j
@@ -30,10 +34,13 @@ public class ErrorController  extends ResponseEntityExceptionHandler{
 
 
 	/**
-	 * exception controler.
-	 * @param throwable the exception
-	 * @param model form 
-	 * @return error page
+	 * Gestionnaire d'exception générique.
+	 * <p>
+	 * Capture toute exception non gérée et affiche la page d'erreur avec le message associé.
+	 * </p>
+	 * @param throwable l'exception levée
+	 * @param model le modèle pour la vue
+	 * @return la vue "error"
 	 */
 	@ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

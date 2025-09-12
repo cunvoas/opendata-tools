@@ -12,6 +12,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisId;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisShape;
 
 /**
+ * Repository Spring Data JPA pour l'accès aux formes géographiques IRIS.
  * Spring JPA repository.
  * Repo for IrisShape
  */

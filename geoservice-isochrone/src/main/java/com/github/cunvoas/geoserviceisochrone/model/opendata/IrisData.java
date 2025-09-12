@@ -10,7 +10,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Model Iris.
+ * Représente les données démographiques et sociales d'un IRIS (Ilots Regroupés pour l'Information Statistique).
+ * Permet de décrire la population, sa structure par âge et sexe, ainsi que des indicateurs socio-économiques à l'échelle fine.
  * @see https://www.insee.fr/fr/statistiques/7704076#dictionnaire
  */
 @Data

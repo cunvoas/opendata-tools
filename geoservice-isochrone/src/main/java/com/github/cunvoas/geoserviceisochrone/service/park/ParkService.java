@@ -47,7 +47,11 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Business Service impl.
+ * Service métier pour la gestion des parcs.
+ * <p>
+ * Ce service fournit des méthodes pour la création, la mise à jour, l'import/export,
+ * la gestion des entrées de parcs, et l'association avec les types de parcs et les communes.
+ * Les dépendances sont injectées via l'annotation @Autowired de Spring.
  */
 @Service
 @Slf4j

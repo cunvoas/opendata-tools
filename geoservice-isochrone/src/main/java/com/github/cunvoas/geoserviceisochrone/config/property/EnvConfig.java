@@ -5,7 +5,8 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.FileSystemResource;
 
 /**
- * setup environment file.
+ * Configuration pour charger un fichier d’environnement externe (secret.env).
+ * Permet de surcharger les propriétés de l’application avec un fichier spécifique.
  */
 //@Configuration
 public class EnvConfig {

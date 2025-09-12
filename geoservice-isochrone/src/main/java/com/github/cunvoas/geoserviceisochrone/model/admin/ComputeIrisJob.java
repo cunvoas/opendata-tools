@@ -12,7 +12,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Model ComputeIrisJob.
+ * Représente un travail de calcul pour un IRIS donné et une année.
+ * Permet de suivre l'état d'avancement du traitement pour chaque IRIS.
  */
 @Data
 @EqualsAndHashCode(of = {"annee", "iris"})
@@ -27,19 +28,34 @@ public class ComputeIrisJob {
 	@Column(name="annee",length=4)
     private Integer annee;
 	
+	/**
+	 * Identifiant IRIS.
+	 */
 	@Id
 	@Column(name="iris",length=30)
 	private String iris;
 	
+	/**
+	 * Date de demande du traitement.
+	 */
 	@Column(name="demand")
 	private Date demand = new Date();
 
+	/**
+	 * Date de traitement effectif.
+	 */
 	@Column(name="processed")
 	private Date processed;
 
+	/**
+	 * Statut du traitement.
+	 */
 	@Column(name="status")
 	private ComputeJobStatusEnum status = ComputeJobStatusEnum.TO_PROCESS;
 
+	/**
+	 * Code INSEE de la commune.
+	 */
 	@Column(name="insee",length=5)
 	private String codeInsee;
 }

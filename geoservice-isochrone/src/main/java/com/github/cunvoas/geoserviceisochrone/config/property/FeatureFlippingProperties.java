@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * Propriétés pour l’activation ou la désactivation de fonctionnalités (feature flags).
+ * Permet de contrôler dynamiquement les services proposés par l’application.
+ * 
  * setup vars for Feature flag.
  * @author cunvoas
  */

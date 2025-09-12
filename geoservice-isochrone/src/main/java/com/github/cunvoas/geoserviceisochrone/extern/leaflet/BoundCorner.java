@@ -7,15 +7,21 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 /**
- * DTO.
+ * Représente un coin d'une zone géographique, défini par une latitude et une longitude.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({ "lat", "lng" })
 @Data
 public class BoundCorner {
 
+	/**
+	 * Latitude du coin.
+	 */
 	@JsonProperty("lat")
 	public Double lat;
+	/**
+	 * Longitude du coin.
+	 */
 	@JsonProperty("lng")
 	public Double lng;
 

@@ -994,6 +994,13 @@
         
         editMap.setView(L.latLng(lat,lon));
     }
+
+	 // locate client from browser location feature
+	 function locateMe() {
+	     if (navigator.geolocation) {
+	        navigator.geolocation.getCurrentPosition(showPosition);
+	     }
+	 }
     
     // https://gis.stackexchange.com/questions/439672/checking-whether-a-polygon-drawn-with-leaflet-geoman-plugin-is-valid
     $(document).ready(function(){

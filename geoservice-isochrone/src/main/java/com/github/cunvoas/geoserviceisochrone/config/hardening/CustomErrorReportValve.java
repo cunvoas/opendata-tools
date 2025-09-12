@@ -15,6 +15,10 @@ import org.springframework.http.MediaType;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * Valve Tomcat personnalisée pour la gestion des rapports d’erreur HTTP.
+ * Permet de contrôler la réponse envoyée au client en cas d’erreur serveur.
+ * Utile pour renforcer la sécurité et masquer les détails techniques.
+ *
  * @see https://www.springcloud.io/post/2022-07/spring-boot-hardening/#gsc.tab=0
  */
 @Slf4j

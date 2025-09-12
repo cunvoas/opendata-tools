@@ -9,7 +9,8 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 
 /**
- * Spring JPA repository.
+ * Repository Spring Data JPA pour l'accès aux régions.
+ * Permet de rechercher par nom ou de lister toutes les régions.
  */
 @Repository
 public interface RegionRepository extends JpaRepository<Region, Long>{

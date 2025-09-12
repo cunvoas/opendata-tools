@@ -11,7 +11,8 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 
 /**
- * Spring JPA repository.
+ * Repository Spring Data JPA pour l'accès aux parcs de préfecture.
+ * Permet de rechercher par nom ou ville.
  * @see https://postgis.net/docs/ST_Distance.html
  */
 @Repository

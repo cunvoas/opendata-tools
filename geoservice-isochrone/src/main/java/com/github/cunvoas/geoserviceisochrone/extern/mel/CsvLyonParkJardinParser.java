@@ -30,6 +30,10 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 
 
 /**
+ * Analyseur de fichiers CSV pour les parcs et jardins de Lyon.
+ * Permet d'extraire les informations des espaces verts à partir d'un fichier CSV.
+ * Utilise les entêtes définies dans l'énumération CsvHeaders.
+ * 
  * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  * 
@@ -46,7 +50,7 @@ public class CsvLyonParkJardinParser {
 	
 
 	/**
-	 * CSV Header definition for easier mods.
+	 * Énumération des entêtes de colonnes du CSV pour faciliter la maintenance.
 	 * @author cunvoas
 	 */
 	//uid	nom	num	numvoie	voie	codepost	commune	code_insee	surf_tot_m2	clos
@@ -92,10 +96,10 @@ public class CsvLyonParkJardinParser {
 	
 
 	/**
-	 * Parse CSV.
-	 * @param csvFile
-	 * @return
-	 * @throws IOException
+	 * Analyse le fichier CSV fourni et retourne la liste des parcs et jardins extraits.
+	 * @param csvFile Fichier CSV à analyser
+	 * @return Liste des objets ParcEtJardin extraits
+	 * @throws IOException en cas d'erreur de lecture du fichier
 	 */
 	public List<ParcEtJardin> parseCsv(File csvFile) throws IOException {
 		List<ParcEtJardin> parks = new ArrayList<>();

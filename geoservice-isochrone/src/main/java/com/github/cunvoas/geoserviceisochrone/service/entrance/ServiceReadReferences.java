@@ -41,7 +41,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Business Service impl.
+ * Service métier permettant la lecture et l'accès aux différentes références du domaine (régions, communes, parcs, etc.).
+ * Fournit des méthodes pour récupérer les entités principales utilisées dans l'application à partir des repositories associés.
  */
 @Service
 @Slf4j
@@ -75,26 +76,26 @@ public class ServiceReadReferences {
 	
 	
 	/**
-	 * getRegion.
-	 * @return list Region
+	 * Retourne la liste des régions triées par nom.
+	 * @return liste des régions
 	 */
 	public List<Region> getRegion() {
 		return regionRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
 	}
 	
 	/**
-	 * getParkAreaComputedById.
-	 * @param id ParkAreaComputed
-	 * @return ParkAreaComputed
+	 * Retourne une entité ParkAreaComputed par son identifiant pour l'année courante.
+	 * @param id identifiant de ParkAreaComputed
+	 * @return ParkAreaComputed ou null si non trouvé
 	 */
 	public ParkAreaComputed getParkAreaComputedById(Long id) {
 		return this.getParkAreaComputedById(id, applicationBusinessProperties.getDerniereAnnee());
 	}
 	/**
-	 * getParkAreaComputedById.
-	 * @param id ParkAreaComputed
-	 * @param annee year
-	 * @return ParkAreaComputed
+	 * Retourne une entité ParkAreaComputed par son identifiant et une année donnée.
+	 * @param id identifiant de ParkAreaComputed
+	 * @param annee année recherchée
+	 * @return ParkAreaComputed ou null si non trouvé
 	 */
 	public ParkAreaComputed getParkAreaComputedById(Long id, Integer annee) {
 		Optional<ParkAreaComputed> opt = parkAreaComputedRepository.findByIdAndAnnee(id, annee);
@@ -104,9 +105,9 @@ public class ServiceReadReferences {
 		return null;
 	}
 	/**
-	 * getParkAreaById.
-	 * @param id ParkArea
-	 * @return ParkArea
+	 * Retourne une entité ParkArea par son identifiant.
+	 * @param id identifiant de ParkArea
+	 * @return ParkArea ou null si non trouvé
 	 */
 	public ParkArea getParkAreaById(Long id) {
 		Optional<ParkArea> opt = parkAreaRepository.findById(id);
@@ -116,9 +117,9 @@ public class ServiceReadReferences {
 		return null;
 	}
 	/**
-	 * getByIdParcEtJardin.
-	 * @param id ParcEtJardin
-	 * @return ParkArea
+	 * Retourne une entité ParkArea à partir de l'identifiant d'un ParcEtJardin.
+	 * @param id identifiant de ParcEtJardin
+	 * @return ParkArea ou null si non trouvé
 	 */
 	public ParkArea getByIdParcEtJardin(Long id) {
 		return  parkAreaRepository.findByIdParcEtJardin(id);
@@ -126,34 +127,34 @@ public class ServiceReadReferences {
 	
 	
 	/**
-	 * getCommunauteCommune.
-	 * @return list CommunauteCommune
+	 * Retourne la liste des communautés de communes triées par nom.
+	 * @return liste des communautés de communes
 	 */
 	public List<CommunauteCommune> getCommunauteCommune() {
 		return communauteCommuneRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
 	}
 	/**
-	 * getCommunauteByRegionId.
-	 * @param id Region
-	 * @return list CommunauteCommune
+	 * Retourne la liste des communautés de communes d'une région donnée.
+	 * @param id identifiant de la région
+	 * @return liste des communautés de communes
 	 */
 	public List<CommunauteCommune> getCommunauteByRegionId(Long id) {
 		return communauteCommuneRepository.findByRegionId(id);
 	}
 	
 	/**
-	 * getCityByRegionId.
-	 * @param id Region
-	 * @return list City
+	 * Retourne la liste des villes d'une région donnée.
+	 * @param id identifiant de la région
+	 * @return liste des villes
 	 */
 	public List<City> getCityByRegionId(Long id) {
 		return cityRepository.findByRegionId(id);
 	}
 	
 	/**
-	 * getCityById.
-	 * @param id City
-	 * @return City
+	 * Retourne une ville par son identifiant.
+	 * @param id identifiant de la ville
+	 * @return la ville ou null si non trouvée
 	 */
 	public City getCityById(Long id) {
 		Optional<City> opt=cityRepository.findById(id);
@@ -165,18 +166,18 @@ public class ServiceReadReferences {
 
 
 	/**
-	 * getCity.
-	 * @param id City
-	 * @return City
+	 * Retourne une référence de ville par son identifiant (sans chargement complet).
+	 * @param id identifiant de la ville
+	 * @return la ville
 	 */
 	public City getCity(Long id) {
 		return cityRepository.getReferenceById(id);
 	}
 	
 	/**
-	 * getCoordinate.
-	 * @param id Coordinate
-	 * @return Coordinate
+	 * Retourne les coordonnées d'une ville à partir de son identifiant.
+	 * @param id identifiant de la ville
+	 * @return coordonnées (longitude, latitude) ou null si non trouvées
 	 */
 	public Coordinate getCoordinate(Long id) {
 		Coordinate location=null;
@@ -214,38 +215,38 @@ public class ServiceReadReferences {
 	
 	
 	/**
-	 * getCityByCommunauteCommuneId.
-	 * @param id CommunauteCommune
-	 * @return list City
+	 * Retourne la liste des villes d'une communauté de communes.
+	 * @param id identifiant de la communauté de communes
+	 * @return liste des villes
 	 */
 	public List<City> getCityByCommunauteCommuneId(Long id) {
 		return cityRepository.findByCommunauteCommuneId(id);
 	}
 
 	/**
-	 * getParcEtJardinByCityId.
-	 * @param id City
-	 * @return list ParcEtJardin
+	 * Retourne la liste des parcs et jardins d'une ville.
+	 * @param id identifiant de la ville
+	 * @return liste des parcs et jardins
 	 */
 	public List<ParcEtJardin> getParcEtJardinByCityId(Long id) {
 		return parkJardinRepository.findByCityId(id);
 	}
 	/**
-	 * getParcEtJardinByCityId.
-	 * @param idCommune City
-	 * @param pageable page
-	 * @return list ParcEtJardin
+	 * Retourne une page de parcs et jardins d'une ville.
+	 * @param idCommune identifiant de la ville
+	 * @param pageable pagination
+	 * @return page de parcs et jardins
 	 */
 	public Page<ParcEtJardin> getParcEtJardinByCityId(Long idCommune, Pageable pageable) {
 		return parkJardinRepository.findByCityId(idCommune, pageable);
 	}
 	
 	/**
-	 * getParcEtJardinByComm2coId.
-	 * @param idComm2co CommunauteCommune
-	 * @param parkCase use case
-	 * @param pageable page
-	 * @return list ParcEtJardin
+	 * Retourne une page de parcs et jardins d'une communauté de communes selon le cas d'usage.
+	 * @param idComm2co identifiant de la communauté de communes
+	 * @param parkCase cas d'usage (merge, compute, ...)
+	 * @param pageable pagination
+	 * @return page de parcs et jardins
 	 */
 	public Page<ParcEtJardin> getParcEtJardinByComm2coId(Long idComm2co, String parkCase, Pageable pageable) {
 		Page<ParcEtJardin> rets = null;
@@ -261,11 +262,11 @@ public class ServiceReadReferences {
 		return rets;
 	}
 	/**
-	 * getParcEtJardinByCityId.
-	 * @param id city
-	 * @param parkCase use case
-	 * @param pageable page
-	 * @return list ParcEtJardin
+	 * Retourne une page de parcs et jardins d'une ville selon le cas d'usage.
+	 * @param id identifiant de la ville
+	 * @param parkCase cas d'usage (merge, compute, ...)
+	 * @param pageable pagination
+	 * @return page de parcs et jardins
 	 */
 	public Page<ParcEtJardin> getParcEtJardinByCityId(Long id, String parkCase, Pageable pageable) {
 		if ("merge".equalsIgnoreCase(parkCase)) {
@@ -278,9 +279,9 @@ public class ServiceReadReferences {
 	}
 	
 	/**
-	 * getParcEtJardinById.
-	 * @param id ParcEtJardin
-	 * @return ParcEtJardin
+	 * Retourne un parc ou jardin par son identifiant.
+	 * @param id identifiant du parc ou jardin
+	 * @return ParcEtJardin ou null si non trouvé
 	 */
 	public ParcEtJardin getParcEtJardinById(Long id) {
 		Optional<ParcEtJardin> opt=parkJardinRepository.findById(id);
@@ -291,9 +292,9 @@ public class ServiceReadReferences {
 	}
 
 	/**
-	 * getParcPrefectureById.
-	 * @param id ParcPrefecture
-	 * @return ParcPrefecture
+	 * Retourne un parc préfectoral par son identifiant.
+	 * @param id identifiant du parc préfectoral
+	 * @return Optional contenant le parc préfectoral ou vide si non trouvé
 	 */
 	public Optional<ParcPrefecture> getParcPrefectureById(Long id) {
 		Optional<ParcPrefecture> opt=parcPrefectureRepository.findById(id);
@@ -301,9 +302,9 @@ public class ServiceReadReferences {
 	}
 	
 	/**
-	 * getParcPrefectureByParcEtJardinId.
-	 * @param id  ParcEtJardin
-	 * @return ParcPrefecture
+	 * Retourne un parc préfectoral à partir de l'identifiant d'un parc ou jardin.
+	 * @param id identifiant du parc ou jardin
+	 * @return ParcPrefecture ou null si non trouvé
 	 */
 	public ParcPrefecture getParcPrefectureByParcEtJardinId(Long id) {
 		List<ParcPrefecture> lst=parcPrefectureRepository.findByParcEtJardinId(id);
@@ -314,17 +315,17 @@ public class ServiceReadReferences {
 	}
 
 	/**
-	 * getEntranceByParkId.
-	 * @param id Park
-	 * @return list ParkEntrance
+	 * Retourne la liste des entrées d'un parc à partir de son identifiant.
+	 * @param id identifiant du parc
+	 * @return liste des entrées du parc
 	 */
 	public List<ParkEntrance> getEntranceByParkId(Long id) {
 		return parkEntranceRepository.findByParkId(id);
 	}
 	/**
-	 * getEntranceById.
-	 * @param id ParkEntrance
-	 * @return ParkEntrance
+	 * Retourne une entrée de parc par son identifiant.
+	 * @param id identifiant de l'entrée
+	 * @return ParkEntrance ou null si non trouvé
 	 */
 	public ParkEntrance getEntranceById(Long id) {
 		Optional<ParkEntrance> opt=parkEntranceRepository.findById(id);
@@ -336,8 +337,8 @@ public class ServiceReadReferences {
 	}
 	
 	/**
-	 * getParcSource.
-	 * @return list enum
+	 * Retourne la liste des sources de parcs disponibles (enum).
+	 * @return liste des sources de parcs
 	 */
 	public List<ParcSourceEnum> getParcSource() {
 		List<ParcSourceEnum> l = new ArrayList<>();

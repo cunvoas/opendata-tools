@@ -1,7 +1,14 @@
 package com.github.cunvoas.geoserviceisochrone.model.opendata;
 	
 /**
- * Enum Source du parc.
+ * Enumération des sources de données pour les parcs.
+ * <p>
+ * Permet d'identifier l'origine des données :
+ * <ul>
+ *   <li>Opendata</li>
+ *   <li>Préfecture</li>
+ *   <li>Aut'MEL</li>
+ * </ul>
  */
 public enum ParcSourceEnum {
 	OPENDATA("opendata"),

@@ -7,12 +7,18 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 
 /**
- * Comparator for sort.
+ * Comparateur de géométries basé sur le centroïde.
+ * Permet de trier des objets Geometry selon la position de leur centroïde (coordonnées X puis Y).
  */
 public class GeometryComparator implements Comparator<Geometry> {
 	
 	/**
-	 * @see java.lang.Comparable.compareTo(java.lang.Object)
+	 * Compare deux objets Geometry selon la position de leur centroïde.
+	 * Si l'un des objets est null, il est considéré comme inférieur ou supérieur selon le cas.
+	 *
+	 * @param g0 première géométrie à comparer
+	 * @param g1 seconde géométrie à comparer
+	 * @return un entier négatif, nul ou positif selon l'ordre des centroïdes
 	 */
 	@Override
 	public int compare(Geometry g0, Geometry g1) {

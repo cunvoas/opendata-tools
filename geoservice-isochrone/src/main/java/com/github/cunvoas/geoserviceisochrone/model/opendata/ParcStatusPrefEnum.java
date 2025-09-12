@@ -1,7 +1,16 @@
 package com.github.cunvoas.geoserviceisochrone.model.opendata;
 	
 /**
- * Enum Source du parc.
+ * Enumération des statuts d'un parc issu de la préfecture.
+ * <p>
+ * Permet de qualifier l'état d'un parc selon la préfecture :
+ * <ul>
+ *   <li>Pas de correspondance</li>
+ *   <li>À qualifier</li>
+ *   <li>Annulé</li>
+ *   <li>Validé</li>
+ *   <li>Traité</li>
+ * </ul>
  */
 public enum ParcStatusPrefEnum {
 	NO_MATCH("NO_MATCH"), 	  // 0 no match with opendata park

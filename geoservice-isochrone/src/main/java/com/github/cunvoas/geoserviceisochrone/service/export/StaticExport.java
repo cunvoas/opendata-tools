@@ -29,7 +29,8 @@ import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Business Service impl.
+ * Service métier pour l'export statique des données (cadastre, isochrone).
+ * Permet de générer des fichiers statiques pour l'archivage ou la publication.
  */
 @Service
 @Slf4j
@@ -50,7 +51,9 @@ public class StaticExport {
 	
 	
     /**
-     * @deprecated
+     * Exporte les données de cadastre pour chaque communauté de communes.
+     *
+     * @deprecated Utiliser ServicePublicationExporter à la place.
      * @see ServicePublicationExporter
      */
     @Deprecated
@@ -74,7 +77,9 @@ public class StaticExport {
 
 
     /**
-     * @deprecated
+     * Exporte les isochrones pour chaque communauté de communes.
+     *
+     * @deprecated Utiliser ServicePublicationExporter à la place.
      * @see ServicePublicationExporter
      */
     @Deprecated

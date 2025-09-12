@@ -1,35 +1,52 @@
 package com.github.cunvoas.geoserviceisochrone.model.admin;
 	
 /**
- * Source du parc.
+ * Enumération représentant le statut d'un travail de calcul (ComputeJob).
+ * Permet de suivre l'état d'avancement du traitement.
  */
 public enum ComputeJobStatusEnum {
-	// int code in database
+	/**
+	 * Traitement à effectuer (demande en attente).
+	 */
 	TO_PROCESS("TO_PROCESS"),  // 0 process requested
+	/**
+	 * Traitement en cours.
+	 */
 	IN_PROCESS("IN_PROCESS"),  // 1 process started
-	PROCESSED("PROCESSED"),	   // 2 process done
-	IN_ERROR("IN_ERROR"),	   // 3 process in error
+	/**
+	 * Traitement terminé avec succès.
+	 */
+	PROCESSED("PROCESSED"),   // 2 process done
+	/**
+	 * Traitement en erreur.
+	 */
+	IN_ERROR("IN_ERROR"),   // 3 process in error
 	;
 	
+	/**
+	 * Valeur du statut.
+	 */
 	private String status;
 
 	/**
-	 * Constructor.
-	 * @param status value
+	 * Constructeur.
+	 * @param status valeur du statut
 	 */
 	ComputeJobStatusEnum(String status) {
 		this.status = status;
 	}
 		
 	/**
-	 * @return status value
+	 * Retourne la valeur du statut.
+	 * @return valeur du statut
 	 */
 	public String getStatus() {
 		return status;
 	}
 	
 	/**
-	 * @see java.lang.Object.toString()
+	 * Retourne la valeur du statut sous forme de chaîne.
+	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {

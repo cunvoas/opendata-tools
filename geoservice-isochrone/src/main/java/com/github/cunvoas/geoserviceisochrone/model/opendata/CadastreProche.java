@@ -8,7 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Model Cadastre.
+ * Représente la relation de proximité entre deux entités cadastrales (communes).
+ * Permet d'identifier les communes voisines.
  */
 @Data
 @Entity(name = "cadastre_proche")
@@ -18,9 +19,15 @@ public class CadastreProche {
 	
 	@Id
 	@Column(name="id_insee", length=5)
+	/**
+	 * Code INSEE de la commune principale.
+	 */
 	private String idInsee;
 	
 	@Id
 	@Column(name="insee_proche", length=5)
+	/**
+	 * Code INSEE de la commune proche (voisine).
+	 */
 	private String idInseeProche;
 }

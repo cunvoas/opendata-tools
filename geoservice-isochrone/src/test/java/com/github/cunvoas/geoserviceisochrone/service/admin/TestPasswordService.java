@@ -44,7 +44,7 @@ class TestPasswordService {
 	@Value("${INIT_ADMINMAP_LOGIN}")
 	private String initLOGIN;
 //	@Value("${INIT_ADMINMAP_EMAIL}")
-	private String initEmail;
+	private String initEmail="";
 	@Value("${INIT_ADMINMAP_PWORD}")
 	private String initPwd;
 	

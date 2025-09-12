@@ -10,15 +10,15 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
- * SchedulerConfig.
+ * Configuration du planificateur de tâches (Scheduler).
  */
 @Configuration
 @EnableScheduling
 public class SchedulerConfig {  //implements SchedulingConfigurer {
 
     /**
-     * activate tasks.
-     * @return Executor
+     * Active les tâches planifiées.
+     * @return Executor pour les tâches planifiées
      */
 	@Bean(destroyMethod="shutdown")
     public Executor taskExecutor() {
@@ -27,8 +27,8 @@ public class SchedulerConfig {  //implements SchedulingConfigurer {
     
 
     /**
-     * setup Scheduler.
-     * @return TaskScheduler
+     * Configure le planificateur de tâches.
+     * @return TaskScheduler configuré
      */
     @Bean
     public TaskScheduler taskScheduler() {

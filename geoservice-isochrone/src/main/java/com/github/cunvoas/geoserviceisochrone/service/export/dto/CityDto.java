@@ -5,14 +5,16 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import lombok.Data;
 
 /**
- * DTO.
+ * DTO représentant une commune pour l'export.
+ * Permet de transférer les informations essentielles d'une commune (nom, code INSEE, coordonnées, etc.).
  */
 @Data
 public class CityDto {
 	
 	/**
-	 * Constructor
-	 * @param model BO
+	 * Construit un DTO à partir d'un objet métier City.
+	 *
+	 * @param model la commune source
 	 */
 	public CityDto(City model) {
 		super();
@@ -26,11 +28,17 @@ public class CityDto {
 		}
 	}
 	
+	/** Identifiant de la commune */
 	private Long id;
+	/** Nom de la commune */
 	private String name;
+	/** Code postal */
 	private String postalCode;
+	/** Code INSEE */
 	private String inseeCode;
+	/** Longitude (X) */
 	private Double lonX;
+	/** Latitude (Y) */
 	private Double latY;
 
 }

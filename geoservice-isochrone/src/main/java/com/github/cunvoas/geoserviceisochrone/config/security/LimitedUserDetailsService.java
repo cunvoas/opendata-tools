@@ -15,9 +15,10 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * login service.
- *  timehack
- *  blocked check
+ * Service de gestion de l'authentification utilisateur avec limitation et protection contre les attaques par force brute.
+ * <p>
+ * Ajoute un délai (timehack) pour limiter les attaques et vérifie le blocage éventuel de l'utilisateur.
+ * </p>
  * @see https://www.baeldung.com/spring-security-block-brute-force-authentication-attempts
  */
 @Service("userDetailsService")
@@ -33,9 +34,8 @@ public class LimitedUserDetailsService  implements UserDetailsService {
     @Autowired
     private LoginAttemptService loginAttemptService;
  
-    
     /**
-     * add timehack mitigation.
+     * Ajoute un délai aléatoire pour limiter les attaques par force brute.
      */
     private void mitigateTimeHack() {
     	Double d = Math.random()*timeHack/7;
@@ -48,7 +48,13 @@ public class LimitedUserDetailsService  implements UserDetailsService {
     }
     
     /**
-     * get user from db.
+     * Charge l'utilisateur à partir de la base de données.
+     * <p>
+     * Si l'utilisateur est bloqué, une exception est levée. Sinon, recherche l'utilisateur par login.
+     * </p>
+     * @param username le nom d'utilisateur
+     * @return les détails de l'utilisateur
+     * @throws UsernameNotFoundException si l'utilisateur n'est pas trouvé ou bloqué
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

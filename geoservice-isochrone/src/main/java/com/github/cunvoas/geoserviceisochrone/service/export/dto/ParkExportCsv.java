@@ -16,7 +16,8 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
 
 /**
- * CSV Exporter.
+ * Utilitaire d'export CSV pour les parcs et jardins.
+ * Permet de générer des fichiers CSV à partir des données de parcs et jardins.
  * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */
@@ -24,7 +25,8 @@ import org.springframework.stereotype.Component;
 public class ParkExportCsv {
 	
 	/**
-	 * CSV Header definition for easier mods.
+	 * Enumération des en-têtes de colonnes du CSV pour l'export des parcs.
+	 * Facilite la gestion et la modification des colonnes exportées.
 	 * @author cunvoas
 	 */
 	public enum ParkExportCsvHeaders {
@@ -95,8 +97,8 @@ public class ParkExportCsv {
 	}
 	
 	/**
-	 * initCSVFormat.
-	 * @return CSVFormat
+	 * Initialise le format CSV utilisé pour l'export.
+	 * @return le format CSV configuré
 	 */
 	private CSVFormat initCSVFormat() {
 		return  CSVFormat.DEFAULT.builder()

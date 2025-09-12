@@ -14,18 +14,19 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Component;
 
 /**
- * CSV parser to import.
+ * Parseur CSV pour l'import des entrées de parcs.
+ * Permet de lire les informations d'entrée de chaque parc à partir d'un fichier CSV.
  * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */
 @Component
 public class CsvParkEntranceParser {
-	
-	/**
-	 * CSV Header definition for easier mods.
-	 * @author cunvoas
-	 */
-	public enum ParkEntranceCsvHeaders {
+    /**
+     * Enumération des entêtes du CSV pour les entrées de parcs.
+     * Permet de référencer chaque colonne du fichier source et d'effectuer des recherches inverses.
+     * @author cunvoas
+     */
+    public enum ParkEntranceCsvHeaders {
 		reserved01("Champ_Reservé_1"),
 		reserved02("Champ_Reservé 2"),
 		city("Ville"),
@@ -63,10 +64,10 @@ public class CsvParkEntranceParser {
 	
 
 	/**
-	 * Parse CSV.
-	 * @param csvFile
-	 * @return
-	 * @throws IOException
+	 * Parse un fichier CSV contenant les entrées de parcs.
+	 * @param csvFile le fichier CSV à parser
+	 * @return la liste des entrées de parc lues
+	 * @throws IOException en cas d'erreur de lecture du fichier
 	 */
 	public List<CsvParkLine> parseParkEntrance(File csvFile) throws IOException {
 		List<CsvParkLine> contacts = new ArrayList<>();

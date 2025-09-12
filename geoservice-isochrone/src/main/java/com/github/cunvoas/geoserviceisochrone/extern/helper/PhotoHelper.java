@@ -20,6 +20,8 @@ import com.drew.metadata.exif.GpsDirectory;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 
 /**
+ * Composant utilitaire pour la gestion et le traitement des photos.
+ * Permet de redimensionner des images et d'extraire les coordonnées GPS des métadonnées EXIF.
  * @author cunvoas
  * @see https://www.baeldung.com/java-resize-image
  */
@@ -30,14 +32,20 @@ public class PhotoHelper {
 	private String imagesPath = "/tmp/";
 	private int targetSize = 1024;
 
-	
+	/**
+	 * Redimensionne une image et l'enregistre sous le nom du parc.
+	 * @param img fichier image source
+	 * @param parkName nom du parc (utilisé pour le nom du fichier de sortie)
+	 * @throws IOException en cas d'erreur de lecture/écriture
+	 */
 	public void resizeImage(File img, String parkName) throws IOException {
 		this.resizeImage(img, new File(imagesPath + parkName+".jpg"));
 	}
 	/**
-	 * @param img
-	 * @param parkName
-	 * @throws IOException
+	 * Redimensionne une image et l'enregistre dans le fichier de sortie.
+	 * @param img fichier image source
+	 * @param out fichier de sortie
+	 * @throws IOException en cas d'erreur de lecture/écriture
 	 */
 	public void resizeImage(File img, File out) throws IOException {
 
@@ -58,10 +66,11 @@ public class PhotoHelper {
 	}
 
 	/**
-	 * @param img
-	 * @return
-	 * @throws IOException
-	 * @throws ImageProcessingException
+	 * Extrait les coordonnées GPS des métadonnées EXIF d'une image.
+	 * @param img fichier image
+	 * @return coordonnées GPS extraites ou null si absentes
+	 * @throws IOException en cas d'erreur de lecture
+	 * @throws ImageProcessingException en cas d'erreur de traitement des métadonnées
 	 */
 	public Coordinate getCoordinateFromExif(File img) throws IOException, ImageProcessingException {
 		Coordinate gps = null;

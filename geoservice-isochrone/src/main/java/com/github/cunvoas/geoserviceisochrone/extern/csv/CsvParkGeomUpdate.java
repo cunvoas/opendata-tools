@@ -3,7 +3,8 @@ package com.github.cunvoas.geoserviceisochrone.extern.csv;
 import lombok.Data;
 
 /**
- * DTO.
+ * Objet de transfert (DTO) pour la mise à jour de la géométrie des parcs.
+ * Contient les informations nécessaires à la modification des contours des parcs.
  */
 @Data
 public class CsvParkGeomUpdate {
@@ -19,6 +20,9 @@ public class CsvParkGeomUpdate {
 	private String surface;
 	private String geom;
 	
+	/**
+	 * Retourne une représentation textuelle de l'objet, utile pour le débogage.
+	 */
 	public String toString() {
 		return String.format("nom: %s, surface: %s, geom: %s", nom, surface, geom);
 	}

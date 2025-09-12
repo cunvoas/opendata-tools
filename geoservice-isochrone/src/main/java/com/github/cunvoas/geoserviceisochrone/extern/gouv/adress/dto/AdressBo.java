@@ -7,6 +7,9 @@ import lombok.Data;
 
 /**
  * DTO.
+ * Objet de transfert représentant une adresse issue de l'API adresse.data.gouv.fr.
+ * <p>
+ * Comparable selon le score de correspondance à la requête.
  */
 @Data
 public class AdressBo implements Comparable<AdressBo>{
@@ -19,7 +22,10 @@ public class AdressBo implements Comparable<AdressBo>{
 	private Point point; // geopoint
 
 	/**
-	 * @see java.lang.Comparable.compareTo(java.lang.Object)
+	 * Compare deux adresses selon leur score de pertinence.
+	 *
+	 * @param other autre objet AdressBo à comparer
+	 * @return résultat de la comparaison
 	 */
 	@Override
 	public int compareTo(AdressBo other) {

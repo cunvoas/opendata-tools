@@ -19,55 +19,61 @@ import org.springframework.stereotype.Component;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvParkUpdateParser.ParkUpdateCsvHeaders;
 
 /**
- * CSV parser to import.
+ * Parseur CSV pour la mise à jour de la géométrie des parcs.
+ * Permet de lire un fichier CSV et de générer des requêtes de mise à jour des contours des parcs.
  * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */
 @Component
 public class CsvParkGeomUpdateParser {
+    /**
+     * Enumération des entêtes du CSV pour la géométrie des parcs.
+     * Permet de référencer chaque colonne du fichier source et d'effectuer des recherches inverses.
+     * @author cunvoas
+     */
+    public enum CsvParkGeomUpdateCsvHeaders {
+        objectid("objectid"),
+        id("id"),
+        nom("nom"),
+        quartier("quartier"),
+        nomListe("nom_liste"),
+        adresse("adresse"),
+        surface("surface"),
+        geom("geom");
+        
+        private String column;
+
+        CsvParkGeomUpdateCsvHeaders(String column) {
+            this.column = column;
+        }
+
+        public String getColumn() {
+            return column;
+        }
+
+        // Lookup table
+        private static final Map<String, ParkUpdateCsvHeaders> lookup = new HashMap<>();
+
+        // Populate the lookup table on loading time
+        static {
+            for (ParkUpdateCsvHeaders env : ParkUpdateCsvHeaders.values()) {
+                lookup.put(env.getColumn(), env);
+            }
+        }
+
+        // This method can be used for reverse lookup purpose
+        public static ParkUpdateCsvHeaders get(String column) {
+            return lookup.get(column);
+        }
+
+    }
 	
 	/**
-	 * CSV Header definition for easier mods.
-	 * @author cunvoas
-	 * objectid,id,nom,quartier,nom_liste,adresse,surface,geom
+	 * Écrit les requêtes de mise à jour dans un fichier à partir d'une liste d'objets CsvParkGeomUpdate.
+	 * @param csvFile le fichier de sortie
+	 * @param rows la liste des objets à écrire
+	 * @throws IOException en cas d'erreur d'écriture
 	 */
-	public enum CsvParkGeomUpdateCsvHeaders {
-		objectid("objectid"),
-		id("id"),
-		nom("nom"),
-		quartier("quartier"),
-		nomListe("nom_liste"),
-		adresse("adresse"),
-		surface("surface"),
-		geom("geom");
-		
-		private String column;
-
-		CsvParkGeomUpdateCsvHeaders(String column) {
-			this.column = column;
-		}
-
-		public String getColumn() {
-			return column;
-		}
-
-		// Lookup table
-		private static final Map<String, ParkUpdateCsvHeaders> lookup = new HashMap<>();
-
-		// Populate the lookup table on loading time
-		static {
-			for (ParkUpdateCsvHeaders env : ParkUpdateCsvHeaders.values()) {
-				lookup.put(env.getColumn(), env);
-			}
-		}
-
-		// This method can be used for reverse lookup purpose
-		public static ParkUpdateCsvHeaders get(String column) {
-			return lookup.get(column);
-		}
-
-	}
-	
 	public void write(File csvFile, List<CsvParkGeomUpdate> rows) throws IOException {
 		Writer writer = new BufferedWriter(new FileWriter(csvFile));
 		for (CsvParkGeomUpdate row : rows) {
@@ -84,10 +90,10 @@ public class CsvParkGeomUpdateParser {
 	}
 
 	/**
-	 * Parse CSV.
-	 * @param csvFile
-	 * @return
-	 * @throws IOException
+	 * Parse un fichier CSV contenant les géométries des parcs.
+	 * @param csvFile le fichier CSV à parser
+	 * @return la liste des objets CsvParkGeomUpdate lus
+	 * @throws IOException en cas d'erreur de lecture du fichier
 	 */
 	public List<CsvParkGeomUpdate> parseParkGeom(File csvFile) throws IOException {
 		List<CsvParkGeomUpdate> contacts = new ArrayList<>();

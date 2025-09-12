@@ -10,7 +10,8 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 
 /**
- * Spring JPA repository.
+ * Repository Spring Data JPA pour l'accès aux entités CommunauteCommune.
+ * Permet de récupérer les communautés de communes d'une région.
  */
 @Repository
 public interface CommunauteCommuneRepository extends JpaRepository<CommunauteCommune, Long>{

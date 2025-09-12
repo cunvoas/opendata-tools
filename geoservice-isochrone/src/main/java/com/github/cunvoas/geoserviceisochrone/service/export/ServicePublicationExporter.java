@@ -36,7 +36,8 @@ import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Business Service impl.
+ * Service métier pour l'exportation des données de publication (GeoJSON, IRIS, etc.).
+ * Permet de générer et d'écrire les fichiers nécessaires à la publication des données géographiques.
  */
 @Service
 @Slf4j
@@ -45,9 +46,9 @@ public class ServicePublicationExporter {
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 	private ObjectMapper objectMapper = new ObjectMapper();
 	
-	
 	/**
-	 * Constructor.
+	 * Constructeur du service d'exportation de publication.
+	 * Initialise la configuration de l'ObjectMapper pour la sérialisation/désérialisation JSON.
 	 */
 	public ServicePublicationExporter() {
 		super();
@@ -78,10 +79,12 @@ public class ServicePublicationExporter {
 
 
 	/**
-	 * Write IRIS INSEE files.
-	 * @throws StreamWriteException ex
-	 * @throws DatabindException ex
-	 * @throws IOException ex
+	 * Écrit les fichiers GeoJSON pour les IRIS INSEE de chaque communauté de communes et chaque année configurée.
+	 * Crée les dossiers nécessaires et génère les fichiers à l'emplacement défini dans la configuration.
+	 *
+	 * @throws StreamWriteException en cas d'erreur d'écriture du flux
+	 * @throws DatabindException en cas d'erreur de mapping des données
+	 * @throws IOException en cas d'erreur d'entrée/sortie
 	 */
 	public void writeGeoJsonIris() throws StreamWriteException, DatabindException, IOException {
 		File file = new File(applicationBusinessProperties.getJsonFileFolder()+"/geojson/iris");

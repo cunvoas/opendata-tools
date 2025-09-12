@@ -17,7 +17,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * creds auth failure handler.
+ * Gestionnaire personnalisé d'échec d'authentification par identifiants.
+ * <p>
+ * Permet de personnaliser le message d'erreur affiché à l'utilisateur lors d'un échec de connexion.
+ * </p>
  */
 @Component("authenticationFailureHandler")
 public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
@@ -32,7 +35,12 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
     private LoginAttemptService loginAttemptService;
 
     /**
-     * Auth failure messages.
+     * Gère l'échec d'authentification et définit le message d'erreur approprié en fonction de la cause.
+     * @param request la requête HTTP
+     * @param response la réponse HTTP
+     * @param exception l'exception d'authentification
+     * @throws IOException en cas d'erreur d'entrée/sortie
+     * @throws ServletException en cas d'erreur de servlet
      */
     @Override
     public void onAuthenticationFailure(final HttpServletRequest request, final HttpServletResponse response, final AuthenticationException exception) throws IOException, ServletException {

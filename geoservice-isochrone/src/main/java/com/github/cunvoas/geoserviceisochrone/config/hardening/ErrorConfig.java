@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * Configuration Spring pour personnaliser la gestion des erreurs Tomcat.
+ * Injecte la valve personnalisée pour contrôler les réponses d’erreur.
  * @see https://www.springcloud.io/post/2022-07/spring-boot-hardening/#gsc.tab=0
  */
 @Configuration(proxyBeanMethods = false)

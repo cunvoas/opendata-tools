@@ -21,7 +21,18 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Business Service impl.
+ * Service métier pour la gestion des données ouvertes liées aux régions,
+ * communautés de communes, villes et informations cadastrales.
+ * <p>
+ * Ce service fournit des méthodes pour :
+ * <ul>
+ *   <li>Calculer la distance à pied à retenir selon l'OMS et la densité urbaine</li>
+ *   <li>Vérifier si une ville ou un code INSEE est considéré comme dense</li>
+ *   <li>Enregistrer ou mettre à jour des entités Region et CommunauteCommune</li>
+ *   <li>Calculer le carré englobant (enveloppe) d'une communauté sur la carte</li>
+ * </ul>
+ *
+ * Les dépendances sont injectées via l'annotation @Autowired de Spring.
  */
 @Service
 @Slf4j
@@ -39,11 +50,12 @@ public class ServiceOpenData {
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	
-	/**
-	 * calcul de la distance à pied à retenir VS OMS et la densité urbaine.
-	 * @param city City
-	 * @return distance
-	 */
+    /**
+     * Calcule la distance à pied à retenir selon l'OMS et la densité urbaine.
+     *
+     * @param city la ville pour laquelle calculer la distance
+     * @return la distance en mètres (String)
+     */
 	public String getDistanceDense(City city) {
 		String ret = "300";
 		Optional<InseeDensiteCommune> idc = inseeDensiteCommuneRepository.findById(city.getInseeCode());
@@ -59,11 +71,12 @@ public class ServiceOpenData {
 		return ret;
 	}
 	
-	/**
-	 * isDistanceDense.
-	 * @param idInsee code
-	 * @return Boolean
-	 */
+    /**
+     * Détermine si un code INSEE correspond à une zone dense.
+     *
+     * @param idInsee le code INSEE de la ville
+     * @return TRUE si dense, FALSE sinon
+     */
 	public Boolean isDistanceDense(String idInsee) {
 		Boolean isdense=Boolean.TRUE;
 		Optional<InseeDensiteCommune> idc = inseeDensiteCommuneRepository.findById(idInsee);
@@ -80,24 +93,27 @@ public class ServiceOpenData {
 		return isdense;
 	}
 	
-	/**
-	 * isDistanceDense.
-	 * @param city City
-	 * @returnBoolean
-	 */
+    /**
+     * Détermine si une ville est considérée comme dense.
+     *
+     * @param city la ville à vérifier
+     * @return TRUE si dense, FALSE sinon
+     */
 	public Boolean isDistanceDense(City city) {
 		return isDistanceDense(city.getInseeCode());
 	}
 
-	/**
-	 * save.
-	 * @param region Region
-	 * @return Region
-	 */
+    /**
+     * Enregistre ou met à jour une entité Region.
+     * Si la région existe (par id ou nom), met à jour son nom ; sinon, crée une nouvelle région.
+     *
+     * @param region la région à enregistrer ou mettre à jour
+     * @return la région enregistrée ou mise à jour
+     */
 	public Region save(Region region) {
 		if (region != null) {
 			Region pRegion = null;
-			Optional<Region> oRegion = null;
+			Optional<Region> oRegion = Optional.of(new Region());
 
 			if (region.getId() != null) {
 				oRegion = regionRepository.findById(region.getId());
@@ -120,11 +136,13 @@ public class ServiceOpenData {
 
 	}
 
-	/**
-	 * save.
-	 * @param comm2co CommunauteCommune
-	 * @return CommunauteCommune
-	 */
+    /**
+     * Enregistre ou met à jour une entité CommunauteCommune.
+     * Si la communauté existe (par id), met à jour son nom ; sinon, crée une nouvelle communauté.
+     *
+     * @param comm2co la communauté à enregistrer ou mettre à jour
+     * @return la communauté enregistrée ou mise à jour
+     */
 	public CommunauteCommune save(CommunauteCommune comm2co) {
 		if (comm2co != null) {
 			CommunauteCommune pComm2co = null;
@@ -143,11 +161,13 @@ public class ServiceOpenData {
 		return comm2co;
 	}
 	
-	/**
-	 * calcule le carré dans lequel tiends la communauté de commune sur la carte.
-	 * @param comm2co CommunauteCommune
-	 * @return Polygon
-	 */
+    /**
+     * Calcule le carré englobant (enveloppe) sur la carte contenant toutes les villes
+     * de la communauté donnée. Met à jour la communauté avec cette géométrie.
+     *
+     * @param comm2co la communauté pour laquelle calculer le carré englobant
+     * @return le polygone représentant l'enveloppe calculée
+     */
 	public Polygon computeSquareOnMap(CommunauteCommune comm2co) {
 		Polygon poly=null;
 		for (City city : comm2co.getCities()) {

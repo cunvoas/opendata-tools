@@ -13,7 +13,8 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 /**
- * Model Stats.
+ * Représente une statistique d'activité sur la plateforme.
+ * Permet de tracer les actions réalisées par les utilisateurs (ajout, modification, etc.).
  */
 @Data
 @EqualsAndHashCode(of = {"id"})
@@ -24,18 +25,43 @@ import lombok.EqualsAndHashCode;
 		})
 public class Stats {
 	
+	/**
+	 * Constante pour l'événement "entrée".
+	 */
 	public static final String EVT_ENTRANCE="EVT_ENTRANCE";
+	/**
+	 * Constante pour l'événement "isochrone".
+	 */
 	public static final String EVT_ISOCHRONE="EVT_ISOCHRONE";
+	/**
+	 * Constante pour l'événement "parc".
+	 */
 	public static final String EVT_PARK="EVT_PARK";
+	/**
+	 * Constante pour l'événement "administration".
+	 */
 	public static final String EVT_ADMIN="EVT_ADMIN";
+	/**
+	 * Constante pour le mode "ajout".
+	 */
 	public static final String MODE_ADD="ADD";
+	/**
+	 * Constante pour le mode "modification".
+	 */
 	public static final String MODE_UPD="UPD";
 	
+	/**
+	 * Constructeur avec action.
+	 * @param action nom de l'action
+	 */
 	public Stats(String action) {
 		super();
 		this.action=action;
 	}
 
+	/**
+	 * Identifiant unique de la statistique.
+	 */
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_activity_stats")
@@ -46,9 +72,21 @@ public class Stats {
     	)
 	private Long id;
 	
+	/**
+	 * Identifiant de l'utilisateur concerné.
+	 */
 	private Long userId;
+	/**
+	 * Type d'action réalisée.
+	 */
 	private String action;
+	/**
+	 * Mode de l'action (ajout, modification, etc.).
+	 */
 	private String mode;
+	/**
+	 * Date de la dernière mise à jour.
+	 */
 	private Date update=new Date();
 
 }

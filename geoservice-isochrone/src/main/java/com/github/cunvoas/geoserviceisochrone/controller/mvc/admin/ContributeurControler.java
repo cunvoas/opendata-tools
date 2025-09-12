@@ -33,7 +33,8 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Page controler for contributors.
+ * Contrôleur de gestion des contributeurs (interface d'administration).
+ * Permet d'afficher, d'ajouter, d'éditer, de réinitialiser le mot de passe et de sauvegarder les contributeurs.
  */
 @Controller
 @RequestMapping("/mvc/management/contrib")
@@ -62,9 +63,9 @@ public class ContributeurControler {
 //	private static final Long ID_AUTMEL=1L;
 
 	/**
-	 * call list page.
-	 * @param model form
-	 * @return page name
+	 * Affiche la liste des contributeurs selon le rôle de l'utilisateur connecté.
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de liste
 	 */
 	@GetMapping("/list")
 	public String getList(Model model) {
@@ -82,9 +83,9 @@ public class ContributeurControler {
 	
 	
 	/**
-	 * call add page.
-	 * @param model forme
-	 * @return page name
+	 * Affiche le formulaire d'ajout d'un nouveau contributeur.
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@GetMapping("/add")
 	public String getForm(Model model) {
@@ -97,9 +98,10 @@ public class ContributeurControler {
 	
 
 	/**
-	 * edit other profil.
-	 * @param model form
-	 * @return page name
+	 * Affiche le formulaire d'édition d'un contributeur existant.
+	 * @param id Identifiant du contributeur
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@GetMapping("/edit")
 	public String getForm(@RequestParam("id") Long id, Model model) {
@@ -122,9 +124,9 @@ public class ContributeurControler {
 	}
 
 	/**
-	 * edit my profil.
-	 * @param model form
-	 * @return page name
+	 * Affiche le formulaire d'édition du profil du contributeur connecté.
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@GetMapping
 	public String getMyForm(Model model) {
@@ -144,9 +146,9 @@ public class ContributeurControler {
 	
 	
 	/**
-	 * reset passwd.
-	 * @param model form
-	 * @return page name
+	 * Réinitialise le mot de passe du contributeur connecté.
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@GetMapping("/resetMyPassword")
 	public String resetMyPassword(Model model) {
@@ -166,10 +168,10 @@ public class ContributeurControler {
 	}
 	
 	/**
-	 * reset passwd.
-	 * @param id contrib
-	 * @param model form
-	 * @return page name
+	 * Réinitialise le mot de passe d'un contributeur donné.
+	 * @param id Identifiant du contributeur
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@GetMapping("/resetPassword")
 	public String resetUserPassword(@RequestParam("id") Long id, Model model) {
@@ -190,11 +192,11 @@ public class ContributeurControler {
 	}
 	
 	/**
-	 * save contrib.
-	 * @param fContrib BO
-	 * @param bindingResult binding
-	 * @param model form
-	 * @return page name
+	 * Sauvegarde un contributeur (création ou modification).
+	 * @param fContrib Formulaire du contributeur
+	 * @param bindingResult Résultat de la validation
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/edit")
 	public String save(@Valid @ModelAttribute(value = "editContributeur") FormContributor fContrib, 

@@ -12,7 +12,10 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyS
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
 /**
- * Abstract class is not scanned.
+ * Classe abstraite utilitaire pour les services de calcul liés aux parcs et jardins.
+ * <p>
+ * Fournit des méthodes pour vérifier l'activité d'un parc sur une année donnée et pour calculer la surface d'une géométrie.
+ * Cette classe n'est pas scannée par Spring.
  */
 public abstract class AbstractComputeService {
 
@@ -30,10 +33,10 @@ public abstract class AbstractComputeService {
 	}
 	
 	/**
-	 * isActive.
-	 * @param pa ParkArea
-	 * @param annee year 
-	 * @return park is active?
+	 * Vérifie si un parc est actif pour une année donnée.
+	 * @param pa ParkArea à vérifier
+	 * @param annee Année de référence
+	 * @return TRUE si le parc est actif pour l'année, FALSE sinon
 	 */
 	protected Boolean isActive(ParkArea pa, Integer annee) {
 		Boolean active=false;
@@ -64,11 +67,10 @@ public abstract class AbstractComputeService {
 		return active;
 	}
 	
-	
 	/**
-	 * getSurface.
-	 * @param geom  Geometry
-	 * @return surface of Geometry
+	 * Calcule la surface d'une géométrie.
+	 * @param geom Géométrie à mesurer
+	 * @return Surface de la géométrie
 	 */
 	public Long getSurface(Geometry geom) {
 		return inseeCarre200mOnlyShapeRepository.getSurface(geom);

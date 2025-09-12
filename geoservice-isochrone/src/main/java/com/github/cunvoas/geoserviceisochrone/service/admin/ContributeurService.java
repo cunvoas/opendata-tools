@@ -113,7 +113,7 @@ public class ContributeurService {
 		String myPassword="";
 		
 		Contributeur toBeSaved = null;
-		Optional<Contributeur> oUser = null;
+		Optional<Contributeur> oUser = Optional.of(new Contributeur());
 		if (contributeur.getId()!=null) {
 			oUser = contributeurRepository.findById(contributeur.getId());
 		}

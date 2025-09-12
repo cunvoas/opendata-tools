@@ -6,15 +6,19 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 
 /**
- * custom metric for prometheus monitoring.
+ * Service de métrique personnalisée pour la surveillance Prometheus.
  */
 @Component
 public class CustomMetricsService {
 
+    /**
+     * Compteur personnalisé pour la métrique.
+     */
     private final Counter customMetricCounter;
 
     /**
-     * @param meterRegistry the registry.
+     * Constructeur du service de métrique personnalisée.
+     * @param meterRegistry le registre de métriques
      */
     public CustomMetricsService(MeterRegistry meterRegistry) {
         customMetricCounter = Counter.builder("custom_metric_name")
@@ -23,6 +27,9 @@ public class CustomMetricsService {
           .register(meterRegistry);
     }
 
+    /**
+     * Incrémente la métrique personnalisée.
+     */
     public void incrementCustomMetric() {
         customMetricCounter.increment();
     }

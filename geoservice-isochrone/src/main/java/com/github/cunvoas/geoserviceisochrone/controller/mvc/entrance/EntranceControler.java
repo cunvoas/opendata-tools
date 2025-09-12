@@ -29,7 +29,8 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
 
 /**
- * Page controler for entrance.
+ * Contrôleur de gestion des entrées de parcs (interface utilisateur).
+ * Permet de gérer la sélection, l'affichage, la modification et la sauvegarde des entrées de parcs.
  */
 @Controller
 @RequestMapping("/mvc/entrance")
@@ -50,10 +51,10 @@ public class EntranceControler {
 	
 	
 	/**
-	 * manage population then get page.
-	 * @param form form
-	 * @param model form
-	 * @return page name
+	 * Affiche le formulaire de gestion des entrées de parc.
+	 * @param form Formulaire d'entrée de parc
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@GetMapping
 	public String getForm(@ModelAttribute FormParkEntrance form, Model model) {
@@ -64,14 +65,14 @@ public class EntranceControler {
 	}
 	
 	/**
-	 * redirect park page.
-	 * @param idRegion region id
-	 * @param idComm2Co com2co id
-	 * @param idCommune city id
-	 * @param idPark park id
-	 * @param form form 
-	 * @return page name
-	 * @return page with population
+	 * Redirige vers la page d'entrée de parc en pré-remplissant les informations selon les identifiants fournis.
+	 * @param idRegion Identifiant de la région
+	 * @param idComm2Co Identifiant de la communauté de communes
+	 * @param idCommune Identifiant de la commune
+	 * @param idPark Identifiant du parc
+	 * @param form Formulaire d'entrée de parc
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@GetMapping("/goto")
 	public String gotoEntrance(
@@ -209,10 +210,10 @@ public class EntranceControler {
 		return serviceReadReferences.getRegion();
 	}
 	/**
-	 * select region
-	 * @param form form
-	 * @param model form
-	 * @return page with population
+	 * Sélectionne une région et met à jour le formulaire.
+	 * @param form Formulaire d'entrée de parc
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/region")
 	public String changeRegion(@ModelAttribute FormParkEntrance form, Model model) {
@@ -222,10 +223,10 @@ public class EntranceControler {
 	}
 	
 	/**
-	 * get com2co list.
-	 * @param id region
-	 * @param txt search
-	 * @return list
+	 * Récupère la liste des communautés de communes d'une région.
+	 * @param id Identifiant de la région
+	 * @param txt Texte de recherche
+	 * @return Liste des communautés de communes
 	 */
 	@GetMapping("/comm2co")
 	public List<CommunauteCommune> getCommunauteCommuneByRegion(@RequestParam("regionId") Long id, @RequestParam("txt") String txt){
@@ -249,10 +250,10 @@ public class EntranceControler {
 	}
 	
 	/**
-	 * select com2co.
-	 * @param form form
-	 * @param model form
-	 * @return page with population
+	 * Sélectionne une communauté de communes et met à jour le formulaire.
+	 * @param form Formulaire d'entrée de parc
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/commDeCo")
 	public String changeCommunauteDeCommune(@ModelAttribute FormParkEntrance form, Model model) {
@@ -265,10 +266,10 @@ public class EntranceControler {
 	}
 	
 	/**
-	 * select city 
-	 * @param form form
-	 * @param model form
-	 * @return page with population
+	 * Sélectionne une ville et met à jour le formulaire.
+	 * @param form Formulaire d'entrée de parc
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/city")
 	public String changeCity(@ModelAttribute FormParkEntrance form, Model model) {
@@ -280,10 +281,10 @@ public class EntranceControler {
 	}
 	
 	/**
-	 * select park.
-	 * @param form form
-	 * @param model form
-	 * @return page with population
+	 * Sélectionne un parc et met à jour le formulaire.
+	 * @param form Formulaire d'entrée de parc
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/park")
 	public String changePark(@ModelAttribute FormParkEntrance form, Model model) {
@@ -294,10 +295,10 @@ public class EntranceControler {
 	}
 
 	/**
-	 * select entrance
-	 * @param form form
-	 * @param model form
-	 * @return page with population
+	 * Sélectionne une entrée de parc et met à jour le formulaire.
+	 * @param form Formulaire d'entrée de parc
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/entrance")
 	public String changeEntrance(@ModelAttribute FormParkEntrance form, Model model) {
@@ -305,10 +306,10 @@ public class EntranceControler {
 	}
 	
 	/**
-	 * compute isochrone merge.
-	 * @param formDetail form
-	 * @param model form
-	 * @return page with population
+	 * Fusionne les isochrones d'une zone de parc.
+	 * @param formDetail Détail du formulaire d'entrée de parc
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/mergeIsochrone")
 	public String mergeIsochrone(@ModelAttribute FormParkEntranceDetail formDetail, Model model) {
@@ -324,10 +325,10 @@ public class EntranceControler {
 	
 	
 	/**
-	 * save entrance.
-	 * @param formDetail form
-	 * @param model form
-	 * @return page with population
+	 * Sauvegarde une entrée de parc (création ou modification).
+	 * @param formDetail Détail du formulaire d'entrée de parc
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/editEntrance")
 	public String saveEntrance(@ModelAttribute FormParkEntranceDetail formDetail, Model model) {
@@ -371,10 +372,10 @@ public class EntranceControler {
 	}
 	
 	/**
-	 * get cities.
-	 * @param id com2co
-	 * @param txt search
-	 * @return list
+	 * Récupère la liste des villes d'une communauté de communes.
+	 * @param id Identifiant de la communauté de communes
+	 * @param txt Texte de recherche
+	 * @return Liste des villes
 	 */
 	@GetMapping("/city")
 	public List<City> getCityByCommunauteCommune(@RequestParam("comm2coId") Long id, @RequestParam("txt") String txt){

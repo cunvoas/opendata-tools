@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
- * Setup for JPA, Transation and Model.
+ * Configuration de JPA, gestion des transactions et du modèle de données.
  */
 @Configuration
 @EntityScan("com.github.cunvoas.geoserviceisochrone.model")

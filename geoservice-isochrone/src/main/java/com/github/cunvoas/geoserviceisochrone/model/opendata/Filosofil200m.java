@@ -10,6 +10,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
+ * Représente les données démographiques et sociales issues de la base Filosofi pour un carreau de 200m.
+ * Contient de nombreux indicateurs sur la population, les ménages et les logements à une maille fine.
  * Model Filosofil200m.
  */
 @Data
