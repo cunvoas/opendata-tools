@@ -19,7 +19,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * export a CSV file.
+ * Contrôleur REST pour l'export de fichiers (CSV, GeoJSON).
+ * Permet d'exporter des données géographiques après vérification de la clé et de l'adresse IP.
  */
 @RestController
 @RequestMapping("/map/export")
@@ -36,10 +37,12 @@ public class FileExporterControler {
 	
 	
 	/**
-	 * write geojson.
-	 * @param credKey creds
-	 * @param request http req
-	 * @return http status
+	 * Exporte les localisations au format GeoJSON.
+	 * Nécessite une clé d'export et une adresse IP autorisée.
+	 *
+	 * @param credKey Clé d'export à fournir en paramètre
+	 * @param request Requête HTTP pour obtenir l'adresse IP du client
+	 * @return Statut HTTP et succès de l'opération
 	 */
 	@GetMapping("/json")
 	public ResponseEntity<Boolean> exportLocations( @RequestParam("key") String credKey, HttpServletRequest request) {
@@ -85,9 +88,10 @@ public class FileExporterControler {
 	
 
 	/**
-	 * check autorized IPs.
-	 * @param ip ip to check
-	 * @return checked or not
+	 * Vérifie si l'adresse IP du client est autorisée à exporter.
+	 *
+	 * @param ip Adresse IP à vérifier
+	 * @return Vrai si l'adresse IP est autorisée, faux sinon
 	 */
 	private Boolean matchOk(String ip) {
 		log.info("exportLocations->matchOk: {}", ip);
@@ -124,9 +128,10 @@ public class FileExporterControler {
 	    };
 	
 	/**
-	 * get IP.
-	 * @param request http req
-	 * @return IP of http client
+	 * Récupère l'adresse IP du client à partir de la requête HTTP.
+	 *
+	 * @param request Requête HTTP
+	 * @return Adresse IP du client
 	 */
 	protected static String getClientIp(HttpServletRequest request) {
         for (String header: IP_HEADER_CANDIDATES) {

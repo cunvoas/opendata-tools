@@ -16,6 +16,10 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.service.admin.BatchJobService;
 
+/**
+ * Contrôleur REST pour la gestion des jobs de calcul (isochrones, carreaux, etc.).
+ * Permet de lancer des traitements batch sur une ville, une communauté de communes ou un parc.
+ */
 @RestController
 @RequestMapping("/mvc/management/jobs/api")
 public class ComputeJobRestControler {
@@ -29,8 +33,10 @@ public class ComputeJobRestControler {
 	private CityRepository cityRepository;
 	
 	/**
-	 * @param req
-	 * @return
+	 * Lance un job de calcul en fonction des paramètres fournis (parc, ville ou communauté de communes).
+	 *
+	 * @param req Requête contenant les identifiants nécessaires (parc, ville, communauté de communes)
+	 * @return Réponse contenant le nombre de carreaux traités et le statut HTTP
 	 */
 	@PostMapping("/request")
 	public ResponseEntity<ComputeJobResponse> request(ComputeJobRequest req) {

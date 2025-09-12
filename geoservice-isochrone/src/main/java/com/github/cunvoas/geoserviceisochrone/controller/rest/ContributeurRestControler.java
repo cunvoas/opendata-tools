@@ -22,7 +22,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * REsT Controler for dropdown.
+ * Contrôleur REST pour la gestion des listes déroulantes de contributeurs.
+ * Permet la recherche de communautés de communes et de villes selon différents critères.
  */
 @RestController
 @RequestMapping("/mvc/ajax/dropdown")
@@ -42,10 +43,11 @@ public class ContributeurRestControler {
 	
 	
 	 /**
-	 * search c2c.
-	 * @param idRegion idRegion
-	 * @param query query
-	 * @return DTO list
+	 * Recherche les communautés de communes d'une région, avec ou sans filtre de texte.
+	 *
+	 * @param idRegion Identifiant de la région
+	 * @param query Texte de recherche (optionnel)
+	 * @return Liste de DTO correspondant aux communautés de communes trouvées
 	 */
 	@GetMapping("/search_c2c")
 	 public List<SearchListDto> searchC2C(
@@ -69,11 +71,12 @@ public class ContributeurRestControler {
     }
 
 	 /**
-	 * search city.
-	 * @param idRegion idRegion
-	 * @param idC2C idC2C
-	 * @param query request
-	 * @return DTO list
+	 * Recherche les villes selon la région, la communauté de communes et/ou un texte de recherche.
+	 *
+	 * @param idRegion Identifiant de la région (optionnel)
+	 * @param idC2C Identifiant de la communauté de communes (optionnel)
+	 * @param query Texte de recherche (optionnel)
+	 * @return Liste de DTO correspondant aux villes trouvées
 	 */
 	@GetMapping("/search_city")
 	 public List<SearchListDto> searchCity(
@@ -142,19 +145,21 @@ public class ContributeurRestControler {
 
     // 
     /**
-     * Generic function to convert a list to stream.
-     * @param <T> genric
-     * @param list list of items
-     * @return steam from items
+     * Fonction utilitaire générique pour convertir une liste en stream.
+     *
+     * @param <T> Type générique
+     * @param list Liste d'éléments
+     * @return Stream des éléments
      */
     private static <T> Stream<T> convertListToStream(List<T> list) {
         return list.stream();
     }
     
     /**
-     * mapper.
-     * @param bean model
-     * @return DTO list
+     * Convertit un objet CommunauteCommune en DTO pour la liste déroulante.
+     *
+     * @param bean Entité CommunauteCommune
+     * @return DTO pour la liste déroulante
      */
     private SearchListDto mapToDto(CommunauteCommune bean) {
         return SearchListDto.builder()
@@ -164,9 +169,10 @@ public class ContributeurRestControler {
     }
     
     /**
-     * mapper.
-     * @param bean model
-     * @return DTO list
+     * Convertit un objet City en DTO pour la liste déroulante.
+     *
+     * @param bean Entité City
+     * @return DTO pour la liste déroulante
      */
     private SearchListDto mapToDto(City bean) {
         return SearchListDto.builder()
@@ -176,9 +182,10 @@ public class ContributeurRestControler {
     }	
     
     /**
-     * letter normalizer.
-     * @param q query
-     * @return normalised string
+     * Normalise une chaîne de caractères (suppression des accents, mise en majuscules).
+     *
+     * @param q Chaîne à normaliser
+     * @return Chaîne normalisée
      */
     private String normalise(String q) {
     	if (q!=null) {

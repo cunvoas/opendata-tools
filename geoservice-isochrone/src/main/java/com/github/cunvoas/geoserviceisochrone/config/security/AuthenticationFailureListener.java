@@ -9,8 +9,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Auth Failure interceptor.
- * 
+ * Intercepteur d'échec d'authentification.
+ * <p>
+ * Permet de compter les tentatives échouées pour un blocage éventuel par IP.
+ * </p>
  */
 @Component
 @Slf4j
@@ -23,7 +25,8 @@ public class AuthenticationFailureListener implements ApplicationListener<Authen
     private LoginAttemptService loginAttemptService;
 
     /**
-     * count fails for IP blocking.
+     * Incrémente le compteur d'échecs pour l'adresse IP du client lors d'un échec d'authentification.
+     * @param e événement d'échec d'authentification
      */
     @Override
     public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent e) {

@@ -21,7 +21,10 @@ import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationSecurit
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Setup user auth.
+ * Configuration de l'authentification des utilisateurs.
+ * <p>
+ * Configure la sécurité, les filtres, le provider d'authentification et le gestionnaire d'authentification.
+ * </p>
  * @author cunvoas
  * @see https://security.stackexchange.com/questions/247936/since-gpus-have-gigabytes-of-memory-does-argon2id-need-to-use-gigabytes-of-memo
  * @see https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html
@@ -33,28 +36,35 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthenticationConfig {
 	
 	private final ApplicationSecurityProperties customProps;
+	/**
+	 * Constructeur avec injection des propriétés de sécurité personnalisées.
+	 * @param customProps propriétés de sécurité personnalisées
+	 */
 	public AuthenticationConfig(ApplicationSecurityProperties customProps) {
 		super();
 		this.customProps = customProps;
 	}
 	
-	
 	@Autowired
 	private LimitedUserDetailsService userDetailsService;
 	
+	/**
+	 * Fournit un listener de contexte de requête HTTP.
+	 * @return le listener de contexte de requête
+	 */
 	@Bean 
 	public RequestContextListener requestContextListener(){
 	    return new RequestContextListener();
 	} 
 
 	/**
-	 * Chain for auth or public.
-	 * @param http
-	 * @return
-	 * @throws Exception
+	 * Chaîne de filtres de sécurité pour les endpoints publics et authentifiés.
+	 * @param http configuration HTTP
+	 * @return la chaîne de filtres de sécurité
+	 * @throws Exception en cas d'erreur de configuration
 	 */
 	@Bean
-	@Order(1)                                                        
+	@Order(1)
 	public SecurityFilterChain mvcFilterChain(HttpSecurity http) throws Exception {
 		return http
 				 .authorizeHttpRequests(authorizeRequests ->
@@ -82,10 +92,9 @@ public class AuthenticationConfig {
 			.build();
 	}
 
-
 	/**
-	 * provider for creds.
-	 * @return
+	 * Fournit le provider d'authentification basé sur les utilisateurs et le mot de passe.
+	 * @return le provider d'authentification
 	 */
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
@@ -96,10 +105,10 @@ public class AuthenticationConfig {
 	}
 
 	/**
-	 * Manager for auth.
-	 * @param config
-	 * @return
-	 * @throws Exception
+	 * Fournit le gestionnaire d'authentification.
+	 * @param config configuration d'authentification
+	 * @return le gestionnaire d'authentification
+	 * @throws Exception en cas d'erreur
 	 */
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -107,8 +116,8 @@ public class AuthenticationConfig {
 	}
 
 	/**
-	 * Password encoder setup.
-	 * @see https://www.ory.sh/choose-recommended-argon2-parameters-password-hashing/
+	 * Fournit l'encodeur de mots de passe Argon2.
+	 * @return encodeur de mots de passe
 	 */
 	@Bean
 	public PasswordEncoder passwordEncoder() {

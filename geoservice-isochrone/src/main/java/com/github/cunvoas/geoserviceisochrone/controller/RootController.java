@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * Home page controler.
+ * Contrôleur principal pour la gestion des pages racines et des vérifications de santé.
+ * Fournit les routes pour la page d'accueil, la connexion, la déconnexion, la page d'erreur et le healthcheck.
  */
 @Controller
 public class RootController {
@@ -22,8 +23,8 @@ public class RootController {
 			"(^127\\.0\\.0\\.1)|(^10\\.)|(^172\\.1[6-9]\\.)|(^172\\.2[0-9]\\.)|(^172\\.3[0-1]\\.)|(^192\\.168\\.)");
 	
 	/**
-	 * root page.
-	 * @return page key
+	 * Redirige la racine vers le tableau de bord.
+	 * @return redirection vers /mvc/dashboard
 	 */
 	@GetMapping("/")
 	public String root() {
@@ -31,7 +32,8 @@ public class RootController {
 	}
 	
 	/** Login form. 
-	 * @return page key
+	 * Affiche le formulaire de connexion.
+	 * @return page de connexion
 	 */
 	@GetMapping(value="/login")
 	public String login() {
@@ -40,7 +42,8 @@ public class RootController {
 	
 	/**
 	 * Logout form.
-	 * @return page key
+	 * Affiche le formulaire de déconnexion.
+	 * @return page de connexion
 	 */
 	@GetMapping(value="/logout")
 	public String logout() {
@@ -48,7 +51,8 @@ public class RootController {
 	}
 
 	/** Error page. 
-	 * @return page key
+	 * Affiche la page d'erreur 403.
+	 * @return page d'erreur 403
 	 */
 	@GetMapping("/403.html")
 	public String forbidden() {
@@ -57,7 +61,8 @@ public class RootController {
 
 	/**
 	 * home page.
-	 * @return page key
+	 * Affiche la page d'accueil HTML simple.
+	 * @return page HTML d'accueil
 	 */
 	@GetMapping("/home")
 	public ResponseEntity<String> index() {
@@ -66,8 +71,11 @@ public class RootController {
 
 	/**
 	 * Health check.
-	 * @param request http req
-	 * @return response code
+	 * Endpoint de vérification de santé (health check).
+	 * Retourne 200 OK si l'adresse IP est autorisée, sinon 403 Forbidden.
+	 *
+	 * @param request Requête HTTP
+	 * @return code HTTP selon l'adresse IP
 	 */
 	@RequestMapping(value = "/awake", method = RequestMethod.HEAD)
 	public ResponseEntity<Void> awake(HttpServletRequest request) {
