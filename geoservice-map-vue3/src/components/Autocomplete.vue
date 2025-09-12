@@ -47,17 +47,32 @@ export default {
     }
   },
   watch: {
+    /**
+     * Watcher for the `modelValue` prop.
+     * Triggered whenever the value of `modelValue` changes.
+     * @param {any} newValue - The updated value of the `modelValue` prop.
+     */
     modelValue(newValue) {
       const selectedItem = this.items.find(item => item.id === newValue);
       this.search = selectedItem ? selectedItem.label : '';
     }
   },
   methods: {
+    /**
+     * Handles the input event for the search address autocomplete component.
+     * Performs asynchronous operations such as fetching suggestions
+     * based on the current input value.
+     */
     async onInput() {
       this.showDropdown = true;
       this.items = await this.fetchItems(this.search);
       this.$emit('update:modelValue', null);
     },
+    /**
+     * Handles the selection of an item from the autocomplete list.
+     * Emits the selected address item to the parent component and updates the input value.
+     * @param {Object} item - The item selected by the user.
+     */
     selectItem(item) {
       this.search = item.label;
       this.showDropdown = false;

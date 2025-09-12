@@ -19,7 +19,17 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * Model ParcEtJardin.
+ * Modèle représentant un parc ou jardin issu de l'opendata.
+ * <p>
+ * Cette entité contient les informations détaillées sur un parc ou jardin :
+ * <ul>
+ *   <li>Identifiant, nom, quartier, hiérarchie, type et sous-type</li>
+ *   <li>État d'ouverture, aire de jeux, adresse</li>
+ *   <li>Surface, coordonnées, contour géométrique</li>
+ *   <li>Dates d'ouverture/fermeture, type, source, statut</li>
+ *   <li>Référence à la commune (City)</li>
+ * </ul>
+ * Fournit également des méthodes utilitaires pour obtenir la latitude/longitude.
  */
 @Data
 @Entity(name = "parc_jardin")

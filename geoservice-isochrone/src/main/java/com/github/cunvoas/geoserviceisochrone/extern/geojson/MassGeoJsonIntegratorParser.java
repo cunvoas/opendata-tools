@@ -21,11 +21,17 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyS
 import lombok.extern.slf4j.Slf4j;
 
 /**
- *  Import très lent: 17000 lignes/h, soit 33j d'import.
- *  
- *  Optimisation > direct en base
- *  @deprecated
- *  @see massImportCarreau200mSeuls.sql
+ * Intégrateur de masse de fichiers GeoJSON pour les carreaux de 200m.
+ * <p>
+ * Cette classe permet d'importer en masse des entités à partir de fichiers GeoJSON INSPIRE.
+ * ATTENTION : Import très lent (environ 17 000 lignes/heure, soit 33 jours pour un import complet).
+ * <br>
+ * Il est recommandé d'utiliser une importation directe en base de données.
+ * </p>
+ * <p>
+ * Classe dépréciée.
+ * Voir massImportCarreau200mSeuls.sql pour une alternative plus performante.
+ * </p>
  */
 @Component
 @Slf4j
@@ -42,9 +48,9 @@ public class MassGeoJsonIntegratorParser {
 	private InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;
 
 	/**
-	 * Parse INSPIRE geojson file.
-	 * 
-	 * @param fGeojson
+	 * Parse un fichier GeoJSON INSPIRE et enregistre les entités correspondantes.
+	 *
+	 * @param fGeojson Chemin du fichier GeoJSON à parser
 	 */
 	public void parseAndSave(String fGeojson) {
 

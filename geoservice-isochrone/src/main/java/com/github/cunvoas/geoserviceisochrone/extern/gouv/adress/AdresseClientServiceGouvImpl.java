@@ -18,8 +18,12 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Client qui implémente: adresse.data.gouv
- * @see https://adresse.data.gouv.fr/api-doc/adresse
+ * Implémentation du service de recherche d'adresses utilisant l'API adresse.data.gouv.fr.
+ * <p>
+ * Cette classe interroge l'API publique française pour obtenir des suggestions d'adresses
+ * et les transforme en objets métier via le parseur GeoJSON.
+ *
+ * @see <a href="https://adresse.data.gouv.fr/api-doc/adresse">Documentation API adresse.data.gouv.fr</a>
  */
 @Component
 @Slf4j
@@ -30,6 +34,13 @@ public class AdresseClientServiceGouvImpl implements AdresseClientService {
 	
 	private static final String URL = "https://api-adresse.data.gouv.fr/";
 	
+	/**
+     * Recherche les adresses via l'API adresse.data.gouv.fr et parse la réponse.
+     *
+     * @param insee   le code INSEE de la commune
+     * @param requete la requête d'adresse
+     * @return un ensemble d'adresses trouvées ou null en cas d'erreur de parsing
+     */
 	@Override
 	public Set<AdressBo> getAdresses(String insee, String requete) {
 		log.info("insee={}, q={}", insee, requete);

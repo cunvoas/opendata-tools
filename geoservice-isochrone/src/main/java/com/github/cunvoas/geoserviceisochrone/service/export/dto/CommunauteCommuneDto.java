@@ -9,14 +9,16 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import lombok.Data;
 
 /**
- * DTO.
+ * DTO représentant une communauté de communes pour l'export.
+ * Permet de transférer les informations essentielles d'une communauté de communes (nom, coordonnées, etc.).
  */
 @Data
 public class CommunauteCommuneDto {
 
 	/**
-	 * Constructor
-	 * @param model BO
+	 * Construit un DTO à partir d'un objet métier CommunauteCommune.
+	 *
+	 * @param model la communauté de communes source
 	 */
 	public CommunauteCommuneDto(CommunauteCommune model) {
 		super();
@@ -69,9 +71,13 @@ public class CommunauteCommuneDto {
 		}
 	}
 	
+	/** Identifiant de la communauté de communes */
 	private Long id;
+	/** Nom de la communauté de communes */
 	private String name;
+	/** Longitude (X) du centroïde ou calculée */
 	private Double lonX;
+	/** Latitude (Y) du centroïde ou calculée */
 	private Double latY;
 
 

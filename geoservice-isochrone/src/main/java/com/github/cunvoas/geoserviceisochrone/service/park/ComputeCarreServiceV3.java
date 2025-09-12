@@ -42,7 +42,17 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Business Service impl.
+ * Service métier pour le calcul des carrés de 200m (version 3).
+ * <p>
+ * Ce service permet de réaliser différents calculs et traitements sur les entités de type carré 200m,
+ * notamment en fonction des codes postaux, codes INSEE ou identifiants Inspire.
+ * Il gère également l'activité des parcs pour une année donnée.
+ * <ul>
+ *   <li>Calculs par code postal, code INSEE ou identifiant Inspire (méthodes commentées)</li>
+ *   <li>Vérification de l'activité d'un parc pour une année donnée</li>
+ * </ul>
+ *
+ * Les dépendances sont injectées via l'annotation @Autowired de Spring.
  */
 @Service
 @Slf4j
@@ -124,10 +134,10 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 //	}
 
 	/**
-	 * isActive.
-	 * @param pa ParkArea
-	 * @param annee year 
-	 * @return park is active?
+	 * Vérifie si un parc est actif pour une année donnée.
+	 * @param pa ParkArea à vérifier
+	 * @param annee Année de référence
+	 * @return TRUE si le parc est actif pour l'année, FALSE sinon
 	 */
 	protected Boolean isActive(ParkArea pa, Integer annee) {
 		Boolean active=false;

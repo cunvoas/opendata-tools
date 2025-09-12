@@ -20,7 +20,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
 import com.github.cunvoas.geoserviceisochrone.service.admin.BatchJobService;
 
 /**
- * Page controler for ComputeJob.
+ * Contrôleur de gestion des tâches de calcul (ComputeJob).
+ * Permet d'afficher la page de gestion des jobs de calcul.
  */
 @Controller
 @RequestMapping("/mvc/management/jobs")
@@ -40,9 +41,9 @@ public class ComputeJobControler {
 	
 
 	/**
-	 * edit my profil.
-	 * @param model form
-	 * @return page name
+	 * Affiche la page de gestion des jobs de calcul pour l'utilisateur connecté.
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de gestion
 	 */
 	@GetMapping
 	@PreAuthorize("hasRole('ADMINISTRATOR') OR hasRole('ASSO_MANAGER')")

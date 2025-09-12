@@ -17,7 +17,8 @@ import org.springframework.stereotype.Component;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisData;
 
 /**
- * CSV parser to import.
+ * Parseur CSV pour l'import des données IRIS (découpage statistique INSEE).
+ * Permet de lire et d'associer les données démographiques par IRIS.
  * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */
@@ -27,7 +28,8 @@ public class CsvIrisDataParser {
 	public static final String HEADER="IRIS;COM;TYP_IRIS;LAB_IRIS;P20_POP;P20_POP0002;P20_POP0305;P20_POP0610;P20_POP1117;P20_POP1824;P20_POP2539;P20_POP4054;P20_POP5564;P20_POP6579;P20_POP80P;P20_POP0014;P20_POP1529;P20_POP3044;P20_POP4559;P20_POP6074;P20_POP75P;P20_POP0019;P20_POP2064;P20_POP65P;P20_POPH;P20_H0014;P20_H1529;P20_H3044;P20_H4559;P20_H6074;P20_H75P;P20_H0019;P20_H2064;P20_H65P;P20_POPF;P20_F0014;P20_F1529;P20_F3044;P20_F4559;P20_F6074;P20_F75P;P20_F0019;P20_F2064;P20_F65P;C20_POP15P;C20_POP15P_CS1;C20_POP15P_CS2;C20_POP15P_CS3;C20_POP15P_CS4;C20_POP15P_CS5;C20_POP15P_CS6;C20_POP15P_CS7;C20_POP15P_CS8;C20_H15P;C20_H15P_CS1;C20_H15P_CS2;C20_H15P_CS3;C20_H15P_CS4;C20_H15P_CS5;C20_H15P_CS6;C20_H15P_CS7;C20_H15P_CS8;C20_F15P;C20_F15P_CS1;C20_F15P_CS2;C20_F15P_CS3;C20_F15P_CS4;C20_F15P_CS5;C20_F15P_CS6;C20_F15P_CS7;C20_F15P_CS8;P20_POP_FR;P20_POP_ETR;P20_POP_IMM;P20_PMEN;P20_PHORMEN";
 
 	/**
-	 * CSV Header definition for easier mods.
+	 * Enumération des entêtes du CSV IRIS pour faciliter la maintenance et l'évolution.
+	 * Permet de référencer chaque colonne du fichier source.
 	 * @author cunvoas
 	 */
 	public enum IrisDataCsvHeaders {
@@ -213,7 +215,6 @@ public class CsvIrisDataParser {
 					iris.setH15p_cs3(new BigDecimal(row.get(IrisDataCsvHeaders.h15p_cs3)));
 					iris.setH15p_cs4(new BigDecimal(row.get(IrisDataCsvHeaders.h15p_cs4)));
 					iris.setH15p_cs5(new BigDecimal(row.get(IrisDataCsvHeaders.h15p_cs5)));
-					iris.setH15p_cs6(new BigDecimal(row.get(IrisDataCsvHeaders.h15p_cs6)));
 					iris.setH15p_cs7(new BigDecimal(row.get(IrisDataCsvHeaders.h15p_cs7)));
 					iris.setH15p_cs8(new BigDecimal(row.get(IrisDataCsvHeaders.h15p_cs8)));
 					iris.setF15p(new BigDecimal(row.get(IrisDataCsvHeaders.f15p)));

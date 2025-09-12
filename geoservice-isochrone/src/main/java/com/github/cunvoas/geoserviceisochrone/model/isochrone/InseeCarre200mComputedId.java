@@ -6,7 +6,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Id for model InseeCarre200mComputed.
+ * Identifiant pour le modèle InseeCarre200mComputed.
+ * <p>
+ * Composé de l'année de la donnée et de l'identifiant Inspire du carreau de 200 m.
+ * </p>
  */
 @Data
 @EqualsAndHashCode(of = {"annee", "idInspire"})

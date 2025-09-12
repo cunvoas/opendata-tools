@@ -24,11 +24,13 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * Analyseur de fichiers JSON pour les parcs et jardins de Toulouse.
+ * Permet d'extraire les informations des espaces verts à partir d'un fichier JSON.
+ * 
  * @author cunvoas
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  * 
- * @see https://opendata.roubaix.fr/explore/dataset/liste-des-jardins-familiaux-et-partages-de-roubaix/api/
- */
+*/
 @Component
 @Slf4j
 public class JsonToulouseParkJardinParser {
@@ -54,10 +56,10 @@ public class JsonToulouseParkJardinParser {
 	// uid nom num numvoie voie codepost commune code_insee surf_tot_m2 clos
 
 	/**
-	 * Parse CSV.
-	 * @param csvFile
-	 * @return
-	 * @throws IOException
+	 * Analyse le fichier JSON fourni et retourne la liste des parcs et jardins extraits.
+	 * @param csvFile Fichier JSON à analyser
+	 * @return Liste des objets ParcEtJardin extraits
+	 * @throws IOException en cas d'erreur de lecture du fichier
 	 */
 	public List<ParcEtJardin> parseJson(File csvFile) throws IOException {
 		List<ParcEtJardin> parks = new ArrayList<>();

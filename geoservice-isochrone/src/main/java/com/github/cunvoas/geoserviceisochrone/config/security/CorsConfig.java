@@ -13,7 +13,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * CORS setup.
+ * Configuration CORS (Cross-Origin Resource Sharing).
+ * <p>
+ * Permet de définir les origines autorisées et les méthodes HTTP acceptées.
+ * </p>
  */
 @Configuration
 @EnableWebSecurity
@@ -23,6 +26,10 @@ public class CorsConfig {
 	@Value("web.cors.allowed-origins")
 	private String productionSite;
 	
+	/**
+	 * Source de configuration CORS pour l'application.
+	 * @return la configuration CORS
+	 */
 	@Bean
 	CorsConfigurationSource corsConfigurationSource() {
 

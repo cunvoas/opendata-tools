@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 import lombok.Data;
 
 /**
- * set config as variables.
+ * Propriétés de configuration métier de l’application (OMS, INSEE, chemins, etc.).
+ * Permet d’injecter les paramètres via le fichier de configuration Spring.
  */
 @Component
 @Data

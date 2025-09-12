@@ -8,7 +8,8 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Laposte;
 
 /**
- * Spring JPA repository.
+ * Repository Spring Data JPA pour l'accès aux données de La Poste.
+ * Permet de rechercher par code postal.
  */
 @Repository
 public interface LaposteRepository extends JpaRepository<Laposte, String>{

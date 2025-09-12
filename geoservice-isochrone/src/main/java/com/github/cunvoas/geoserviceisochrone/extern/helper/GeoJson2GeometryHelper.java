@@ -17,7 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.MissingNode;
 
 /**
- * GeoJson 2 Geometry helper.
+ * Composant utilitaire pour la conversion de GeoJSON en objets Geometry (JTS).
+ * Permet de parser différents formats GeoJSON pour obtenir des géométries utilisables.
  */
 @Component
 public class GeoJson2GeometryHelper {
@@ -29,9 +30,10 @@ public class GeoJson2GeometryHelper {
 	private ObjectMapper mapper = new ObjectMapper();
 	
 	/**
-	 * @param geoJson
-	 * @return Geometry
-	 * @throws JsonProcessingException
+	 * Parse une chaîne GeoJSON et retourne la géométrie correspondante.
+	 * @param geoJson chaîne GeoJSON à parser
+	 * @return objet Geometry correspondant
+	 * @throws JsonProcessingException en cas d'erreur de parsing JSON
 	 */
 	public Geometry parse(String geoJson) throws JsonProcessingException {
 		Geometry ret = null;
@@ -48,6 +50,12 @@ public class GeoJson2GeometryHelper {
 		return ret;
 	}
 	
+	/**
+	 * Parse un GeoJSON de type Geoman et retourne la géométrie correspondante (Polygon ou MultiPolygon).
+	 * @param geoJson chaîne GeoJSON à parser
+	 * @return objet Geometry correspondant
+	 * @throws JsonProcessingException en cas d'erreur de parsing JSON
+	 */
 	public Geometry parseGeoman(String geoJson) throws JsonProcessingException {
 		Geometry ret = null;
 		
@@ -85,6 +93,12 @@ public class GeoJson2GeometryHelper {
 	}
 	
 	
+	/**
+	 * Parse un GeoJSON au format Inspire et retourne un objet GeoJsonInspire.
+	 * @param geoJson chaîne GeoJSON à parser
+	 * @return objet GeoJsonInspire correspondant
+	 * @throws JsonProcessingException en cas d'erreur de parsing JSON
+	 */
 	public GeoJsonInspire parseInspire(String geoJson) throws JsonProcessingException {
 		//JSonNode of root
 		JsonNode rootNode = mapper.readTree(geoJson);

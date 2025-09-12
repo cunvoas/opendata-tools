@@ -7,7 +7,17 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Model Laposte.
+ * Modèle représentant une entrée de la base de données de La Poste.
+ * <p>
+ * Cette entité contient les informations relatives à une commune selon les données de La Poste :
+ * <ul>
+ *   <li>Identifiant INSEE de la commune</li>
+ *   <li>Nom de la commune</li>
+ *   <li>Code postal</li>
+ *   <li>Lieu-dit (ligne 5)</li>
+ *   <li>Libellé d'acheminement</li>
+ *   <li>Coordonnées GPS</li>
+ * </ul>
  */
 @Data
 @Entity(name = "laposte")

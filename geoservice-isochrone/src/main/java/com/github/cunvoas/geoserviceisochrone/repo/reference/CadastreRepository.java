@@ -11,7 +11,8 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 
 /**
- * Spring JPA repository.
+ * Repository Spring Data JPA pour l'accès aux entités Cadastre.
+ * Permet de rechercher des parcelles cadastrales par zone ou coordonnées.
  */
 @Repository
 public interface CadastreRepository extends JpaRepository<Cadastre, String>{

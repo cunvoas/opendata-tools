@@ -14,7 +14,8 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 
 /**
- * file parser.
+ * Parseur de fichiers pour la préparation des mises à jour massives de parcs.
+ * Permet de regrouper les lignes CSV par parc et de préparer les objets nécessaires à la mise à jour.
  */
 @Component
 public class MassUpdatePreProcess {

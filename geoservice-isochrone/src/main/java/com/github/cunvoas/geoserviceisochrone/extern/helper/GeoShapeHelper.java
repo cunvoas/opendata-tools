@@ -23,7 +23,8 @@ import org.locationtech.jts.util.GeometricShapeFactory;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
 
 /**
- * Geometry helper.
+ * Classe utilitaire pour la manipulation de géométries (JTS).
+ * Permet de créer et parser des points, polygones, etc. à partir de différentes représentations.
  */
 public class GeoShapeHelper {
 
@@ -31,6 +32,11 @@ public class GeoShapeHelper {
 	private static GeometricShapeFactory shapeFactory = new GeometricShapeFactory(factory);
 	
 	
+	/**
+	 * Retourne un point JTS à partir d'un objet Coordinate personnalisé.
+	 * @param geoPoint objet Coordinate (latitude/longitude)
+	 * @return Point JTS correspondant
+	 */
 	public static Point getPoint(com.github.cunvoas.geoserviceisochrone.model.Coordinate geoPoint) {
 		Point point= null;
 		Double lat = geoPoint.getLatitude();
@@ -40,9 +46,9 @@ public class GeoShapeHelper {
 		return point;
 	}
 	/**
-	 * 
-	 * @param geoPoint Lille 3,50.
-	 * @return
+	 * Parse une chaîne "lat,lon" et retourne un point JTS.
+	 * @param geoPoint chaîne de coordonnées (ex: "50,3")
+	 * @return Point JTS correspondant
 	 */
 	public static Point parsePointLatLon(String geoPoint) {
 		Point point= null;
@@ -56,6 +62,12 @@ public class GeoShapeHelper {
 	}
 	
 	
+	/**
+	 * Retourne un point JTS à partir de coordonnées longitude et latitude.
+	 * @param lng longitude
+	 * @param lat latitude
+	 * @return Point JTS correspondant
+	 */
 	public static Point getPoint(Double lng, Double lat) {
 		Point point= null;
 		point = factory.createPoint(new Coordinate(lng, lat));
@@ -63,8 +75,9 @@ public class GeoShapeHelper {
 	}
 	
 	/**
-	 *  @param geoPoint Lille 50, 3.
-	 * @return
+	 * Parse une chaîne "lat,lng" et retourne un point JTS.
+	 * @param geoPoint chaîne de coordonnées (ex: "50,3")
+	 * @return Point JTS correspondant
 	 */
 	public static Point parsePointLatLng(String geoPoint) {
 		Point point= null;
@@ -78,8 +91,9 @@ public class GeoShapeHelper {
 	}
 	
 	/**
-	 *  @param geoPoint Lille 3,50
-	 * @return
+	 * Parse une chaîne "lng,lat" et retourne un point JTS.
+	 * @param geoPoint chaîne de coordonnées (ex: "3,50")
+	 * @return Point JTS correspondant
 	 */
 	public static Point parsePointLngLat(String geoPoint) {
 		Point point= null;
