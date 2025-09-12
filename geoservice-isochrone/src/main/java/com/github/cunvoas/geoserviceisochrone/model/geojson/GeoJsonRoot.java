@@ -6,14 +6,16 @@ import java.util.List;
 import lombok.Data;
 
 /**
- * DTO for GeoJson root.
- * Implements GeoJson RFC-7946.
- * @author cunvoas
+ * DTO représentant la racine d'un document GeoJson (FeatureCollection).
+ * Conforme à la spécification GeoJson RFC-7946.
+ * Contient la liste des features du document.
  * @see https://www.rfc-editor.org/rfc/rfc7946
  * @see https://geojson.org/geojson-spec.html
  */
 @Data
 public class GeoJsonRoot {
-	private final String type="FeatureCollection";
-	private List<GeoJsonFeature> features = new ArrayList<>();
+    /** Type de la racine GeoJson (toujours "FeatureCollection"). */
+    private final String type="FeatureCollection";
+    /** Liste des features contenues dans la collection. */
+    private List<GeoJsonFeature> features = new ArrayList<>();
 }

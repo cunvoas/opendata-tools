@@ -16,7 +16,15 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * Model Region.
+ * Modèle représentant une région administrative.
+ * <p>
+ * Cette entité contient :
+ * <ul>
+ *   <li>Identifiant et nom de la région</li>
+ *   <li>Liste des communautés de communes associées</li>
+ *   <li>Liste des villes associées</li>
+ * </ul>
+ * Fournit une méthode de comparaison basée sur le nom de la région.
  */
 @Data
 @Entity(name = "adm_region")

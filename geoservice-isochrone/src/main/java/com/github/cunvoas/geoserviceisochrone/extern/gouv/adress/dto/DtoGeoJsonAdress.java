@@ -6,7 +6,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * DTO.
+ * DTO pour la désérialisation des propriétés d'une adresse au format GeoJSON.
+ * <p>
+ * Utilisé pour mapper les propriétés d'une adresse retournée par l'API adresse.data.gouv.fr.
  */
 @Data
 @EqualsAndHashCode(callSuper=false, onlyExplicitlyIncluded = true)

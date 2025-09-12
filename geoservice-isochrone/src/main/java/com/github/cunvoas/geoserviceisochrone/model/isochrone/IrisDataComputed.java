@@ -13,8 +13,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Model Iris.
- * @see https://www.insee.fr/fr/statistiques/7704076#dictionnaire
+ * Modèle Iris calculé.
+ * <p>
+ * Représente les données démographiques et d'accès aux parcs pour un IRIS donné.
+ * Voir la documentation INSEE : https://www.insee.fr/fr/statistiques/7704076#dictionnaire
+ * </p>
  */
 @Data
 @Entity(name = "iris_data_computed")

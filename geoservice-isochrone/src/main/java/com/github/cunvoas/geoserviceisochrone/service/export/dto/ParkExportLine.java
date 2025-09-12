@@ -13,34 +13,46 @@ import org.apache.commons.lang3.builder.CompareToBuilder;
 import lombok.Data;
 
 /**
- * DTO.
+ * DTO représentant une ligne d'export pour un parc ou jardin.
+ * Contient toutes les informations nécessaires à l'export CSV ou autre format tabulaire.
  */
 @Data
 public class ParkExportLine implements Comparable<ParkExportLine> {
 	
-	
+	/** Identifiant de la région */
 	private Long idRegion;
+	/** Identifiant de la communauté de communes */
 	private Long idCom2Co;
-	
+	/** Identifiant de la commune */
 	private Long idCommune;
+	/** Nom de la commune */
 	private String commune;
-	
+	/** Identifiant du parc */
 	private Long idPark;
+	/** Nom du parc */
 	private String parkName;
-	
+	/** Identifiant du type de parc */
 	private Long idTypePark;
+	/** Nom du type de parc */
 	private String parkTypeName;
+	/** Indique si le parc est customisé OMS */
 	private Boolean omsCustom;
-
+	/** Surface open data */
 	private Double surfaceOpendata;
-	private Double surfaceContour; // saisie autmel
-	
+	/** Surface du contour (saisie automatique) */
+	private Double surfaceContour;
+	/** Identifiant de la zone de parc */
 	private Long idParkArea;
+	/** Nombre d'entrées du parc */
 	private Integer nbParkEntrance;
-	private Date parkAreaComputedDate;
+	/** Date de calcul de la zone de parc */
+	private java.util.Date parkAreaComputedDate;
 
 	/**
-	 * @see java.lang.Comparable.compareTo(java.lang.Object)
+	 * Compare cette ligne d'export à une autre pour le tri.
+	 *
+	 * @param other autre ligne d'export
+	 * @return résultat de la comparaison
 	 */
 	@Override
 	public int compareTo(ParkExportLine other) {
@@ -52,13 +64,12 @@ public class ParkExportLine implements Comparable<ParkExportLine> {
 		return ctb.toComparison();
 	}
 	
-
 	private static final NumberFormat NF = new DecimalFormat("#.##O");
 	private static final DateFormat DF =new SimpleDateFormat("dd/MM/yyyy");
 	
 	/**
-	 * mapper
-	 * @return array
+	 * Transforme la ligne d'export en tableau de chaînes pour l'écriture CSV.
+	 * @return tableau de valeurs correspondant aux colonnes CSV
 	 */
 	public String[] map() {
 		List<String> rec = new ArrayList<>(14);
@@ -80,5 +91,5 @@ public class ParkExportLine implements Comparable<ParkExportLine> {
 		
 		return rec.toArray(new String[14]); 
 	}
-	
+
 }

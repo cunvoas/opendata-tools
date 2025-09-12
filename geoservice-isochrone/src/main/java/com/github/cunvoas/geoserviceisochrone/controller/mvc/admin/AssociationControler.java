@@ -22,7 +22,8 @@ import com.github.cunvoas.geoserviceisochrone.service.admin.AssociationService;
 
 
 /**
- * Page controler for association.
+ * Contrôleur de gestion des associations (interface d'administration).
+ * Permet d'afficher, d'ajouter, d'éditer et de sauvegarder les associations.
  */
 @Controller
 @RequestMapping("/mvc/management/asso")
@@ -35,9 +36,9 @@ public class AssociationControler {
 	private AssociationService associationService;
 
 	/**
-	 * call list page.
-	 * @param model form model
-	 * @return page name
+	 * Affiche la liste des associations accessibles à l'utilisateur connecté.
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de liste
 	 */
 	@GetMapping("/list")
 	public String getList(Model model) {
@@ -48,8 +49,9 @@ public class AssociationControler {
 	}
 	
 	/**
-	 * @param model form model
-	 * @return page name
+	 * Affiche le formulaire d'ajout d'une nouvelle association.
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@GetMapping("/add")
 	public String add(Model model) {
@@ -61,10 +63,10 @@ public class AssociationControler {
 	
 	
 	/**
-	 * call edit page.
-	 * @param id of asso
-	 * @param model form model
-	 * @return page name
+	 * Affiche le formulaire d'édition d'une association existante.
+	 * @param id Identifiant de l'association
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@GetMapping("/edit")
 	public String edit(@RequestParam Long id, Model model) {
@@ -75,12 +77,12 @@ public class AssociationControler {
 	}
 
 	/**
-	 * save methode.
-	 * @param asso BO
-	 * @param bindingResult html bind
-	 * @param modelMap map
-	 * @param model form
-	 * @return page name
+	 * Sauvegarde une association (création ou modification).
+	 * @param asso Association à sauvegarder
+	 * @param bindingResult Résultat de la validation
+	 * @param modelMap Map du modèle
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/edit")
 	@Transactional(isolation = Isolation.READ_COMMITTED)

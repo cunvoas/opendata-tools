@@ -15,7 +15,8 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Configuration for Thymeleaf.
+ * Configuration Spring MVC pour l’intégration de Thymeleaf.
+ * Gère les ressources statiques, l’internationalisation et le contexte d’application.
  */
 @Configuration
 @EnableWebMvc

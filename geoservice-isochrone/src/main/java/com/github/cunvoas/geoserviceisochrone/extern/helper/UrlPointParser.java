@@ -9,14 +9,20 @@ import com.github.cunvoas.geoserviceisochrone.exception.ExceptionParseUrl;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 
 /**
- * point extractor from URL helper.
+ * Composant utilitaire pour extraire des coordonnées à partir d'URL ou de chaînes de texte.
+ * Permet de parser différents formats d'URL (Google Maps, Geoportail, etc.) pour obtenir des coordonnées géographiques.
  */
 @Component
 public class UrlPointParser {
 	
 	private static final Pattern pattern = Pattern.compile("([0-9]+[.][0-9]+),([0-9]+[.][0-9]+)");
 	
-	
+	/**
+	 * Extrait les coordonnées d'une URL ou d'une chaîne générique.
+	 * @param genericUrl URL ou chaîne à parser
+	 * @return objet Coordinate extrait
+	 * @throws ExceptionParseUrl si le format n'est pas supporté
+	 */
 	public Coordinate parse (String genericUrl) {
 		Coordinate coord=null;
 		
@@ -37,6 +43,11 @@ public class UrlPointParser {
 		return coord;
 	}
 	
+	/**
+	 * Extrait les coordonnées d'une chaîne de type "lat,lon".
+	 * @param latLng chaîne de coordonnées
+	 * @return objet Coordinate extrait ou null
+	 */
 	protected Coordinate parseLatLng (String latLng) {
 		Coordinate coord=null;
 		
@@ -53,9 +64,9 @@ public class UrlPointParser {
 	}
 	
 	/**
-	 * Parse URL from point on GoogleMap
-	 * @param gmapUrl https://www.google.com/maps/@50.1234567,3.1234567,18z
-	 * @return
+	 * Extrait les coordonnées d'une URL Google Maps.
+	 * @param gmapUrl URL Google Maps
+	 * @return objet Coordinate extrait ou null
 	 */
 	protected Coordinate parseGoogle (String gmapUrl) {
 		Coordinate coord=null;
@@ -71,9 +82,9 @@ public class UrlPointParser {
 		return coord;
 	}
 	/**
-	 * Parse URL from point on GeoPortail
-	 * @param geopUrl https://www.geoportail.gouv.fr/carte?c=2.473994493484497,48.85187488786221&z=17&l0=ORTHOIMAGERY.ORTHOPHOTOS::GEOPORTAIL:OGC:WMTS(1)&l1=GEOGRAPHICALNAMES.NAMES::GEOPORTAIL:OGC:WMTS(1)&l2=UTILITYANDGOVERNMENTALSERVICES.IGN.POI.ENSEIGNEMENTPRIMAIRE::GEOPORTAIL:OGC:WMS(1)&l3=UTILITYANDGOVERNMENTALSERVICES.IGN.POI.ENSEIGNEMENTMATERNELLES::GEOPORTAIL:OGC:WMS(1)&permalink=yes
-	 * @return
+	 * Extrait les coordonnées d'une URL Geoportail.
+	 * @param geopUrl URL Geoportail
+	 * @return objet Coordinate extrait ou null
 	 */
 	protected Coordinate parseGeoportail (String geopUrl) {
 		Coordinate coord=null;

@@ -31,10 +31,11 @@ import okhttp3.OkHttpClient;
 
 
 /**
+ * Composant utilitaire pour l'envoi d'e-mails via l'API Mailjet.
+ * Permet de construire et d'envoyer des e-mails transactionnels avec ou sans pièce jointe.
  * @author cunvoas
  * @see https://github.com/mailjet/mailjet-apiv3-java
  * @see https://dev.mailjet.com/email/guides/send-api-v31/
- * @see https://github.com/mailjet/mailjet-apiv3-java#simple-post-request
  */
 @Component
 public class MailjetSender {
@@ -42,6 +43,13 @@ public class MailjetSender {
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	
+	/**
+	 * Envoie un e-mail à l'aide de Mailjet.
+	 * @param mailToContrib objet EmailToContributor contenant les informations du mail
+	 * @return l'objet EmailToContributor mis à jour avec le statut d'envoi
+	 * @throws MailjetException en cas d'erreur Mailjet
+	 * @throws IOException en cas d'erreur d'accès aux fichiers
+	 */
 	public EmailToContributor send(EmailToContributor mailToContrib) throws MailjetException, IOException {
         
         OkHttpClient customHttpClient = new OkHttpClient.Builder()
@@ -89,13 +97,12 @@ public class MailjetSender {
         return mailToContrib;
 	}
 	
-	
 	/**
-	 * put the file attached.
-	 * @param filePath path to file
-	 * @return json structure
-	 * @throws JSONException ex
-	 * @throws IOException ex
+	 * Prépare la structure JSON d'une pièce jointe à partir d'un fichier.
+	 * @param filePath chemin du fichier à attacher
+	 * @return structure JSON de la pièce jointe
+	 * @throws JSONException en cas d'erreur JSON
+	 * @throws IOException en cas d'erreur d'accès au fichier
 	 */
 	private static JSONObject getAttachement(String filePath) throws JSONException, IOException {
 		JSONObject attachement=null;

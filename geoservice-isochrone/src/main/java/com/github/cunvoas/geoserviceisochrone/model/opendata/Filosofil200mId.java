@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Id for Model Filosofil200m.
+ * Identifiant composite pour la classe Filosofil200m (année et identifiant Inspire du carreau).
  */
 
 @Data
@@ -22,9 +22,8 @@ public class Filosofil200mId implements Serializable {
 	 * Année de la donnée.
 	 */
     private Integer annee;
-	
 	/**
-	 *  Identifiant Inspire du carreau de 200 m.
+	 * Identifiant Inspire du carreau de 200 m.
 	 */
     private String idInspire;
 

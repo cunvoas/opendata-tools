@@ -6,8 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * helper for local IPs specific check.
- * @TODO
+ * Utilitaire pour la gestion et la vérification des adresses IP locales et réseaux privés.
+ * <p>
+ * Permet d'obtenir le sous-réseau local et de gérer des listes blanches ou privées d'adresses IP.
+ * </p>
+ * @TODO Compléter les méthodes pour une gestion avancée des réseaux locaux.
  */
 public class LocalNetworkHelper {
 
@@ -15,7 +18,6 @@ public class LocalNetworkHelper {
 //		System.out.println(getSubnet());
 //	}
 
-	
 	private static List<String> whitelist = new ArrayList<String>();
 	static {
 		whitelist.add("127.0.0");
@@ -32,8 +34,11 @@ public class LocalNetworkHelper {
 		privateNetwork.add(new String[]{"192.168", "192.168"});
 	}
 
-
-	
+	/**
+	 * Retourne le sous-réseau local de la machine.
+	 * @return le sous-réseau local sous forme de chaîne (ex: 192.168.1)
+	 * @throws UnknownHostException si l'adresse locale ne peut être déterminée
+	 */
 	private static String getSubnet() throws UnknownHostException {
 	    InetAddress localHost = InetAddress.getLocalHost();
 	    System.out.println(localHost);

@@ -16,7 +16,10 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkTypeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
 /**
- * Business Service impl.
+ * Service métier pour la gestion des types de parcs.
+ * <p>
+ * Ce service fournit des méthodes pour la recherche, la gestion et l'internationalisation des types de parcs.
+ * Les dépendances sont injectées via l'annotation @Autowired de Spring.
  */
 @Service
 public class ParkTypeService {

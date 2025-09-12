@@ -13,9 +13,45 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * impl api v1.
- * @author cunvoas
- * @see https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrone/api
+ * <b>ClientIsoChroneApiV1</b> : Client pour l'appel à l'API isochrone v1 de l'IGN.<br>
+ * <br>
+ * <b>Fonctionnalités principales :</b>
+ * <ul>
+ *   <li>Construit et exécute une requête HTTP vers l'API isochrone IGN (v1) pour obtenir une isochrone à partir d'une coordonnée et d'une durée.</li>
+ *   <li>Gère la construction de l'URL avec tous les paramètres nécessaires (point, durée, profil, etc.).</li>
+ *   <li>Utilise OkHttp pour l'appel HTTP et gère les en-têtes attendus par l'API IGN.</li>
+ *   <li>Retourne la réponse brute JSON de l'API.</li>
+ * </ul>
+ *
+ * <b>Dépendances :</b>
+ * <ul>
+ *   <li>{@link Coordinate} : Coordonnées du point de départ.</li>
+ *   <li>OkHttp : Client HTTP pour Java (<a href="https://square.github.io/okhttp/">https://square.github.io/okhttp/</a>).</li>
+ *   <li>Spring (@Component, @ConditionalOnProperty) pour l'injection et l'activation conditionnelle.</li>
+ * </ul>
+ *
+ * <b>Ressources externes :</b>
+ * <ul>
+ *   <li>Documentation API isochrone IGN :
+ *     <a href="https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrone/api">https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrone/api</a>
+ *   </li>
+ *   <li>Documentation OkHttp :
+ *     <a href="https://square.github.io/okhttp/">https://square.github.io/okhttp/</a>
+ *   </li>
+ * </ul>
+ *
+ * <b>Utilisation :</b>
+ * <pre>
+ *   ClientIsoChroneApiV1 client = new ClientIsoChroneApiV1();
+ *   String json = client.getIsoChrone(new Coordinate(2.337306, 48.849319), "300");
+ * </pre>
+ *
+ * <b>Remarques :</b>
+ * <ul>
+ *   <li>Le client est activé uniquement si la propriété <code>application.feature-flipping.isochrone-impl</code> vaut <code>ign-api-v1</code>.</li>
+ *   <li>La réponse est retournée telle quelle (JSON brut).</li>
+ *   <li>En cas d'erreur réseau, la pile d'exception est affichée dans les logs.</li>
+ * </ul>
  */
 @Component
 @Slf4j

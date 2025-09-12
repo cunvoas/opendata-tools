@@ -5,10 +5,10 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-
 /**
- * CSV parser to import.
+ * Parseur CSV pour l'import de carreaux INSEE 200m. Permet de gérer les entêtes et la conversion de colonnes.
  * @author cunvoas
+ * @deprecated Utilisation déconseillée, remplacé par d'autres parseurs plus récents.
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */
 @Component
@@ -16,7 +16,8 @@ import org.springframework.stereotype.Component;
 public class CsvCarre200ShapeParser {
 	
 	/**
-	 * CSV Header definition for easier mods.
+	 * Enumération des entêtes du CSV pour faciliter la maintenance et l'évolution.
+	 * Fournit également une méthode de lookup pour retrouver l'entête à partir du nom de colonne.
 	 * @author cunvoas
 	 */
 	public enum ParkEntranceCsvHeaders {
@@ -63,6 +64,11 @@ public class CsvCarre200ShapeParser {
 	}
 	
 	
+	/**
+	 * Convertit une chaîne en Double. Retourne 0 si la chaîne est vide ou nulle.
+	 * @param val la valeur à convertir
+	 * @return la valeur convertie en Double, ou 0 si la chaîne est vide
+	 */
 	private Double parseDouble(String val) {
 		Double ret = Double.valueOf(0);
 		

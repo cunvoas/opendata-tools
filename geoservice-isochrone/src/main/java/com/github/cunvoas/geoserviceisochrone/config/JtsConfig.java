@@ -6,14 +6,14 @@ import org.springframework.context.annotation.Configuration;
 import com.bedatadriven.jackson.datatype.jts.JtsModule;
 
 /**
- * Setup for JTS (geo libs)
+ * Configuration pour la bibliothèque JTS (librairies géospatiales).
  */
 @Configuration
 public class JtsConfig {
 
 	/**
-	 * Config Bean.
-	 * @return the json module configured.
+	 * Bean de configuration pour le module JTS JSON.
+	 * @return le module JSON configuré pour JTS
 	 */
 	@Bean
 	public JtsModule jtsModule() {

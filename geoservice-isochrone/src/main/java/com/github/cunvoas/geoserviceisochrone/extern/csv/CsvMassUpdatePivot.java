@@ -14,7 +14,9 @@ import lombok.NoArgsConstructor;
 
 
 /**
- * DTO.
+ * Objet de transfert (DTO) pour la mise à jour massive des parcs et jardins.
+ * Contient les informations de la région, de la communauté de communes, de la commune,
+ * du parc et de ses entrées associées.
  */
 @Data
 @NoArgsConstructor

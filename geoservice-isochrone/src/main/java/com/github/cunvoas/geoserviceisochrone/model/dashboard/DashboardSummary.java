@@ -6,26 +6,33 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * DTO DashboardSummary.
+ * DTO représentant le résumé global du tableau de bord.
+ * Contient les principaux indicateurs agrégés et la date de mise à jour.
  */
 @Data
 public class DashboardSummary {
-
-	private Long nbContributeur;
-	private Long nbAssociation;
-	private Long nbCommunauteCommune;
-	private Long nbCommune;
-
-	private Long nbFilosofil;
-	private Long nbCarreau;
-	private Long nbAnnee;
-	private Long nbParcReference;
-	
-	private Long nbParc;
-	private Long nbParcEntance;
-	private Long nbParcIsochrone;
-	
-	private Date updateDate;
-
-	
+    /** Nombre de contributeurs. */
+    private Long nbContributeur;
+    /** Nombre d'associations. */
+    private Long nbAssociation;
+    /** Nombre de communautés de communes. */
+    private Long nbCommunauteCommune;
+    /** Nombre de communes. */
+    private Long nbCommune;
+    /** Nombre de jeux de données Filosofil. */
+    private Long nbFilosofil;
+    /** Nombre de carreaux. */
+    private Long nbCarreau;
+    /** Nombre d'années. */
+    private Long nbAnnee;
+    /** Nombre de parcs de référence. */
+    private Long nbParcReference;
+    /** Nombre total de parcs. */
+    private Long nbParc;
+    /** Nombre d'entrées de parcs. */
+    private Long nbParcEntance;
+    /** Nombre d'isochrones de parcs. */
+    private Long nbParcIsochrone;
+    /** Date de mise à jour des données. */
+    private java.util.Date updateDate;
 }

@@ -19,7 +19,9 @@ import com.github.cunvoas.geoserviceisochrone.extern.gouv.adress.dto.AdressBo;
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoCoordinate;
 
 /**
- * parser json.
+ * Parseur GeoJSON pour les réponses de l'API adresse.data.gouv.fr.
+ * <p>
+ * Cette classe transforme les réponses JSON en objets métier utilisables dans l'application.
  */
 @Component
 public class AdressGeoJsonParser {
@@ -38,7 +40,14 @@ public class AdressGeoJsonParser {
 		objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 	}
 	
-	public Set<AdressBo> parse(String geoJson) throws JsonProcessingException {
+	/**
+     * Parse une chaîne GeoJSON et retourne un ensemble d'adresses.
+     *
+     * @param geoJson la chaîne JSON à parser
+     * @return un ensemble d'adresses extraites du GeoJSON
+     * @throws JsonProcessingException en cas d'erreur de parsing
+     */
+    public Set<AdressBo> parse(String geoJson) throws JsonProcessingException {
 		Set<AdressBo> set = new HashSet<>();
 		
 		
