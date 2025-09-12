@@ -22,7 +22,11 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Business Service impl.
+ * Service métier pour la gestion des parcs et jardins.
+ * <p>
+ * Ce service fournit des méthodes pour la création, la mise à jour et la gestion des entités ParcEtJardin,
+ * ainsi que leur association avec les communes, cadastres et types de parcs.
+ * Les dépendances sont injectées via l'annotation @Autowired de Spring.
  */
 @Service
 @Slf4j

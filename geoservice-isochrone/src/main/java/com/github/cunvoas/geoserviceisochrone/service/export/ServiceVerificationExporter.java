@@ -15,7 +15,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 import com.github.cunvoas.geoserviceisochrone.service.export.dto.ParkExportLine;
 
 /**
- * Business Service impl.
+ * Service métier pour l'export de données de vérification des parcs et jardins.
+ * Permet de générer des lignes d'export pour la vérification à partir des entités métier.
  */
 @Service
 public class ServiceVerificationExporter {
@@ -27,9 +28,10 @@ public class ServiceVerificationExporter {
 	private ParkAreaRepository parkAreaRepository;
 	
 	/**
-	 * export4verif.
-	 * @param com2co CommunauteCommune
-	 * @return list ParkExportLine
+	 * Exporte les données de vérification pour une communauté de communes.
+	 *
+	 * @param com2co la communauté de communes
+	 * @return liste des lignes d'export pour la vérification
 	 */
 	public List<ParkExportLine> export4verif(CommunauteCommune com2co) {
 		List<ParkExportLine> ret = new ArrayList<>();
@@ -41,9 +43,10 @@ public class ServiceVerificationExporter {
 	}
 
 	/**
-	 * export4verif.
-	 * @param city City
-	 * @return list ParkExportLine
+	 * Exporte les données de vérification pour une commune.
+	 *
+	 * @param city la commune
+	 * @return liste des lignes d'export pour la vérification
 	 */
 	public List<ParkExportLine> export4verif(City city) {
 		List<ParkExportLine> ret = new ArrayList<>();
@@ -56,10 +59,11 @@ public class ServiceVerificationExporter {
 	}
 	
 	/**
-	 * map.
-	 * @param city City
-	 * @param parcEtJardin ParcEtJardin
-	 * @return ParkExportLine
+	 * Effectue le mapping entre une commune et un parc/jardin pour générer une ligne d'export.
+	 *
+	 * @param city la commune
+	 * @param parcEtJardin le parc ou jardin
+	 * @return une ligne d'export pour la vérification
 	 */
 	private ParkExportLine map(City city, ParcEtJardin parcEtJardin) {
 		ParkExportLine prl = new ParkExportLine();

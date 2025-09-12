@@ -19,7 +19,14 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository
 import lombok.extern.slf4j.Slf4j;
 
 /**
- *  Intégrateur des fond iris.
+ * Intégrateur des fonds IRIS à partir de fichiers GeoJSON.
+ * <p>
+ * Cette classe permet de parser un fichier GeoJSON contenant les données IRIS et d'enregistrer les entités correspondantes en base de données.
+ * Elle utilise un helper pour la conversion GeoJSON vers géométrie et le repository pour la persistance.
+ * </p>
+ * <p>
+ * Usage typique : fournir l'année d'intégration et le chemin du fichier GeoJSON à la méthode parseAndSave.
+ * </p>
  */
 @Component
 @Slf4j
@@ -32,10 +39,10 @@ public class IrisGeoJsonIntegratorParser {
 	private IrisShapeRepository irisShapeRepository;
 
 	/**
-	 * Parse INSPIRE geojson file.
-	 * 
-	 * @param fGeojson integration year
-	 * @param fGeojson geojson file
+	 * Parse un fichier GeoJSON INSPIRE et enregistre les entités IRIS correspondantes.
+	 *
+	 * @param annee Année d'intégration des données
+	 * @param fGeojson Chemin du fichier GeoJSON à parser
 	 */
 	public void parseAndSave(Integer annee, String fGeojson) {
 

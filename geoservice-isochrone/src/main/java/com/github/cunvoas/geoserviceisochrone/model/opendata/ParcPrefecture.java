@@ -19,9 +19,16 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Model ParcPrefecture.
- * structure for initial data from prefecture.
- * Must be qualified to be plenty usable
+ * Modèle représentant un parc issu des données de la préfecture.
+ * <p>
+ * Cette entité structure les données initiales provenant de la préfecture et permet leur qualification :
+ * <ul>
+ *   <li>Nom d'origine, surface, polygone, point central</li>
+ *   <li>Nom qualifié, surface calculée, références à la commune et au parc opendata</li>
+ *   <li>Statut de traitement, indicateurs de qualification</li>
+ *   <li>Champs transitoires pour l'identification régionale et communale</li>
+ * </ul>
+ * Fournit une méthode utilitaire pour obtenir la latitude/longitude du point central.
  */
 @Data
 @EqualsAndHashCode(of = {"id"})

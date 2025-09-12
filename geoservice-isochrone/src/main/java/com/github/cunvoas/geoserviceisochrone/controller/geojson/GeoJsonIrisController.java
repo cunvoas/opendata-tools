@@ -41,8 +41,7 @@ public class GeoJsonIrisController {
 			@RequestParam("annee") Integer annee
 		) {
     	if (annee==null) {
-    		//FIXME 
-    		return geomapService.findAllIrisByArea(2020, swLat, swLng, neLat, neLng);
+    		return new GeoJsonRoot();
     	} else {
     		return geomapService.findAllIrisByArea(annee, swLat, swLng, neLat, neLng);
     	}
@@ -59,7 +58,7 @@ public class GeoJsonIrisController {
     @GetMapping("/iris/polygon")
     public GeoJsonRoot getCarreByArea(@RequestParam("polygon") Polygon polygon, @RequestParam("annee") Integer annee) {
         if (annee==null) {
-        	return geomapService.findAllIrisByArea(polygon, 2020);
+        	return new GeoJsonRoot();
         } else {
         	return geomapService.findAllIrisByArea(polygon, annee);	
         }

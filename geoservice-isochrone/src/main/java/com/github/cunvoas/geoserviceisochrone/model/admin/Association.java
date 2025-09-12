@@ -13,7 +13,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Model Association.
+ * Représente une association.
+ * Contient les informations principales d'une association (nom, email, logo, description, site web, etc.).
  */
 @Data
 @EqualsAndHashCode(of = {"id"})
@@ -22,6 +23,9 @@ import lombok.ToString;
 @Entity(name = "adm_asso")
 public class Association {
 
+	/**
+	 * Identifiant unique de l'association.
+	 */
 	@Id
 	@ToString.Include
 	@Column(name = "id")
@@ -33,14 +37,36 @@ public class Association {
     	)
 	private Long id;
 
+	/**
+	 * Nom de l'association.
+	 */
 	@ToString.Include
 	private String nom;
+
+	/**
+	 * Adresse email de contact de l'association.
+	 */
 	private String email;
+
+	/**
+	 * URL du logo de l'association.
+	 */
 	private String logo;
+
+	/**
+	 * Description de l'association.
+	 */
 	private String description;
 
+	/**
+	 * URL du site web de l'association.
+	 */
 	@Column(name = "site_url")
 	private String siteUrl;
+
+	/**
+	 * URL HelloAsso de l'association.
+	 */
 	@Column(name = "hello_asso_url")
 	private String helloAssoUrl;
 	

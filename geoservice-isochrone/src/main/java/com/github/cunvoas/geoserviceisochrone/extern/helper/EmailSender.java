@@ -29,7 +29,8 @@ import com.mailjet.client.errors.MailjetException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * send email.
+ * Composant utilitaire pour l'envoi d'e-mails.
+ * Permet notamment l'envoi de mots de passe et la gestion des modèles de messages.
  */
 @Component
 @Slf4j
@@ -48,12 +49,11 @@ public class EmailSender {
 	}
 	
 	/**
-	 * 
-	 * also get file from jar in prod.
-	 * @param file
-	 * @return
-	 * @throws URISyntaxException
-	 * @throws IOException
+	 * Récupère le chemin d'un fichier, y compris depuis un JAR en production.
+	 * @param file nom du fichier à récupérer
+	 * @return chemin du fichier sous forme de Path
+	 * @throws URISyntaxException si l'URI est invalide
+	 * @throws IOException si une erreur d'accès survient
 	 */
 	protected Path getFilePath(String file) throws URISyntaxException, IOException {
 		URI uri = getClass().getClassLoader().getResource(file).toURI();
@@ -73,6 +73,13 @@ public class EmailSender {
 		return  Paths.get(uri);
 	}
 
+	/**
+	 * Envoie un e-mail contenant un mot de passe à un utilisateur.
+	 * @param email adresse e-mail du destinataire
+	 * @param prenomNom nom complet du destinataire
+	 * @param password mot de passe à envoyer
+	 * @param login identifiant de connexion
+	 */
 	public void sendPassword(String email, String prenomNom, String password, String login) {
 		if (!toogleFeatureEmail) {
 			log.warn("skip email sendPassword");

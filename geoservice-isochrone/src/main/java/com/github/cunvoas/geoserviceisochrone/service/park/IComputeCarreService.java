@@ -8,41 +8,43 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 
 /**
- * Interface d'abstraction des versions du moteur.
+ * Interface d'abstraction pour les services de calcul sur les carrés de 200m.
+ * <p>
+ * Définit les méthodes principales pour le calcul, la mise à jour et la gestion des entrées de parcs,
+ * ainsi que le calcul de surface géométrique.
  */
 public interface IComputeCarreService {
 
 	/**
-	 * computeCarreByComputeJob.
-	 * @param job ComputeJob
-	 * @return true if done
+	 * Lance le calcul sur un carré 200m à partir d'un job de calcul.
+	 * @param job Job de calcul à traiter
+	 * @return TRUE si le calcul a été effectué, FALSE sinon
 	 */
 	Boolean computeCarreByComputeJob(ComputeJob job);
 
 	/**
-	 *  Used for mass update and full recompute ParkAreaEntrance.
-	 *  @param inseeCode code
+	 * Met à jour en masse et recalcule les entrées de parcs pour un code INSEE donné.
+	 * @param inseeCode Code INSEE de la commune
 	 */
 	void refreshParkEntrances(String inseeCode);
 
 	/**
-	 * Used for mass update and full recompute ParkAreaEntrance.
-	 * @param cadastre Cadastre
+	 * Met à jour en masse et recalcule les entrées de parcs pour un cadastre donné.
+	 * @param cadastre Entité cadastre
 	 */
 	void refreshParkEntrances(Cadastre cadastre);
 
 	/**
-	 * Compute ParkEntrance from ParkArea and List<ParkEntrance>.
-	 * @param park
-	 * @return ParkAreaComputed
-	 * @TODO to be reviewed
+	 * Calcule les entrées de parc à partir d'une entité ParkArea.
+	 * @param park Entité ParkArea
+	 * @return Résultat du calcul sous forme de ParkAreaComputed
 	 */
 	ParkAreaComputed computeParkArea(ParkArea park);
 
 	/**
-	 * getSurface.
-	 * @param geom  Geometry
-	 * @return surface of Geometry
+	 * Calcule la surface d'une géométrie.
+	 * @param geom Géométrie à mesurer
+	 * @return Surface de la géométrie
 	 */
 	Long getSurface(Geometry geom);
 

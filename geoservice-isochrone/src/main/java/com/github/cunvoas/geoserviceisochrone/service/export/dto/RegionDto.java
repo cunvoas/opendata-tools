@@ -5,14 +5,16 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import lombok.Data;
 
 /**
- * DTO.
+ * DTO représentant une région pour l'export.
+ * Permet de transférer les informations essentielles d'une région (nom, identifiant).
  */
 @Data
 public class RegionDto {
 
 	/**
-	 * Constructor
-	 * @param model BO
+	 * Construit un DTO à partir d'un objet métier Region.
+	 *
+	 * @param model la région source
 	 */
 	public RegionDto(Region model) {
 		super();
@@ -20,7 +22,9 @@ public class RegionDto {
 		this.name=model.getName();
 	}
 	
+	/** Identifiant de la région */
 	private Long id;
+	/** Nom de la région */
 	private String name;
 
 }

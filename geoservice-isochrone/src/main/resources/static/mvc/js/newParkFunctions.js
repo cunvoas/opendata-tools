@@ -37,12 +37,6 @@ function calcCrow(ilat1, ilon1, ilat2, ilon2) {
   return d;
 }
 
-// locate client from browser location feature
-function locateMe() {
-    if (navigator.geolocation) {
-       navigator.geolocation.getCurrentPosition(showPosition);
-    }
-}
 
 // conertion of degrees, minutes, seconds to Decimal
 function ConvertDMSToDD(degrees, minutes, seconds, direction) {

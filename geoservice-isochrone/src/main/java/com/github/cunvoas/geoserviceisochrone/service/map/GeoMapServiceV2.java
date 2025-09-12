@@ -895,7 +895,7 @@ public class GeoMapServiceV2 {
 	 * @param annee year
 	 * @return GeoJson carre 
 	 */
-	protected GeoJsonRoot findAllIrisByArea(Collection<IrisShape> carres, Integer annee) {
+	protected GeoJsonRoot findAllIrisByArea(Collection<IrisShape> iris, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		
 		//TODO IRIS make the implem

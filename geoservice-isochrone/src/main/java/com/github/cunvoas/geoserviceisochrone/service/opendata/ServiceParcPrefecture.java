@@ -20,7 +20,18 @@ import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
 import com.github.cunvoas.geoserviceisochrone.service.park.IComputeCarreService;
 
 /**
- * Business Service impl.
+ * Service métier pour la gestion des parcs préfectoraux.
+ * <p>
+ * Ce service fournit des méthodes pour :
+ * <ul>
+ *   <li>Mettre à jour les entités ParcPrefecture en recalculant leur surface et leur association avec un ParcEtJardin</li>
+ *   <li>Récupérer un ParcPrefecture par son identifiant</li>
+ *   <li>Enregistrer ou mettre à jour un ParcPrefecture</li>
+ *   <li>Préparer un ParcPrefecture à partir d'un nom et d'un polygone</li>
+ *   <li>Normaliser et supprimer les accents d'une chaîne de caractères</li>
+ * </ul>
+ *
+ * Les dépendances sont injectées via l'annotation @Autowired de Spring.
  */
 @Service
 public class ServiceParcPrefecture {
@@ -38,7 +49,7 @@ public class ServiceParcPrefecture {
 	private CityService cityService;
 	
 	/**
-	 * update ParcPrefecture.
+	 * Met à jour tous les objets ParcPrefecture en recalculant leur surface et leur association avec un ParcEtJardin.
 	 */
 	public void update() {
 		List<ParcPrefecture> pps = parcPrefectureRepository.findAll();
@@ -48,9 +59,9 @@ public class ServiceParcPrefecture {
 	}
 	
 	/**
-	 * getById.
-	 * @param id ParcPrefecture
-	 * @return ParcPrefecture
+	 * Récupère un ParcPrefecture par son identifiant.
+	 * @param id Identifiant du ParcPrefecture
+	 * @return ParcPrefecture correspondant ou null si non trouvé
 	 */
 	public ParcPrefecture getById(Long id) {
 		Optional<ParcPrefecture> opt = parcPrefectureRepository.findById(id);
@@ -61,18 +72,18 @@ public class ServiceParcPrefecture {
 	}
 
 	/**
-	 * update.
-	 * @param pp ParcPrefecture
-	 * @return ParcPrefecture
+	 * Enregistre ou met à jour un ParcPrefecture.
+	 * @param pp ParcPrefecture à enregistrer ou mettre à jour
+	 * @return ParcPrefecture enregistré ou mis à jour
 	 */
 	public ParcPrefecture update(ParcPrefecture pp) {
 		return parcPrefectureRepository.save(pp);
 	}
 
 	/**
-	 * computeAndUpdate.
-	 * @param pp ParcPrefecture
-	 * @return ParcPrefecture
+	 * Calcule la surface et l'association ParcEtJardin pour un ParcPrefecture, puis met à jour l'entité si nécessaire.
+	 * @param pp ParcPrefecture à traiter
+	 * @return ParcPrefecture mis à jour
 	 */
 	public ParcPrefecture computeAndUpdate(ParcPrefecture pp) {
 		boolean updated=false;
@@ -125,10 +136,10 @@ public class ServiceParcPrefecture {
 	}
 
 	/**
-	 * prepareFromSite.
-	 * @param name NamePrefecture
-	 * @param polygon Polygon
-	 * @return ParcPrefecture
+	 * Prépare un ParcPrefecture à partir d'un nom et d'un polygone, en associant la commune la plus proche.
+	 * @param name Nom de la préfecture
+	 * @param polygon Polygone représentant la zone du parc
+	 * @return ParcPrefecture créé et enregistré
 	 */
 	public ParcPrefecture prepareFromSite(String name, Polygon polygon) {
 
@@ -164,17 +175,17 @@ public class ServiceParcPrefecture {
 	
 	
 	/**
-	 * normalize.
-	 * @param input string
-	 * @return string
+	 * Normalise une chaîne de caractères (NFKD).
+	 * @param input Chaîne à normaliser
+	 * @return Chaîne normalisée
 	 */
 	private static String normalize(String input) {
 	    return input == null ? null : Normalizer.normalize(input, Normalizer.Form.NFKD);
 	}
 	/**
-	 * removeAccents.
-	 * @param input string
-	 * @return string
+	 * Supprime les accents d'une chaîne de caractères.
+	 * @param input Chaîne d'entrée
+	 * @return Chaîne sans accents
 	 */
 	private static String removeAccents(String input) {
 	    return normalize(input).replaceAll("\\p{M}", "");

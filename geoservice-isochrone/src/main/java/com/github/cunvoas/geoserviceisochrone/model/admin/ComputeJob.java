@@ -12,7 +12,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Model ComputeJob.
+ * Représente un travail de calcul pour une maille INSEE (carre 200m) et une année.
+ * Permet de suivre l'état d'avancement du traitement pour chaque maille.
  */
 @Data
 @EqualsAndHashCode(of = {"annee", "idInspire"})
@@ -27,19 +28,34 @@ public class ComputeJob {
 	@Column(name="annee",length=4)
     private Integer annee;
 	
+	/**
+	 * Identifiant Inspire de la maille INSEE (carre 200m).
+	 */
 	@Id
 	@Column(name="idInspire",length=30)
 	private String idInspire;
 	
+	/**
+	 * Date de demande du traitement.
+	 */
 	@Column(name="demand")
 	private Date demand = new Date();
 
+	/**
+	 * Date de traitement effectif.
+	 */
 	@Column(name="processed")
 	private Date processed;
 
+	/**
+	 * Statut du traitement.
+	 */
 	@Column(name="status")
 	private ComputeJobStatusEnum status = ComputeJobStatusEnum.TO_PROCESS;
 
+	/**
+	 * Code INSEE de la commune.
+	 */
 	@Column(name="insee",length=5)
 	private String codeInsee;
 }

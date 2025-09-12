@@ -11,8 +11,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200mId;
 
 /**
- * Spring JPA repository.
- * Repo for INSEE stats (population, ages, poor...)
+ * Repository Spring Data JPA pour l'accès aux statistiques INSEE (population, âges, pauvreté...) à l'échelle 200m.
  */
 @Repository
 public interface Filosofil200mRepository extends JpaRepository< Filosofil200m,  Filosofil200mId>{

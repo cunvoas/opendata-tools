@@ -15,7 +15,8 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 
 /**
- * Spring JPA repository.
+ * Repository Spring Data JPA pour l'accès aux parcs et jardins.
+ * Permet de manipuler les géométries associées.
  */
 @Repository
 public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> {

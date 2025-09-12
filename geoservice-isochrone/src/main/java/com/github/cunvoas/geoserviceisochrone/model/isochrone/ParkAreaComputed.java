@@ -13,49 +13,46 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Model ParkAreaComputed.
- * Compute of one park.
+ * Modèle représentant les indicateurs calculés pour une zone d'accessibilité de parc.
+ * Contient les résultats de calculs démographiques et surfaciques pour une zone donnée et une année.
  */
 @Data
 @Entity(name = "park_area_computed")
 @IdClass(ParkAreaComputedId.class)
 @EqualsAndHashCode(of = {"annee", "id"})
 public class ParkAreaComputed {
-
-	// same as ParkArea
-	@Id
-	@Column(name = "id")
-	private Long id;
-	
-	@Id
-	@Column(name = "annee")
-	private Integer annee;
-	
-
-	@Column(name = "oms")
-	private Boolean oms;
-	
-	@Column(name = "surface", precision = 11, scale = 2)
-	private BigDecimal surface;
-	
-	@Column(name = "population", precision = 7, scale = 2)
-	private BigDecimal population;
-	
-	@Column(name = "surface_population", precision = 10, scale =2)
-	private BigDecimal surfacePerInhabitant;
-	
-
-	@Column(name = "population_iris", precision = 7, scale = 2)
-	private BigDecimal populationIris;
-	
-	@Column(name = "surface_population_iris", precision = 10, scale =2)
-	private BigDecimal surfacePerInhabitantIris;
-	
-	@Column(name = "dense")
-	private Boolean isDense = Boolean.TRUE;
-	
-	@DateTimeFormat
-	@Column(name="updated")
-	private Date updated;
+    /** Identifiant de la zone de parc. */
+    @Id
+    @Column(name = "id")
+    private Long id;
+    /** Année de référence des données. */
+    @Id
+    @Column(name = "annee")
+    private Integer annee;
+    /** Indique si la zone respecte les critères OMS. */
+    @Column(name = "oms")
+    private Boolean oms;
+    /** Surface totale de la zone (m²). */
+    @Column(name = "surface", precision = 11, scale = 2)
+    private BigDecimal surface;
+    /** Population totale dans la zone. */
+    @Column(name = "population", precision = 7, scale = 2)
+    private BigDecimal population;
+    /** Surface par habitant (m²/hab). */
+    @Column(name = "surface_population", precision = 10, scale =2)
+    private BigDecimal surfacePerInhabitant;
+    /** Population IRIS dans la zone. */
+    @Column(name = "population_iris", precision = 7, scale = 2)
+    private BigDecimal populationIris;
+    /** Surface par habitant IRIS (m²/hab). */
+    @Column(name = "surface_population_iris", precision = 10, scale =2)
+    private BigDecimal surfacePerInhabitantIris;
+    /** Indique si la zone est considérée comme dense. */
+    @Column(name = "dense")
+    private Boolean isDense = Boolean.TRUE;
+    /** Date de dernière mise à jour des calculs. */
+    @DateTimeFormat
+    @Column(name="updated")
+    private Date updated;
 
 }

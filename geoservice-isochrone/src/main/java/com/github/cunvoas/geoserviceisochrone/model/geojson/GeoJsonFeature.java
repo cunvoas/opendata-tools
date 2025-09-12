@@ -10,20 +10,20 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
 /**
- * DTO for GeoJson feature.
- * Implements GeoJson RFC-7946.
- * @author cunvoas
+ * DTO représentant une entité GeoJson de type Feature.
+ * Conforme à la spécification GeoJson RFC-7946.
+ * Contient la géométrie et les propriétés associées à la feature.
  */
 @Data
 public class GeoJsonFeature {
-	
-	private final String type="Feature";
-	
+    /** Type de l'entité GeoJson (toujours "Feature"). */
+    private final String type="Feature";
+    /** Géométrie de la feature (Point, LineString, Polygon, etc.). */
     @JsonSerialize(using = GeometrySerializer.class)
     @JsonDeserialize(contentUsing = GeometryDeserializer.class)
-	private Geometry geometry;
-    
-	private GeoJsonProperty properties;
+    private Geometry geometry;
+    /** Propriétés associées à la feature. */
+    private GeoJsonProperty properties;
 	
 	@Override
 	public boolean equals(Object obj) {

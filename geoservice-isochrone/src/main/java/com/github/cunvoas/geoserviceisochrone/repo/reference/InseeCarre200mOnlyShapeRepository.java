@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
 
 /**
- * Spring JPA repository.
- * Repo pour only geographic squares.
+ * Repository Spring Data JPA pour l'accès aux entités de carrés géographiques INSEE (200m).
+ * Permet de rechercher par zone géographique.
  */
 @Repository
 public interface InseeCarre200mOnlyShapeRepository extends JpaRepository<InseeCarre200mOnlyShape, String>{
