@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.1</version><!-- 3.2.2 3.4.1 -->
+		<version>3.5.5</version><!-- 3.2.2 3.4.1 -->
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.github.cunvoas</groupId>
@@ -145,14 +145,14 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.81</version>
+			<version>1.82</version>
 		</dependency>
 		<!-- basics DTOs & Fast calls to get external data -->
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>20231013</version>
-		</dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20250517</version>
+        </dependency>
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
 			<artifactId>okhttp</artifactId>
@@ -161,7 +161,7 @@
 		<dependency>
 		    <groupId>com.mailjet</groupId>
 		    <artifactId>mailjet-client</artifactId>
-		    <version>5.2.6</version>
+		    <version>6.0.0</version>
 		</dependency>
 
 		<!-- apache commons -->
@@ -290,13 +290,13 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-			<version>5.13.1</version>
+			<version>5.13.4</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>5.18.0</version>
+			<version>5.19.0</version>
 			<scope>test</scope>
 		</dependency>
 		
@@ -304,7 +304,7 @@
 		<dependency>
 			<groupId>org.yaml</groupId>
 			<artifactId>snakeyaml</artifactId>
-			<version>2.4</version>
+			<version>2.5</version>
 		</dependency>
         <dependency>
             <groupId>io.zipkin.brave</groupId>
@@ -314,12 +314,12 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
-            <version>2.2.10</version>
+            <version>2.2.20</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
-            <version>11.0.10</version>
+            <version>11.0.11</version>
         </dependency>
 
 
