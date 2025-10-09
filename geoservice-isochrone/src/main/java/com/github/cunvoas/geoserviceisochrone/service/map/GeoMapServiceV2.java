@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.CadastreView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.Carre200AndShapeView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.IrisView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.IsochroneView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkGardenView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkPrefView;
@@ -35,6 +36,7 @@ import com.github.cunvoas.geoserviceisochrone.extern.leaflet.Bound;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.IrisDataComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
@@ -44,6 +46,8 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisData;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisId;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisShape;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
@@ -51,6 +55,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
+import com.github.cunvoas.geoserviceisochrone.repo.IrisDataComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
@@ -59,6 +64,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisDataRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
@@ -108,20 +114,34 @@ public class GeoMapServiceV2 {
 	
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
+	@Autowired
+	private ApplicationBusinessProperties applicationBusinessProperties;
+	
     @Autowired
     private InseeCarre200mComputedV2Repository inseeCarre200mComputedV2Repository;
     @Autowired
     private InseeCarre200mOnlyShapeRepository inseeCarre200osRepository;
     @Autowired
+    private Filosofil200mRepository filosofil200mRepository;
+
+    @Autowired
     private IrisShapeRepository irisShapeRepository;
     @Autowired
-    private Filosofil200mRepository filosofil200mRepository;
+    private IrisDataRepository irisDataRepository;
+    @Autowired
+    private IrisDataComputedRepository irisDataComputedRepository;
+    
     @Autowired
     private ParkAreaRepository parkAreaRepository;
     @Autowired
     private ParkEntranceRepository parkEntranceRepository;
     @Autowired
     private ParkAreaComputedRepository parkAreaComputedRepository;
+    @Autowired
+    private ParkJardinRepository parkJardinRepository;
+	@Autowired 
+	private ParkTypeService parkTypeService;
+    
     @Autowired
     private CadastreRepository cadastreRepository;
     @Autowired
@@ -130,12 +150,6 @@ public class GeoMapServiceV2 {
     private CityRepository cityRepository;
     @Autowired
     private ParcPrefectureRepository parcPrefectureRepository;
-    @Autowired
-    private ParkJardinRepository parkJardinRepository;
-	@Autowired
-	private ApplicationBusinessProperties applicationBusinessProperties;
-	@Autowired 
-	private ParkTypeService parkTypeService;
 	
 	/**
 	 * findCadastreByCity.
@@ -856,7 +870,9 @@ public class GeoMapServiceV2 {
 		log.error("findAllIrisByArea(Polygon polygon, Integer annee {})", annee);
 		GeoJsonRoot root = null;
     	if (polygon!=null) {
+    		// recherche des IRIS dans la zone
 	    	List<IrisShape> iris = irisShapeRepository.findIrisInMapArea(GeometryQueryHelper.toText(polygon));
+	    	// popule les IRIS avec les données INSEE
 	    	root = findAllIrisByArea(iris, annee);
     	}
     	return root;
@@ -898,7 +914,60 @@ public class GeoMapServiceV2 {
 	protected GeoJsonRoot findAllIrisByArea(Collection<IrisShape> iris, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		
-		//TODO IRIS make the implem
+		for (IrisShape irisShape : iris) {
+			
+			
+			GeoJsonFeature feature = new GeoJsonFeature();
+			root.getFeatures().add(feature);
+			feature.setGeometry(irisShape.getContour());
+
+			IrisView v = new IrisView();
+			feature.setProperties(v);
+			v.setId(irisShape.getIris());
+			v.setIdIris(irisShape.getNomIris());
+			
+			City city = cityRepository.findByInseeCode(irisShape.getCodeInsee());
+			if (city!=null) {
+				v.setCommune(city.getName());
+			}
+			
+			// recherche des données INSEE
+			IrisId iId = new IrisId();
+			iId.setAnnee(annee);
+			iId.setIris(irisShape.getIris());
+			Optional<IrisData> oIris = irisDataRepository.findById(iId);
+			if (oIris.isPresent()) {
+				IrisData iIris = oIris.get();
+
+				if (iIris.getPop()!=null) {
+					v.setPeople(formatInt(iIris.getPop()));
+				} else {
+					v.setPeople("0");
+				}
+//				if (irisShape.getSurface()!=null) {
+//					v.setSurface((irisShape.getSurface().intValue());
+//				} else {
+//					v.setSurface(0);
+//				}
+				
+				// recherche des données calculées existante
+				IrisDataComputed idc = irisDataComputedRepository.findByAnneeAndIris(annee, irisShape.getIris());
+				if (idc!=null) {
+					v.setPeople(formatInt(idc.getPopAll()));
+					v.setSurfaceTotalPark(formatInt(idc.getSurfaceTotalPark()));
+					//v.setOms(idc.getOms());
+					//v.setDense(iIris.getIsDense());
+					
+					//v.setFillColor(this.getFillColorIris(v, idc));
+					
+					if (idc.getComments()!=null) {
+						v.setCommentParks(idc.getComments());
+					}
+				}
+			
+				
+			}
+		}
 		
 		
 		return root;
