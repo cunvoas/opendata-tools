@@ -259,7 +259,7 @@
             <div class="col">
                 <div class="card border" style="text-align: center">
 					<div class="form-floating">
-						<button type="submit" class="btn btn-outline-danger" th:text="#{entrance.edit.submit}">validate</button>
+						<button id="btnSave" onclick="saveEntrance()" type="button" class="btn btn-outline-danger" th:text="#{entrance.edit.submit}">validate</button>
 					</div>
                 </div>
             </div>
@@ -762,6 +762,11 @@
     	xhr.send();
     }
     
+    function saveEntrance() {
+        // protect against multiple submit
+        document.getElementById("btnSave").disabled= true;
+        document.getElementById("editEntrance").submit();
+    }
     function manageDisabled() {
     	
         if (document.getElementById("idRegion").value!="") {

@@ -1,10 +1,10 @@
-#FROM openjdk:25-jdk-slim-bullseye
-#RUN apt-get update && apt-get install -y curl \
-#   && apt-get clean \
-#   && rm -rf /var/lib/apt/lists/*
+FROM openjdk:25-jdk-slim-bullseye
+RUN apt-get update && apt-get install -y curl \
+   && apt-get clean \
+   && rm -rf /var/lib/apt/lists/*
 
-FROM gcr.io/distroless/java17-debian12
-RUN apk --no-cache add curl
+#FROM gcr.io/distroless/java21-debian12
+#RUN apk --no-cache add curl
 
 COPY geoservice-isochrone-*.?ar app.jar 
 COPY secret.env .env
