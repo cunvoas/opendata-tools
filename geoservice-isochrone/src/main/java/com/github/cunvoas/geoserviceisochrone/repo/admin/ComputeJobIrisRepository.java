@@ -11,13 +11,13 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeIrisJob;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisId;
 
 /**
  * Spring JPA repository.
  */
 @Repository
-public interface ComputeJobIrisRepository extends JpaRepository<ComputeIrisJob, InseeCarre200mComputedId>{
+public interface ComputeJobIrisRepository extends JpaRepository<ComputeIrisJob, IrisId>{
 
     /**
      * findByStatusOrderByDemandAsc.
