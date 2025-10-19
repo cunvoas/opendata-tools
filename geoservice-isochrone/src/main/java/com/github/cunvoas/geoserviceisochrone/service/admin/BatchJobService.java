@@ -28,6 +28,7 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisId;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisShape;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
@@ -119,8 +120,8 @@ public class BatchJobService implements DisposableBean{
 		for (Integer anne : annes) {
 			
 			for (IrisShape carreShape : shapes) {
-				InseeCarre200mComputedId id = new InseeCarre200mComputedId();
-				id.setIdInspire(carreShape.getIris());
+				IrisId id = new IrisId();
+				id.setIris(carreShape.getIris());
 				id.setAnnee(anne);
 				
 				ComputeIrisJob job=null;
