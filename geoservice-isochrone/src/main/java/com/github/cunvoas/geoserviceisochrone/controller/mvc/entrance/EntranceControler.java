@@ -94,7 +94,12 @@ public class EntranceControler {
 				
 				idCommune = city.getId();
 				idRegion = city.getRegion().getId();
-				idComm2Co = city.getCommunauteCommune().getId();
+				if (city.getCommunauteCommune()!=null) {
+					idComm2Co = city.getCommunauteCommune().getId();
+				} else {
+					idComm2Co=null;
+				}
+				
 			}
 		}
 		
