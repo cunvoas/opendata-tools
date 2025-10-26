@@ -27,7 +27,7 @@
 		
 		
 		<!--<hibernate.version>6.6.1.Final</hibernate.version>-->
-		<hibernate.version>6.6.29.Final</hibernate.version>
+		<hibernate.version>6.6.31.Final</hibernate.version>
 
         
     </properties>
@@ -161,7 +161,7 @@
 		<dependency>
 		    <groupId>com.mailjet</groupId>
 		    <artifactId>mailjet-client</artifactId>
-		    <version>6.0.0</version>
+		    <version>6.0.1</version>
 		</dependency>
 
 		<!-- apache commons -->
