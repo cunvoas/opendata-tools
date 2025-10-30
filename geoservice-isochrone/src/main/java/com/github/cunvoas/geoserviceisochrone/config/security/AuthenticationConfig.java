@@ -57,6 +57,7 @@ public class AuthenticationConfig {
 	    return new RequestContextListener();
 	} 
 
+
 	/**
 	 * Chaîne de filtres de sécurité pour les endpoints publics et authentifiés.
 	 * @param http configuration HTTP
@@ -65,16 +66,15 @@ public class AuthenticationConfig {
 	 */
 	@Bean
 	@Order(1)
-	public SecurityFilterChain mvcFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain mvcFilterChain1(HttpSecurity http) throws Exception {
 		return http
+
 				 .authorizeHttpRequests(authorizeRequests ->
 		                 authorizeRequests
 		                         .requestMatchers(
+//			                 			    "/awake",
+//			               		            "/favicon.ico";
 			             			    "/actuator/**",
-		             			        "/awake",
-		            		            "/login",
-		            		            "/logout",
-		            		            "/favicon.ico",
 		                        		"/pub/**",
 		                        		"/map/**").permitAll()
 		                         .anyRequest().authenticated()
@@ -89,6 +89,17 @@ public class AuthenticationConfig {
 				)
 				
 //			   .rememberMe(Customizer.withDefaults())
+				
+				.csrf(csrf->csrf
+						.ignoringRequestMatchers(
+								"/actuator/**",
+								"/pub/**",
+		                		"/map/**",
+                 			    "/awake",
+                 			    "/favicon.ico"
+						)
+				)
+				
 			.build();
 	}
 

@@ -1,4 +1,4 @@
-FROM openjdk:25-jdk-slim-bullseye
+FROM openjdk:25-rc-jdk-slim-trixie
 RUN apt-get update && apt-get install -y curl \
    && apt-get clean \
    && rm -rf /var/lib/apt/lists/*

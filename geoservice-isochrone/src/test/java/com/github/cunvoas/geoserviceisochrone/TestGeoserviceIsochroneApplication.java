@@ -160,6 +160,35 @@ class TestGeoserviceIsochroneApplication {
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * calcule des carre vs aire des parcs
 	 */
@@ -185,25 +214,36 @@ CAPINGHEM
 CARNIN
 CHERENG
 COMINES
-CROIX  *** <<<<<
+CROIX  ***
 DEULEMONT
 DON
-EMMERIN
+EMMERIN 
 ENGLOS
 ENNETIERES EN WEPPES
-ERQUINGHEM LE SEC
-ERQUINGHEM LYS
+ERQUINGHEM LE SEC 
+ERQUINGHEM LYS  
 ESCOBECQUES
 FACHES THUMESNIL
 FOREST SUR MARQUE
 FOURNES EN WEPPES
 FRELINGHIEN
-FRETIN
+FRETIN 
 FROMELLES
-GRUSON  *
+GRUSON   
+  */
+
+		batchJobService.requestProcessCity("59278");
+		batchJobService.requestProcessCity("59279");
+		batchJobService.requestProcessCity("59281");
+		batchJobService.requestProcessCity("59286");
+		batchJobService.requestProcessCity("592");
+		batchJobService.requestProcessCity("592");
+		batchJobService.requestProcessCity("592");
+		/*
+		@TODO TODO
 HALLENNES LEZ HAUBOURDIN
-HALLUIN
-HANTAY
+HALLUIN   
+HANTAY	<<<<<
 HAUBOURDIN
 HEM
 HERLIES
@@ -239,7 +279,7 @@ QUESNOY SUR DEULE
 RADINGHEM EN WEPPES
 RONCHIN
 RONCQ
-ROUBAIX
+ROUBAIX **
 SAILLY LEZ LANNOY
 SAINGHIN EN MELANTOIS
 SAINGHIN EN WEPPES
@@ -250,7 +290,7 @@ SEQUEDIN
 ST ANDRE LEZ LILLE  **
 TEMPLEMARS
 TOUFFLERS
-TOURCOING  xx
+TOURCOING  **
 TRESSIN
 VENDEVILLE
 VERLINGHEM
@@ -266,8 +306,7 @@ WICRES
 WILLEMS
 
  */
-//		batchJobService.requestProcessCity("");
-//		batchJobService.requestProcessCity("59512");//RBX
+		
 		
 		
 //		batchJobService.requestProcessCity("59056");
@@ -289,6 +328,22 @@ WILLEMS
 //		batchJobService.requestProcessCity("59350");
 //		batchJobService.requestProcessCity("59163");//CROIX
 //		batchJobService.requestProcessCity("59599");// tourk
+//		batchJobService.requestProcessCity("59512");//RBX
+//		batchJobService.requestProcessCity("59173");
+//		batchJobService.requestProcessCity("59670");
+//		batchJobService.requestProcessCity("59193");
+//		batchJobService.requestProcessCity("59195");
+//		batchJobService.requestProcessCity("59196");
+//		batchJobService.requestProcessCity("59201");
+//		batchJobService.requestProcessCity("59202");
+//		batchJobService.requestProcessCity("59208");
+//		batchJobService.requestProcessCity("59220");
+//		batchJobService.requestProcessCity("59247");
+//		batchJobService.requestProcessCity("59250");
+//		batchJobService.requestProcessCity("59252");
+//		batchJobService.requestProcessCity("59256");
+//		batchJobService.requestProcessCity("59257");
+//		batchJobService.requestProcessCity("59275");
 
 	}
 	/**
