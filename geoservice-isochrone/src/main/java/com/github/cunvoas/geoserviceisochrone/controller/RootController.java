@@ -20,8 +20,8 @@ import jakarta.servlet.http.HttpServletRequest;
 public class RootController {
 
 	private static final Pattern PATTERN = Pattern.compile(
-			"(^127\\.0\\.0\\.1)|(^10\\.)|(^172\\.1[6-9]\\.)|(^172\\.2[0-9]\\.)|(^172\\.3[0-1]\\.)|(^192\\.168\\.)");
-	
+		    "(^127\\.0\\.0\\.1)|(^10\\.)|(^172\\.1[6-9]\\.)|(^172\\.2[0-9]\\.)|(^172\\.3[0-1]\\.)|(^192\\.168\\.)|(^::1$)|(^fe80:)");
+
 	/**
 	 * Redirige la racine vers le tableau de bord.
 	 * @return redirection vers /mvc/dashboard
@@ -70,7 +70,7 @@ public class RootController {
 	}
 
 	/**
-	 * Health check.
+	 * Awake check.
 	 * Endpoint de vérification de santé (health check).
 	 * Retourne 200 OK si l'adresse IP est autorisée, sinon 403 Forbidden.
 	 *

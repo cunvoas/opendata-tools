@@ -29,7 +29,7 @@ node_modules
 *.sublime-workspace
 .factorypath
 .idea/
-
+.vscode/
 
 # IDE - VSCode
 **/.vscode/*
@@ -68,3 +68,7 @@ apps/**/test-integ/coverage/**
 libs/**/test/coverage/**
 libs/**/test-integ/coverage/**
 /newvue/
+
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md
