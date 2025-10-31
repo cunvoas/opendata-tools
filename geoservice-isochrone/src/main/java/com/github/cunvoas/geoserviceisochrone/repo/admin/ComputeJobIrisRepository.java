@@ -36,6 +36,18 @@ public interface ComputeJobIrisRepository extends JpaRepository<ComputeIrisJob, 
      */
     List<ComputeIrisJob> findByStatusOrderByDemandDesc(ComputeJobStatusEnum status, Pageable page);
     
+
+    /**
+     * findByStatusAndProcessed.
+     * @param status enum
+     * @param processed a date before
+     * @return list ComputeIrisJob
+     */
+    @Query(nativeQuery=true, 
+    		value="select * from public.compute_iris_job where status=1 and processed <= :processed")
+    List<ComputeIrisJob> findOnStartUnfinishedProcessed(@Param("processed")  Date processed);
+    
+    
     /**
      * findByStatusAndProcessed.
      * @param status enum

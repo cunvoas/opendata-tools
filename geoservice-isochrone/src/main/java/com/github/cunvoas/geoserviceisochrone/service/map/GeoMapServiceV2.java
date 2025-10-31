@@ -886,7 +886,7 @@ public class GeoMapServiceV2 {
 	 * @return GeoJson carre 
 	 */
 	public GeoJsonRoot findAllIrisByCommunauteCommune(CommunauteCommune com2co, Integer annee) {
-		log.error("findAllCarreByArea(CommunauteCommune {}, Integer annee {})", com2co.getName(), annee);
+		log.error("findAllIrisByCommunauteCommune(CommunauteCommune {}, Integer annee {})", com2co.getName(), annee);
     	GeoJsonRoot root = null;
 		
     	Set<IrisShape> carres = new HashSet<>();

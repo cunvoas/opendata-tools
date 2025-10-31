@@ -289,6 +289,9 @@ public class ServicePublicationExporter {
 			GeoJsonRoot geoJson = geoJsonCadastreController.getCadastreByCom2Com(c2c.getId());
 			
 			String regId = String.valueOf(c2c.getRegion().getId());
+			file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/cadastres/"+regId);
+			file.mkdirs();
+			
 			file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/cadastres/"+regId+"/cadastre_c2c_"+String.valueOf(c2c.getId())+".json");
 			objectMapper.writeValue(file, geoJson);
 		}
