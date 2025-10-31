@@ -111,8 +111,7 @@ class TestGeoserviceIsochroneApplication {
 				ParkArea parkArea = iterator.next();
 				computeService.computeParkArea(parkArea);
 			}	
-			
-			
+
 		
 //			//lille
 //			Optional<ParkArea> parkArea = parkAreaRepository.findById(parkArea);
@@ -166,26 +165,6 @@ class TestGeoserviceIsochroneApplication {
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 
 	@Test
 //	@Disabled
@@ -205,13 +184,6 @@ class TestGeoserviceIsochroneApplication {
 			Assertions.fail(e.getMessage());
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	/**
@@ -257,7 +229,10 @@ FROMELLES
 GRUSON   
 HALLENNES LEZ HAUBOURDIN
 HALLUIN   
-HANTAY	
+HANTAY
+HALLENNES LEZ HAUBOURDIN
+HALLUIN   
+HANTAY	<<<<<
 HAUBOURDIN
 HEM
 HERLIES
@@ -319,6 +294,7 @@ WICRES
 WILLEMS
 
  */
+		
 		
 		//batchJobService.requestProcessCity("27022");
 		
@@ -419,6 +395,7 @@ WILLEMS
 		
 		
 		
+
 	}
 	/**
 	 * calcule des carre vs aire des parcs
