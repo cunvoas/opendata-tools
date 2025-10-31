@@ -2,9 +2,8 @@
 <template>
     <b-container name="bContainer">
          
-           <b-row  style="align: center;text-align: center;" >
-          
-            
+           <b-row  style="align: center;text-align: center;vertical-align: middle;">
+                      
             <b-col>
                 <a
                     href="https://www.helloasso.com/associations/aut-mel"
@@ -12,7 +11,7 @@
                     <img
                         alt="Aut'MEL'"
                         src="../assets/logo-autmel.png"
-                        height="100px"
+                        height="80px"
                         style="border: 2px"
                 /></a>
             </b-col>
@@ -23,7 +22,7 @@
                     <img
                         alt="Deul'Air"
                         src="../assets/logo-deulair.png"
-                        height="100px"
+                        height="80px"
                         style="border: 2px"
                 /></a>
             </b-col>
@@ -32,9 +31,9 @@
                     href="https://www.helloasso.com/associations/entrelianes"
                     target="_blank" rel="noopener noreferrer">
                     <img
-                        alt="Deul'Air"
+                        alt="Entrelianes"
                         src="../assets/logo-entrelianes.jpg"
-                        width="120px"
+                        width="96px"
                         style="border: 2px"
                         valign="middle"
                         
@@ -47,12 +46,12 @@
                     <img
                         alt="LM Oxygène"
                         src="../assets/logo-lmo.png"
-                        height="100px"
+                        height="80px"
                         style="border: 2px"
                 /></a>
             </b-col>
         
-            <b-col name="bNav" style="vertical-align: top;" id="router-links">
+            <b-col name="bNav" style="vertical-align: middle;" id="router-links">
                 <nav>  
                     <router-link class="router-links" to="/carte">Carte</router-link>
                     &nbsp;

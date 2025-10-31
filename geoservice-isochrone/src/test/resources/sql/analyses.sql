@@ -582,3 +582,90 @@ order by r.surface_min;
 
 
 
+
+-- final query
+
+-- dense
+
+
+WITH surface_range AS (
+    select 0 as surface_min, 3 as surface_max
+    UNION
+    select 3 as surface_min, 7 as surface_max
+    UNION
+    select 7 as surface_min, 10 as surface_max
+    UNION
+    select 10 as surface_min, 12 as surface_max
+    UNION
+    select 12 as surface_min, 10000 as surface_max
+), stats AS (
+    SELECT 
+        cc.annee, f.lcog_geo, coalesce(round(surface_park_pcapita, 2), 0) as surface_park_pcapita,
+        coalesce(round(sum(cc.pop_inc), 0), 0) as pop_inc, 
+        coalesce(round(sum(cc.pop_exc), 0), 0) as pop_exc,
+         count(cc.id_inspire) AS nb_inspire
+
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    group by
+        cc.annee,
+        f.lcog_geo,
+        coalesce(round(surface_park_pcapita, 2), 0)
+
+SELECT 
+    annee, surface_min, surface_max,
+    sum(pop_inc) as pop_inc,
+    sum(pop_exc) as pop_exc,
+    count(nb_inspire)
+FROM surface_range r, stats
+WHERE 
+    stats.annee=2019 AND
+    lcog_geo like '%59350%'
+    AND surface_park_pcapita >= r.surface_min AND surface_park_pcapita < r.surface_max
+GROUP BY annee, surface_min, surface_max
+order by r.surface_min;
+
+--- périurbain
+
+WITH surface_range AS (
+	select 0 as surface_min, 8 as surface_max
+	UNION
+	select 8 as surface_min, 17 as surface_max
+	UNION
+	select 17 as surface_min, 25 as surface_max
+	UNION
+	select 25 as surface_min, 45 as surface_max
+	UNION
+	select 45 as surface_min, 10000 as surface_max
+
+), stats AS (
+    SELECT 
+        cc.annee, f.lcog_geo, coalesce(round(surface_park_pcapita, 2), 0) as surface_park_pcapita,
+        coalesce(round(sum(cc.pop_inc), 0), 0) as pop_inc, 
+        coalesce(round(sum(cc.pop_exc), 0), 0) as pop_exc,
+         count(cc.id_inspire) AS nb_inspire
+
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    group by
+        cc.annee,
+        f.lcog_geo,
+        coalesce(round(surface_park_pcapita, 2), 0)
+)
+
+SELECT 
+    annee, surface_min, surface_max,
+    sum(pop_inc) as pop_inc,
+    sum(pop_exc) as pop_exc,
+    count(nb_inspire)
+FROM surface_range r , stats 
+WHERE 
+    stats.annee=2019 AND
+    lcog_geo like '%59133%'
+   AND   r.surface_min  <= surface_park_pcapita AND surface_park_pcapita < r.surface_max
+GROUP BY annee, surface_min, surface_max
+order by r.surface_min;
+
+

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.cunvoas.geoserviceisochrone.controller.rest.analytics.StatsSurfaceJson;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvCarre200ShapeParser;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvIrisDataParser;
 import com.github.cunvoas.geoserviceisochrone.extern.geojson.IrisGeoJsonIntegratorParser;
@@ -25,7 +28,8 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisData;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
-import com.github.cunvoas.geoserviceisochrone.service.admin.BatchJobService;
+import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceService;
+import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
 import com.github.cunvoas.geoserviceisochrone.service.park.ComputeCarreServiceV3;
@@ -65,6 +69,9 @@ class TestGeoserviceIsochroneApplication {
 
 	@Autowired
 	private ParkAreaRepository parkAreaRepository;
+
+	@Autowired
+	private StatsSurfaceService statsSurfaceService;
 
 	@Test
 	@Disabled
@@ -179,7 +186,25 @@ class TestGeoserviceIsochroneApplication {
 	
 	
 	
-	
+
+	@Test
+//	@Disabled
+	@Order(22)
+	void batchStatsSurfaceJson() {
+		StatsSurfaceJson stats= statsSurfaceService.getStatsSurfaceByInseeAndAnnee("59350", 2019);
+		
+		Assertions.assertNotNull(stats);
+		
+		try {
+			String s =  statsSurfaceService.getStringStatsSurfaceByInseeAndAnnee("59350", 2019);
+			System.out.println(s);
+			
+			
+			Assertions.assertNotNull(s);
+		} catch (JsonProcessingException e) {
+			Assertions.fail(e.getMessage());
+		}
+	}
 	
 	
 	
@@ -193,7 +218,7 @@ class TestGeoserviceIsochroneApplication {
 	 * calcule des carre vs aire des parcs
 	 */
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(22)
 	void batchCarreRequestProcessCity() {
 // TODO en attendant une IHM pour lancer le recalcul. 
@@ -230,20 +255,9 @@ FRELINGHIEN
 FRETIN 
 FROMELLES
 GRUSON   
-  */
-
-		batchJobService.requestProcessCity("59278");
-		batchJobService.requestProcessCity("59279");
-		batchJobService.requestProcessCity("59281");
-		batchJobService.requestProcessCity("59286");
-		batchJobService.requestProcessCity("592");
-		batchJobService.requestProcessCity("592");
-		batchJobService.requestProcessCity("592");
-		/*
-		@TODO TODO
 HALLENNES LEZ HAUBOURDIN
 HALLUIN   
-HANTAY	<<<<<
+HANTAY	
 HAUBOURDIN
 HEM
 HERLIES
@@ -251,19 +265,18 @@ HOUPLIN ANCOISNE
 HOUPLINES
 ILLIES
 LA BASSEE
-LA CHAPELLE D ARMENTIERES
-LA MADELEINE
+LA MADELEINE 
 LAMBERSART **
 LANNOY
 LE MAISNIL
 LEERS
-LESQUIN
+LESQUIN   
 LEZENNES   *
 LILLE   *
 LINSELLES
 LOMPRET
 LOOS
-LYS LEZ LANNOY
+LYS LEZ LANNOY **
 MARCQ EN BAROEUL
 MARQUETTE LEZ LILLE
 MARQUILLIES
@@ -285,7 +298,7 @@ SAINGHIN EN MELANTOIS
 SAINGHIN EN WEPPES
 SALOME
 SANTES
-SECLIN
+SECLIN 
 SEQUEDIN
 ST ANDRE LEZ LILLE  **
 TEMPLEMARS
@@ -300,14 +313,14 @@ WARNETON
 WASQUEHAL
 WATTIGNIES
 WATTRELOS
-WAVRIN
+WAVRIN <<<<<  (Bois de lézy ?)
 WERVICQ SUD
 WICRES
 WILLEMS
 
  */
 		
-		
+		//batchJobService.requestProcessCity("27022");
 		
 //		batchJobService.requestProcessCity("59056");
 //		batchJobService.requestProcessCity("59088");
@@ -321,10 +334,8 @@ WILLEMS
 //		batchJobService.requestProcessCity("59146");
 //		batchJobService.requestProcessCity("59106");
 //		batchJobService.requestProcessCity("59152");
-		
 //		batchJobService.requestProcessCity("59527");
 //		batchJobService.requestProcessCity("59009");
-		//batchJobService.requestProcessCity("27022");
 //		batchJobService.requestProcessCity("59350");
 //		batchJobService.requestProcessCity("59163");//CROIX
 //		batchJobService.requestProcessCity("59599");// tourk
@@ -344,7 +355,70 @@ WILLEMS
 //		batchJobService.requestProcessCity("59256");
 //		batchJobService.requestProcessCity("59257");
 //		batchJobService.requestProcessCity("59275");
-
+//		batchJobService.requestProcessCity("59278");
+//		batchJobService.requestProcessCity("59279");
+//		batchJobService.requestProcessCity("59281");
+//		batchJobService.requestProcessCity("59286");
+//		batchJobService.requestProcessCity("59299");
+//		batchJobService.requestProcessCity("59303");
+//		batchJobService.requestProcessCity("59316");
+//		batchJobService.requestProcessCity("59317");
+//		batchJobService.requestProcessCity("59320");
+//		batchJobService.requestProcessCity("59051");
+//		batchJobService.requestProcessCity("59143");
+//		batchJobService.requestProcessCity("59368");
+//		batchJobService.requestProcessCity("59328");
+//		batchJobService.requestProcessCity("59332");
+//		batchJobService.requestProcessCity("59367");
+//		batchJobService.requestProcessCity("59371");
+//		batchJobService.requestProcessCity("59339");
+//		batchJobService.requestProcessCity("59343");
+//		batchJobService.requestProcessCity("59352");
+//		batchJobService.requestProcessCity("59356");
+//		batchJobService.requestProcessCity("59360");
+//		batchJobService.requestProcessCity("59378");
+//		batchJobService.requestProcessCity("59386");
+//		batchJobService.requestProcessCity("59388");
+//		batchJobService.requestProcessCity("59410");
+//		batchJobService.requestProcessCity("59421");
+//		batchJobService.requestProcessCity("59426");
+//		batchJobService.requestProcessCity("59437");
+//		batchJobService.requestProcessCity("59457");
+//		batchJobService.requestProcessCity("59458");
+//		batchJobService.requestProcessCity("59470");
+//		batchJobService.requestProcessCity("59477");
+//		batchJobService.requestProcessCity("59482");
+//		batchJobService.requestProcessCity("59487");
+//		batchJobService.requestProcessCity("59507");
+//		batchJobService.requestProcessCity("59508");
+//		batchJobService.requestProcessCity("59512");
+//		batchJobService.requestProcessCity("59522");
+//		batchJobService.requestProcessCity("59523");
+//		batchJobService.requestProcessCity("59524");
+//		batchJobService.requestProcessCity("59550");
+//		batchJobService.requestProcessCity("59553");
+//		batchJobService.requestProcessCity("59560");
+//		batchJobService.requestProcessCity("59566");
+//		batchJobService.requestProcessCity("59527");
+//		batchJobService.requestProcessCity("59585");
+//		batchJobService.requestProcessCity("59598");
+//		batchJobService.requestProcessCity("59599");
+//		batchJobService.requestProcessCity("59602");
+//		batchJobService.requestProcessCity("59609");
+//		batchJobService.requestProcessCity("59611");
+//		batchJobService.requestProcessCity("59009");
+//		batchJobService.requestProcessCity("59636");
+//		batchJobService.requestProcessCity("59643");
+//		batchJobService.requestProcessCity("59646");
+//		batchJobService.requestProcessCity("59648");
+//		batchJobService.requestProcessCity("59650");
+//		batchJobService.requestProcessCity("59653");
+//		batchJobService.requestProcessCity("59656");
+//		batchJobService.requestProcessCity("59658");
+//		batchJobService.requestProcessCity("59660");
+		
+		
+		
 	}
 	/**
 	 * calcule des carre vs aire des parcs

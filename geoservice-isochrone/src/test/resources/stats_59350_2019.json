@@ -1,0 +1,64 @@
+{
+    "nom": "LILLE",
+    "insee": "59350",
+    "annee": "2019",
+    "stats": [
+        {
+            "surface": "> 0<=3",
+            "habitants": 97632,
+            "barColor": "#0000e8"
+        },
+        {
+            "surface": "> 3<=7",
+            "habitants": 51692,
+            "barColor": "#6060e8"
+        },
+        {
+            "surface": "> 7<=10",
+            "habitants": 11472,
+            "barColor": "#b0b0e8"
+        },
+        {
+            "surface": "> 10<=12",
+            "habitants": 5082,
+            "barColor": "#57ee17"
+        },
+        {
+            "surface": "> 12 +",
+            "habitants": 44985,
+            "barColor": "#578817"
+        }
+    ],
+    "seuils": [
+        {
+            "surface": "0 <=  surface/habitant < 3 m²/h",
+            "habitants": 97632,
+            "ratio": "46",
+            "barColor": "#0000e8"
+        },
+        {
+            "surface": "3 <=  surface/habitant < 7 m²/h",
+            "habitants": 51692,
+            "ratio": "24",
+            "barColor": "#6060e8"
+        },
+        {
+            "surface": "7 <=  surface/habitant < 10 m²/h",
+            "habitants": 11472,
+            "ratio": "5",
+            "barColor": "#b0b0e8"
+        },
+        {
+            "surface": "10 <=  surface/habitant < 12 m²/h",
+            "habitants": 5082,
+            "ratio": "2",
+            "barColor": "#57ee17"
+        },
+        {
+            "surface": ">= 12 m²/h",
+            "habitants": 44985,
+            "ratio": "21",
+            "barColor": "#578817"
+        }
+    ]
+}

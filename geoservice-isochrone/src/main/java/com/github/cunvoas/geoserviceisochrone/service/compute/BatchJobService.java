@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.service.admin;
+package com.github.cunvoas.geoserviceisochrone.service.compute;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -344,8 +344,8 @@ public class BatchJobService implements DisposableBean{
      *
 	 * ie. all jobs from prev day 18:00
 	 */
-	@Scheduled(cron = "0 15 4 * * *")
-	public void recycleShapes() {
+	@Scheduled(cron = "0 15 */4 * * *")
+	public void recycleUndoneShapes() {
 		
 		if (this.shutdownRequired) {
 			return;
@@ -354,8 +354,61 @@ public class BatchJobService implements DisposableBean{
 		Date newDate = new Date();
 		
 		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.HOUR, -10);
+		cal.add(Calendar.HOUR, -8);
 		cal.add(Calendar.MINUTE, -15);
+		Date oldDate = cal.getTime();
+		
+		
+		//recycle carres
+		List<ComputeJob> jobs = computeJobCarreRepository.findOnStartUnfinishedProcessed(oldDate);
+		if (!jobs.isEmpty()) {
+			log.warn("{} jobs runs incorrecly , new demande time is {}", jobs.size(), newDate);
+			
+			for (ComputeJob computeJob : jobs) {
+				computeJob.setDemand(newDate);
+				computeJob.setStatus(ComputeJobStatusEnum.TO_PROCESS);
+				computeJobCarreRepository.save(computeJob);
+			}
+		}
+		
+		//recycle iris
+		List<ComputeIrisJob> irisJobs = computeJobIrisRepository.findOnStartUnfinishedProcessed(oldDate);
+		if (!jobs.isEmpty()) {
+			log.warn("{} jobs runs incorrecly , new demande time is {}", jobs.size(), newDate);
+			
+			for (ComputeIrisJob computeJob : irisJobs) {
+				computeJob.setDemand(newDate);
+				computeJob.setStatus(ComputeJobStatusEnum.TO_PROCESS);
+				computeJobIrisRepository.save(computeJob);
+			}
+		}
+	}
+
+	
+	/**
+	 * reset in queue jobs.
+	 * arrives when when another app connection to DB.
+	 * @see https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html
+	 *		    second
+	 *		    minute
+	 *		    hour
+	 *		    day of month
+	 *		    month
+	 *		    day of week
+     *
+	 * ie. all jobs from prev day 18:00
+	 */
+	@Scheduled(cron = "0 10 0 * * *")
+	public void recycleErrorShapes() {
+		
+		if (this.shutdownRequired) {
+			return;
+		}
+		
+		Date newDate = new Date();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -1);
 		Date oldDate = cal.getTime();
 		
 		
