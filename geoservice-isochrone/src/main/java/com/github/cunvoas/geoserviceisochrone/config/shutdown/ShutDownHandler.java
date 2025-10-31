@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Configuration;
 
-import com.github.cunvoas.geoserviceisochrone.service.admin.BatchJobService;
+import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;

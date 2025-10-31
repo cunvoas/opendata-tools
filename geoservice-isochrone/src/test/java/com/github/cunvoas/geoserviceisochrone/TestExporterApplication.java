@@ -18,7 +18,7 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
 
 
 @SpringBootTest
-@ActiveProfiles({"secret","rep"})
+@ActiveProfiles({"secret","pi"})
 class TestExporterApplication {
 	
 	@Autowired

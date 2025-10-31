@@ -17,7 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeIrisJob;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ComputeJobIrisRepository;
-import com.github.cunvoas.geoserviceisochrone.service.admin.BatchJobService;
+import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
 import com.github.cunvoas.geoserviceisochrone.service.park.ComputeIrisServiceIris;
 

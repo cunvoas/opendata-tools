@@ -17,7 +17,7 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
-import com.github.cunvoas.geoserviceisochrone.service.admin.BatchJobService;
+import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 
 /**
  * Contrôleur de gestion des tâches de calcul (ComputeJob).

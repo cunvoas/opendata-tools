@@ -37,7 +37,6 @@ public class ParkJardinService {
 
 	@Autowired 
 	private ParkAreaRepository parkAreaRepository;
-	
 
 	@Autowired 
 	private ParkTypeService parkTypeService;
@@ -152,7 +151,10 @@ public class ParkJardinService {
 			if (s==null) {
 				s = surfaceRepo.getSurface(parcEtJardin.getContour());
 			}
-			parcEtJardin.setSurfaceContour(s.doubleValue());
+			
+			if (s!=null) {
+				parcEtJardin.setSurfaceContour(s.doubleValue());
+			}
 		}
 		log.warn("ParkJardinService.save saveAndFlush");
 		

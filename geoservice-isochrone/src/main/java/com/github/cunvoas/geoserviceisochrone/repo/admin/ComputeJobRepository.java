@@ -43,6 +43,17 @@ public interface ComputeJobRepository extends JpaRepository<ComputeJob, InseeCar
      * @return list ComputeJob
      */
     @Query(nativeQuery=true, 
+    		value="select * from public.compute_job where status=1 and processed <= :processed")
+    List<ComputeJob> findOnStartUnfinishedProcessed(@Param("processed")  Date processed);
+    
+    
+    /**
+     * findByStatusAndProcessed.
+     * @param status enum
+     * @param processed a date before
+     * @return list ComputeJob
+     */
+    @Query(nativeQuery=true, 
     		value="select * from public.compute_job where status=3 and processed <= :processed")
     List<ComputeJob> findOnErrorAndProcessed(@Param("processed")  Date processed);
     

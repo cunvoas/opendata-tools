@@ -14,7 +14,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
-import com.github.cunvoas.geoserviceisochrone.service.admin.BatchJobService;
+import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 
 /**
  * Contrôleur REST pour la gestion des jobs de calcul (isochrones, carreaux, etc.).
