@@ -13,16 +13,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
+import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.export.ServicePublicationExporter;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
 
 
 @SpringBootTest
-@ActiveProfiles({"secret","pi"})
+@ActiveProfiles({"secret","pi_nuc"})
 class TestExporterApplication {
 	
 	@Autowired
 	private ServicePublicationExporter servicePublicationExporter;
+
+	@Autowired
+	private ServiceReadReferences serviceReadReferences;
+	
 	
 	@Autowired
 	private ServiceIris serviceIris;
@@ -70,11 +76,16 @@ class TestExporterApplication {
 
 
 	@Test
-	@Disabled
+//	@Disabled
 	@Order(21)
 	void writeGeoJsonCarreaux() {
 		try {
-			servicePublicationExporter.writeGeoJsonCarreaux();
+//			servicePublicationExporter.writeGeoJsonCarreaux();
+			
+			CommunauteCommune com2co=serviceReadReferences.getCommunauteCommuneById(1l);
+//			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2019);
+			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2017);
+//			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2015);
 
 
 		} catch (IOException e) {

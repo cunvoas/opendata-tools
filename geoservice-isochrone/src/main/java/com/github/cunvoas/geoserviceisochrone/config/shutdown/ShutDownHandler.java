@@ -41,7 +41,7 @@ public class ShutDownHandler implements ApplicationContextAware {
      */
     @PreDestroy
     public void destroy() {
-    	log.warn("SIGTERM detected");
+    	log.warn("SIGTERM ShutDownHandler.destroy() gracefull started");
     	// kill web connections
     	// NATIVE in SpringBoot
 
@@ -53,7 +53,7 @@ public class ShutDownHandler implements ApplicationContextAware {
     	
     	// kill SGBR connections
     	// NATIVE in SpringBoot
-    	log.warn("SIGTERM gracefull termination done");
+    	log.warn("SIGTERM ShutDownHandler.destroy() gracefull DONE");
     }
     
     /**

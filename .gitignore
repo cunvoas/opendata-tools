@@ -8,7 +8,7 @@ dist
 target
 .env
 **/*.secret*
-**/*-pi.yml
+**/*-pi*.yml
 **/*-dev.yml
 **/*-rep.yml
 **/:wq

@@ -125,6 +125,19 @@ public class ServiceReadReferences {
 		return  parkAreaRepository.findByIdParcEtJardin(id);
 	}
 	
+	/**
+	 * Retourne une entité CommunauteCommune à partir de l'identifiant.
+	 * @param id
+	 * @return
+	 */
+	public CommunauteCommune getCommunauteCommuneById(Long id) {
+		Optional<CommunauteCommune> opt=communauteCommuneRepository.findById(id);
+		if (opt.isPresent()) {
+			return opt.get();
+		}
+		return null;
+	}
+	
 	
 	/**
 	 * Retourne la liste des communautés de communes triées par nom.
