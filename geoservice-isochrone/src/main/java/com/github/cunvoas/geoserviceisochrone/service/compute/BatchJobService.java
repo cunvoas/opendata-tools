@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.DisposableBean;
@@ -438,14 +439,34 @@ public class BatchJobService implements DisposableBean{
 	}
 	
 	/**
+	 * Detect JUnit environnement
+	 * @return
+	 */
+	public static boolean isJUnitTest() {  
+		  for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+		    if (element.getClassName().startsWith("org.junit.")) {
+		      return true;
+		    }           
+		  }
+		  return false;
+		}
+	
+	/**
 	 * scheduled task for Carres & Iris.
 	 * @FIXME need to be smartest by hours.
 	 * fixedDelay = 400_000 few times more to process 10 squares
 	 */
-	@Scheduled(fixedDelay = 400_000, initialDelay = 60_000)
+	@Scheduled(fixedDelay = 300, initialDelay = 60, timeUnit = TimeUnit.SECONDS)
 	public void processShapes() {
-
+		
+		// skip if JUnit
+		if (isJUnitTest() ) {
+			return;
+		}
+		
+		// skip if shutdown required
 		if (this.shutdownRequired) {
+			log.warn("shutdown required, skip processShapes");
 			return;
 		}
 		
@@ -453,14 +474,17 @@ public class BatchJobService implements DisposableBean{
 		
 		log.error("processShapes at {}", DF.format(new Date()));
 		
+		// launch process if possible
 		if (this.launchOrFinish(true)) {
 
 			Pageable page = Pageable.ofSize(pageSize);
 
 			// safe infinite loop, so make a limit
 			int possibleMax=100;
+			
 			// true by default for 1st iteration
 			boolean possibleNext=true;
+			
 			while (possibleNext && possibleMax>0) {
 				possibleMax--;
 			
@@ -493,6 +517,13 @@ public class BatchJobService implements DisposableBean{
 					computeJobCarreRepository.save(job);
 				}
 				
+				
+				// check shutdown
+				if (this.shutdownRequired) {
+					log.warn("shutdown required, stop processShapes");
+					break;
+				}
+				
 				// compute for IRIS
 				List<ComputeIrisJob> irisJobs = null;
 				if (onDev()) {
@@ -520,6 +551,13 @@ public class BatchJobService implements DisposableBean{
 					irisJob.setProcessed(new Date());
 					computeJobIrisRepository.save(irisJob);
 				}
+				
+				// check shutdown
+				if (this.shutdownRequired) {
+					log.warn("shutdown required, stop processShapes");
+					break;
+				}
+				
 			}//while
 
 		}
@@ -624,7 +662,7 @@ public class BatchJobService implements DisposableBean{
 			log.info("SIGTERM gracefull termination is running");
 			Thread.sleep(100L);
 		}
-		log.warn("SIGTERM gracefull termination done");
+		log.warn("SIGTERM gracefull termination finish destroy");
 	}
 	
 }

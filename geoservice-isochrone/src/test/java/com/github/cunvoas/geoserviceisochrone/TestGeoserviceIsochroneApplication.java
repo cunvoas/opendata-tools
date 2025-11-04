@@ -190,7 +190,7 @@ class TestGeoserviceIsochroneApplication {
 	 * calcule des carre vs aire des parcs
 	 */
 	@Test
-	@Disabled
+//	@Disabled
 	@Order(22)
 	void batchCarreRequestProcessCity() {
 // TODO en attendant une IHM pour lancer le recalcul. 
@@ -297,7 +297,7 @@ WILLEMS
 		
 		
 		//batchJobService.requestProcessCity("27022");
-		
+		batchJobService.requestProcessCity("59017");
 //		batchJobService.requestProcessCity("59056");
 //		batchJobService.requestProcessCity("59088");
 //		batchJobService.requestProcessCity("59090");
