@@ -705,10 +705,10 @@ export default {
       return () => {
         return {
           weight: 2,
-          color: "#406C40",
-          opacity: 0.15,
+          color: "#305C30",
+          opacity: 0.05,
           fillColor: fillColor,
-          fillOpacity: 0.1,
+          fillOpacity: 0.01,
         };
       };
     },
@@ -717,10 +717,10 @@ export default {
       return () => {
         return {
           weight: 2,
-          color: "#608C60",
-          opacity: 0.5,
+          color: "#B08C60",
+          opacity: 0.9,
           fillColor: "#608C60",
-          fillOpacity: 0.1,
+          fillOpacity: 0.3,
         };
       };
     },
@@ -774,8 +774,8 @@ export default {
         } else {
           layer.setStyle({
             weight: 2,
-            color: "#406C40",
-            opacity: 0.90,
+            color: "#8eac8e",
+            opacity: 0.70,
             fillColor: feature.properties.fillColor,
             fillOpacity: 0.09,
           });

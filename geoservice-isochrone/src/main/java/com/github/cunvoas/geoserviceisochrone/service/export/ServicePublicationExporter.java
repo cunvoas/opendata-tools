@@ -117,6 +117,31 @@ public class ServicePublicationExporter {
 	
 	/**
 	 * Write INSEE files.
+	 * @param com2co Communaute de Commune
+	 * @param annee annee
+	 * @throws StreamWriteException
+	 * @throws DatabindException
+	 * @throws IOException
+	 */
+	public void writeGeoJsonCarreaux(CommunauteCommune com2co, Integer annee) throws StreamWriteException, DatabindException, IOException {
+		
+		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/carres/"+String.valueOf(com2co.getId());
+		File file = new File(path);
+		file.mkdirs();
+		
+		// check if park data are changed !
+		// TODO
+		
+		GeoJsonRoot geojson = geoMapServiceV2.findAllCarreByCommunauteCommune(com2co, annee);
+		if (geojson!=null && !geojson.getFeatures().isEmpty()) {
+			file = new File(path+"/carre_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
+			objectMapper.writeValue(file, geojson);
+		}
+	}
+	
+	
+	/**
+	 * Write INSEE files.
 	 * @throws StreamWriteException ex
 	 * @throws DatabindException ex
 	 * @throws IOException ex
@@ -130,22 +155,24 @@ public class ServicePublicationExporter {
 		List<CommunauteCommune> lc2c = serviceReadReferences.getCommunauteCommune();
 		for (CommunauteCommune com2co : lc2c) {
 
-    		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/carres/"+String.valueOf(com2co.getId());
-    		file = new File(path);
-    		file.mkdirs();
+			this.writeGeoJsonCarreaux(com2co, tAnnees[0]);
 			
-			for (int i = 0; i < tAnnees.length; i++) {
-				Integer annee=tAnnees[i];
-				
-				// check if park data are changed !
-				// TODO
-				
-				GeoJsonRoot geojson = geoMapServiceV2.findAllCarreByCommunauteCommune(com2co, annee);
-				if (geojson!=null && !geojson.getFeatures().isEmpty()) {
-					file = new File(path+"/carre_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
-					objectMapper.writeValue(file, geojson);
-				}
-			}
+//    		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/carres/"+String.valueOf(com2co.getId());
+//    		file = new File(path);
+//    		file.mkdirs();
+//			
+//			for (int i = 0; i < tAnnees.length; i++) {
+//				Integer annee=tAnnees[i];
+//				
+//				// check if park data are changed !
+//				// TODO
+//				
+//				GeoJsonRoot geojson = geoMapServiceV2.findAllCarreByCommunauteCommune(com2co, annee);
+//				if (geojson!=null && !geojson.getFeatures().isEmpty()) {
+//					file = new File(path+"/carre_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
+//					objectMapper.writeValue(file, geojson);
+//				}
+//			}
 			
 		}
 	}
