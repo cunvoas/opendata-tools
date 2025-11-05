@@ -158,7 +158,7 @@ class TestExporterApplication {
 		try {
 
 
-//			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2015);
+			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2015);
 			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2017);
 			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2019);
 

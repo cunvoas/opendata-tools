@@ -72,17 +72,17 @@ public class StatsSurfaceService {
 			for (City city : cities) {
 				try {
 					log.info("Stats surface for city {} / {}", city.getInseeCode(), city.getName());
-					String statsJson = this.getStringStatsSurfaceByInseeAndAnnee(city.getInseeCode(), annee);
+					StatsSurfaceJson stat =  getStatsSurfaceByInseeAndAnnee(city.getInseeCode(), annee);
+					
+					
 					String dept = city.getInseeCode().substring(0, 2);
 					String sPath = applicationBusinessProperties.getJsonFileFolder()+"/data/stats/"+dept+"/"+city.getInseeCode();
 					
 					File file = new File(sPath);
 					file.mkdirs();
 					
-					if (statsJson!=null && !statsJson.isEmpty()) {
-						file = new File(sPath+"/stats_"+city.getInseeCode()+"_"+String.valueOf(annee)+".json");
-						objectMapper.writeValue(file, statsJson);
-					}
+					file = new File(sPath+"/stats_"+city.getInseeCode()+"_"+String.valueOf(annee)+".json");
+					objectMapper.writeValue(file, stat);
 					
 				} catch (JsonProcessingException e) {
 					log.error("Error processing stats surface for city {} / {} : {}", city.getInseeCode(), city.getName(), e.getMessage());

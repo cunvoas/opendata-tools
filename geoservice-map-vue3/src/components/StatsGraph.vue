@@ -119,20 +119,28 @@ export default {
     },
     async processLocation(newLocation) {
       
-
+      
+      const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
+      
       //this.location = newLocation;
 
       const regionId = this.location.regionId;
       const com2coId = this.location.com2coId;
-      const cityId   = this.location.cityId;
 
-      let callUrl=""
+      const cityInsee = this.location.cityInsee;
+      const annee   = this.annee;
+
+      console .log("processLocation:", regionId, com2coId, cityInsee);
+      const dept = cityInsee.substring(0,2);
+
+      let callUrl = `${staticOnGit}/data/stats/${dept}/${cityInsee}/stats_${cityInsee}_${annee}.json`;
+
       
      // const baseCom2co = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/"+ this.annee +"/"+ regionId +"/com2co/" +  com2coId + "/stats_c2c__" +  this.annee + "_" +  com2coId + ".json";
      // const baseCity = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/"+ this.annee +"/"+ regionId +"/commune/" +  cityId + "/stats_com_" +  this.annee + "_" +  cityId + ".json";
       const baseTest= "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/test.json";
 
-      callUrl = baseTest;
+     // callUrl = baseTest;
       
 
       this.loaded = false;
