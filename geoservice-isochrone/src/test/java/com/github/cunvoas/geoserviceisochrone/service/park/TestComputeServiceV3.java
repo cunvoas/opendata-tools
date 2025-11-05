@@ -3,8 +3,13 @@ package com.github.cunvoas.geoserviceisochrone.service.park;
 import java.math.BigDecimal;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-class TestComputeServiceV2 {
+
+@SpringBootTest
+@ActiveProfiles({"secret","pi_nuc"})
+class TestComputeServiceV3 {
 
 	
 	ComputeCarreServiceV3 tested = new ComputeCarreServiceV3();

@@ -37,6 +37,7 @@ public class InseeCarre200mComputedV2 {
 	private String idInspire;
 
 	@Column(name="id",length=21)
+	@Deprecated
 	private String idCarre200;
 	
 	

@@ -17,7 +17,7 @@ public class Stat {
     @JsonProperty("surface")
     private String surface;
     @JsonProperty("habitants")
-    private Integer habitants;
+    private Integer habitants=0;
     @JsonProperty("barColor")
     private String barColor;
 

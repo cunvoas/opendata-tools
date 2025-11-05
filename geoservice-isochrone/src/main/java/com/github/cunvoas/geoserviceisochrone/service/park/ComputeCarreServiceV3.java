@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.TopologyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -94,23 +95,6 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	
-	
-	/**
-	 * computeCarreByPostalCode.
-	 * @param postalCode code
-	 */
-//	public void computeCarreByPostalCode(String postalCode) {
-//		Set<Cadastre> uniques = new HashSet<>();
-//		List<Laposte> postes = laposteRepository.findByPostalCode(postalCode);
-//		for (Laposte laposte : postes) {
-//			Cadastre cadastre = cadastreRepository.findById(laposte.getIdInsee()).get();
-//			uniques.add(cadastre);
-//		}
-//		for (Cadastre cadastre : uniques) {
-//			computeCarreByCadastre(cadastre);
-//		}
-//		
-//	}
 	
 	/**
 	 * computeCarreByInseeCode.
@@ -370,6 +354,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 			if (carreData!=null) {
 				log.info("Filosofil200m     found,{},{}", dto.annee, carreWithIso.getIdInspire());
 				// nb habitant au carre
+				//FIXME bug here ?
 				if (carreShape.getIdInspire().equals(carreData.getIdInspire())) {
 					dto.popAll = carreData.getNbIndividus();
 				}
@@ -558,6 +543,11 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 		BigDecimal population = BigDecimal.ZERO;
 		for (InseeCarre200mOnlyShape carreShape : shapes) {
 			Geometry parkOnCarre = carreShape.getGeoShape().intersection(park.getPolygon());
+			//when park is too complex, use convex hull
+			// real problem is base original shape
+//				parkOnCarre = carreShape.getGeoShape().intersection(park.getPolygon().convexHull());
+
+			
 			Long surfIntersect = getSurface(parkOnCarre);
 			
 			//lookup for carre200m data
