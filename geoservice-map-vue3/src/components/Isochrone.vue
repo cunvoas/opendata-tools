@@ -56,8 +56,7 @@
 
       <l-control position="bottomleft" >
         <div id="customControl" class="dataDetail">
-          <h4>&nbsp;Parc accessible&nbsp;<br/>(m²/hab.)</h4>
-          
+          <h4>&nbsp;m²/habitant de parcs&nbsp;</h4>
           <div id="legend" class="legend">            
             <div id="legendContent" v-html="htmlLegend" />
           </div>
@@ -202,12 +201,10 @@ function getColorLegend(legendeDense) {
     let grades = [];
 
     if (legendeDense) {
-      //labels.push(`<i id="rotate-text-d">dense</i> `);
       labels.push(`<i style="background:#ffffff"></i> <b>dense</b>`);
       grades =  gradesDense;
     } else {
       labels.push(`<i style="background:#ffffff"></i> <b>périurbain</b>`);
-     // labels.push(`<i id="rotate-text-p">périurbain</i> `);
       grades = gradesSubur;
     }
     labels.push(`<i style="background:${getSquareColor(true,null)}"></i> non calculé`);
@@ -788,16 +785,14 @@ export default {
         layer.on("mouseover", function (e) {
           const feature = e.target.feature;
           const theComment =
-            "<h4>Données carroyées : Parc / Habitant</h4>" +
-            "<div>id Inspire:" +
+            "<h4>Données carroyées</h4>" +
+            "<div><b>id Inspire</b>:" +
             feature.properties.idInspire +
-            "</div>" +
-            "<div>Commune: <b>" +
+            "</div><div><br/><b>" +
             feature.properties.commune +
-            "</b>" +
-            ", pop.: <b>" +
+            "</b></br><b>" +
             feature.properties.people +
-            "</b></div>";
+            "</b> habitants</div>";
 
           let detailData = "";
           if (
@@ -808,17 +803,17 @@ export default {
               "<div style='text-align: center'><b><i>Non calculé</i></b></div>";
           } else {
             detailData =
-              "<div>ont accès: " +
+              "<div><b> " +
               feature.properties.popParkIncludedOms +
-              " pers. (sans: " +
+              "</b> ont accès et <b> " +
               feature.properties.popParkExcludedOms +
-              ")</div>" +
-              "<div>Surface parcs: " +
+              "</b> sans</div>" +
+              "<div>Surface accessible: <b>" +
               feature.properties.surfaceTotalParkOms +
-              " m²</div>" +
-              "<div>Partagés avec : " +
+              " m²</b></div>" +
+              "<div>partagés avec :<b> " +
               feature.properties.popSquareShareOms +
-              " pers.</div>" +
+              "  </b>hab.</div>" +
               "<div>Soit : <b>" +
               feature.properties.squareMtePerCapitaOms +
               " m²/hab</b></div>" +
