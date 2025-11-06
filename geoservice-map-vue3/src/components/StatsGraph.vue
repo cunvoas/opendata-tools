@@ -1,6 +1,7 @@
 <template>
 
   <div v-if="loaded">
+    <p><h4 id="villeId">{{ villeNom }}</h4></p>
     <p>
       <Bar :data="dataBar" style="width:80%;height:300px;"  />
    </p>
@@ -48,7 +49,8 @@ export default {
       dataBar:  {},
       dataPie:  {},
       annee: 2019,
-      loaded: false
+      loaded: false,
+      villeNom: ''
     }
   },
     watch: {
@@ -104,18 +106,21 @@ export default {
       return retData;
     },
     parseJsonBar(jsonData) {
+      console.log("parseJsonBar.nom:", jsonData["nom"]);
+      this.villeNom = jsonData["nom"];
+      
       const tLabels = jsonData["stats"].map(value => value.surface);
       const tFillColors = jsonData["stats"].map(value => value.barColor);
       const tHabitants = jsonData["stats"].map(value => value.habitants);
  
-      this.dataBar= this.getChartData('Habitants par m² de parc', tLabels,  tHabitants, tFillColors);
+      this.dataBar= this.getChartData(' m² par habitant de parcs', tLabels,  tHabitants, tFillColors);
     },
     parseJsonPie(jsonData) {
       const tLabels = jsonData["seuils"].map(value => value.surface);
       const tFillColors = jsonData["seuils"].map(value => value.barColor);
       const tHabitants = jsonData["seuils"].map(value => value.habitants );  // +" ("+ value.ratio +")"
 
-      this.dataPie= this.getChartData('Habitants par m² de parc', tLabels,  tHabitants, tFillColors);
+      this.dataPie= this.getChartData(' m² par habitant de parcs', tLabels,  tHabitants, tFillColors);
     },
     async processLocation(newLocation) {
       
