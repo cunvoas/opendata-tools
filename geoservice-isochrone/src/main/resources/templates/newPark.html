@@ -903,11 +903,11 @@
 
     async function doPost(requestPrms) {
     	const payload = {
-    		    token: '',
+    		    token: [[${token}]],
     			parkId: requestPrms
     		};
-
-       let rawResponse = await fetch('/upload', {
+    	
+       let rawResponse = await fetch([[@{/mvc/ajax/jobs/api/request}]], {
          method: "POST", 
          headers: {
              'Accept': 'application/json',
@@ -918,7 +918,7 @@
 
        if (response.status == 202) {
          const content = await rawResponse.json();
-         alert("Calcul demandé pour\n\t nb de carrés: "+content.nbCarre+"\n\t nb d'IRIS: "+content.nbIris);
+         alert("Calcul demandé pour "+content.nbCarreaux+" carrés.");
        }
      }
     
@@ -927,9 +927,12 @@
         if (document.getElementById("id").value==="" ) {
            console.log("requestCompute hasError");
            return;
+        } else {
+        	console.log("requestCompute no hasError");
+
+            // async call controler compute
+            this.doPost(document.getElementById("id").value);
         }
-        // async call controler compute
-        this.doPost(rq);
     }
     
     function savePark() {
