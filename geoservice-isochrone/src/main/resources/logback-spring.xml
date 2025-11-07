@@ -52,7 +52,7 @@
   <logger name="com.github.cunvoas.geoserviceisochrone.GeoserviceIsochroneApplication" level="info"/>
 
   <!-- deployed environments -->
-  <springProfile name="prod,pi">
+  <springProfile name="prod,pi,pi_nuc">
     <root level="ERROR">
       <appender-ref ref="LOG_FILE"/>
     </root>

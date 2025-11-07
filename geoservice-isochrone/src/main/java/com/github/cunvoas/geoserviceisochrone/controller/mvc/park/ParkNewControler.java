@@ -6,7 +6,6 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
+import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.TokenManagement;
 import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.UploadFormValidator;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
@@ -32,10 +32,8 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusEnum;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkJardinService;
@@ -57,6 +55,8 @@ public class ParkNewControler {
 	private static final DateFormat DF2 =new SimpleDateFormat("yyyy-MM-dd");
 	private NumberFormat NF = new DecimalFormat("#.##O");
 	
+	@Autowired
+	private TokenManagement tokenManagement;
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
 	@Autowired
@@ -359,6 +359,7 @@ public class ParkNewControler {
 		model.addAttribute("communes", form.getCommunes());
 		model.addAttribute("parkTypes", parkTypeService.findAll());
 		model.addAttribute("parkSources", serviceReadReferences.getParcSource());
+		model.addAttribute("token", tokenManagement.getValidToken());
 		
 		return formName;
 	}

@@ -11,9 +11,8 @@
 	</parent>
 	<groupId>com.github.cunvoas</groupId>
 	<artifactId>geoservice-isochrone</artifactId>
-	<version>1.0.22</version>
-	<packaging>jar</packaging>
-	
+	<version>1.0.23</version>
+
 	<properties>
 		<java.version>21</java.version>
 		<lombok.version>1.18.38</lombok.version>

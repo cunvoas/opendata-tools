@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
+import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceService;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.export.ServicePublicationExporter;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
@@ -21,6 +22,10 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
 
 @SpringBootTest
 @ActiveProfiles({"secret","pi_nuc"})
+/**
+ * 
+ * cp -Rf /var/isochrone/data/* /work/PERSO/github/gh_pages/geoservice-data
+ */
 class TestExporterApplication {
 	
 	@Autowired
@@ -29,6 +34,9 @@ class TestExporterApplication {
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
 	
+
+	@Autowired
+	private StatsSurfaceService statsSurfaceService;
 	
 	@Autowired
 	private ServiceIris serviceIris;
@@ -76,16 +84,16 @@ class TestExporterApplication {
 
 
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(21)
 	void writeGeoJsonCarreaux() {
 		try {
 //			servicePublicationExporter.writeGeoJsonCarreaux();
 			
 			CommunauteCommune com2co=serviceReadReferences.getCommunauteCommuneById(1l);
-//			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2019);
+			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2019);
 			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2017);
-//			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2015);
+			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2015);
 
 
 		} catch (IOException e) {
@@ -93,6 +101,8 @@ class TestExporterApplication {
 			fail(e.getMessage());
 		}
 	}
+	
+	
 	
 
 
@@ -140,5 +150,24 @@ class TestExporterApplication {
 	}
 
 
+
+	@Test
+//	@Disabled
+	@Order(25)
+	void writeStatsSurfaceByCom2CoIdAndAnnee() {
+		try {
+
+
+			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2015);
+			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2017);
+			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2019);
+
+
+		} catch (IOException e) {
+			System.err.println(e);
+			fail(e.getMessage());
+		}
+	}
+	
 	
 }

@@ -72,11 +72,12 @@ public class AuthenticationConfig {
 				 .authorizeHttpRequests(authorizeRequests ->
 		                 authorizeRequests
 		                         .requestMatchers(
-//			                 			    "/awake",
-//			               		            "/favicon.ico";
+//			                 			"/awake",
+			               		        "/favicon.ico",
 			             			    "/actuator/**",
 		                        		"/pub/**",
-		                        		"/map/**").permitAll()
+		                        		"/map/**"
+		                        ).permitAll()
 		                         .anyRequest().authenticated()
 		         )
 				.formLogin(form->form
@@ -96,6 +97,7 @@ public class AuthenticationConfig {
 								"/pub/**",
 		                		"/map/**",
                  			    "/awake",
+                        		"/mvc/ajax/**",
                  			    "/favicon.ico"
 						)
 				)
