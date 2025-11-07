@@ -1,13 +1,16 @@
 <template>
 
   <div v-if="loaded">
-    <p><h4 id="villeId">{{ villeNom }}</h4></p>
+    <p><b id="villeId">{{ villeNom }}</b></p>
     <p>
-      <Bar :data="dataBar" style="width:80%;height:300px;"  />
+      <Bar :data="dataBar" :options="barOptions" style="width:80%;height:300px;"  />
    </p>
     <p>
       <Pie :data="dataPie" :options="myOptions" style="width: 80%;height:300px;" />
-   </p>
+    </p>
+    <div style="width:80%;text-align:center;font-size:0.85em;margin-top:-10px;margin-bottom:20px;">
+      <span>Répartition des habitants par seuil de surface de parc accessible</span>
+    </div>
   </div>
   <div v-else>Chargement en cours...</div>
 
@@ -50,7 +53,30 @@ export default {
       dataPie:  {},
       annee: 2019,
       loaded: false,
-      villeNom: ''
+      villeNom: '',
+      barOptions: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Surfaces de parcs accessibles par habitant en m²'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Nombre d\'habitants'
+            }
+          }
+        }
+      }
     }
   },
     watch: {

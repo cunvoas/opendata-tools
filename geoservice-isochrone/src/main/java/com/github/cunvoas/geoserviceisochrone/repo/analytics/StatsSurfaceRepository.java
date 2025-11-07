@@ -27,11 +27,11 @@ public interface StatsSurfaceRepository extends ReadOnlyRepository<StatsSurface,
 			+ "    INNER JOIN public.filosofi_200m f  ON cc.annee=f.annee AND cc.id_inspire=idcar_200m\n"
 			+ "    GROUP BY cc.annee, f.lcog_geo, coalesce(round(surface_park_pcapita, 2), 0)\n"
 			+ ")\n"
-			+ "SELECT annee, surface_min, surface_max,sum(pop_inc) as pop_inc,sum(pop_exc) as pop_exc, seuil\n"
+			+ "SELECT annee, surface_min, surface_max, seuil ,sum(pop_inc) as pop_inc,sum(pop_exc) as pop_exc \n"
 			+ "FROM surface_range r , stats \n"
 			+ "WHERE  r.surface_min  <= surface_park_pcapita AND surface_park_pcapita < r.surface_max AND\n"
 			+ "    stats.annee=:annee AND  lcog_geo like :insee\n"
-			+ "GROUP BY annee, surface_min, surface_max\n"
+			+ "GROUP BY annee, surface_min, surface_max, seuil \n"
 			+ "order by r.surface_min";	
 	
 	final String QRY_SUBURBS = "WITH surface_range AS (\n"
@@ -43,16 +43,16 @@ public interface StatsSurfaceRepository extends ReadOnlyRepository<StatsSurface,
 			+ "), stats AS (\n"
 			+ "    SELECT \n"
 			+ "	  cc.annee, f.lcog_geo, coalesce(round(surface_park_pcapita, 2), 0) as surface_park_pcapita,\n"
-			+ "	  coalesce(round(sum(cc.pop_inc), 0), 0) as pop_inc,  coalesce(round(sum(cc.pop_exc), 0), 0) as pop_exc, seuil \n"
+			+ "	  coalesce(round(sum(cc.pop_inc), 0), 0) as pop_inc,  coalesce(round(sum(cc.pop_exc), 0), 0) as pop_exc \n"
 			+ "    FROM public.carre200_computed_v2 cc \n"
 			+ "    INNER JOIN public.filosofi_200m f  ON cc.annee=f.annee AND cc.id_inspire=idcar_200m\n"
 			+ "    GROUP BY cc.annee, f.lcog_geo, coalesce(round(surface_park_pcapita, 2), 0)\n"
 			+ ")\n"
-			+ "SELECT annee, surface_min, surface_max,sum(pop_inc) as pop_inc,sum(pop_exc) as pop_exc\n"
+			+ "SELECT annee, surface_min, surface_max, seuil ,sum(pop_inc) as pop_inc,sum(pop_exc) as pop_exc\n"
 			+ "FROM surface_range r , stats \n"
 			+ "WHERE  r.surface_min  <= surface_park_pcapita AND surface_park_pcapita < r.surface_max AND\n"
 			+ "    stats.annee=:annee AND  lcog_geo like :insee\n"
-			+ "GROUP BY annee, surface_min, surface_max\n"
+			+ "GROUP BY annee, surface_min, surface_max, seuil \n"
 			+ "order by r.surface_min";	
 
 	@Query(value = QRY_CITY, nativeQuery = true)
