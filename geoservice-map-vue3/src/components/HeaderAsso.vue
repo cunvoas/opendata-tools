@@ -22,7 +22,7 @@
                     href="https://www.helloasso.com/associations/deul-air"
                     target="_blank" rel="noopener noreferrer">
                     <img
-                        alt="Deul'Air"
+                        alt="Deûl'Air"
                         src="../assets/logo-deulair.png"
                         height="80px"
                         style="border: 2px"

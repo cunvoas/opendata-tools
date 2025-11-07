@@ -125,12 +125,12 @@ public class StatsSurfaceService {
 			sb.append("> ").append(deb);
 			if (i==colors.length-1) {
 				sb.append(" +");
-				txtSeuil[i]= String.format(">= %s m²/h", fin);
+				txtSeuil[i]= String.format(">= %s m²/hab.", fin);
 			} else {
 				fin = seuils[i+1];
 				sb.append("<=").append(fin);
 				
-				txtSeuil[i]= String.format("%s <=  surface/habitant < %s m²/h", deb, fin);
+				txtSeuil[i]= String.format("%s <=  surface/habitant < %s m²/hab.", deb, fin);
 			}
 			
 			Stat stat = new Stat();

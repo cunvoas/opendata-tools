@@ -149,6 +149,11 @@ function  getSquareColor(zoneDense, densite) {
   }
   densite = (""+densite).replace(",", ".");
 
+// malvoyant  
+// vert 91ff00
+// bleu 2e2e43
+
+
   const blue25   = '#0000e8';
   const blue50   = '#6060e8';
   const blue75   = '#b0b0e8';
@@ -201,12 +206,12 @@ function getColorLegend(legendeDense) {
     let grades = [];
 
     if (legendeDense) {
-      labels.push(`&nbsp;<b>Zone dense</b>`);
       labels.push(`&nbsp; accessibles à 330 m maxi`);
+      labels.push(`&nbsp;<b>Zone dense</b>`);
       grades =  gradesDense;
     } else {
-      labels.push(`&nbsp;<b>Zone périurbaine</b>`);
       labels.push(`&nbsp; accessibles à 1200 m maxi`);
+      labels.push(`&nbsp;<b>Zone périurbaine</b>`);
       grades = gradesSubur;
     }
     labels.push(`<i style="background:${getSquareColor(true,null)}"></i> non calculé`);

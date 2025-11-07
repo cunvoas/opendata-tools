@@ -35,6 +35,10 @@ public class StatsSurface implements Comparable<StatsSurface> {
 	/**  population sans parc.*/
 	@Column(name="pop_exc", precision = 16, scale = 4)
 	private BigDecimal populationExclue;
+
+	/**  niveau de seuil OMS.*/
+	@Column(name="seuil")
+	private StatsSeuilOmsEnum seuil;
 	
 	@Override
 	public int compareTo(StatsSurface other) {
