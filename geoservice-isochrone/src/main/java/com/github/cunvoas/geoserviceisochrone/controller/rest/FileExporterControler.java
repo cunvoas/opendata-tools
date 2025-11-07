@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
  * Permet d'exporter des données géographiques après vérification de la clé et de l'adresse IP.
  */
 @RestController
-@RequestMapping("/map/export")
+@RequestMapping("/map/ajax/export")
 @Slf4j
 public class FileExporterControler {
 	@Value("${application.security.export-credential-key}")

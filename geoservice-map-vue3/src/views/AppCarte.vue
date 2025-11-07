@@ -14,6 +14,33 @@
         </span>
     
     </div>
+    <div>   
+         <span style="border: 2px">
+            <table style="text-align: left">
+                <tr>
+                    <td>Préconisations OMS non respectées :</td>
+                    <td ><div class="square" style="background-color: #0000e8;" /></td>
+                    <td ><div class="square" style="background-color: #6060e8;" /></td>
+                    <td ><div class="square" style="background-color: #b0b0e8;" /></td>
+                </tr>
+                
+                <tr>
+                    <td>Préconisations OMS respectées :</td>
+                    <td><div class="square" style="background-color: #57ee17;" /></td>
+                    <td><div class="square" style="background-color: #578817;" /></td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td colspan="4">✓ : plus de 1000 m²</td>
+                </tr>>
+                <tr>
+                    <td colspan="4">✖ : non comptabilisé comme un parc</td>
+                </tr>
+
+            </table>
+           </span>
+
+    </div>
 </template>
 
 <script>
@@ -83,4 +110,9 @@ table.legend td {
     margin-right: 8px;
     opacity: 0.7;
 }
+  .square {
+    width: 20px;
+    aspect-ratio: 1 / 1;
+    opacity: 0.4;
+  }
 </style>

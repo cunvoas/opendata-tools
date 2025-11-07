@@ -24,6 +24,9 @@ web:
 
 application:
   security:
+    token:
+      secret: ${TOKEN_KEY_BASE64}
+      expiration-ms: 3600000 # 1 hour
     export-credential-key: ${EXPORT_KEY}
     export-ip-address:  ${EXPORT_IP}
     timehack: ${THE_LOGIN_TIME_IN_PROD}

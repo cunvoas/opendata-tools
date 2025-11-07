@@ -1,9 +1,11 @@
 
 <template>
     <b-container name="bContainer">
-         
+          <b-row  style="align: center;text-align: center;vertical-align: middle;">
+            <h3>Parcs accessibles en m² par habitant</h3>
+          </b-row>
+          
            <b-row  style="align: center;text-align: center;vertical-align: middle;">
-                      
             <b-col>
                 <a
                     href="https://www.helloasso.com/associations/aut-mel"
@@ -20,7 +22,7 @@
                     href="https://www.helloasso.com/associations/deul-air"
                     target="_blank" rel="noopener noreferrer">
                     <img
-                        alt="Deul'Air"
+                        alt="Deûl'Air"
                         src="../assets/logo-deulair.png"
                         height="80px"
                         style="border: 2px"
@@ -32,7 +34,7 @@
                     target="_blank" rel="noopener noreferrer">
                     <img
                         alt="Entrelianes"
-                        src="../assets/logo-entrelianes.jpg"
+                        src="../assets/logo-entrelianes.png"
                         width="96px"
                         style="border: 2px"
                         valign="middle"

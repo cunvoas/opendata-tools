@@ -4,35 +4,25 @@
 
         <span style="border: 2px">
 
-            <h1>Information sur l'application</h1>
-            <h2>Objectif</h2>
+            <h1>Informations sur l'application</h1>
+            <h2>Objectifs</h2>
             <p>
-                L'objectif de cette application est de permettre aux habitants des villes et des regroupements de
-                communes
-                de connaitre les parcs et jardins qui sont accessibles à pieds.
+                L'objectif de cette application est de permettre aux habitants des villes et des regroupements de communes de visualiser sur une carte les parcs et jardins qui sont accessibles à pied.
                 <br />
-                Elle permet de visualiser sur la carte et de connaitre la population qui partage les parcs ainsi que la
-                densité de population.
+                Elle permet aussi de connaître les territoires qui respectent le nombre de m²/habitant d'espaces verts publics de proximité préconisés par l'Organisation mondiale de la santé (OMS).
             </p>
 
             <h2>Parcs et Jardins</h2>
             <p>
-                Les parcs et jardins publiques sont des espaces verts accessibles qui permettent de se détendre, de se
-                promener, de jouer, de se reposer, de pique-niquer, de lire, de se rencontrer,de s’aérer...
-                <br />
-                Les villes comptabilisent certains espaces comme des parcs et jardins, comme les cimetières, les
-                bosquets, des places minéralisées. L'application les exclus des surfaces mais les noms sont disposibles
-                dans les détails avec une croix.
+               Les parcs et jardins publics sont des espaces verts accessibles qui permettent de se détendre, de se promener, de jouer, de se reposer, de pique-niquer, de lire, de se rencontrer, de s’aérer...
+               <br />
+                Certaines villes comptabilisent les cimetières, les bosquets, des places minéralisées comme des parcs et jardins. Ici, l'application les exclut des surfaces pour être en cohérence avec les critères retenus par l'OMS, mais les noms sont disposibles dans les détails avec une croix.
             </p>
             <p>
                 Ils sont intégrés et géolocalisés sur une carte interactive qui permet d'évaluer les populations qui
                 peuvent en bénéficier.
                 <br />
-                Nous avons intégré les recommandation de l'OMS qui préconisent au minimum 10m²/habitant en zone urbaine
-                et 25 m²/habitant en zone périurbaine, les surfaces conseillées sont respectivement de 12 et 45
-                m²/habitant.
-                De plus la distance pour accéder aux parcs est de 5 minutes à pieds (soit 300m) en ville et 20 minutes à
-                la campagne (soit 1200m).
+                Nous avons intégré les recommandations de l'OMS qui préconisent au minimum 10m²/habitant d'espaces verts publics de proximité en zone urbaine et 25 m²/habitant en zone périurbaine (les surfaces conseillées sont respectivement de 12 et 45 m²/habitant). De plus, la distance pour accéder aux parcs est de 5 minutes à pied (soit 300m) en ville et 20 minutes à la campagne (soit 1200m).
                 <br />
 
 
@@ -47,7 +37,7 @@
             <h2>Les données utilisées et l'algorithme</h2>
             <p>
                 Nous utilisons les données disponibles en OpenData lorsque cela est possible auquel s'ajoute un travail
-                collaboratif de plusieurs assocations à permis de recenser les entrées de chaque parcs.<br />
+                collaboratif de plusieurs assocations qui a permis de recenser les entrées de chaque parcs.<br />
                 Pour chaque entrée, nous déterminons la zone d'accessibilité "isochrone" grace au service de calcul
                 d'isochrone de l'IGN.<br />
                 Les données de densité des communes, des populations, des données carroyées sont fournies par l'INSEE.
@@ -65,7 +55,7 @@
                     <ol>
                         <li> Pour les carrés complètement recouvert par le polygone, toute la population est
                             contabilisée</li>
-                        <li> pour les autres carrés la polulation est estimée au prorata le la surface en recouvrement
+                        <li> pour les autres carrés la population est estimée au prorata le la surface en recouvrement
                         </li>
                         <li> la surface de tous les parcs accessibles est comptabilisée et la densité est calculée au vu
                             de la population qui partage les parcs</li>
@@ -74,12 +64,12 @@
             </ul>
             <br />
             <p>
-                Ce calcul est réalisé pour les années disponibles avec l'INSEE.
+                Ce calcul est réalisé avec les dernières données de l'INSEE rendues publiques.
             </p>
 
             <h2>Code source et contribution à l'application</h2>
             <p>
-                Le programme est disponible en opensource, il a été réalisé par des bénévoles et des associations. Il
+                Le programme est disponible en opensource. Il a été réalisé par des bénévoles et des associations. Il
                 est
                 possible de contribuer à l'amélioration des données, des algorithmes et des fonctionnalités.
                 <br />
@@ -103,12 +93,12 @@
                 stabilité de notre seurveur.
                 <br />
                 Les données sont ensuite vérifiées et intégrées dans la base de données avant d'être publiée sur le site
-                publique.
+                public.
             </p>
 
             <h2>Contributions et remerciements</h2>
             <p>
-                Philippe de Deul'air pour le contrôles des calculs.
+                Philippe de Deûl'Air pour le contrôles des calculs.
                 <br />
                 Mathilde d'Entrelianes pour la catégorisation des populations et la déductions des légendes et couleurs.
                 <br />
