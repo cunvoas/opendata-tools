@@ -201,10 +201,12 @@ function getColorLegend(legendeDense) {
     let grades = [];
 
     if (legendeDense) {
-      labels.push(`<i style="background:#ffffff"></i> <b>dense</b>`);
+      labels.push(`&nbsp;<b>Zone dense</b>`);
+      labels.push(`&nbsp; accessibles à 330 m maxi`);
       grades =  gradesDense;
     } else {
-      labels.push(`<i style="background:#ffffff"></i> <b>périurbain</b>`);
+      labels.push(`&nbsp;<b>Zone périurbaine</b>`);
+      labels.push(`&nbsp; accessibles à 1200 m maxi`);
       grades = gradesSubur;
     }
     labels.push(`<i style="background:${getSquareColor(true,null)}"></i> non calculé`);
