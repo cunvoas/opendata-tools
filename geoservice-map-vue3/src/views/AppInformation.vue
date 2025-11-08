@@ -90,7 +90,7 @@
                 demande via <a href="javascript:void(0);" @click="sendRequest">email</a>
                 <br />
                 Nous limitons le nombres de contributeur par territoire afin de garantir la qualité des données et la
-                stabilité de notre seurveur.
+                stabilité de notre application.
                 <br />
                 Les données sont ensuite vérifiées et intégrées dans la base de données avant d'être publiée sur le site
                 public.

@@ -108,9 +108,10 @@ export default {
         };
         await this.fetchCities(com2coEvent);
 
-        // Emit the loaded location
-        this.$emit('update-location', locationData);
-
+        // Emit the loaded location if we have complete data
+        if (locationData) {
+            this.$emit('update-location', locationData);
+        }
 
     },
     computed: {

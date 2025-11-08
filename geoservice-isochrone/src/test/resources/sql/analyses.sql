@@ -589,15 +589,15 @@ order by r.surface_min;
 
 
 WITH surface_range AS (
-    select 0 as surface_min, 3 as surface_max
+    select 0 as surface_min, 3 as surface_max, 0 as seuil
     UNION
-    select 3 as surface_min, 7 as surface_max
+    select 3 as surface_min, 7 as surface_max, 0 as seuil
     UNION
-    select 7 as surface_min, 10 as surface_max
+    select 7 as surface_min, 10 as surface_max, 0 as seuil
     UNION
-    select 10 as surface_min, 12 as surface_max
+    select 10 as surface_min, 12 as surface_max, 1 as seuil
     UNION
-    select 12 as surface_min, 10000 as surface_max
+    select 12 as surface_min, 10000 as surface_max, 2 as seuil
 ), stats AS (
     SELECT 
         cc.annee, f.lcog_geo, coalesce(round(surface_park_pcapita, 2), 0) as surface_park_pcapita,
@@ -614,7 +614,7 @@ WITH surface_range AS (
         coalesce(round(surface_park_pcapita, 2), 0)
 
 SELECT 
-    annee, surface_min, surface_max,
+    annee, surface_min, surface_max,seuil,
     sum(pop_inc) as pop_inc,
     sum(pop_exc) as pop_exc,
     count(nb_inspire)
@@ -629,15 +629,15 @@ order by r.surface_min;
 --- périurbain
 
 WITH surface_range AS (
-	select 0 as surface_min, 8 as surface_max
+	select 0 as surface_min, 8 as surface_max, 0 as seuil
 	UNION
-	select 8 as surface_min, 17 as surface_max
+	select 8 as surface_min, 17 as surface_max, 0 as seuil
 	UNION
-	select 17 as surface_min, 25 as surface_max
+	select 17 as surface_min, 25 as surface_max, 0 as seuil
 	UNION
-	select 25 as surface_min, 45 as surface_max
+	select 25 as surface_min, 45 as surface_max, 1 as seuil
 	UNION
-	select 45 as surface_min, 10000 as surface_max
+	select 45 as surface_min, 10000 as surface_max, 2 as seuil
 
 ), stats AS (
     SELECT 
@@ -656,7 +656,7 @@ WITH surface_range AS (
 )
 
 SELECT 
-    annee, surface_min, surface_max,
+    annee, surface_min, surface_max, seuil,
     sum(pop_inc) as pop_inc,
     sum(pop_exc) as pop_exc,
     count(nb_inspire)
@@ -667,5 +667,122 @@ WHERE
    AND   r.surface_min  <= surface_park_pcapita AND surface_park_pcapita < r.surface_max
 GROUP BY annee, surface_min, surface_max
 order by r.surface_min;
+
+
+=========================
+
+
+
+
+WITH 
+surface_range_dense AS (
+    select 0 as surface_min, 3 as surface_max, 0 as seuil UNION
+    select 3 as surface_min, 7 as surface_max, 0 as seuil UNION
+    select 7 as surface_min, 10 as surface_max, 0 as seuil UNION
+    select 10 as surface_min, 12 as surface_max, 1 as seuil UNION
+    select 12 as surface_min, 10000 as surface_max, 2 as seuil ),
+surface_range_peri AS (
+    select 0 as surface_min, 8 as surface_max, 0 as seuil UNION
+    select 8 as surface_min, 17 as surface_max, 0 as seuil UNION
+    select 17 as surface_min, 25 as surface_max, 0 as seuil UNION
+    select 25 as surface_min, 45 as surface_max, 1 as seuil UNION
+    select 45 as surface_min, 10000 as surface_max, 2 as seuil ),
+densite_ville AS (
+    SELECT insee_code, dens<='2' as is_dense, id_comm2co
+    FROM public.insee_densite_city d
+    INNER JOIN public.city c ON d.codgeo=c.insee_code ),
+stats AS (
+    SELECT 
+        cc.annee, f.lcog_geo, coalesce(round(surface_park_pcapita, 2), 0) as surface_park_pcapita,
+        coalesce(round(sum(cc.pop_inc), 0), 0) as pop_inc, coalesce(round(sum(cc.pop_exc), 0), 0) as pop_exc,
+         count(cc.id_inspire) AS nb_inspire
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    group by
+        cc.annee,
+        f.lcog_geo,
+        coalesce(round(surface_park_pcapita, 2), 0) )
+
+SELECT 
+    annee, surface_min, surface_max,seuil,
+    sum(pop_inc) as pop_inc, sum(pop_exc) as pop_exc, count(nb_inspire)
+FROM surface_range_dense r, stats, densite_ville d
+WHERE 
+    stats.annee=2019 AND lcog_geo like '%'||d.insee_code||'%'
+    AND d.id_comm2co=1 AND d.is_dense is true
+    AND surface_park_pcapita >= r.surface_min AND surface_park_pcapita < r.surface_max
+GROUP BY annee, surface_min, surface_max, seuil
+UNION
+SELECT 
+    annee, surface_min, surface_max,seuil,
+    sum(pop_inc) as pop_inc,sum(pop_exc) as pop_exc,count(nb_inspire)
+FROM surface_range_peri r, stats, densite_ville d
+WHERE 
+    stats.annee=2019 AND lcog_geo like '%'||d.insee_code||'%'
+    AND d.id_comm2co=1 AND d.is_dense is false
+    AND surface_park_pcapita >= r.surface_min AND surface_park_pcapita < r.surface_max
+GROUP BY annee, surface_min, surface_max, seuil
+
+
+
+--================================================
+
+
+
+
+
+
+WITH 
+surface_range_dense AS (
+    select 0 as surface_min, 3 as surface_max, 0 as seuil UNION
+    select 3 as surface_min, 7 as surface_max, 0 as seuil UNION
+    select 7 as surface_min, 10 as surface_max, 0 as seuil UNION
+    select 10 as surface_min, 12 as surface_max, 1 as seuil UNION
+    select 12 as surface_min, 10000 as surface_max, 2 as seuil ),
+surface_range_peri AS (
+    select 0 as surface_min, 8 as surface_max, 0 as seuil UNION
+    select 8 as surface_min, 17 as surface_max, 0 as seuil UNION
+    select 17 as surface_min, 25 as surface_max, 0 as seuil UNION
+    select 25 as surface_min, 45 as surface_max, 1 as seuil UNION
+    select 45 as surface_min, 10000 as surface_max, 2 as seuil ),
+densite_ville AS (
+    SELECT insee_code, dens<='2' as is_dense, id_comm2co
+    FROM public.insee_densite_city d
+    INNER JOIN public.city c ON d.codgeo=c.insee_code ),
+stats AS (
+    SELECT 
+        cc.annee, f.lcog_geo, coalesce(round(surface_park_pcapita, 2), 0) as surface_park_pcapita,
+        coalesce(round(sum(cc.pop_inc), 0), 0) as pop_inc, coalesce(round(sum(cc.pop_exc), 0), 0) as pop_exc,
+         count(cc.id_inspire) AS nb_inspire
+    FROM public.carre200_computed_v2 cc 
+    INNER JOIN public.filosofi_200m f 
+        ON cc.annee=f.annee AND cc.id_inspire=idcar_200m
+    group by
+        cc.annee,
+        f.lcog_geo,
+        coalesce(round(surface_park_pcapita, 2), 0) )
+
+SELECT 
+    annee, seuil,
+    sum(pop_inc) as pop_inc, sum(pop_exc) as pop_exc, count(nb_inspire)
+FROM surface_range_dense r, stats, densite_ville d
+WHERE 
+    stats.annee=2019 AND lcog_geo like '%'||d.insee_code||'%'
+    AND d.id_comm2co=1 AND d.is_dense is true
+    AND surface_park_pcapita >= r.surface_min AND surface_park_pcapita < r.surface_max
+GROUP BY annee, surface_min, surface_max, seuil
+UNION
+SELECT 
+    annee, seuil,
+    sum(pop_inc) as pop_inc,sum(pop_exc) as pop_exc,count(nb_inspire)
+FROM surface_range_peri r, stats, densite_ville d
+WHERE 
+    stats.annee=2019 AND lcog_geo like '%'||d.insee_code||'%'
+    AND d.id_comm2co=1 AND d.is_dense is false
+    AND surface_park_pcapita >= r.surface_min AND surface_park_pcapita < r.surface_max
+GROUP BY annee, seuil
+
+
 
 
