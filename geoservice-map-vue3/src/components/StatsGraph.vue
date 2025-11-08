@@ -83,7 +83,7 @@ export default {
         location: {
             async handler(newLocation) {
               
-              if (newLocation) {
+              if (newLocation && newLocation.cityInsee) {
                   this.loaded = false;
                   
                   await this.processLocation(toRaw(newLocation));
