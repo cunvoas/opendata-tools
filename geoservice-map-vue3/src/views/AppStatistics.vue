@@ -8,7 +8,7 @@
                 id="statsGrapg"
                 align="center"
                 valign="middle"
-                style="position: relative, z-index: 10;"
+                style="position: relative; z-index: 10;"
             >
                 <StatsGraph 
                     :key="componentKey"
@@ -41,7 +41,33 @@ export default {
             componentKey: 0
         };
     },
+    mounted() {
+        // Load location from localStorage on mount
+        const savedLocation = localStorage.getItem('location-selected');
+        if (savedLocation) {
+            try {
+                this.location = JSON.parse(savedLocation);
+            } catch (error) {
+                console.error('Error loading saved location:', error);
+                this.setDefaultLocation();
+            }
+        } else {
+            // Set default location to Lille if no saved location
+            this.setDefaultLocation();
+        }
+    },
     methods: {
+        setDefaultLocation() {
+            // Default location for Lille
+            this.location = {
+                cityInsee: '59350',
+                regionId: '32',
+                com2coId: '245900410',
+                cityName: 'Lille',
+                lat: 50.62925,
+                lng: 3.057256
+            };
+        },
         async updateLocation(newLocation) {
             //console.log("AppStatistics.updateLocation", JSON.stringify(newLocation));
             //this.location = JSON.parse(JSON.stringify(newLocation));
