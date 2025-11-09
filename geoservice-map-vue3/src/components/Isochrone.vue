@@ -19,6 +19,9 @@
     <label for="cbCadastre"> | Cadastre</label>
     <input id="cbCadastre" v-model="showCadastre" type="checkbox" />
 
+    <label for="cbColorblind"> | Mode daltonien</label>
+    <input id="cbColorblind" v-model="colorblindMode" type="checkbox" @change="onColorModeChange" />
+
     <br />
 
      
@@ -67,6 +70,7 @@
 
     <l-geo-json
         v-if="showCarre"
+        :key="'carre-' + refreshKey"
         :geojson="geojsonCarre"
         :options="detailCarre"
         :options-style="styleCarreFunction"
@@ -140,25 +144,36 @@ import debounce from 'lodash/debounce';
 const MODE='static';
 
 // needs to be here for map coloring
-function  getSquareColor(zoneDense, densite) {
-  //const grey     = '#a5a5a5';
-  let color     = '#959595';
+// Fonction pour obtenir les couleurs selon le mode (normal ou daltonien)
+function  getSquareColor(zoneDense, densite, colorblindMode = false) {
+  // Gris neutre pour valeurs non calculées
+  let color = '#959595';
 
   if (densite===null || densite==='N/A' || densite==='' ) {
     return color;
   }
   densite = (""+densite).replace(",", ".");
 
-// malvoyant  
-// vert 91ff00
-// bleu 2e2e43
+  // Définition des deux palettes de couleurs
+  let level1, level2, level3, level4, level5;
 
-
-  const blue25   = '#0000e8';
-  const blue50   = '#6060e8';
-  const blue75   = '#b0b0e8';
-  const greenMin = '#57ee17';
-  const greenMax = '#578817';
+  if (colorblindMode) {
+    // Palette adaptée aux daltoniens (évite confusion rouge/vert et bleu/jaune)
+    // Utilise une progression du orange (mauvais) au bleu foncé (bon)
+    // ColorBrewer2 compatible avec tous types de daltonisme
+    level1 = '#d73027';  // Rouge-orangé foncé (très faible)
+    level2 = '#fc8d59';  // Orange clair (faible)
+    level3 = '#fee090';  // Jaune-orangé pâle (moyen-faible)
+    level4 = '#91bfdb';  // Bleu clair (bon)
+    level5 = '#4575b4';  // Bleu foncé (très bon)
+  } else {
+    // Palette classique (bleu → vert)
+    level1 = '#0000e8';  // Bleu foncé (très faible)
+    level2 = '#6060e8';  // Bleu moyen (faible)
+    level3 = '#b0b0e8';  // Bleu clair (moyen-faible)
+    level4 = '#57ee17';  // Vert clair (bon)
+    level5 = '#578817';  // Vert foncé (très bon)
+  }
 
   const densiteMinDense=10;
   const densiteMaxDense=12;
@@ -181,23 +196,23 @@ function  getSquareColor(zoneDense, densite) {
 
   if (zoneDense===false || zoneDense===true) {
       if (densite>=densiteMax) {
-          color=greenMax;
+          color=level5;  // Excellent
       } else if (densite>=densiteMin) {
-          color=greenMin;
+          color=level4;  // Bon
       } else {
         
-        color = blue75;
+        color = level3;  // Moyen
         if (densite < p25) {
-          color = blue25;
+          color = level1;  // Très faible
         } else if (densite < p50) {
-          color = blue50;
+          color = level2;  // Faible
         }
       }
   }
   return color;
 }
 
-function getColorLegend(legendeDense) {
+function getColorLegend(legendeDense, colorblindMode = false) {
   
   const gradesDense = ['0','3','7','10','12'];
   const gradesSubur = ['0','8','17','25','45'];
@@ -214,7 +229,7 @@ function getColorLegend(legendeDense) {
       labels.push(`&nbsp;<b>Zone périurbaine</b>`);
       grades = gradesSubur;
     }
-    labels.push(`<i style="background:${getSquareColor(true,null)}"></i> non calculé`);
+    labels.push(`<i style="background:${getSquareColor(true, null, colorblindMode)}"></i> non calculé`);
 
 
 
@@ -223,7 +238,7 @@ function getColorLegend(legendeDense) {
 			to = grades[i + 1];
 
       let tSurface = `${from}${to ? `&ndash;${to}` : '+'}`
-      let tColors = `<i style="opacity:0.4;background:${getSquareColor(legendeDense, from)}"></i> `;
+      let tColors = `<i style="opacity:0.4;background:${getSquareColor(legendeDense, from, colorblindMode)}"></i> `;
 			
       labels.push(tColors+tSurface);
 
@@ -266,9 +281,15 @@ export default {
     return { leafletMap } // expose map ref
   },
   created () {
-     this.htmlLegend = getColorLegend(true);
+     // La légende est créée avec le mode colorblind déjà chargé depuis data()
+     this.htmlLegend = getColorLegend(true, this.colorblindMode);
+     console.log('Isochrone created - colorblindMode:', this.colorblindMode);
   },
   data() {
+    // Récupérer le mode daltonien depuis le localStorage dès l'initialisation
+    const savedColorblindMode = localStorage.getItem('colorblindMode');
+    const colorblindMode = savedColorblindMode !== null ? savedColorblindMode === 'true' : false;
+    
     return {
       htmlLegend: null,
       leafletMap: null,
@@ -277,6 +298,8 @@ export default {
       showCarre: true,
       showParcs: false,
       showCadastre: false,
+      colorblindMode: colorblindMode,
+      refreshKey: 0,
       legendeDense: true,
       zoom: 14,
       minZoom: 10,
@@ -388,6 +411,19 @@ export default {
   },
 
   methods: {
+    onColorModeChange() {
+      // Sauvegarder le mode dans le localStorage
+      localStorage.setItem('colorblindMode', this.colorblindMode.toString());
+      
+      // Mettre à jour la légende avec le nouveau mode de couleur
+      this.htmlLegend = getColorLegend(this.legendeDense, this.colorblindMode);
+      
+      // Incrémenter refreshKey pour forcer le re-render
+      this.refreshKey++;
+      
+      // Émettre l'événement pour informer le composant parent du changement de mode
+      this.$emit('colorblind-mode-changed', this.colorblindMode);
+    },
     getRootUrl() {
       const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
       const dynamicOnLocal = 'http://localhost:8980/isochrone/geolocation/';
@@ -500,7 +536,7 @@ export default {
             // Update legend if density classification changed
             if (memoIsDense !== this.legendeDense) {
                 
-                this.htmlLegend = getColorLegend(this.legendeDense);
+                this.htmlLegend = getColorLegend(this.legendeDense, this.colorblindMode);
             }
         } else {
             
@@ -674,11 +710,15 @@ export default {
    * Vue lifecycle hook called after the component has been mounted to the DOM.
    * Used here to add custom HTML content to the Leaflet control element.
    */
-  mounted() {      // Add custom HTML content to the l-control
+  mounted() {      
+      // Add custom HTML content to the l-control
       const customControl = document.getElementById('customControl');
       if (customControl) {
         customControl.innerHTML = '<p>Custom HTML content loaded on map load</p>';
       }
+      
+      // Émettre le mode daltonien initial au parent (depuis localStorage)
+      this.$emit('colorblind-mode-changed', this.colorblindMode);
   },
   computed: {
     /**
@@ -788,6 +828,10 @@ export default {
     },
 
     onDetailCarre() {
+      // Dépendance explicite à refreshKey pour forcer le recalcul
+      const refresh = this.refreshKey;
+      const colorblindMode = this.colorblindMode; // Capture du mode pour utilisation dans la closure
+      console.log('onDetailCarre computed - colorblindMode:', colorblindMode, 'refreshKey:', refresh);
       return (feature, layer) => {
         layer.on("mouseover", function (e) {
           const feature = e.target.feature;
@@ -847,7 +891,7 @@ export default {
         });
 
         layer.setStyle({
-            fillColor:  getSquareColor(feature.properties.isDense, feature.properties.squareMtePerCapitaOms),
+            fillColor:  getSquareColor(feature.properties.isDense, feature.properties.squareMtePerCapitaOms, colorblindMode),
             fillOpacity: 0.4,
           });
        

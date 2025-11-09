@@ -9,7 +9,7 @@
                 valign="middle"
                 style="position: relative, z-index: 10;"
             >
-                <Isochrone msg="Cartographie des parcs" :location="location" />
+                <Isochrone msg="Cartographie des parcs" :location="location" @colorblind-mode-changed="updateColorblindMode" />
             </div>
         </span>
     
@@ -19,15 +19,15 @@
             <table style="text-align: left">
                 <tr>
                     <td>Préconisations OMS non respectées :</td>
-                    <td ><div class="square" style="background-color: #0000e8;" /></td>
-                    <td ><div class="square" style="background-color: #6060e8;" /></td>
-                    <td ><div class="square" style="background-color: #b0b0e8;" /></td>
+                    <td><div class="square" :style="`background-color: ${getLowColor1};`" /></td>
+                    <td><div class="square" :style="`background-color: ${getLowColor2};`" /></td>
+                    <td><div class="square" :style="`background-color: ${getLowColor3};`" /></td>
                 </tr>
                 
                 <tr>
                     <td>Préconisations OMS respectées :</td>
-                    <td><div class="square" style="background-color: #57ee17;" /></td>
-                    <td><div class="square" style="background-color: #578817;" /></td>
+                    <td><div class="square" :style="`background-color: ${getHighColor1};`" /></td>
+                    <td><div class="square" :style="`background-color: ${getHighColor2};`" /></td>
                     <td>&nbsp;</td>
                 </tr>
                 <tr>
@@ -55,14 +55,35 @@ export default {
     },
     data() {
         return {
-            location: null
+            location: null,
+            colorblindMode: false
         };
+    },
+    computed: {
+        getLowColor1() {
+            return this.colorblindMode ? '#d73027' : '#0000e8';
+        },
+        getLowColor2() {
+            return this.colorblindMode ? '#fc8d59' : '#6060e8';
+        },
+        getLowColor3() {
+            return this.colorblindMode ? '#fee090' : '#b0b0e8';
+        },
+        getHighColor1() {
+            return this.colorblindMode ? '#91bfdb' : '#57ee17';
+        },
+        getHighColor2() {
+            return this.colorblindMode ? '#4575b4' : '#578817';
+        }
     },
     methods: {
         updateLocation(newLocation) {
             //alert(' appcarte. updateLocation(newLocation) '+JSON.stringify(newLocation) );
             
         this.location = newLocation;
+        },
+        updateColorblindMode(isColorblindMode) {
+            this.colorblindMode = isColorblindMode;
         }
     }
 };

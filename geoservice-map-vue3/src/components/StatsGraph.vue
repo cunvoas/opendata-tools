@@ -35,6 +35,34 @@ import { toRaw } from 'vue'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
+// Fonction pour convertir les couleurs normales en couleurs daltonien
+function convertToColorblindPalette(normalColor) {
+  // Récupérer le mode daltonien depuis le localStorage
+  const savedColorblindMode = localStorage.getItem('colorblindMode');
+  const colorblindMode = savedColorblindMode === 'true';
+  
+  if (!colorblindMode) {
+    return normalColor; // Retourner la couleur d'origine si mode daltonien désactivé
+  }
+  
+  // Mapping des couleurs normales (bleu/vert) vers couleurs daltonien (orange/bleu)
+  const colorMapping = {
+    // Couleurs faibles (bleu) → rouge-orangé/orange/jaune
+    '#0000e8': '#d73027', // Bleu foncé → Rouge-orangé foncé
+    '#6060e8': '#fc8d59', // Bleu moyen → Orange clair
+    '#b0b0e8': '#fee090', // Bleu clair → Jaune-orangé
+    
+    // Couleurs bonnes (vert) → bleu
+    '#57ee17': '#91bfdb', // Vert clair → Bleu clair
+    '#578817': '#4575b4', // Vert foncé → Bleu foncé
+    
+    // Gris (non calculé)
+    '#959595': '#959595', // Gris reste gris
+  };
+  
+  return colorMapping[normalColor] || normalColor;
+}
+
 export default {
     props: {
       location: {
@@ -56,6 +84,7 @@ export default {
       villeNom: '',
       locationType: null,
       currentGraphType: null,
+      lastProcessedLocation: null, // Stocker la dernière location pour rafraîchir
       barOptions: {
         responsive: true,
         maintainAspectRatio: true,
@@ -104,6 +133,18 @@ export default {
             deep: true
         }
     },
+  mounted() {
+    // Écouter les changements du localStorage pour rafraîchir les graphiques
+    window.addEventListener('storage', this.handleStorageChange);
+    
+    // Écouter les événements personnalisés pour les changements dans la même page
+    window.addEventListener('colorblind-mode-changed', this.handleColorblindModeChange);
+  },
+  beforeUnmount() {
+    // Nettoyer les listeners
+    window.removeEventListener('storage', this.handleStorageChange);
+    window.removeEventListener('colorblind-mode-changed', this.handleColorblindModeChange);
+  },
   options: {
     responsive: true,
     maintainAspectRatio: true,
@@ -130,6 +171,20 @@ export default {
     }
   },
   methods: {
+    handleStorageChange(event) {
+      // Rafraîchir les graphiques si le mode daltonien a changé
+      if (event.key === 'colorblindMode' && this.lastProcessedLocation) {
+        console.log('StatsGraph: colorblindMode changed in localStorage, refreshing graphs');
+        this.processLocation(this.lastProcessedLocation);
+      }
+    },
+    handleColorblindModeChange() {
+      // Rafraîchir les graphiques lors d'un changement dans la même page
+      if (this.lastProcessedLocation) {
+        console.log('StatsGraph: colorblindMode changed via event, refreshing graphs');
+        this.processLocation(this.lastProcessedLocation);
+      }
+    },
     getChartData(sLabel, tLabels, tData, tFillColors) {
       const retData = {
         labels: tLabels,
@@ -148,20 +203,24 @@ export default {
       this.villeNom = jsonData["nom"];
       
       const tLabels = jsonData["stats"].map(value => value.surface);
-      const tFillColors = jsonData["stats"].map(value => value.barColor);
+      // Appliquer la conversion des couleurs selon le mode daltonien
+      const tFillColors = jsonData["stats"].map(value => convertToColorblindPalette(value.barColor));
       const tHabitants = jsonData["stats"].map(value => value.habitants);
  
       this.dataBar= this.getChartData(' m² par habitant de parcs', tLabels,  tHabitants, tFillColors);
     },
     parseJsonPie(jsonData) {
       const tLabels = jsonData["seuils"].map(value => value.surface);
-      const tFillColors = jsonData["seuils"].map(value => value.barColor);
+      // Appliquer la conversion des couleurs selon le mode daltonien
+      const tFillColors = jsonData["seuils"].map(value => convertToColorblindPalette(value.barColor));
       const tHabitants = jsonData["seuils"].map(value => value.habitants );  // +" ("+ value.ratio +")"
 
       this.dataPie= this.getChartData(' m² par habitant de parcs', tLabels,  tHabitants, tFillColors);
     },
     async processLocation(newLocation) {
       
+      // Stocker la location pour pouvoir rafraîchir plus tard
+      this.lastProcessedLocation = newLocation;
       
       const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
       
