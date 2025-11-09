@@ -429,6 +429,7 @@ public class GeoMapServiceV2 {
 					feature.setProperties(pv);
 					pv.setId(String.valueOf(park.getId()));
 					pv.setName(park.getName());
+					pv.setSurface(park.getSurface());
     			}
     		}
     	}

@@ -765,9 +765,7 @@ export default {
             feature.properties.people +
             " hab. pour " +
             feature.properties.area +
-            " m² (" +
-            feature.properties.areaPerPeople +
-            " m²/h)</div>",
+            " m²</div>",
           { permanent: false, sticky: true }
         );
 
@@ -887,9 +885,26 @@ export default {
 
     onDetailPark() {
       return (feature, layer) => {
+        let formattedSurface = feature.properties.surface;
+        let unit = ' m²';
+        
+        if (feature.properties.surface) {
+          if (feature.properties.surface > 10000) {
+            const surfaceInHa = feature.properties.surface / 10000;
+            formattedSurface = new Intl.NumberFormat('fr-FR', { 
+              minimumFractionDigits: 2, 
+              maximumFractionDigits: 2 
+            }).format(surfaceInHa);
+            unit = ' ha';
+          } else {
+            formattedSurface = new Intl.NumberFormat('fr-FR').format(Math.round(feature.properties.surface));
+          }
+        }
+        
         layer.bindTooltip(
           "<div>Nom: " + feature.properties.name +
-          "</div>",
+          "</div><div>Surface: " + formattedSurface + unit + "</div>",
+          { permanent: false, sticky: true }
         );
       };
     },
