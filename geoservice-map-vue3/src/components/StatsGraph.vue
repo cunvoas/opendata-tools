@@ -2,7 +2,7 @@
 
   <div v-if="loaded">
     <p><b id="villeId">{{ villeNom }}</b></p>
-    <p>
+    <p v-if="shouldDisplayBarChart">
       <Bar :data="dataBar" :options="barOptions" style="width:80%;height:300px;"  />
    </p>
     <p>
@@ -54,6 +54,8 @@ export default {
       annee: 2019,
       loaded: false,
       villeNom: '',
+      locationType: null,
+      currentGraphType: null,
       barOptions: {
         responsive: true,
         maintainAspectRatio: true,
@@ -83,7 +85,8 @@ export default {
         location: {
             async handler(newLocation) {
               
-              if (newLocation && newLocation.cityInsee) {
+              // Accept both city and com2co location types
+              if (newLocation && (newLocation.cityInsee || newLocation.locType === 'com2co')) {
                   this.loaded = false;
                   
                   await this.processLocation(toRaw(newLocation));
@@ -116,6 +119,15 @@ export default {
         },
       },
 
+  },
+  computed: {
+    shouldDisplayBarChart() {
+      // Ne pas afficher le graphique en barres si c'est une communauté de communes ET que le type est 'all'
+      if (this.locationType === 'com2co' && this.currentGraphType === 'all') {
+        return false;
+      }
+      return true;
+    }
   },
   methods: {
     getChartData(sLabel, tLabels, tData, tFillColors) {
@@ -153,38 +165,65 @@ export default {
       
       const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
       
-      //this.location = newLocation;
+      // Debug: log the received location
+      console.log("processLocation received:", JSON.stringify(newLocation));
 
-      const regionId = this.location.regionId;
-      const com2coId = this.location.com2coId;
+      const regionId = newLocation.regionId;
+      const com2coId = newLocation.com2coId;
+      const locType = newLocation.locType || 'city'; // Default to city if not specified
+      const graphType = newLocation.graphType; // 'urbans', 'suburbs', or 'all'
 
-      const cityInsee = this.location.cityInsee;
+      // Store location type and graph type for use in computed property
+      this.locationType = locType;
+      this.currentGraphType = graphType;
+
+      console.log("Extracted values - locType:", locType, "graphType:", graphType);
+
       const annee   = this.annee;
 
-      console .log("processLocation:", regionId, com2coId, cityInsee);
-      const dept = cityInsee.substring(0,2);
-
-      let callUrl = `${staticOnGit}/data/stats/${dept}/${cityInsee}/stats_${cityInsee}_${annee}.json`;
+      let callUrl;
+      
+      // Check if we're loading com2co (communauté de communes) stats or city stats
+      if (locType === 'com2co') {
+        // Load community stats
+        console.log("processLocation (com2co):", regionId, com2coId, graphType);
+        
+        // If graphType is specified, use the new URL format for specific graph types
+        if (graphType) {
+          // Format: https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/stats/com2co/1/stats_c2c_1_urbans_2019.json
+          callUrl = `${staticOnGit}/data/stats/com2co/${com2coId}/stats_c2c_${com2coId}_${graphType}_${annee}.json`;
+        } else {
+          console.error("graphType is required for com2co location type");
+          this.loaded = false;
+          return;
+        }
+      } else {
+        // Load city stats (existing behavior)
+        const cityInsee = newLocation.cityInsee;
+        console.log("processLocation (city):", regionId, com2coId, cityInsee);
+        const dept = cityInsee.substring(0,2);
+        callUrl = `${staticOnGit}/data/stats/${dept}/${cityInsee}/stats_${cityInsee}_${annee}.json`;
+      }
 
       
-     // const baseCom2co = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/"+ this.annee +"/"+ regionId +"/com2co/" +  com2coId + "/stats_c2c__" +  this.annee + "_" +  com2coId + ".json";
-     // const baseCity = "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/"+ this.annee +"/"+ regionId +"/commune/" +  cityId + "/stats_com_" +  this.annee + "_" +  cityId + ".json";
-      const baseTest= "https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/test.json";
-
-     // callUrl = baseTest;
       
+      console.log("Fetching stats from:", callUrl);
 
       this.loaded = false;
-      const respData = await fetch(callUrl)
-      if (!respData.ok) {
-          
-          throw new Error(`HTTP error! status: ${respData.status}`);
-      }   
-      const newData = await respData.json();
+      try {
+        const respData = await fetch(callUrl)
+        if (!respData.ok) {
+            throw new Error(`HTTP error! status: ${respData.status}`);
+        }   
+        const newData = await respData.json();
 
-      this.parseJsonBar(newData);
-      this.parseJsonPie(newData);
-      this.loaded = true;
+        this.parseJsonBar(newData);
+        this.parseJsonPie(newData);
+        this.loaded = true;
+      } catch (error) {
+        console.error("Error loading stats:", error);
+        this.loaded = false;
+      }
     }
 
   }

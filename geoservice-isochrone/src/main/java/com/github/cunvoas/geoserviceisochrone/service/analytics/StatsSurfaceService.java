@@ -101,6 +101,7 @@ public class StatsSurfaceService {
 	
 	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAllDense(Integer annee, Long com2CoId) throws StreamWriteException, DatabindException, IOException {
 		StatsSurfaceJson ret = new StatsSurfaceJson();
+		
 		ret.setAnnee(String.valueOf(annee));
 		ret.setInsee("C2C_dense_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
 		
@@ -109,7 +110,7 @@ public class StatsSurfaceService {
 			log.warn("Communauté de commune with id {} not found", com2CoId);
 			return null;
 		} else {	
-			ret.setNom(opt.get().getName());
+			ret.setNom(opt.get().getName() +" - Urbain");
 			
 			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2CoDense(annee, com2CoId);
 			this.populateSurface(ret, stats, seuilDense);
@@ -120,7 +121,7 @@ public class StatsSurfaceService {
 			file.mkdirs();
 			
 			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_urbans_"+String.valueOf(annee)+".json");
-			objectMapper.writeValue(file, stats);
+			objectMapper.writeValue(file, ret);
 		}
 		return ret;
 	}
@@ -134,7 +135,7 @@ public class StatsSurfaceService {
 			log.warn("Communauté de commune with id {} not found", com2CoId);
 			return null;
 		} else {
-			ret.setNom(opt.get().getName());
+			ret.setNom(opt.get().getName() + " - Périurbain");
 			
 			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2CoSubUrbs(annee, com2CoId);
 			this.populateSurface(ret, stats, seuilSuburbs);
@@ -145,7 +146,7 @@ public class StatsSurfaceService {
 			file.mkdirs();
 			
 			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_suburbs_"+String.valueOf(annee)+".json");
-			objectMapper.writeValue(file, stats);
+			objectMapper.writeValue(file, ret);
 		}
 		return ret;
 	}
@@ -159,7 +160,7 @@ public class StatsSurfaceService {
 			log.warn("Communauté de commune with id {} not found", com2CoId);
 			return null;
 		} else {
-			ret.setNom(opt.get().getName());
+			ret.setNom(opt.get().getName() + " - Dense et Périurbain");
 			
 			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2Co(annee, com2CoId);
 			this.populateAll(ret, stats, txtSeuilOMS);
@@ -169,8 +170,8 @@ public class StatsSurfaceService {
 			File file = new File(sPath);
 			file.mkdirs();
 			
-			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_ALL_"+String.valueOf(annee)+".json");
-			objectMapper.writeValue(file, stats);
+			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_all_"+String.valueOf(annee)+".json");
+			objectMapper.writeValue(file, ret);
 		}
 		return ret;
 	}

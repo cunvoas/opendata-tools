@@ -176,17 +176,17 @@ class TestExporterApplication {
 	void writeStatsSurfaceByCom2CoIdAndAnneeAll() {
 
 			try {
-				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2015, 1L);
-				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2017, 1L);
-				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2019, 1L);
-
-				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2015, 1L);
-				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2017, 1L);
-				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2019, 1L);
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2015, 1L);
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2017, 1L);
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2019, 1L);
+//
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2015, 1L);
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2017, 1L);
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2019, 1L);
 				
-//			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2015, 1L);
-//			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2017, 1L);
-//			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2019, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2015, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2017, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2019, 1L);
 				
 				
 			} catch (StreamWriteException e) {

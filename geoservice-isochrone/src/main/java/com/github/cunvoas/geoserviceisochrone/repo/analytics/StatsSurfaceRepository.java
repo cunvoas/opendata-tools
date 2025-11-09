@@ -167,7 +167,7 @@ public interface StatsSurfaceRepository extends ReadOnlyRepository<StatsSurface,
 			+ "        f.lcog_geo,\n"
 			+ "        coalesce(round(surface_park_pcapita, 2), 0) )\n"
 			+ "\n"
-			+ "SELECT annee, seuil,sum(pop_inc) as pop_inc, sum(pop_exc) as pop_exc from (\n"
+			+ "SELECT annee, 0 as surface_min, 0 as surface_max, seuil,sum(pop_inc) as pop_inc, sum(pop_exc) as pop_exc from (\n"
 			+ "SELECT \n"
 			+ "    annee, seuil,\n"
 			+ "    sum(pop_inc) as pop_inc, sum(pop_exc) as pop_exc\n"
