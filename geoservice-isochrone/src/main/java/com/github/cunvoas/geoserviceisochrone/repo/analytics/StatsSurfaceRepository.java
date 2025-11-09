@@ -95,7 +95,7 @@ public interface StatsSurfaceRepository extends ReadOnlyRepository<StatsSurface,
 			+ "    AND surface_park_pcapita >= r.surface_min AND surface_park_pcapita < r.surface_max\n"
 			+ "GROUP BY annee, surface_min, surface_max, seuil\n";
 	@Query(value = QRY_COM2CO_DENSE, nativeQuery = true)
-	public List<StatsSurface> getStatsForCom2CoDense(@Param("annee")Integer annee, @Param("com2coId") Integer com2coId);
+	public List<StatsSurface> getStatsForCom2CoDense(@Param("annee")Integer annee, @Param("com2coId") Long com2coId);
 
 
 	final String QRY_COM2CO_SUBURBS = "WITH \n"
@@ -133,7 +133,7 @@ public interface StatsSurfaceRepository extends ReadOnlyRepository<StatsSurface,
 			+ "GROUP BY annee, surface_min, surface_max, seuil";
 	
 	@Query(value = QRY_COM2CO_SUBURBS, nativeQuery = true)
-	public List<StatsSurface> getStatsForCom2CoSubUrbs(@Param("annee")Integer annee, @Param("com2coId") Integer com2coId);
+	public List<StatsSurface> getStatsForCom2CoSubUrbs(@Param("annee")Integer annee, @Param("com2coId") Long com2coId);
 
 	
 	
@@ -167,7 +167,7 @@ public interface StatsSurfaceRepository extends ReadOnlyRepository<StatsSurface,
 			+ "        f.lcog_geo,\n"
 			+ "        coalesce(round(surface_park_pcapita, 2), 0) )\n"
 			+ "\n"
-			+ "SELECT annee, seuil,sum(pop_inc), sum(pop_exc) from (\n"
+			+ "SELECT annee, seuil,sum(pop_inc) as pop_inc, sum(pop_exc) as pop_exc from (\n"
 			+ "SELECT \n"
 			+ "    annee, seuil,\n"
 			+ "    sum(pop_inc) as pop_inc, sum(pop_exc) as pop_exc\n"
@@ -190,7 +190,7 @@ public interface StatsSurfaceRepository extends ReadOnlyRepository<StatsSurface,
 			+ ") GROUP BY annee, seuil";
 	
 	@Query(value = QRY_COM2CO, nativeQuery = true)
-	public List<StatsSurface> getStatsForCom2Co(@Param("annee")Integer annee, @Param("com2coId") Integer com2coId);
+	public List<StatsSurface> getStatsForCom2Co(@Param("annee")Integer annee, @Param("com2coId") Long com2coId);
 
 	
 }

@@ -152,21 +152,39 @@ class TestExporterApplication {
 
 
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(25)
 	void writeStatsSurfaceByCom2CoIdAndAnnee() {
 		try {
-
 
 			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2015);
 			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2017);
 			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2019);
 
-
 		} catch (IOException e) {
 			System.err.println(e);
 			fail(e.getMessage());
 		}
+	}
+	
+
+	@Test
+//	@Disabled
+	@Order(26)
+	void writeStatsSurfaceByCom2CoIdAndAnneeAll() {
+
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2015, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2017, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2019, 1L);
+
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2015, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2017, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2019, 1L);
+			
+//			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2015, 1L);
+//			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2017, 1L);
+//			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2019, 1L);
+			
 	}
 	
 	

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,13 +56,17 @@ public class StatsSurfaceService {
 	private ServiceOpenData serviceOpenData;
 	@Autowired
 	private CityRepository cityRepository;
-
 	@Autowired
 	private CommunauteCommuneRepository communauteCommuneRepository;
 	
 	private static int[] seuilDense= {0,3,7,10,12};
 	private static int[] seuilSuburbs= {0,8,17,25,45};
 	private static String[] colors= {"#0000e8","#6060e8","#b0b0e8","#57ee17","#578817"};
+
+	private static String[] oms= {
+			"Non respect des minimas OMS",
+			"Minimim conseillé par l'OMS",
+			"Préconisé par l'OMS" };
 	
 	private static String[] txtSeuil= {"","","","",""};
 	
@@ -91,6 +96,57 @@ public class StatsSurfaceService {
 		}
 	}
 	
+	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAllDense(Integer annee, Long com2CoId) {
+		StatsSurfaceJson ret = new StatsSurfaceJson();
+		ret.setAnnee(String.valueOf(annee));
+		ret.setInsee("C2C_dense_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
+		
+		Optional<CommunauteCommune> opt=communauteCommuneRepository.findById(com2CoId);
+		if (opt.isEmpty()) {
+			log.warn("Communauté de commune with id {} not found", com2CoId);
+			return null;
+		} else {	
+			ret.setNom(opt.get().getName());
+			
+			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2CoDense(annee, com2CoId);
+			this.populateSurface(ret, stats, seuilDense);
+		}
+		return ret;
+	}
+	
+	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAllSuburbs(Integer annee, Long com2CoId) {
+		StatsSurfaceJson ret = new StatsSurfaceJson();
+		ret.setAnnee(String.valueOf(annee));
+		ret.setInsee("C2C_suburbs_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
+		Optional<CommunauteCommune> opt=communauteCommuneRepository.findById(com2CoId);
+		if (opt.isEmpty()) {
+			log.warn("Communauté de commune with id {} not found", com2CoId);
+			return null;
+		} else {
+			ret.setNom(opt.get().getName());
+			
+			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2CoSubUrbs(annee, com2CoId);
+			this.populateSurface(ret, stats, seuilSuburbs);
+		}
+		return ret;
+	}
+
+	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAll(Integer annee, Long com2CoId) {
+		StatsSurfaceJson ret = new StatsSurfaceJson();
+		ret.setAnnee(String.valueOf(annee));
+		ret.setInsee("C2C_all_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
+		Optional<CommunauteCommune> opt=communauteCommuneRepository.findById(com2CoId);
+		if (opt.isEmpty()) {
+			log.warn("Communauté de commune with id {} not found", com2CoId);
+			return null;
+		} else {
+			ret.setNom(opt.get().getName());
+			
+			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2Co(annee, com2CoId);
+			this.populateAll(ret, stats, seuilSuburbs);
+		}
+		return ret;
+	}
 	
 	public StatsSurfaceJson getStatsSurfaceByInseeAndAnnee(String insee, Integer annee) {
 		StatsSurfaceJson ret = new StatsSurfaceJson();
@@ -112,6 +168,11 @@ public class StatsSurfaceService {
 			 stats = statsSurfaceRepository.getStatsForSuburbs(annee, "%"+insee+"%");
 			 seuils=  seuilSuburbs;
 		}
+		this.populateSurface(ret, stats, seuils);
+		return ret;
+	}
+	
+	private void populateAll(StatsSurfaceJson json, List<StatsSurface> stats, int[] seuils) {
 		Iterator<StatsSurface> iter = stats.iterator();
 		StatsSurface statsSurface = iter.next();
 		Integer populationTotalExclue = 0;
@@ -134,7 +195,7 @@ public class StatsSurfaceService {
 			}
 			
 			Stat stat = new Stat();
-			ret.getStats().add(stat);
+			json.getStats().add(stat);
 			stat.setSurface(sb.toString());
 			stat.setBarColor(colors[i]);
 			
@@ -151,22 +212,78 @@ public class StatsSurfaceService {
 		
 		// ajout dans le premier lot >0 <seuil 1
 		if (populationTotalExclue>0) {
-			Stat stat0 = ret.getStats().get(0);
+			Stat stat0 = json.getStats().get(0);
 			Integer cur = stat0.getHabitants();
 			stat0.setHabitants(cur+populationTotalExclue);
 		}
 		
 		int index=0;
-		for (Stat stat : ret.getStats()) {
+		for (Stat stat : json.getStats()) {
 			Seuil seuil = new Seuil();
-			ret.getSeuils().add(seuil);
+			json.getSeuils().add(seuil);
+			seuil.setSurface(oms[index]);
+			seuil.setBarColor(colors[index+2]);
+			seuil.setHabitants(stat.getHabitants());
+			seuil.setRatio(String.valueOf(100*stat.getHabitants().intValue()/populationTotale)+"");
+			index++;
+		}
+		
+	}
+	private void populateSurface(StatsSurfaceJson json, List<StatsSurface> stats, int[] seuils) {
+		Iterator<StatsSurface> iter = stats.iterator();
+		StatsSurface statsSurface = iter.next();
+		Integer populationTotalExclue = 0;
+		Integer populationTotale = 0;
+		int fin=0;
+		
+		for (int i = 0; i < colors.length; i++) {
+			int deb = seuils[i];
+			
+			StringBuilder sb=new StringBuilder();
+			sb.append("> ").append(deb);
+			if (i==colors.length-1) {
+				sb.append(" +");
+				txtSeuil[i]= String.format(">= %s m²/hab.", fin);
+			} else {
+				fin = seuils[i+1];
+				sb.append("<=").append(fin);
+				
+				txtSeuil[i]= String.format("%s <=  surface/habitant < %s m²/hab.", deb, fin);
+			}
+			
+			Stat stat = new Stat();
+			json.getStats().add(stat);
+			stat.setSurface(sb.toString());
+			stat.setBarColor(colors[i]);
+			
+			if(deb == statsSurface.getSurfaceMin()) {
+				stat.setHabitants(statsSurface.getPopulationInclue().intValue());
+				populationTotalExclue += statsSurface.getPopulationExclue().intValue();
+				
+				populationTotale+=statsSurface.getPopulationInclue().intValue()+statsSurface.getPopulationExclue().intValue();
+			}
+			if (iter.hasNext()) {
+				statsSurface = iter.next();
+			}
+		}
+		
+		// ajout dans le premier lot >0 <seuil 1
+		if (populationTotalExclue>0) {
+			Stat stat0 = json.getStats().get(0);
+			Integer cur = stat0.getHabitants();
+			stat0.setHabitants(cur+populationTotalExclue);
+		}
+		
+		int index=0;
+		for (Stat stat : json.getStats()) {
+			Seuil seuil = new Seuil();
+			json.getSeuils().add(seuil);
 			seuil.setSurface(txtSeuil[index]);
 			seuil.setBarColor(colors[index]);
 			seuil.setHabitants(stat.getHabitants());
 			seuil.setRatio(String.valueOf(100*stat.getHabitants().intValue()/populationTotale)+"");
 			index++;
 		}
-		return ret;
 	}
 	
 	public String getStringStatsSurfaceByInseeAndAnnee(String insee, Integer annee) throws JsonProcessingException {
