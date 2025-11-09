@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceService;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
@@ -173,17 +175,27 @@ class TestExporterApplication {
 	@Order(26)
 	void writeStatsSurfaceByCom2CoIdAndAnneeAll() {
 
-			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2015, 1L);
-			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2017, 1L);
-			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2019, 1L);
+			try {
+				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2015, 1L);
+				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2017, 1L);
+				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2019, 1L);
 
-			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2015, 1L);
-			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2017, 1L);
-			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2019, 1L);
-			
+				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2015, 1L);
+				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2017, 1L);
+				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2019, 1L);
+				
 //			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2015, 1L);
 //			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2017, 1L);
 //			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAll(2019, 1L);
+				
+				
+			} catch (StreamWriteException e) {
+				fail(e.getMessage());
+			} catch (DatabindException e) {
+				fail(e.getMessage());
+			} catch (IOException e) {
+				fail(e.getMessage());
+			}
 			
 	}
 	

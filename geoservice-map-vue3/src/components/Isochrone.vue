@@ -391,16 +391,16 @@ export default {
     getRootUrl() {
       const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
       const dynamicOnLocal = 'http://localhost:8980/isochrone/geolocation/';
-      console.log("mode: "+this.MODE);
+      console.log("mode: "+MODE);
 
-      if (this.MODE==='dynamic') {
+      if (MODE==='dynamic') {
         return  dynamicOnLocal;
       } else {
         return staticOnGit;
       }
     },
     isDynamic() {
-      return this.MODE;
+      return MODE === 'dynamic';
     },
     addTemporaryMarker(lat, lng) {
       /*
@@ -446,6 +446,7 @@ export default {
         
       console.log("boundsUpdated :"+ qryPrms);
 
+        this.callGeoJsonParcs(qryPrms);
         this.callGeoJsonIsochrones(qryPrms);
         this.callGeoJsonCarres(qryPrms);
         this.callGeoJsonCadastre(qryPrms);
@@ -590,6 +591,7 @@ export default {
     } else {
       callUrl = `${rootUrl}/geojson/parkOutline/${this.com2co}/parkOutline_${this.annee}_${this.com2co}.json`;
     }
+    console.log("callGeoJsonParcs URL: "+callUrl);
     this.debouncedFetchParcs(callUrl, (data) => {
       this.geojsonParcs = data;
     });
@@ -910,6 +912,7 @@ export default {
           "?swLat=50.61309246538529&swLng=2.967338562011719&neLat=50.65664364875093&neLng=3.125095367431641"
       ),
       */
+      this.callGeoJsonParcs(""),
       this.callGeoJsonCarres(""),
       this.callGeoJsonIsochrones(""),
       this.callGeoJsonCadastre(""),

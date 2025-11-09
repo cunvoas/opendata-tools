@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
@@ -59,11 +61,12 @@ public class StatsSurfaceService {
 	@Autowired
 	private CommunauteCommuneRepository communauteCommuneRepository;
 	
+	
 	private static int[] seuilDense= {0,3,7,10,12};
 	private static int[] seuilSuburbs= {0,8,17,25,45};
 	private static String[] colors= {"#0000e8","#6060e8","#b0b0e8","#57ee17","#578817"};
 
-	private static String[] oms= {
+	private static String[] txtSeuilOMS= {
 			"Non respect des minimas OMS",
 			"Minimim conseillé par l'OMS",
 			"Préconisé par l'OMS" };
@@ -96,7 +99,7 @@ public class StatsSurfaceService {
 		}
 	}
 	
-	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAllDense(Integer annee, Long com2CoId) {
+	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAllDense(Integer annee, Long com2CoId) throws StreamWriteException, DatabindException, IOException {
 		StatsSurfaceJson ret = new StatsSurfaceJson();
 		ret.setAnnee(String.valueOf(annee));
 		ret.setInsee("C2C_dense_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
@@ -110,11 +113,19 @@ public class StatsSurfaceService {
 			
 			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2CoDense(annee, com2CoId);
 			this.populateSurface(ret, stats, seuilDense);
+			
+			
+			String sPath = applicationBusinessProperties.getJsonFileFolder()+"/data/stats/com2co/"+String.valueOf(com2CoId);
+			File file = new File(sPath);
+			file.mkdirs();
+			
+			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_urbans_"+String.valueOf(annee)+".json");
+			objectMapper.writeValue(file, stats);
 		}
 		return ret;
 	}
 	
-	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAllSuburbs(Integer annee, Long com2CoId) {
+	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAllSuburbs(Integer annee, Long com2CoId) throws StreamWriteException, DatabindException, IOException {
 		StatsSurfaceJson ret = new StatsSurfaceJson();
 		ret.setAnnee(String.valueOf(annee));
 		ret.setInsee("C2C_suburbs_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
@@ -127,11 +138,19 @@ public class StatsSurfaceService {
 			
 			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2CoSubUrbs(annee, com2CoId);
 			this.populateSurface(ret, stats, seuilSuburbs);
+			
+
+			String sPath = applicationBusinessProperties.getJsonFileFolder()+"/data/stats/com2co/"+String.valueOf(com2CoId);
+			File file = new File(sPath);
+			file.mkdirs();
+			
+			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_suburbs_"+String.valueOf(annee)+".json");
+			objectMapper.writeValue(file, stats);
 		}
 		return ret;
 	}
 
-	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAll(Integer annee, Long com2CoId) {
+	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAll(Integer annee, Long com2CoId) throws StreamWriteException, DatabindException, IOException {
 		StatsSurfaceJson ret = new StatsSurfaceJson();
 		ret.setAnnee(String.valueOf(annee));
 		ret.setInsee("C2C_all_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
@@ -143,7 +162,15 @@ public class StatsSurfaceService {
 			ret.setNom(opt.get().getName());
 			
 			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2Co(annee, com2CoId);
-			this.populateAll(ret, stats, seuilSuburbs);
+			this.populateAll(ret, stats, txtSeuilOMS);
+			
+			
+			String sPath = applicationBusinessProperties.getJsonFileFolder()+"/data/stats/com2co/"+String.valueOf(com2CoId);
+			File file = new File(sPath);
+			file.mkdirs();
+			
+			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_ALL_"+String.valueOf(annee)+".json");
+			objectMapper.writeValue(file, stats);
 		}
 		return ret;
 	}
@@ -172,42 +199,24 @@ public class StatsSurfaceService {
 		return ret;
 	}
 	
-	private void populateAll(StatsSurfaceJson json, List<StatsSurface> stats, int[] seuils) {
-		Iterator<StatsSurface> iter = stats.iterator();
-		StatsSurface statsSurface = iter.next();
+	/**
+	 * @param json
+	 * @param stats
+	 * @param seuils
+	 */
+	private void populateAll(StatsSurfaceJson json, List<StatsSurface> stats, String[] seuils) {
 		Integer populationTotalExclue = 0;
 		Integer populationTotale = 0;
-		int fin=0;
 		
-		for (int i = 0; i < colors.length; i++) {
-			int deb = seuils[i];
-			
-			StringBuilder sb=new StringBuilder();
-			sb.append("> ").append(deb);
-			if (i==colors.length-1) {
-				sb.append(" +");
-				txtSeuil[i]= String.format(">= %s m²/hab.", fin);
-			} else {
-				fin = seuils[i+1];
-				sb.append("<=").append(fin);
-				
-				txtSeuil[i]= String.format("%s <=  surface/habitant < %s m²/hab.", deb, fin);
-			}
-			
+		for (StatsSurface statsSurface : stats) {
 			Stat stat = new Stat();
 			json.getStats().add(stat);
-			stat.setSurface(sb.toString());
-			stat.setBarColor(colors[i]);
 			
-			if(deb == statsSurface.getSurfaceMin()) {
-				stat.setHabitants(statsSurface.getPopulationInclue().intValue());
-				populationTotalExclue += statsSurface.getPopulationExclue().intValue();
-				
-				populationTotale+=statsSurface.getPopulationInclue().intValue()+statsSurface.getPopulationExclue().intValue();
-			}
-			if (iter.hasNext()) {
-				statsSurface = iter.next();
-			}
+			stat.setHabitants(statsSurface.getPopulationInclue().intValue());
+			populationTotalExclue += statsSurface.getPopulationExclue().intValue();
+			
+			populationTotale+=statsSurface.getPopulationInclue().intValue()+statsSurface.getPopulationExclue().intValue();
+
 		}
 		
 		// ajout dans le premier lot >0 <seuil 1
@@ -221,7 +230,7 @@ public class StatsSurfaceService {
 		for (Stat stat : json.getStats()) {
 			Seuil seuil = new Seuil();
 			json.getSeuils().add(seuil);
-			seuil.setSurface(oms[index]);
+			seuil.setSurface(txtSeuilOMS[index]);
 			seuil.setBarColor(colors[index+2]);
 			seuil.setHabitants(stat.getHabitants());
 			seuil.setRatio(String.valueOf(100*stat.getHabitants().intValue()/populationTotale)+"");
@@ -229,6 +238,12 @@ public class StatsSurfaceService {
 		}
 		
 	}
+	
+	/**
+	 * @param json
+	 * @param stats
+	 * @param seuils
+	 */
 	private void populateSurface(StatsSurfaceJson json, List<StatsSurface> stats, int[] seuils) {
 		Iterator<StatsSurface> iter = stats.iterator();
 		StatsSurface statsSurface = iter.next();
@@ -243,7 +258,7 @@ public class StatsSurfaceService {
 			sb.append("> ").append(deb);
 			if (i==colors.length-1) {
 				sb.append(" +");
-				txtSeuil[i]= String.format(">= %s m²/hab.", fin);
+				txtSeuil[i]= String.format(" >= %s m²/hab.", fin);
 			} else {
 				fin = seuils[i+1];
 				sb.append("<=").append(fin);
