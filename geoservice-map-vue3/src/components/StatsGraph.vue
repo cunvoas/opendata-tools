@@ -6,7 +6,7 @@
       <Bar :data="dataBar" :options="barOptions" style="width:80%;height:300px;"  />
    </p>
     <p>
-      <Pie :data="dataPie" :options="myOptions" style="width: 80%;height:300px;" />
+      <Pie :data="dataPie" :options="myOptions" style="width: 80%;height:450px;" />
     </p>
     <div style="width:80%;text-align:center;font-size:0.85em;margin-top:-10px;margin-bottom:20px;">
       <span>Répartition des habitants par seuil de surface de parc accessible</span>
@@ -91,6 +91,17 @@ export default {
         plugins: {
           legend: {
             display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.parsed.y;
+                const dataset = context.dataset;
+                const total = dataset.data.reduce((acc, val) => acc + val, 0);
+                const percentage = ((value / total) * 100).toFixed(1);
+                return `${value} habitants (${percentage}%)`;
+              }
+            }
           }
         },
         scales: {
@@ -104,6 +115,28 @@ export default {
             title: {
               display: true,
               text: 'Nombre d\'habitants'
+            }
+          }
+        }
+      },
+      myOptions: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'top',
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.parsed;
+                const dataset = context.dataset;
+                const total = dataset.data.reduce((acc, val) => acc + val, 0);
+                const percentage = ((value / total) * 100).toFixed(1);
+                const label = context.label || '';
+                return `${label}: ${value} habitants (${percentage}%)`;
+              }
             }
           }
         }
@@ -144,22 +177,6 @@ export default {
     // Nettoyer les listeners
     window.removeEventListener('storage', this.handleStorageChange);
     window.removeEventListener('colorblind-mode-changed', this.handleColorblindModeChange);
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: true,
-
-    plugins: {
-        legend: {
-          position: 'top',
-          display: false,
-        },
-        title: {
-          display: true,
-          text: 'Chart.js Doughnut Chart',
-        },
-      },
-
   },
   computed: {
     shouldDisplayBarChart() {
