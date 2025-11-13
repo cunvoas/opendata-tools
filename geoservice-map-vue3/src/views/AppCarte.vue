@@ -32,7 +32,7 @@
                 </tr>
                 <tr>
                     <td colspan="4">✓ : plus de 1000 m²</td>
-                </tr>>
+                </tr>
                 <tr>
                     <td colspan="4">✖ : non comptabilisé comme un parc</td>
                 </tr>

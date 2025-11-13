@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.service.analytics;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +22,7 @@ import com.github.cunvoas.geoserviceisochrone.controller.rest.analytics.Seuil;
 import com.github.cunvoas.geoserviceisochrone.controller.rest.analytics.Stat;
 import com.github.cunvoas.geoserviceisochrone.controller.rest.analytics.StatsSurfaceJson;
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoCoordinate;
+import com.github.cunvoas.geoserviceisochrone.model.analytics.StatsSeuilOmsEnum;
 import com.github.cunvoas.geoserviceisochrone.model.analytics.StatsSurface;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
@@ -151,6 +153,79 @@ public class StatsSurfaceService {
 		return ret;
 	}
 
+	static List<StatsSurface> setupSurfaceAll() {
+		List<StatsSurface> stats=new ArrayList<>();
+
+		StatsSurface stat0= new StatsSurface();
+		stat0.setPopulationInclue(BigDecimal.ZERO);
+		stat0.setPopulationExclue(BigDecimal.ZERO);
+		stat0.setSeuil(StatsSeuilOmsEnum.INSUFFISANT);
+		stats.add(stat0);
+
+		StatsSurface stat1= new StatsSurface();
+		stat1.setPopulationInclue(BigDecimal.ZERO);
+		stat1.setPopulationExclue(BigDecimal.ZERO);
+		stat1.setSeuil(StatsSeuilOmsEnum.MINIMUM);
+		stats.add(stat1);
+
+		StatsSurface stat2= new StatsSurface();
+		stat2.setPopulationInclue(BigDecimal.ZERO);
+		stat2.setPopulationExclue(BigDecimal.ZERO);
+		stat2.setSeuil(StatsSeuilOmsEnum.PRECONISE);
+		stats.add(stat2);
+		
+		return stats;
+	}
+	
+	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAllV2(Integer annee, Long com2CoId) throws StreamWriteException, DatabindException, IOException {
+		StatsSurfaceJson ret = new StatsSurfaceJson();
+		ret.setAnnee(String.valueOf(annee));
+		ret.setInsee("C2C_all_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
+		Optional<CommunauteCommune> opt=communauteCommuneRepository.findById(com2CoId);
+		if (opt.isEmpty()) {
+			log.warn("Communauté de commune with id {} not found", com2CoId);
+			return null;
+		} else {
+			ret.setNom(opt.get().getName() + " - Dense et Périurbain");
+			
+			List<StatsSurface> statsDense = statsSurfaceRepository.getStatsForCom2CoDense(annee, com2CoId);
+			List<StatsSurface> statsSubrubs = statsSurfaceRepository.getStatsForCom2CoSubUrbs(annee, com2CoId);
+			
+			
+			// fusion des listes
+			List<StatsSurface> stats = setupSurfaceAll();
+			for (StatsSurface statsSurface : stats) {
+				for (StatsSurface stat : statsDense) {
+					if (statsSurface.getSeuil().equals(stat.getSeuil())) {
+						statsSurface.setAnnee(annee);
+						statsSurface.setPopulationInclue(statsSurface.getPopulationInclue().add(stat.getPopulationInclue()));
+						statsSurface.setPopulationExclue(statsSurface.getPopulationExclue().add(stat.getPopulationExclue()));
+					}
+				}
+				for (StatsSurface stat : statsSubrubs) {
+					if (statsSurface.getSeuil().equals(stat.getSeuil())) {
+						statsSurface.setAnnee(annee);
+						statsSurface.setPopulationInclue(statsSurface.getPopulationInclue().add(stat.getPopulationInclue()));
+						statsSurface.setPopulationExclue(statsSurface.getPopulationExclue().add(stat.getPopulationExclue()));
+					}
+				}
+				
+			}
+			
+			this.populateAll(ret, stats, txtSeuilOMS);
+			
+			
+			String sPath = applicationBusinessProperties.getJsonFileFolder()+"/data/stats/com2co/"+String.valueOf(com2CoId);
+			File file = new File(sPath);
+			file.mkdirs();
+			
+			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_all_"+String.valueOf(annee)+".json");
+			objectMapper.writeValue(file, ret);
+		}
+		return ret;
+	}
+		
+	@Deprecated
 	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAll(Integer annee, Long com2CoId) throws StreamWriteException, DatabindException, IOException {
 		StatsSurfaceJson ret = new StatsSurfaceJson();
 		ret.setAnnee(String.valueOf(annee));
@@ -204,8 +279,9 @@ public class StatsSurfaceService {
 	 * @param json
 	 * @param stats
 	 * @param seuils
+	 * @Deprecated
 	 */
-	private void populateAll(StatsSurfaceJson json, List<StatsSurface> stats, String[] seuils) {
+	void populateAll(StatsSurfaceJson json, List<StatsSurface> stats, String[] seuils) {
 		Integer populationTotalExclue = 0;
 		Integer populationTotale = 0;
 		
@@ -245,15 +321,24 @@ public class StatsSurfaceService {
 	 * @param stats
 	 * @param seuils
 	 */
-	private void populateSurface(StatsSurfaceJson json, List<StatsSurface> stats, int[] seuils) {
+	void populateSurface(StatsSurfaceJson json, List<StatsSurface> stats, int[] seuils) {
 		Iterator<StatsSurface> iter = stats.iterator();
-		StatsSurface statsSurface = iter.next();
+		StatsSurface statsSurface = iter.next(); // premier élément de liste (0 à 5 éléments)
 		Integer populationTotalExclue = 0;
 		Integer populationTotale = 0;
 		int fin=0;
 		
 		for (int i = 0; i < colors.length; i++) {
+			
+			
+			
 			int deb = seuils[i];
+			boolean match=false;
+			if (statsSurface!=null && statsSurface.getSurfaceMin()==deb) {
+				match=true;
+				log.warn("Seuils incohérents entre code et BDD pour la surface min : attendu {} / trouvé {}", deb, statsSurface.getSurfaceMin());
+			}
+			
 			
 			StringBuilder sb=new StringBuilder();
 			sb.append("> ").append(deb);
@@ -269,16 +354,20 @@ public class StatsSurfaceService {
 			
 			Stat stat = new Stat();
 			json.getStats().add(stat);
+			
 			stat.setSurface(sb.toString());
 			stat.setBarColor(colors[i]);
 			
-			if(deb == statsSurface.getSurfaceMin()) {
+			if(match) {
 				stat.setHabitants(statsSurface.getPopulationInclue().intValue());
 				populationTotalExclue += statsSurface.getPopulationExclue().intValue();
 				
 				populationTotale+=statsSurface.getPopulationInclue().intValue()+statsSurface.getPopulationExclue().intValue();
+			} else {
+				stat.setHabitants(0);
 			}
-			if (iter.hasNext()) {
+			
+			if (match && iter.hasNext()) {
 				statsSurface = iter.next();
 			}
 		}

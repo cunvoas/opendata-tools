@@ -15,6 +15,7 @@ public class ParkGardenView extends GeoJsonProperty {
 	@EqualsAndHashCode.Include
 	private String id;
 	private String name;
+	private String city;
 	private String source;
 	private Double surface;
 	private Boolean oms;

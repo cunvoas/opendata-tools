@@ -190,6 +190,7 @@ public interface StatsSurfaceRepository extends ReadOnlyRepository<StatsSurface,
 			+ ") GROUP BY annee, seuil";
 	
 	@Query(value = QRY_COM2CO, nativeQuery = true)
+	@Deprecated
 	public List<StatsSurface> getStatsForCom2Co(@Param("annee")Integer annee, @Param("com2coId") Long com2coId);
 
 	
