@@ -896,23 +896,6 @@ export default {
           });
        
 
-        /*
-        if (feature.properties.popParkIncluded !== "n/a") {
-          layer.setStyle({
-            fillColor: feature.properties.fillColor,
-            fillOpacity: 0.6,
-          });
-          // cas non calculé
-        } else if (
-          feature.properties.surfaceTotalParkOms === null ||
-          feature.properties.surfaceTotalParkOms === ""
-        ) {
-          layer.setStyle({
-            fillColor: "#4944f5",
-            fillOpacity: 0.2,
-          });
-        }
-        */
       };
     },
 
@@ -929,10 +912,20 @@ export default {
 
     onDetailPark() {
       return (feature, layer) => {
+        let oms = feature.properties.oms;
+        let valid =''
+        if (oms === false) {
+          valid = "✖";
+        }
+
         let formattedSurface = feature.properties.surface;
         let unit = ' m²';
         
         if (feature.properties.surface) {
+           if (feature.properties.surface > 1000 && oms!==false) {
+            valid = "✓";
+           }
+
           if (feature.properties.surface > 10000) {
             const surfaceInHa = feature.properties.surface / 10000;
             formattedSurface = new Intl.NumberFormat('fr-FR', { 
@@ -946,8 +939,9 @@ export default {
         }
         
         layer.bindTooltip(
-          "<div>Nom: " + feature.properties.name +
-          "</div><div>Surface: " + formattedSurface + unit + "</div>",
+          "<div>Nom: " + valid +" "+ feature.properties.name +
+          "</div><div>Surface: " + formattedSurface + unit + 
+          "</div><div>Ville: " + feature.properties.city +"</div>",
           { permanent: false, sticky: true }
         );
       };

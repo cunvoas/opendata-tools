@@ -53,8 +53,8 @@ function convertToColorblindPalette(normalColor) {
     '#b0b0e8': '#fee090', // Bleu clair → Jaune-orangé
     
     // Couleurs bonnes (vert) → bleu
-    '#57ee17': '#91bfdb', // Vert clair → Bleu clair
     '#578817': '#4575b4', // Vert foncé → Bleu foncé
+    '#57ee17': '#91bfdb', // Vert clair → Bleu clair
     
     // Gris (non calculé)
     '#959595': '#959595', // Gris reste gris

@@ -3,7 +3,9 @@ package com.github.cunvoas.geoserviceisochrone.service.export;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -25,6 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeDensiteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
@@ -378,6 +381,15 @@ public class ServicePublicationExporter {
 				}
 			}
 		}
+		
+		List<InseeDensiteCommune> densityList = serviceReadReferences.getInseeDensiteCommune();
+		Map<String, String> dentistyMap = new HashMap<>();
+		for (InseeDensiteCommune density : densityList) {
+			dentistyMap.put(density.getCodgeo(), density.getCodeDensite());
+		}
+		file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/cities/densite.json");
+		objectMapper.writeValue(file, dentistyMap);
+		
 	}
 
 }
