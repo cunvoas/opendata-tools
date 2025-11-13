@@ -131,8 +131,8 @@ public class BatchJobService implements DisposableBean{
 					job = ojob.get();
 
 					// check if update on source, if not, skip
-					boolean skip = upd!=null?upd.before(job.getProcessed()):false;
-					skip=false;
+					boolean skip = job.getProcessed()!=null && upd!=null?upd.before(job.getProcessed()):false;
+					//skip=false;
 					// if already processed, relaunch
 					if (!skip && ComputeJobStatusEnum.PROCESSED.equals(job.getStatus()) ) {
 						job.setStatus(ComputeJobStatusEnum.TO_PROCESS);

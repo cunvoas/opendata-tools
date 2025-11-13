@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -24,9 +25,11 @@ import com.github.cunvoas.geoserviceisochrone.extern.mel.CsvLyonParkJardinParser
 import com.github.cunvoas.geoserviceisochrone.extern.mel.CsvNantesParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.extern.mel.JsonToulouseParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisData;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceService;
 import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
@@ -69,6 +72,10 @@ class TestGeoserviceIsochroneApplication {
 
 	@Autowired
 	private ParkAreaRepository parkAreaRepository;
+
+	@Autowired
+	private CommunauteCommuneRepository communauteCommuneRepository;
+	
 
 	@Autowired
 	private StatsSurfaceService statsSurfaceService;
@@ -193,6 +200,11 @@ class TestGeoserviceIsochroneApplication {
 //	@Disabled
 	@Order(22)
 	void batchCarreRequestProcessCity() {
+//		Optional<CommunauteCommune> opt=communauteCommuneRepository.findById(1L);
+//		if (opt.isPresent()) {
+//			batchJobService.requestProcessCom2Co(opt.get());
+//		}
+		
 		
 
 //		batchJobService.requestProcessCity("59350");

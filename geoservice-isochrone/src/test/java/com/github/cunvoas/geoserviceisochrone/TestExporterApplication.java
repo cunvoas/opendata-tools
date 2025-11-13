@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Iterator;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceService;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
@@ -21,10 +24,12 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
 
 
 @SpringBootTest
-@ActiveProfiles({"secret","pi_nuc"})
+@ActiveProfiles({"secret", "rep"}) //,"pi_nuc"
 /**
  * 
- * cp -Rf /var/isochrone/data/* /work/PERSO/github/gh_pages/geoservice-data
+cp -Rf /var/isochrone/data/* /work/PERSO/github/gh_pages/geoservice-data
+cd /work/PERSO/github/gh_pages/geoservice-data
+git status
  */
 class TestExporterApplication {
 	
@@ -103,9 +108,47 @@ class TestExporterApplication {
 	}
 	
 	
-	
+	@Test
+//	@Disabled
+	@Order(100)
+	void writeLiveDataByCom2coAndYear() {
+		
+		Integer[] annees= {2015,2017,2019};
+		Integer annee=2019;
+		Long com2coId=1l;
+		
+		CommunauteCommune com2co=serviceReadReferences.getCommunauteCommuneById(com2coId);
+		try {
 
+//			servicePublicationExporter.writeGeoJsonParkOutline(com2co, annee);
+//			servicePublicationExporter.writeGeoJsonIsochrone(com2co, annee);
+//			servicePublicationExporter.writeGeoJsonCarreaux(com2co, annee);
+//			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(com2co.getId(), annee);
+//			servicePublicationExporter.writeGeoJsonIris(com2co, annee);
+			
+			for (Integer anneeIter : annees) {
+				servicePublicationExporter.writeGeoJsonParkOutline(com2co, anneeIter);
+				servicePublicationExporter.writeGeoJsonIsochrone(com2co, anneeIter);
+				servicePublicationExporter.writeGeoJsonCarreaux(com2co, anneeIter);
+				servicePublicationExporter.writeGeoJsonIris(com2co, anneeIter);
+				// stats  par ville
+				statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(com2co.getId(), anneeIter);
+				// stats globales
+				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(anneeIter, com2co.getId());
+				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(anneeIter, com2co.getId());
+				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(anneeIter, com2co.getId());
+			}
+			
+			
+		} catch (StreamWriteException e) {
+			fail(e.getMessage());
+		} catch (DatabindException e) {
+			fail(e.getMessage());
+		} catch (IOException e) {
+			fail(e.getMessage());
+		}
 
+ 	}
 
 	@Test
 	@Disabled
@@ -152,21 +195,49 @@ class TestExporterApplication {
 
 
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(25)
 	void writeStatsSurfaceByCom2CoIdAndAnnee() {
 		try {
-
 
 			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2015);
 			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2017);
 			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2019);
 
-
 		} catch (IOException e) {
 			System.err.println(e);
 			fail(e.getMessage());
 		}
+	}
+	
+
+	@Test
+	@Disabled
+	@Order(26)
+	void writeStatsSurfaceByCom2CoIdAndAnneeAll() {
+
+			try {
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2015, 1L);
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2017, 1L);
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2019, 1L);
+//
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2015, 1L);
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2017, 1L);
+//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2019, 1L);
+				
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(2015, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(2017, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(2019, 1L);
+				
+				
+			} catch (StreamWriteException e) {
+				fail(e.getMessage());
+			} catch (DatabindException e) {
+				fail(e.getMessage());
+			} catch (IOException e) {
+				fail(e.getMessage());
+			}
+			
 	}
 	
 	
