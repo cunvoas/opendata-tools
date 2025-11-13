@@ -164,15 +164,15 @@ function  getSquareColor(zoneDense, densite, colorblindMode = false) {
     level1 = '#d73027';  // Rouge-orangé foncé (très faible)
     level2 = '#fc8d59';  // Orange clair (faible)
     level3 = '#fee090';  // Jaune-orangé pâle (moyen-faible)
-    level4 = '#91bfdb';  // Bleu clair (bon)
-    level5 = '#4575b4';  // Bleu foncé (très bon)
+    level4 = '#4575b4';  // Bleu foncé (bon)
+    level5 = '#91bfdb';  // Bleu clair (très bon)
   } else {
     // Palette classique (bleu → vert)
     level1 = '#0000e8';  // Bleu foncé (très faible)
     level2 = '#6060e8';  // Bleu moyen (faible)
     level3 = '#b0b0e8';  // Bleu clair (moyen-faible)
-    level4 = '#57ee17';  // Vert clair (bon)
-    level5 = '#578817';  // Vert foncé (très bon)
+    level4 = '#578817';  // Vert foncé (bon)
+    level5 = '#57ee17';  // Vert clair (très bon)
   }
 
   const densiteMinDense=10;

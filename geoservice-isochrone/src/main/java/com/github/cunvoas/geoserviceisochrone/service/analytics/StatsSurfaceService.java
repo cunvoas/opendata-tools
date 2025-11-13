@@ -66,7 +66,7 @@ public class StatsSurfaceService {
 	
 	private static int[] seuilDense= {0,3,7,10,12};
 	private static int[] seuilSuburbs= {0,8,17,25,45};
-	private static String[] colors= {"#0000e8","#6060e8","#b0b0e8","#57ee17","#578817"};
+	private static String[] colors= {"#0000e8","#6060e8","#b0b0e8","#578817","#57ee17"};
 
 	private static String[] txtSeuilOMS= {
 			"Non respect des minimas OMS",
