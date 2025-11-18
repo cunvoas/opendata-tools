@@ -433,7 +433,17 @@ public class GeoMapServiceV2 {
 						pv.setCity(park.getCommune().getName());
 					} 
 					pv.setSurface(park.getSurface());
-					pv.setOms(park.getOmsCustom());
+					
+					if (park.getOmsCustom()==null) {
+						if (park.getTypeId()!=null){
+							ParkType pt = parkTypeService.get(park.getTypeId());
+							pv.setOms(pt.getOms());
+						}
+					} else {
+						pv.setOms(park.getOmsCustom());
+					}
+					
+					
     			}
     		}
     	}

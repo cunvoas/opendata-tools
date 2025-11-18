@@ -21,16 +21,19 @@ import com.github.cunvoas.geoserviceisochrone.controller.rest.analytics.StatsSur
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvCarre200ShapeParser;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvIrisDataParser;
 import com.github.cunvoas.geoserviceisochrone.extern.geojson.IrisGeoJsonIntegratorParser;
+import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.topo.IgnTopoJsonIntegratorParser;
 import com.github.cunvoas.geoserviceisochrone.extern.mel.CsvLyonParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.extern.mel.CsvNantesParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.extern.mel.JsonToulouseParkJardinParser;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisData;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.service.IgnTopoService;
 import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceService;
 import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
@@ -40,7 +43,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
 
 @SpringBootTest
-@ActiveProfiles({"secret","pi"})
+@ActiveProfiles({"secret","pi_nuc"})
 class TestGeoserviceIsochroneApplication {
 
 	@Autowired
@@ -150,6 +153,32 @@ class TestGeoserviceIsochroneApplication {
 		}
 		
 	}
+	
+	@Autowired
+	private IgnTopoJsonIntegratorParser ignTopoJsonIntegratorParser;
+	@Autowired
+	private IgnTopoService ignTopoService;
+	@Test
+	@Disabled
+	@Order(100)
+	void importIgnTopo() {
+		
+		try {
+			ignTopoJsonIntegratorParser.parseAndSaveVegetal( "/work/PERSO/ASSO/data/QGis/vegetation_59.geojsonl.json");
+			
+//			Optional<CommunauteCommune> opt=communauteCommuneRepository.findById(1L);
+//			if (opt.isPresent()) {
+			
+//			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+		
+	}
+	
+	
 
 	@Test
 	@Disabled
@@ -174,7 +203,7 @@ class TestGeoserviceIsochroneApplication {
 	
 
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(22)
 	void batchStatsSurfaceJson() {
 		StatsSurfaceJson stats= statsSurfaceService.getStatsSurfaceByInseeAndAnnee("59350", 2019);
@@ -197,7 +226,7 @@ class TestGeoserviceIsochroneApplication {
 	 * calcule des carre vs aire des parcs
 	 */
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(22)
 	void batchCarreRequestProcessCity() {
 //		Optional<CommunauteCommune> opt=communauteCommuneRepository.findById(1L);

@@ -66,9 +66,9 @@ public class FileExporterControler {
 			
 //			servicePublicationExporter.writeRegions();
 //			servicePublicationExporter.writeGeoJsonCadastres();
-//
-			servicePublicationExporter.writeGeoJsonIsochrone();
-			servicePublicationExporter.writeGeoJsonCarreaux();
+
+//			servicePublicationExporter.writeGeoJsonIsochrone();
+			servicePublicationExporter.writeGeoJsonCarreauxAll();
 			
 			status = HttpStatus.CREATED;
 			success = Boolean.TRUE;

@@ -24,7 +24,7 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
 
 
 @SpringBootTest
-@ActiveProfiles({"secret", "rep"}) //,"pi_nuc"
+@ActiveProfiles({"secret", "pi_nuc"}) //, "rep", "pi_nuc"
 /**
  * 
 cp -Rf /var/isochrone/data/* /work/PERSO/github/gh_pages/geoservice-data
@@ -120,35 +120,33 @@ class TestExporterApplication {
 		CommunauteCommune com2co=serviceReadReferences.getCommunauteCommuneById(com2coId);
 		try {
 
-//			servicePublicationExporter.writeGeoJsonParkOutline(com2co, annee);
-//			servicePublicationExporter.writeGeoJsonIsochrone(com2co, annee);
-//			servicePublicationExporter.writeGeoJsonCarreaux(com2co, annee);
-//			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(com2co.getId(), annee);
-//			servicePublicationExporter.writeGeoJsonIris(com2co, annee);
+//			export( com2co, annee);
 			
 			for (Integer anneeIter : annees) {
-				servicePublicationExporter.writeGeoJsonParkOutline(com2co, anneeIter);
-				servicePublicationExporter.writeGeoJsonIsochrone(com2co, anneeIter);
-				servicePublicationExporter.writeGeoJsonCarreaux(com2co, anneeIter);
-				servicePublicationExporter.writeGeoJsonIris(com2co, anneeIter);
-				// stats  par ville
-				statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(com2co.getId(), anneeIter);
-				// stats globales
-				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(anneeIter, com2co.getId());
-				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(anneeIter, com2co.getId());
-				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(anneeIter, com2co.getId());
+				export( com2co, anneeIter);
+				
 			}
 			
 			
-		} catch (StreamWriteException e) {
-			fail(e.getMessage());
-		} catch (DatabindException e) {
-			fail(e.getMessage());
+
 		} catch (IOException e) {
 			fail(e.getMessage());
 		}
 
  	}
+	
+	private void  export(CommunauteCommune com2co, Integer annee) throws IOException {
+		servicePublicationExporter.writeGeoJsonParkOutline(com2co, annee);
+		servicePublicationExporter.writeGeoJsonIsochrone(com2co, annee);
+		servicePublicationExporter.writeGeoJsonCarreaux(com2co, annee);
+		servicePublicationExporter.writeGeoJsonIris(com2co, annee);
+		// stats  par ville
+		statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(com2co.getId(), annee);
+		// stats globales
+		statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(annee, com2co.getId());
+		statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(annee, com2co.getId());
+		statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(annee, com2co.getId());
+	}
 
 	@Test
 	@Disabled
