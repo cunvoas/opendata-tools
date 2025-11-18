@@ -67,40 +67,41 @@ export default {
 
 <style scoped>
 .com2co-quick-access {
-    margin: 20px 0;
-    padding: 15px;
-    background-color: #f5f5f5;
-    border-radius: 8px;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 8px;
 }
 
 .com2co-quick-access h3 {
-    margin: 0 0 15px 0;
-    font-size: 1.1em;
+    margin: 0 0 8px 0;
+    font-size: 0.95em;
     color: #2c3e50;
+    font-weight: 600;
 }
 
 .buttons-container {
     display: flex;
-    gap: 10px;
+    gap: 6px;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .com2co-button {
-    padding: 10px 20px;
+    padding: 6px 12px;
     background-color: #42b983;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 1em;
-    transition: all 0.3s ease;
+    font-size: 0.85em;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .com2co-button:hover {
     background-color: #359268;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .com2co-button:active {
@@ -109,6 +110,6 @@ export default {
 
 .com2co-button.active {
     background-color: #2c7a5b;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 </style>
