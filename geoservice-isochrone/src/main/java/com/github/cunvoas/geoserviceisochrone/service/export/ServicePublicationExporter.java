@@ -3,7 +3,9 @@ package com.github.cunvoas.geoserviceisochrone.service.export;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -25,6 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeDensiteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
@@ -87,31 +90,32 @@ public class ServicePublicationExporter {
 	 * @throws IOException en cas d'erreur d'entrée/sortie
 	 */
 	public void writeGeoJsonIris() throws StreamWriteException, DatabindException, IOException {
-		File file = new File(applicationBusinessProperties.getJsonFileFolder()+"/geojson/iris");
-		file.mkdirs();
 
 		Integer[] tAnnees = applicationBusinessProperties.getInseeAnnees();
 		
 		List<CommunauteCommune> lc2c = serviceReadReferences.getCommunauteCommune();
 		for (CommunauteCommune com2co : lc2c) {
 
-    		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/iris/"+String.valueOf(com2co.getId());
-    		file = new File(path);
-    		file.mkdirs();
-			
 			for (int i = 0; i < tAnnees.length; i++) {
 				Integer annee=tAnnees[i];
-				
-				// check if park data are changed !
-				// TODO
-				
-				GeoJsonRoot geojson = geoMapServiceV2.findAllIrisByCommunauteCommune(com2co, annee);
-				if (geojson!=null && !geojson.getFeatures().isEmpty()) {
-					file = new File(path+"/iris_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
-					objectMapper.writeValue(file, geojson);
-				}
+				this.writeGeoJsonIris(com2co, annee);
 			}
-			
+		}
+	}
+	
+	public void writeGeoJsonIris(CommunauteCommune com2co, Integer annee) throws StreamWriteException, DatabindException, IOException {
+		
+		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/iris/"+String.valueOf(com2co.getId());
+		File file = new File(path);
+		file.mkdirs();
+		
+		// check if park data are changed !
+		// TODO
+		
+		GeoJsonRoot geojson = geoMapServiceV2.findAllIrisByCommunauteCommune(com2co, annee);
+		if (geojson!=null && !geojson.getFeatures().isEmpty()) {
+			file = new File(path+"/iris_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
+			objectMapper.writeValue(file, geojson);
 		}
 	}
 	
@@ -146,7 +150,7 @@ public class ServicePublicationExporter {
 	 * @throws DatabindException ex
 	 * @throws IOException ex
 	 */
-	public void writeGeoJsonCarreaux() throws StreamWriteException, DatabindException, IOException {
+	public void writeGeoJsonCarreauxAll() throws StreamWriteException, DatabindException, IOException {
 		File file = new File(applicationBusinessProperties.getJsonFileFolder()+"/geojson/carres");
 		file.mkdirs();
 
@@ -155,25 +159,10 @@ public class ServicePublicationExporter {
 		List<CommunauteCommune> lc2c = serviceReadReferences.getCommunauteCommune();
 		for (CommunauteCommune com2co : lc2c) {
 
-			this.writeGeoJsonCarreaux(com2co, tAnnees[0]);
-			
-//    		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/carres/"+String.valueOf(com2co.getId());
-//    		file = new File(path);
-//    		file.mkdirs();
-//			
-//			for (int i = 0; i < tAnnees.length; i++) {
-//				Integer annee=tAnnees[i];
-//				
-//				// check if park data are changed !
-//				// TODO
-//				
-//				GeoJsonRoot geojson = geoMapServiceV2.findAllCarreByCommunauteCommune(com2co, annee);
-//				if (geojson!=null && !geojson.getFeatures().isEmpty()) {
-//					file = new File(path+"/carre_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
-//					objectMapper.writeValue(file, geojson);
-//				}
-//			}
-			
+			for (int i = 0; i < tAnnees.length; i++) {
+				Integer annee=tAnnees[i];
+				this.writeGeoJsonCarreaux(com2co, annee);
+			}	
 		}
 	}
 	
@@ -252,22 +241,27 @@ public class ServicePublicationExporter {
 		
     	List<CommunauteCommune> com2cos = serviceReadReferences.getCommunauteCommune();
     	for (CommunauteCommune com2co : com2cos) {
-    		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/parkOutline/"+String.valueOf(com2co.getId());
-    		File file = new File(path);
-    		file.mkdirs();
-			
-			Polygon polygon = getCom2CoSquareShape(com2co);
 			
 			for (int i = 0; i < tAnnees.length; i++) {
 				Integer annee=tAnnees[i];
-				GeoJsonRoot geojson = geoMapServiceV2.findAllParkOutlineByArea(polygon, annee);
-				
-				if (!geojson.getFeatures().isEmpty()) {
-					file = new File(path+"/parkOutline_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
-					objectMapper.writeValue(file, geojson);
-				}
+				this.writeGeoJsonParkOutline(com2co, annee);
 			}
     	}
+    }
+    
+    public void writeGeoJsonParkOutline(CommunauteCommune com2co, Integer annee) throws StreamWriteException, DatabindException, IOException {
+    	String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/parkOutline/"+String.valueOf(com2co.getId());
+		File file = new File(path);
+		file.mkdirs();
+		
+		Polygon polygon = getCom2CoSquareShape(com2co);
+    	
+		GeoJsonRoot geojson = geoMapServiceV2.findAllParkOutlineByArea(polygon, annee);
+		
+		if (!geojson.getFeatures().isEmpty()) {
+			file = new File(path+"/parkOutline_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
+			objectMapper.writeValue(file, geojson);
+		}
     }
     
     /**
@@ -282,22 +276,28 @@ public class ServicePublicationExporter {
 		
     	List<CommunauteCommune> com2cos = serviceReadReferences.getCommunauteCommune();
     	for (CommunauteCommune com2co : com2cos) {
-    		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/isochrones/"+String.valueOf(com2co.getId());
-    		File file = new File(path);
-    		file.mkdirs();
-			
-			Polygon polygon = getCom2CoSquareShape(com2co);
-			
+
 			for (int i = 0; i < tAnnees.length; i++) {
 				Integer annee=tAnnees[i];
-				GeoJsonRoot geojson = geoMapServiceV2.findAllParkByArea(polygon, annee);
-				
-				if (!geojson.getFeatures().isEmpty()) {
-					file = new File(path+"/isochrone_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
-					objectMapper.writeValue(file, geojson);
-				}
+				this.writeGeoJsonIsochrone(com2co, annee);
+
 			}
     	}
+    }
+    
+    public void writeGeoJsonIsochrone(CommunauteCommune com2co, Integer annee) throws StreamWriteException, DatabindException, IOException {
+		String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/isochrones/"+String.valueOf(com2co.getId());
+		File file = new File(path);
+		file.mkdirs();
+		
+		Polygon polygon = getCom2CoSquareShape(com2co);
+		
+		GeoJsonRoot geojson = geoMapServiceV2.findAllParkByArea(polygon, annee);
+		
+		if (!geojson.getFeatures().isEmpty()) {
+			file = new File(path+"/isochrone_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
+			objectMapper.writeValue(file, geojson);
+		}
     }
 	
 	/**
@@ -381,6 +381,15 @@ public class ServicePublicationExporter {
 				}
 			}
 		}
+		
+		List<InseeDensiteCommune> densityList = serviceReadReferences.getInseeDensiteCommune();
+		Map<String, String> dentistyMap = new HashMap<>();
+		for (InseeDensiteCommune density : densityList) {
+			dentistyMap.put(density.getCodgeo(), density.getCodeDensite());
+		}
+		file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/cities/densite.json");
+		objectMapper.writeValue(file, dentistyMap);
+		
 	}
 
 }

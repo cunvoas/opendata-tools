@@ -1,28 +1,23 @@
 <template>
-    <div>
-        <select v-model="selectedRegion" @change="fetchCom2cos" tabindex="1">
+    <div class="search-location-container">
+        <select v-model="selectedRegion" @change="fetchCom2cos" tabindex="1" class="compact-select">
             <option v-for="region in regions" :key="region.id" :value="region.id">
                 {{ region.name }}
             </option>
         </select>
-        &nbsp;
-        <select v-model="selectedCom2co" @change="fetchCities" :disabled="!selectedRegion" tabindex="2">
+        <select v-model="selectedCom2co" @change="fetchCities" :disabled="!selectedRegion" tabindex="2" class="compact-select">
             <option v-for="com2co in com2cos" :key="com2co.id" :value="com2co.id">
                 {{ com2co.name }}
             </option>
         </select>
-        &nbsp;
-        <select v-model="selectedCity" @change="handleCityChange" :disabled="!selectedCom2co" tabindex="3">
+        <select v-model="selectedCity" @change="handleCityChange" :disabled="!selectedCom2co" tabindex="3" class="compact-select">
             <option v-for="city in cities" :key="city.id" :value="city.id" :data-insee-code="city.inseeCode" :data-longitude-x="city.lonX" :data-latitude-y="city.latY">
                 {{ city.name }} ({{ city.inseeCode }})
             </option>
         </select>
-        &nbsp;
         <Autocomplete v-model="selectedAddress" :fetch-items="fetchAddresses" placeholder="Aller à une adresse"
-            :displaySearchAddress="displaySearchAddress" :disabled="!selectedCity" tabindex="4" @location-selected="handleLocationSelected" />
-
+            :displaySearchAddress="displaySearchAddress" :disabled="!selectedCity" tabindex="4" @location-selected="handleLocationSelected" class="autocomplete-address" />
     </div>
-    &nbsp;
 
 </template>
 
@@ -246,17 +241,19 @@ export default {
         },
         fetchAddresses: debounce(async function (query) {
             // debounce to avoid too many requests, call at least with 2 characters and wait 350ms after last keyup
-            if (!this.selectedCity && !this.selectedCityInseeCode && query.length < 3) return;
+            if (!this.selectedCity && !this.selectedCityInseeCode && query.length < 3) return [];
             try {
                 const response = await axios.get(`https://api-adresse.data.gouv.fr/search/?citycode=${this.selectedCityInseeCode}&q=` + encodeURI(query), { timeout: 5000 });
                 const geojson = response.data;
                 this.addresses = geojson.features.map(feature => ({
                     id: feature.geometry.coordinates.join(', '),
                     label: feature.properties.label,
+                    score: feature.properties.score
                 }));
                 return this.addresses;
             } catch (error) {
                 console.error('Error fetching addresses:', error);
+                return [];
             }
         }, 350),
         handleCityChange(event) {  // call by city
@@ -293,3 +290,49 @@ export default {
     }
 };
 </script>
+
+<style scoped>
+.search-location-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
+.compact-select {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+    pointer-events: auto;
+}
+
+.compact-select:hover:not(:disabled) {
+    border-color: #42b983;
+    box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.1);
+}
+
+.compact-select:focus {
+    outline: none;
+    border-color: #42b983;
+    box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
+}
+
+.compact-select:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.autocomplete-address {
+    flex: 1;
+    min-width: 200px;
+}
+</style>
