@@ -22,6 +22,7 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeDensiteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Laposte;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
@@ -33,6 +34,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeDensiteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.LaposteRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
@@ -72,6 +74,9 @@ public class ServiceReadReferences {
 	private ParkEntranceRepository parkEntranceRepository;
 	@Autowired
 	private ParcPrefectureRepository parcPrefectureRepository;
+	
+	@Autowired
+	private InseeDensiteCommuneRepository inseeDensiteCommuneRepository;
 	
 	
 	
@@ -347,6 +352,14 @@ public class ServiceReadReferences {
 		}
 		return null;
 		
+	}
+	
+	/**
+	 * Retourne la liste des densités de population des communes.
+	 * @return liste des densités de population
+	 */
+	public List<InseeDensiteCommune> getInseeDensiteCommune() {
+		return inseeDensiteCommuneRepository.findAll();
 	}
 	
 	/**

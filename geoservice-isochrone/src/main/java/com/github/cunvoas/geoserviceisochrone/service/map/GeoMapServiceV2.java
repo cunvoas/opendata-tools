@@ -429,6 +429,21 @@ public class GeoMapServiceV2 {
 					feature.setProperties(pv);
 					pv.setId(String.valueOf(park.getId()));
 					pv.setName(park.getName());
+					if (park.getCommune()!=null) {
+						pv.setCity(park.getCommune().getName());
+					} 
+					pv.setSurface(park.getSurface());
+					
+					if (park.getOmsCustom()==null) {
+						if (park.getTypeId()!=null){
+							ParkType pt = parkTypeService.get(park.getTypeId());
+							pv.setOms(pt.getOms());
+						}
+					} else {
+						pv.setOms(park.getOmsCustom());
+					}
+					
+					
     			}
     		}
     	}
