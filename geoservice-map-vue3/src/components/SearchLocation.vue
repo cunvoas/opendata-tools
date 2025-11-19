@@ -16,7 +16,7 @@
             </option>
         </select>
         <Autocomplete v-model="selectedAddress" :fetch-items="fetchAddresses" placeholder="Aller à une adresse"
-            :displaySearchAddress="displaySearchAddress" :disabled="!selectedCity" tabindex="4" @location-selected="handleLocationSelected" />
+            :displaySearchAddress="displaySearchAddress" :disabled="!selectedCity" tabindex="4" @location-selected="handleLocationSelected" class="autocomplete-address" />
     </div>
 
 </template>
@@ -241,17 +241,19 @@ export default {
         },
         fetchAddresses: debounce(async function (query) {
             // debounce to avoid too many requests, call at least with 2 characters and wait 350ms after last keyup
-            if (!this.selectedCity && !this.selectedCityInseeCode && query.length < 3) return;
+            if (!this.selectedCity && !this.selectedCityInseeCode && query.length < 3) return [];
             try {
                 const response = await axios.get(`https://api-adresse.data.gouv.fr/search/?citycode=${this.selectedCityInseeCode}&q=` + encodeURI(query), { timeout: 5000 });
                 const geojson = response.data;
                 this.addresses = geojson.features.map(feature => ({
                     id: feature.geometry.coordinates.join(', '),
                     label: feature.properties.label,
+                    score: feature.properties.score
                 }));
                 return this.addresses;
             } catch (error) {
                 console.error('Error fetching addresses:', error);
+                return [];
             }
         }, 350),
         handleCityChange(event) {  // call by city
@@ -309,6 +311,7 @@ export default {
     cursor: pointer;
     transition: all 0.2s ease;
     min-width: 120px;
+    pointer-events: auto;
 }
 
 .compact-select:hover:not(:disabled) {
@@ -326,5 +329,10 @@ export default {
     background-color: #f3f4f6;
     cursor: not-allowed;
     opacity: 0.6;
+}
+
+.autocomplete-address {
+    flex: 1;
+    min-width: 200px;
 }
 </style>
