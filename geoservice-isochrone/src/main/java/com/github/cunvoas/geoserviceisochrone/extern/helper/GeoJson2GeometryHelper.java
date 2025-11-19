@@ -1,5 +1,8 @@
 package com.github.cunvoas.geoserviceisochrone.extern.helper;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
@@ -15,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.MissingNode;
+import com.github.cunvoas.geoserviceisochrone.model.ignTopo.IgnTopoVegetal;
 
 /**
  * Composant utilitaire pour la conversion de GeoJSON en objets Geometry (JTS).
@@ -172,6 +176,74 @@ public class GeoJson2GeometryHelper {
 			node = rootNode.findValue("type_iris");
 			ret.typeIris = node.asText();
 			
+		}
+		
+		return ret;
+	}
+	
+
+	private static final DateFormat DF =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	public IgnTopoVegetal parseIgnTopo(String geoJsonLine) throws JsonProcessingException {
+		//JSonNode of root
+		JsonNode rootNode = mapper.readTree(geoJsonLine);
+		
+
+		//JSonNode of geometry
+		JsonNode geometryNode = rootNode.findValue("geometry");
+		
+		GenericGeometryParser parser = new GenericGeometryParser(factory);
+		Geometry geo = parser.geometryFromJson(geometryNode);
+		
+		IgnTopoVegetal ret = new IgnTopoVegetal();
+		
+		if (geo instanceof MultiPolygon) {
+			MultiPolygon mp = (MultiPolygon)geo;
+			ret.setGeometry( mp );
+		}
+		if (geo instanceof Polygon) {
+			Polygon mp = (Polygon)geo;
+			ret.setGeometry( mp );
+		}
+		
+		//JSonNode of xxx
+		JsonNode node = rootNode.findValue("ID");
+		ret.setId( node.asText() );
+
+		node = rootNode.findValue("NATURE");
+		ret.setNature(node.asText());
+		
+		node = rootNode.findValue("ACQU_PLANI");
+		ret.setAcquPlani(node.asText());
+		node = rootNode.findValue("PREC_PLANI");
+		ret.setPrecPlani(node.asText());
+
+
+		node = rootNode.findValue("ID_SOURCE");
+		ret.setIdSource(node.asText());
+		node = rootNode.findValue("SOURCE");
+		ret.setSource(node.asText());
+
+		
+		
+		node = rootNode.findValue("DATE_CREAT");
+		try {
+			ret.setDateCreated( DF.parse(node.asText()));
+		} catch (ParseException ignore) {
+		}
+		node = rootNode.findValue("DATE_MAJ");
+		try {
+			ret.setDateUpdated( DF.parse(node.asText()));
+		} catch (ParseException ignore) {
+		}
+		node = rootNode.findValue("DATE_APP");
+		try {
+			ret.setDateApp( DF.parse(node.asText()));
+		} catch (ParseException ignore) {
+		}
+		node = rootNode.findValue("DATE_CONF");
+		try {
+			ret.setDateConf( DF.parse(node.asText()));
+		} catch (ParseException ignore) {
 		}
 		
 		return ret;
