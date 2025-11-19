@@ -13,7 +13,7 @@
   "dependencies": {
     "axios": "^1.12.2",
     "chartjs": "^0.3.24",
-    "video.js": "^8.23.0",
+    "video.js": "^8.23.4",
     "vue": "^3.5.22",
     "vue-chartjs": "^5.3.2",
     "vue-matomo": "^4.2.0",
