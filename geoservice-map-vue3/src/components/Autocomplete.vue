@@ -14,7 +14,8 @@
         :key="item.id"
         @click="selectItem(item)"
       >
-        {{ item.label }}
+        <span class="item-label">{{ item.label }}</span>
+        <span v-if="item.score" class="item-score">{{ Math.round(item.score * 100) }}%</span>
       </li>
     </ul>
   </div>
@@ -65,7 +66,8 @@ export default {
      */
     async onInput() {
       this.showDropdown = true;
-      this.items = await this.fetchItems(this.search);
+      const result = await this.fetchItems(this.search);
+      this.items = result || [];
       this.$emit('update:modelValue', null);
     },
     /**
@@ -94,7 +96,37 @@ export default {
 <style scoped>
 .autocomplete {
   position: relative;
+  flex: 1;
 }
+
+.autocomplete input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.9em;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.autocomplete input:hover:not(:disabled) {
+  border-color: #42b983;
+  box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.1);
+}
+
+.autocomplete input:focus {
+  outline: none;
+  border-color: #42b983;
+  box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
+}
+
+.autocomplete input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .autocomplete ul {
   position: absolute;
   background: white;
@@ -110,8 +142,24 @@ export default {
 .autocomplete li {
   padding: 8px;
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 .autocomplete li:hover {
   background: #f0f0f0;
+}
+.item-label {
+  flex: 1;
+}
+.item-score {
+  font-size: 0.75em;
+  color: #6b7280;
+  background-color: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 </style>

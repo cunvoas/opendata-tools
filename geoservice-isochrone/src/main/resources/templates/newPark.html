@@ -7,7 +7,6 @@
 	<div id="layoutSidenav">
 		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
 
-
 		<div id="layoutSidenav_content">
 			<main>
 
@@ -915,10 +914,11 @@
            },
          body: JSON.stringify(payload)
        });
+       
 
-       if (response.status == 202) {
+       if ( rawResponse.status == 202 || rawResponse.status == 200 )  {
          const content = await rawResponse.json();
-         alert("Calcul demandé pour "+content.nbCarreaux+" carrés.");
+         alert("Calcul demandé pour "+content.nbCarre+" carrés.");
        }
      }
     

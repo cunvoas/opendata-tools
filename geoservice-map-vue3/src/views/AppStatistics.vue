@@ -3,6 +3,11 @@
         
         <SearchLocation @update-location="updateLocation" @location-selected="updateLocation" :displaySearchAddress="false" />
         
+        <Com2coQuickAccess 
+            :currentLocation="location" 
+            @graph-type-selected="updateLocation" 
+        />
+        
         <span style="border: 2px">
             <div
                 id="statsGrapg"
@@ -27,13 +32,15 @@ console.log("AppStatistics");
 
 import SearchLocation from "../components/SearchLocation.vue";
 import StatsGraph from "../components/StatsGraph.vue";
+import Com2coQuickAccess from "../components/Com2coQuickAccess.vue";
 
 
 export default {
     name: "AppStatistics",
     components: {
         SearchLocation,
-        StatsGraph
+        StatsGraph,
+        Com2coQuickAccess
     },
     data() {
         return {
@@ -69,8 +76,7 @@ export default {
             };
         },
         async updateLocation(newLocation) {
-            //console.log("AppStatistics.updateLocation", JSON.stringify(newLocation));
-            //this.location = JSON.parse(JSON.stringify(newLocation));
+            console.log("AppStatistics.updateLocation received:", JSON.stringify(newLocation));
             
             this.location = newLocation;
             this.componentKey++; // Force re-render

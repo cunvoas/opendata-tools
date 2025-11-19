@@ -764,7 +764,7 @@ stats AS (
         coalesce(round(surface_park_pcapita, 2), 0) )
 
 SELECT 
-    annee, seuil,
+    annee, seuil, 0 as surface_min, 10000 as surface_max
     sum(pop_inc) as pop_inc, sum(pop_exc) as pop_exc, count(nb_inspire)
 FROM surface_range_dense r, stats, densite_ville d
 WHERE 
@@ -774,7 +774,7 @@ WHERE
 GROUP BY annee, surface_min, surface_max, seuil
 UNION
 SELECT 
-    annee, seuil,
+    annee, seuil, 0 as surface_min, 10000 as surface_max
     sum(pop_inc) as pop_inc,sum(pop_exc) as pop_exc,count(nb_inspire)
 FROM surface_range_peri r, stats, densite_ville d
 WHERE 
