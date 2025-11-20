@@ -17,6 +17,20 @@
 		<h1 class="mt-12" th:text="#{communautecommune.title}">title</h1>
 	</div>
      
+     <!-- Filtre par région (seulement pour admin) -->
+     <div class="row mb-3" th:if="${isAdmin}">
+         <div class="col-md-4">
+             <label for="regionFilter" class="form-label">Filtrer par région :</label>
+             <select class="form-select" id="regionFilter" onchange="filterByRegion()">
+                 <option value="" th:selected="${selectedRegionId == null}">Toutes les régions</option>
+                 <option th:each="region : ${regions}" 
+                         th:value="${region.id}" 
+                         th:text="${region.name}"
+                         th:selected="${selectedRegionId != null && selectedRegionId == region.id}"></option>
+             </select>
+         </div>
+     </div>
+     
      <div class="row">
          <div class="col-12">
              <div class="card" style="text-align: left">
@@ -80,6 +94,15 @@
 	            new simpleDatatables.DataTable(datatablesSimple);
 	        }
 	    });
+	    
+	    function filterByRegion() {
+	        const regionId = document.getElementById('regionFilter').value;
+	        if (regionId) {
+	            window.location.href = [[@{/mvc/management/comm2co/list}]] + '?regionId=' + regionId;
+	        } else {
+	            window.location.href = [[@{/mvc/management/comm2co/list}]];
+	        }
+	    }
     </script>
 
 </body>

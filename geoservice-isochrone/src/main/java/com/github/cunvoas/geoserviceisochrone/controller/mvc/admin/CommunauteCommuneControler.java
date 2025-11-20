@@ -18,6 +18,7 @@ import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import com.github.cunvoas.geoserviceisochrone.service.admin.CommunauteCommuneService;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 
@@ -40,14 +41,30 @@ public class CommunauteCommuneControler {
 
 	/**
 	 * Affiche la liste des communautés de communes accessibles à l'utilisateur connecté.
+	 * @param regionId Identifiant de la région (optionnel, seulement pour admin)
 	 * @param model Modèle de la vue
 	 * @return Nom de la page de liste
 	 */
 	@GetMapping("/list")
-	public String getList(Model model) {
+	public String getList(@RequestParam(name = "regionId", required = false) Long regionId, Model model) {
 		Contributeur contrib = (Contributeur) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		
-		model.addAttribute(listName, communauteCommuneService.findByContextUser(contrib));
+		// Déterminer la région à utiliser
+		Long effectiveRegionId = regionId;
+		boolean isAdmin = ContributeurRole.ADMINISTRATOR.equals(contrib.getRole());
+		
+		if (!isAdmin) {
+			// Non-admin : utiliser la région du contributeur
+			effectiveRegionId = contrib.getIdRegion();
+		} else if (regionId == null) {
+			// Admin sans filtre : utiliser sa région par défaut
+			effectiveRegionId = contrib.getIdRegion();
+		}
+		
+		model.addAttribute(listName, communauteCommuneService.findByContextUserAndRegion(contrib, effectiveRegionId));
+		model.addAttribute("regions", serviceReadReferences.getRegion());
+		model.addAttribute("selectedRegionId", effectiveRegionId);
+		model.addAttribute("isAdmin", isAdmin);
 		return listName;
 	}
 	
@@ -58,10 +75,34 @@ public class CommunauteCommuneControler {
 	 */
 	@GetMapping("/add")
 	public String add(Model model) {
+		Contributeur contrib = (Contributeur) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		boolean isAdmin = ContributeurRole.ADMINISTRATOR.equals(contrib.getRole());
+		
 		CommunauteCommune communauteCommune = new CommunauteCommune();
 		
+		// Pour les non-admins, préremplir avec leur région
+		if (!isAdmin && contrib.getIdRegion() != null) {
+			Region region = serviceReadReferences.getRegion().stream()
+				.filter(r -> r.getId().equals(contrib.getIdRegion()))
+				.findFirst()
+				.orElse(null);
+			communauteCommune.setRegion(region);
+		}
+		
 		model.addAttribute(formName, communauteCommune);
-		model.addAttribute("regions", serviceReadReferences.getRegion());
+		
+		// Admin : toutes les régions, non-admin : seulement leur région
+		if (isAdmin) {
+			model.addAttribute("regions", serviceReadReferences.getRegion());
+		} else if (contrib.getIdRegion() != null) {
+			model.addAttribute("regions", serviceReadReferences.getRegion().stream()
+				.filter(r -> r.getId().equals(contrib.getIdRegion()))
+				.collect(java.util.stream.Collectors.toList()));
+		} else {
+			model.addAttribute("regions", java.util.Collections.emptyList());
+		}
+		
+		model.addAttribute("isAdmin", isAdmin);
 		return formName;
 	}
 	
@@ -73,10 +114,25 @@ public class CommunauteCommuneControler {
 	 */
 	@GetMapping("/edit")
 	public String edit(@RequestParam(name = "id") Long id, Model model) {
+		Contributeur contrib = (Contributeur) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		boolean isAdmin = ContributeurRole.ADMINISTRATOR.equals(contrib.getRole());
+		
 		CommunauteCommune communauteCommune = communauteCommuneService.findById(id);
 		
 		model.addAttribute(formName, communauteCommune);
-		model.addAttribute("regions", serviceReadReferences.getRegion());
+		
+		// Admin : toutes les régions, non-admin : seulement leur région
+		if (isAdmin) {
+			model.addAttribute("regions", serviceReadReferences.getRegion());
+		} else if (contrib.getIdRegion() != null) {
+			model.addAttribute("regions", serviceReadReferences.getRegion().stream()
+				.filter(r -> r.getId().equals(contrib.getIdRegion()))
+				.collect(java.util.stream.Collectors.toList()));
+		} else {
+			model.addAttribute("regions", java.util.Collections.emptyList());
+		}
+		
+		model.addAttribute("isAdmin", isAdmin);
 		return formName;
 	}
 
@@ -105,12 +161,25 @@ public class CommunauteCommuneControler {
 		
 		if (granted) {
 			comm2co = communauteCommuneService.save(comm2co);
+			model.addAttribute("successMessage", "La communauté de communes a été sauvegardée avec succès.");
 		} else {
 			throw new ExceptionAdmin("EDIT_NOT_ALLOWED");
 		}
 		
+		boolean isAdmin = ContributeurRole.ADMINISTRATOR.equals(contrib.getRole());
 		model.addAttribute(formName, comm2co);
-		model.addAttribute("regions", serviceReadReferences.getRegion());
+		
+		// Admin : toutes les régions, non-admin : seulement leur région
+		if (isAdmin) {
+			model.addAttribute("regions", serviceReadReferences.getRegion());
+		} else if (contrib.getIdRegion() != null) {
+			model.addAttribute("regions", serviceReadReferences.getRegion().stream()
+				.filter(r -> r.getId().equals(contrib.getIdRegion()))
+				.collect(java.util.stream.Collectors.toList()));
+		} else {
+			model.addAttribute("regions", java.util.Collections.emptyList());
+		}
+		model.addAttribute("isAdmin", isAdmin);
 		
 		return formName;
 	}

@@ -57,6 +57,36 @@ public class CommunauteCommuneService {
 	}
 	
 	/**
+	 * Recherche les communautés de communes accessibles selon le contexte utilisateur et filtrées par région.
+	 * 
+	 * @param contrib Contributeur connecté
+	 * @param regionId Identifiant de la région (optionnel)
+	 * @return Liste des communautés de communes accessibles
+	 */
+	public List<CommunauteCommune> findByContextUserAndRegion(Contributeur contrib, Long regionId) {
+		List<CommunauteCommune> ret = null;
+		
+		if (ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
+			// Admin : accès à toutes les communautés
+			if (regionId != null) {
+				ret = communauteCommuneRepository.findByRegionId(regionId);
+			} else {
+				ret = communauteCommuneRepository.findAll();
+			}
+			
+		} else {
+			// Autres utilisateurs : accès à toutes les communautés (à affiner selon les besoins)
+			if (regionId != null) {
+				ret = communauteCommuneRepository.findByRegionId(regionId);
+			} else {
+				ret = communauteCommuneRepository.findAll();
+			}
+		}
+		
+		return ret;
+	}
+	
+	/**
 	 * Retourne toutes les communautés de communes.
 	 * 
 	 * @return Liste de toutes les communautés de communes

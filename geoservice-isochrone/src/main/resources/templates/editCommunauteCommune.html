@@ -21,6 +21,16 @@
                    <h3 class="mt-4" th:text="#{communautecommune.title}">title</h3>
             </div>
            
+            <!-- Message de succès -->
+            <div class="row" th:if="${successMessage}">
+                <div class="col-12">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <strong>Succès !</strong> <span th:text="${successMessage}">Message</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+           
             <div class="row">
                 <form th:action="@{/mvc/management/comm2co/edit}" th:object="${editCommunauteCommune}" method="post">
                 
@@ -35,12 +45,14 @@
                 
                     <div class="form-floating mb-3">
                             <div class="form-floating">
-                                <select class="form-select" id="region.id" name="region.id" th:field="*{region.id}">
+                                <select class="form-select" id="region.id" name="region.id" th:field="*{region.id}" th:disabled="${isAdmin == false}">
                                     <option value="" th:text="#{communautecommune.region.placeholder}">Choisir une région</option>
                                     <option th:each="region : ${regions}" 
                                         th:value="${region.id}" 
                                         th:text="${region.name}"></option>
                                 </select>
+                                <!-- Champ caché pour non-admin car les champs disabled ne sont pas envoyés -->
+                                <input type="hidden" th:if="${isAdmin == false}" th:name="region.id" th:value="*{region.id}" />
                                 <label for="region.id" th:text="#{communautecommune.region}">Région</label>
                             </div>
                     </div>
