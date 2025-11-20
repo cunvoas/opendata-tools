@@ -43,12 +43,12 @@
 
 <!-- table here -->
 
-			<table border="1" id="datatablesSimple">
+			<table border="1" id="datatablesSimple" class="table table-striped">
 			    <thead>
 			        <tr>
 			            <th th:text="#{cityassociation.table.name}">Nom</th>
                         <th th:text="#{cityassociation.table.region}">Région</th>
-                        <th th:text="#{cityassociation.table.citycount}">Nombre de villes</th>
+                        <th class="text-end" th:text="#{cityassociation.table.citycount}">Nombre de villes</th>
                         <th th:text="#{cityassociation.table.link}">Action</th>
 			        </tr>
 			    </thead>
@@ -56,7 +56,7 @@
 			        <tr th:each="comm2co : ${listCityAssociation}" >
 			            <td th:text="${comm2co.name}">Nom</td>
                         <td th:text="${comm2co.region != null ? comm2co.region.name : 'N/A'}">Région</td>
-                        <td th:text="${comm2co.cities != null ? comm2co.cities.size() : 0}">0</td>
+                        <td class="text-end" th:text="${comm2co.cities != null ? comm2co.cities.size() : 0}">0</td>
                         <td>
                             <a th:href="@{/mvc/management/cityassoc/edit?communauteCommuneId={id}(id=${comm2co.id})}" th:text="#{cityassociation.table.link}">Gérer</a>
                         </td>
