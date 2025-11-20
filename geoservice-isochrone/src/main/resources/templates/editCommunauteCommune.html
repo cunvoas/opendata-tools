@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr" 
+    xmlns:th= "http://www.thymeleaf.org" 
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+    <head th:insert="~{fragments/fragment-head :: head}"></head>
+    
+    <body class="sb-nav-fixed">
+        <div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+        <div id="layoutSidenav">
+            <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+            <div id="layoutSidenav_content" >
+ <!-- debut MAIN -->
+                <main>
+
+
+  <div class="container">
+     <div class="col-lg-7">
+     
+            <div class="container-fluid px-4">
+                   <h3 class="mt-4" th:text="#{communautecommune.title}">title</h3>
+            </div>
+           
+            <div class="row">
+                <form th:action="@{/mvc/management/comm2co/edit}" th:object="${editCommunauteCommune}" method="post">
+                
+                
+                    <div class="form-floating mb-3">
+                            <div class="form-floating">
+                                <input class="form-control" required="required" id="name" name="name"  type="text" th:attr="placeholder=#{communautecommune.name.placeholder}"  th:field="*{name}" />
+                                <label for="name" th:text="#{communautecommune.name}">name</label>
+                                <input id="id" name="id" type="hidden" th:field="*{id}" />
+                            </div>
+                    </div>
+                
+                    <div class="form-floating mb-3">
+                            <div class="form-floating">
+                                <select class="form-select" id="region.id" name="region.id" th:field="*{region.id}">
+                                    <option value="" th:text="#{communautecommune.region.placeholder}">Choisir une région</option>
+                                    <option th:each="region : ${regions}" 
+                                        th:value="${region.id}" 
+                                        th:text="${region.name}"></option>
+                                </select>
+                                <label for="region.id" th:text="#{communautecommune.region}">Région</label>
+                            </div>
+                    </div>
+                    
+                    <div class="mt-4 mb-0">
+                        <div class="d-grid">
+                            <input class="btn btn-primary btn-block" type="submit" th:value="#{communautecommune.submit}"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        
+     </div>
+  </div>
+                </main>
+ <!-- fin MAIN -->
+               
+               <div th:insert="~{fragments/fragment-footer :: footer}"></div> 
+            </div>
+            
+        </div>
+        <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+        <script th:src="@{/mvc/static/js/scripts.js}"></script>
+    </body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:insert="~{fragments/fragment-head :: head}"></head>
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<main>
+
+				<div class="container">
+
+<div class="row row-cols-1 row-cols-md-12 g-2 ">
+	<div class="container-fluid px-4">
+		<h1 class="mt-12" th:text="#{communautecommune.title}">title</h1>
+	</div>
+     
+     <div class="row">
+         <div class="col-12">
+             <div class="card" style="text-align: left">
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i>
+                    <txt th:text="#{communautecommune.table.title}"></txt>
+                    <a th:href="@{/mvc/management/comm2co/add}"><txt th:text="#{communautecommune.add}"></txt></a>
+                </div>
+                <div class="card-body">
+
+<!-- table here -->
+
+			<table border="1" id="datatablesSimple">
+			    <thead>
+			        <tr>
+			            <th th:text="#{communautecommune.table.name}" />
+			            <th th:text="#{communautecommune.table.region}" />
+			            <th th:text="#{communautecommune.table.link}" />
+			        </tr>
+			    </thead>
+			    <tbody>
+			        <tr th:each="comm2co : ${listCommunauteCommune}" >
+			            <td th:text="${comm2co.name}" />
+			            <td th:text="${comm2co.region != null ? comm2co.region.name : ''}" />
+			            <td>
+			                <a th:href="@{/mvc/management/comm2co/edit?id={idComm2co}(idComm2co=${comm2co.id})}" th:text="#{communautecommune.table.link}"></a>
+			            </td>
+			        </tr>
+			    </tbody>
+			</table>
+
+			</div>
+
+             </div>
+         </div>
+     </div>
+     
+
+    </div>
+     
+</div>
+
+							
+			</main>
+		</div> <!-- layoutSidenav_content -->
+	</div> <!-- layoutSidenav -->
+	
+
+	<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+
+     <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+	<script th:inline="javascript">
+	    window.addEventListener('DOMContentLoaded', event => {
+	        // Simple-DataTables
+	        // https://github.com/fiduswriter/Simple-DataTables/wiki
+	
+	        const datatablesSimple = document.getElementById('datatablesSimple');
+	        if (datatablesSimple) {
+	            new simpleDatatables.DataTable(datatablesSimple);
+	        }
+	    });
+    </script>
+
+</body>
+</html>
