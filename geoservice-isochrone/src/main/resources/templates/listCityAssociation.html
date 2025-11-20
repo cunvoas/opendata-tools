@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:insert="~{fragments/fragment-head :: head}"></head>
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<main>
+
+				<div class="container">
+
+<div class="row row-cols-1 row-cols-md-12 g-2 ">
+	<div class="container-fluid px-4">
+		<h1 class="mt-12" th:text="#{cityassociation.title}">Association Villes - Communautés</h1>
+	</div>
+     
+     <!-- Filtre par région (seulement pour admin) -->
+     <div class="row mb-3" th:if="${isAdmin}">
+         <div class="col-md-4">
+             <label for="regionFilter" class="form-label" th:text="#{cityassociation.filter.region}">Filtrer par région :</label>
+             <select class="form-select" id="regionFilter" onchange="filterByRegion()">
+                 <option value="" th:selected="${selectedRegionId == null}" th:text="#{cityassociation.filter.allregions}">Toutes les régions</option>
+                 <option th:each="region : ${regions}" 
+                         th:value="${region.id}" 
+                         th:text="${region.name}"
+                         th:selected="${selectedRegionId != null && selectedRegionId == region.id}"></option>
+             </select>
+         </div>
+     </div>
+     
+     <div class="row">
+         <div class="col-12">
+             <div class="card" style="text-align: left">
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i>
+                    <txt th:text="#{cityassociation.table.title}">Communautés de Communes</txt>
+                    <a th:href="@{/mvc/management/cityassoc/edit}"><txt th:text="#{cityassociation.manage}">Gérer les associations</txt></a>
+                </div>
+                <div class="card-body">
+
+<!-- table here -->
+
+			<table border="1" id="datatablesSimple">
+			    <thead>
+			        <tr>
+			            <th th:text="#{cityassociation.table.name}">Nom</th>
+                        <th th:text="#{cityassociation.table.region}">Région</th>
+                        <th th:text="#{cityassociation.table.citycount}">Nombre de villes</th>
+                        <th th:text="#{cityassociation.table.link}">Action</th>
+			        </tr>
+			    </thead>
+			    <tbody>
+			        <tr th:each="comm2co : ${listCityAssociation}" >
+			            <td th:text="${comm2co.name}">Nom</td>
+                        <td th:text="${comm2co.region != null ? comm2co.region.name : 'N/A'}">Région</td>
+                        <td th:text="${comm2co.cities != null ? comm2co.cities.size() : 0}">0</td>
+                        <td>
+                            <a th:href="@{/mvc/management/cityassoc/edit?communauteCommuneId={id}(id=${comm2co.id})}" th:text="#{cityassociation.table.link}">Gérer</a>
+                        </td>
+			        </tr>
+			    </tbody>
+			</table>
+
+			</div>
+
+             </div>
+         </div>
+     </div>
+     
+
+    </div>
+     
+</div>
+
+							
+			</main>
+		</div> <!-- layoutSidenav_content -->
+	</div> <!-- layoutSidenav -->
+	
+
+	<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+
+     <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+	<script th:inline="javascript">
+	    window.addEventListener('DOMContentLoaded', event => {
+	        // Simple-DataTables
+	        // https://github.com/fiduswriter/Simple-DataTables/wiki
+	
+	        const datatablesSimple = document.getElementById('datatablesSimple');
+	        if (datatablesSimple) {
+	            new simpleDatatables.DataTable(datatablesSimple);
+	        }
+	    });
+	    
+	    function filterByRegion() {
+	        const regionId = document.getElementById('regionFilter').value;
+	        if (regionId) {
+	            window.location.href = [[@{/mvc/management/cityassoc/list}]] + '?regionId=' + regionId;
+	        } else {
+	            window.location.href = [[@{/mvc/management/cityassoc/list}]];
+	        }
+	    }
+	</script>
+</body>
+</html>
