@@ -9,11 +9,13 @@ import org.springframework.stereotype.Service;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.model.dashboard.DashboardCache;
 import com.github.cunvoas.geoserviceisochrone.model.dashboard.DashboardSummary;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.DashboardCacheRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.AssociationRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.admin.ComputeJobRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
@@ -51,6 +53,8 @@ public class DashboadService {
 	private DashboardCacheRepository dashboardCacheRepository;
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
+		@Autowired
+		private ComputeJobRepository computeJobRepository;
 	
 	/**
 	 * refresh.
@@ -69,6 +73,7 @@ public class DashboadService {
 		cache.add(new DashboardCache(DashboardCache.PARC_CHCK, parkAreaRepository.count()));
 		cache.add(new DashboardCache(DashboardCache.PARC_ENTREE, parkEntranceRepository.count()));
 		cache.add(new DashboardCache(DashboardCache.PARC_REF, parkJardinRepository.count()));
+				cache.add(new DashboardCache(DashboardCache.COMPUTE_JOB_PENDING, computeJobRepository.countByStatus(ComputeJobStatusEnum.TO_PROCESS)));
 		
 		dashboardCacheRepository.saveAll(cache);
 	}
@@ -88,7 +93,7 @@ public class DashboadService {
 	 */
 	public DashboardSummary getDashboard() {
 		
-		if (11!=dashboardCacheRepository.count()) {
+		if (12!=dashboardCacheRepository.count()) {
 			refresh();
 		}
 		
@@ -108,6 +113,7 @@ public class DashboadService {
 		ret.setNbParc(dashboardCacheRepository.findById(DashboardCache.PARC_CHCK).get().getIndicator());
 		ret.setNbParcIsochrone(dashboardCacheRepository.findById(DashboardCache.PARC_CALC).get().getIndicator());
 		ret.setNbParcEntance(dashboardCacheRepository.findById(DashboardCache.PARC_ENTREE).get().getIndicator());
+				ret.setNbComputeJobPending(dashboardCacheRepository.findById(DashboardCache.COMPUTE_JOB_PENDING).get().getIndicator());
 		
 		return ret;
 	}
