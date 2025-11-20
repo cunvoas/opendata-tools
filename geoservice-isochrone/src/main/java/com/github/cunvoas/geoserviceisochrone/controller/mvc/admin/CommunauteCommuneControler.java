@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.TokenManagement;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
@@ -38,6 +39,9 @@ public class CommunauteCommuneControler {
 	
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
+	
+	@Autowired
+	private TokenManagement tokenManagement;
 
 	/**
 	 * Affiche la liste des communautés de communes accessibles à l'utilisateur connecté.
@@ -103,6 +107,7 @@ public class CommunauteCommuneControler {
 		}
 		
 		model.addAttribute("isAdmin", isAdmin);
+		model.addAttribute("token", tokenManagement.getValidToken());
 		return formName;
 	}
 	
@@ -133,6 +138,7 @@ public class CommunauteCommuneControler {
 		}
 		
 		model.addAttribute("isAdmin", isAdmin);
+		model.addAttribute("token", tokenManagement.getValidToken());
 		return formName;
 	}
 
@@ -180,6 +186,7 @@ public class CommunauteCommuneControler {
 			model.addAttribute("regions", java.util.Collections.emptyList());
 		}
 		model.addAttribute("isAdmin", isAdmin);
+		model.addAttribute("token", tokenManagement.getValidToken());
 		
 		return formName;
 	}

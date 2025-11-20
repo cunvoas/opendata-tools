@@ -63,6 +63,18 @@
                         </div>
                     </div>
                 </form>
+                
+                <!-- Bouton de calcul des surfaces -->
+                <div class="row mt-3" th:if="${editCommunauteCommune.id != null}">
+                    <div class="col-12">
+                        <sec:authorize access="hasRole('ADMINISTRATOR')">
+                            <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.compute}">Calculer</button>
+                            <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </sec:authorize>
+                    </div>
+                </div>
             </div>
 
         
@@ -78,5 +90,55 @@
         <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
 
         <script th:src="@{/mvc/static/js/scripts.js}"></script>
+        
+        <script th:inline="javascript">
+        /*<![CDATA[*/
+        async function doPost(requestPrms) {
+            const payload = {
+                token: [[${token}]],
+                com2coId: requestPrms
+            };
+        
+            let rawResponse = await fetch([[@{/mvc/ajax/jobs/api/request}]], {
+                method: "POST", 
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            // Masquer le spinner
+            document.getElementById("computeSpinner").style = "display:none;";
+            const objBtnCompute = document.getElementById("btnCompute");
+            objBtnCompute.classList.remove('btn-secondary');
+            objBtnCompute.classList.add('btn-outline-secondary');
+            
+            if ( rawResponse.status == 202 || rawResponse.status == 200 )  {
+                const content = await rawResponse.json();
+                alert("Calcul demandé pour " + content.nbCarre + " carrés.");
+            }
+        }
+        
+        function requestCompute() {
+            console.log("requestCompute");
+            if (document.getElementById("id").value === "" ) {
+                console.log("requestCompute hasError");
+                return;
+            } else {
+                console.log("requestCompute no hasError");
+                
+                // Afficher le spinner
+                document.getElementById("computeSpinner").style = "display:inline-block;";
+                const objBtnCompute = document.getElementById("btnCompute");
+                objBtnCompute.classList.remove('btn-outline-secondary');
+                objBtnCompute.classList.add('btn-secondary');
+                
+                // async call controler compute
+                this.doPost(document.getElementById("id").value);
+            }
+        }
+        /*]]>*/
+        </script>
     </body>
 </html>
