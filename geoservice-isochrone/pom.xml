@@ -42,6 +42,13 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- Lightweight embedded Git client (JGit) -->
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>7.4.0.202509020913-r</version>
+		</dependency>
+
 
 		<!-- DB + geoloccalization -->
 		<dependency>
