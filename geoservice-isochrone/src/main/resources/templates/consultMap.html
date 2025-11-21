@@ -174,39 +174,133 @@ const overlayConfig = {
   'Parcs': { endpoint: endpointParcs, style: { color:'#1e4d1c', fillColor:'#3aa637', weight:1, fillOpacity:0.35 } },
   'Carrés': { endpoint: endpointCarre, style: { color:'#002a99', fillColor:'#3385ff', weight:1, fillOpacity:0.25 } },
   'IRIS': { endpoint: endpointIris, style: { color:'#b85f00', fillColor:'#ff9d33', weight:1, fillOpacity:0.25 } },
+  // Cadastre dynamique: rechargé à chaque mouvement avec cache et debounce
   'Cadastre': { endpoint: endpointCadastre, style: { color:'#7a7c00', fillColor:'#d6d900', weight:1, fillOpacity:0.18 } },
   'Végétation IGN': { endpoint: endpointVegetation, style: { color:'#0f4d0f', fillColor:'#2fa42f', weight:1, fillOpacity:0.45 }, static: true }
 };
 console.log('[ConsultMap] overlayConfig:', overlayConfig);
 
+// Cache conditionnel
+const lastBounds = {}; // pour couches dynamiques
+const loadedStatic = {}; // pour couches statiques (chargées une seule fois)
+const staticTimers = {}; // timers de délai unique
+const pendingFetches = {}; // suivi des requêtes en cours pour éviter les doublons
+const EXPAND_RATIO = 0.3;
+function expandBounds(b){
+  const sw = b.getSouthWest();
+  const ne = b.getNorthEast();
+  const latPad = (ne.lat - sw.lat) * EXPAND_RATIO;
+  const lngPad = (ne.lng - sw.lng) * EXPAND_RATIO;
+  return L.latLngBounds(
+    L.latLng(sw.lat - latPad, sw.lng - lngPad),
+    L.latLng(ne.lat + latPad, ne.lng + lngPad)
+  );
+}
+
 function updateGeojsonLayer(name) {
-  console.log('[ConsultMap] updateGeojsonLayer', name);
   const cfg = overlayConfig[name];
   const group = dataLayers[name];
-  group.clearLayers();
-  if (map.hasLayer(group)) {
-    const q = cfg.static ? '' : '?' + computeBoundsQuery();
-    fetch(cfg.endpoint + q)
-      .then(r => r.json())
-      .then(geo => {
-        const gj = L.geoJSON(geo, {
-          style: cfg.style,
-          onEachFeature: (feat, layer) => {
-            if (feat.properties){
-              const nm = feat.properties.name || feat.properties.nom || name;
-              layer.bindPopup(`<strong>${nm}</strong>`);
+  if (!map.hasLayer(group)) return;
+
+  // Static layer: fetch only once (with optional delay)
+  if (cfg.static) {
+    if (loadedStatic[name]) return; // already loaded
+    if (staticTimers[name]) return; // timer pending
+    const doLoad = () => {
+      staticTimers[name] = null;
+      const fetchLabel = `[${name}] fetch`;
+      const parseLabel = `[${name}] parse`;
+      const renderLabel = `[${name}] render`;
+      console.time(fetchLabel);
+      fetch(cfg.endpoint)
+        .then(r => { console.timeEnd(fetchLabel); console.time(parseLabel); return r.json(); })
+        .then(geo => {
+          console.timeEnd(parseLabel); console.time(renderLabel);
+          const gj = L.geoJSON(geo, {
+            style: cfg.style,
+            onEachFeature: (feat, layer) => {
+              if (feat.properties){
+                const nm = feat.properties.name || feat.properties.nom || name;
+                layer.bindPopup(`<strong>${nm}</strong>`);
+              }
             }
-          }
+          });
+          console.timeEnd(renderLabel);
+          group.addLayer(gj);
+          loadedStatic[name] = true;
+          console.log(`[ConsultMap][${name}] Chargé (static)`);
+        })
+        .catch(err => {
+          console.warn('Erreur chargement couche static', name, err);
+          console.timeEnd(fetchLabel); console.timeEnd(parseLabel); console.timeEnd(renderLabel);
         });
-        group.addLayer(gj);
-      })
-      .catch(err => console.warn('Erreur chargement couche', name, err));
+    };
+    const delay = cfg.loadDelay || 0;
+    if (delay > 0) {
+      staticTimers[name] = setTimeout(doLoad, delay);
+      console.log(`[ConsultMap][${name}] Timer ${delay}ms avant chargement static`);
+    } else {
+      doLoad();
+    }
+    return;
   }
+
+  // Dynamic layer logic with bounds cache
+  const currentMapBounds = map.getBounds();
+  
+  // Vérifier si une requête est déjà en cours pour cette couche
+  if (pendingFetches[name]) {
+    console.log(`[ConsultMap][${name}] Requête déjà en cours, skip`);
+    return;
+  }
+  
+  // Vérifier le cache de bounds
+  if (lastBounds[name] && lastBounds[name].contains(currentMapBounds)) {
+    console.log(`[ConsultMap][${name}] Cache hit: emprise courante incluse, pas de refetch`);
+    return;
+  }
+  
+  // Clear old layers before fetching new ones
+  group.clearLayers();
+  lastBounds[name] = expandBounds(currentMapBounds);
+  const q = '?' + computeBoundsQuery();
+  const fetchLabel = `[${name}] fetch`;
+  const parseLabel = `[${name}] parse`;
+  const renderLabel = `[${name}] render`;
+  
+  pendingFetches[name] = true;
+  console.time(fetchLabel);
+  fetch(cfg.endpoint + q)
+    .then(r => { console.timeEnd(fetchLabel); console.time(parseLabel); return r.json(); })
+    .then(geo => {
+      console.timeEnd(parseLabel); console.time(renderLabel);
+      const gj = L.geoJSON(geo, {
+        style: cfg.style,
+        onEachFeature: (feat, layer) => {
+          if (feat.properties){
+            const nm = feat.properties.name || feat.properties.nom || name;
+            layer.bindPopup(`<strong>${nm}</strong>`);
+          }
+        }
+      });
+      console.timeEnd(renderLabel);
+      group.addLayer(gj);
+      pendingFetches[name] = false;
+      console.log(`[ConsultMap][${name}] Chargé avec succès`);
+    })
+    .catch(err => {
+      console.warn('Erreur chargement couche', name, err);
+      console.timeEnd(fetchLabel); console.timeEnd(parseLabel); console.timeEnd(renderLabel);
+      pendingFetches[name] = false;
+      // En cas d'erreur, réinitialiser le cache pour permettre une nouvelle tentative
+      delete lastBounds[name];
+    });
 }
 
 function reloadGeojsonLayers() {
-  Object.keys(dataLayers).forEach(updateGeojsonLayer);
-  console.log('[ConsultMap] reloadGeojsonLayers appelé');
+  // Ne recharge que les dynamiques
+  Object.keys(dataLayers).forEach(name => { if (!overlayConfig[name].static) updateGeojsonLayer(name); });
+  console.log('[ConsultMap] reloadGeojsonLayers (dynamiques) appelé');
 }
 
 map.on('overlayadd', function(e) {
@@ -218,8 +312,16 @@ map.on('overlayremove', function(e) {
   console.log('[ConsultMap] overlayremove', e.name);
 });
 
-map.on('moveend', reloadGeojsonLayers);
-map.on('zoomend', reloadGeojsonLayers);
+// Debounce du rechargement des couches (900ms) pour éviter surcharges lors de déplacements successifs
+let reloadTimer = null;
+function scheduleReload(){
+  if (reloadTimer) clearTimeout(reloadTimer);
+  reloadTimer = setTimeout(() => {
+    reloadGeojsonLayers();
+  }, 900);
+}
+map.on('moveend', scheduleReload);
+map.on('zoomend', scheduleReload);
 reloadGeojsonLayers();
 
 </script>

@@ -68,17 +68,18 @@ public class ConsultMapController {
     private void populate(FormConsultMap form) {
         log.debug("populate() - idRegion={}, idCommunauteDeCommunes={}, idCommune={}", 
             form.getIdRegion(), form.getIdCommunauteDeCommunes(), form.getIdCommune());
-        
+
+        // Auto preset par contexte utilisateur si aucune région n'est encore sélectionnée
         if (form.getIdRegion() == null) {
             form.autoLocate();
         }
-        
-        // listes
+
+        // listes (régions toujours chargées)
         form.setRegions(serviceReadReferences.getRegion());
-        
+
         if (form.getIdRegion() != null) {
             form.setCommunautesDeCommunes(serviceReadReferences.getCommunauteByRegionId(form.getIdRegion()));
-            
+
             if (form.getIdCommunauteDeCommunes() != null) {
                 form.setCommunes(serviceReadReferences.getCityByCommunauteCommuneId(form.getIdCommunauteDeCommunes()));
                 log.debug("Communes chargées depuis EPCI {}: {} communes", form.getIdCommunauteDeCommunes(), 
@@ -92,11 +93,29 @@ public class ConsultMapController {
             form.setCommunautesDeCommunes(new java.util.ArrayList<>());
             form.setCommunes(new java.util.ArrayList<>());
         }
-        
+
+        // Noms pour affichage (région / EPCI)
+        if (form.getIdRegion() != null && form.getRegions() != null) {
+            form.getRegions().stream()
+                .filter(r -> r.getId().equals(form.getIdRegion()))
+                .findFirst()
+                .ifPresent(r -> form.setNameRegion(r.getName()));
+        }
+        if (form.getIdCommunauteDeCommunes() != null && form.getCommunautesDeCommunes() != null) {
+            form.getCommunautesDeCommunes().stream()
+                .filter(c -> c.getId().equals(form.getIdCommunauteDeCommunes()))
+                .findFirst()
+                .ifPresent(c -> form.setNameCommunauteDeCommunes(c.getName()));
+        }
+
+        // Présélection automatique d'une commune si aucune choisie mais liste disponible
+        if (form.getIdCommune() == null && form.getCommunes() != null && !form.getCommunes().isEmpty()) {
+            form.setIdCommune(form.getCommunes().get(0).getId());
+            log.debug("Preset commune par défaut: {}", form.getIdCommune());
+        }
+
         if (form.getIdCommune() != null) {
-            // nom affiché
             form.setNameCommune(serviceReadReferences.getCityById(form.getIdCommune()).getName());
-            // centrage si pas déjà défini
             if (form.getMapLat() == null || form.getMapLng() == null) {
                 Coordinate c = serviceReadReferences.getCoordinate(form.getIdCommune());
                 if (c != null) {
