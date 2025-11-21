@@ -55,7 +55,14 @@
               </fieldset>
             </form>
           </div>
-          <!-- Rien ici, le select des couches est déplacé dans la carte -->
+          <div class="col-12 col-md-3">
+            <div class="form-floating">
+              <select class="form-select" id="selectYear" name="selectYear" onchange="onYearChange()">
+                <option value="" selected>Année...</option>
+              </select>
+              <label for="selectYear">Année</label>
+            </div>
+          </div>
         </div>
 
         <!-- Carte -->
@@ -87,6 +94,34 @@ if (hasTerritoire) {
   latTpl = /*[[${territoire.lat}]]*/ null;
   lonTpl = /*[[${territoire.lon}]]*/ null;
 }
+// ----------- INITIALISATION SELECT ANNEES -----------
+const endpointYears = /*[[@{/map/years}]]*/ '/map/years';
+function getSelectedYear(){
+  const sel = document.getElementById('selectYear');
+  if (!sel) return null;
+  return sel.value && sel.value !== '' ? sel.value : null;
+}
+(function initYearsSelect(){
+  const sel = document.getElementById('selectYear');
+  if (!sel) return;
+  console.log('[ConsultMap] Chargement années depuis', endpointYears);
+  fetch(endpointYears)
+    .then(r => r.json())
+    .then(years => {
+      if (!Array.isArray(years)) { console.warn('[ConsultMap] Format années inattendu', years); return; }
+      years.sort((a,b)=>b-a); // tri décroissant
+      years.forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y;
+        sel.appendChild(opt);
+      });
+      if (years.length>0){
+        sel.value = years[0];
+        console.log('[ConsultMap] Année par défaut sélectionnée:', years[0]);
+      }
+    })
+    .catch(err => console.error('[ConsultMap] Erreur chargement années', err));
+})();
 (function initCommuneDatalist(){
   const input = document.getElementById('idCommune-filter');
   if (!input) return;
@@ -158,13 +193,16 @@ console.log('[ConsultMap] LayerControl ajouté avec dataLayers:', dataLayers);
 
 function computeBoundsQuery(){
   const b = map.getBounds();
-  return `swLat=${b.getSouthWest().lat}&swLng=${b.getSouthWest().lng}&neLat=${b.getNorthEast().lat}&neLng=${b.getNorthEast().lng}`;
+  let q = `swLat=${b.getSouthWest().lat}&swLng=${b.getSouthWest().lng}&neLat=${b.getNorthEast().lat}&neLng=${b.getNorthEast().lng}`;
+  const year = getSelectedYear();
+  if (year) q += `&annee=${year}`;
+  return q;
 }
 
 // Endpoints Thymeleaf (remplacés serveur)
 const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
-const endpointCarre = /*[[@{/mvc/geojson/carreByCorner}]]*/ '';
-const endpointIris = /*[[@{/mvc/geojson/irisByCorner}]]*/ '';
+const endpointCarre = /*[[@{/map/insee/carre200m/area}]]*/ '';
+const endpointIris = /*[[@{/map/insee/iris/area}]]*/ '';
 const endpointCadastre = /*[[@{/mvc/geojson/cadastreByCorner}]]*/ '';
 const endpointVegetation = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/vegetalInseeIgnTopo.json';
 const urlEditPark = /*[[@{/mvc/park/new/check}]]*/ '/mvc/park/new/check';
@@ -189,7 +227,10 @@ const lastBounds = {}; // pour couches dynamiques
 const loadedStatic = {}; // pour couches statiques (chargées une seule fois)
 const staticTimers = {}; // timers de délai unique
 const pendingFetches = {}; // suivi des requêtes en cours pour éviter les doublons
+const layerDebounceTimers = {}; // timers de debounce par couche
 const EXPAND_RATIO = 0.3;
+const LAYER_DEBOUNCE_DELAY = 600; // délai debounce par couche (ms)
+
 function expandBounds(b){
   const sw = b.getSouthWest();
   const ne = b.getNorthEast();
@@ -199,6 +240,39 @@ function expandBounds(b){
     L.latLng(sw.lat - latPad, sw.lng - lngPad),
     L.latLng(ne.lat + latPad, ne.lng + lngPad)
   );
+}
+
+// Factorisation de la création de contenu popup pour toutes les couches
+function createPopupContent(feat, layerName) {
+  if (!feat || !feat.properties) return '';
+  const nm = feat.properties.name || feat.properties.nom || layerName;
+  let popupContent = `<strong>${nm}</strong>`;
+
+  // Lien édition parcs
+  if (layerName === 'Parcs' && feat.properties.id) {
+    const sUrlEditPark = window.location.protocol + "//" + window.location.host + urlEditPark + '?idPark=' + feat.properties.id;
+    popupContent += `<p><a href='${sUrlEditPark}'>Éditer</a></p>`;
+  }
+
+  // Infos spécifiques Végétation IGN
+  if (layerName === 'Végétation IGN') {
+    if (feat.id) popupContent += `<p>ID: ${feat.id}</p>`;
+    if (feat.properties.surface) {
+      const surface = parseFloat(feat.properties.surface);
+      if (!isNaN(surface)) {
+        if (surface >= 10000) {
+          popupContent += `<p>Surface: ${(surface / 10000).toFixed(2)} ha</p>`;
+        } else {
+          popupContent += `<p>Surface: ${Math.round(surface)} m²</p>`;
+        }
+      }
+    }
+    if (feat.properties.nature) {
+      popupContent += `<p>Nature: ${feat.properties.nature}</p>`;
+    }
+  }
+
+  return popupContent;
 }
 
 function updateGeojsonLayer(name) {
@@ -223,35 +297,8 @@ function updateGeojsonLayer(name) {
           const gj = L.geoJSON(geo, {
             style: cfg.style,
             onEachFeature: (feat, layer) => {
-              if (feat.properties){
-                const nm = feat.properties.name || feat.properties.nom || name;
-                let popupContent = `<strong>${nm}</strong>`;
-                // Ajouter un lien d'édition pour les parcs
-                if (name === 'Parcs' && feat.properties.id) {
-                  const sUrlEditPark = window.location.protocol + "//" + window.location.host + urlEditPark + '?idPark=';
-                  popupContent += `<p><a href='${sUrlEditPark}${feat.properties.id}'>Éditer</a></p>`;
-                }
-                // Ajouter id et surface pour la Végétation IGN
-                if (name === 'Végétation IGN') {
-                  if (feat.id) {
-                    popupContent += `<p>ID: ${feat.id}</p>`;
-                  }
-                  if (feat.properties.surface) {
-                    const surface = parseFloat(feat.properties.surface);
-                    if (surface >= 10000) {
-                      const hectares = (surface / 10000).toFixed(2);
-                      popupContent += `<p>Surface: ${hectares} ha</p>`;
-                    } else {
-                      const m2 = Math.round(surface);
-                      popupContent += `<p>Surface: ${m2} m²</p>`;
-                    }
-                  }
-                  if (feat.properties.nature) {
-                    popupContent += `<p>Nature: ${feat.properties.nature}</p>`;
-                  }
-                }
-                layer.bindPopup(popupContent);
-              }
+              const popupContent = createPopupContent(feat, name);
+              if (popupContent) layer.bindPopup(popupContent);
             }
           });
           console.timeEnd(renderLabel);
@@ -274,78 +321,65 @@ function updateGeojsonLayer(name) {
     return;
   }
 
-  // Dynamic layer logic with bounds cache
-  const currentMapBounds = map.getBounds();
-  
-  // Vérifier si une requête est déjà en cours pour cette couche
-  if (pendingFetches[name]) {
-    console.log(`[ConsultMap][${name}] Requête déjà en cours, skip`);
-    return;
+  // Dynamic layer logic with debounce and bounds cache
+  // Annuler le timer existant pour cette couche
+  if (layerDebounceTimers[name]) {
+    clearTimeout(layerDebounceTimers[name]);
+    layerDebounceTimers[name] = null;
   }
-  
-  // Vérifier le cache de bounds
-  if (lastBounds[name] && lastBounds[name].contains(currentMapBounds)) {
-    console.log(`[ConsultMap][${name}] Cache hit: emprise courante incluse, pas de refetch`);
-    return;
-  }
-  
-  // Clear old layers before fetching new ones
-  group.clearLayers();
-  lastBounds[name] = expandBounds(currentMapBounds);
-  const q = '?' + computeBoundsQuery();
-  const fetchLabel = `[${name}] fetch`;
-  const parseLabel = `[${name}] parse`;
-  const renderLabel = `[${name}] render`;
-  
-  pendingFetches[name] = true;
-  console.time(fetchLabel);
-  fetch(cfg.endpoint + q)
-    .then(r => { console.timeEnd(fetchLabel); console.time(parseLabel); return r.json(); })
-    .then(geo => {
-      console.timeEnd(parseLabel); console.time(renderLabel);
-      const gj = L.geoJSON(geo, {
-        style: cfg.style,
-        onEachFeature: (feat, layer) => {
-          if (feat.properties){
-            const nm = feat.properties.name || feat.properties.nom || name;
-            let popupContent = `<strong>${nm}</strong>`;
-            // Ajouter un lien d'édition pour les parcs
-            if (name === 'Parcs' && feat.properties.id) {
-              const sUrlEditPark = window.location.protocol + "//" + window.location.host + urlEditPark + '?idPark=';
-              popupContent += `<p><a href='${sUrlEditPark}${feat.properties.id}'>Éditer</a></p>`;
-            }
-            // Ajouter id et surface pour la Végétation IGN
-            if (name === 'Végétation IGN') {
-              if (feat.id) {
-                popupContent += `<p>ID: ${feat.id}</p>`;
-              }
-              if (feat.properties.surface) {
-                const surface = parseFloat(feat.properties.surface);
-                if (surface >= 10000) {
-                  const hectares = (surface / 10000).toFixed(2);
-                  popupContent += `<p>Surface: ${hectares} ha</p>`;
-                } else {
-                  const m2 = Math.round(surface);
-                  popupContent += `<p>Surface: ${m2} m²</p>`;
-                }
-              }
-            }
-            layer.bindPopup(popupContent);
+
+  // Planifier le chargement avec debounce
+  layerDebounceTimers[name] = setTimeout(() => {
+    layerDebounceTimers[name] = null;
+    
+    const currentMapBounds = map.getBounds();
+    
+    // Vérifier si une requête est déjà en cours pour cette couche
+    if (pendingFetches[name]) {
+      console.log(`[ConsultMap][${name}] Requête déjà en cours, skip`);
+      return;
+    }
+    
+    // Vérifier le cache de bounds
+    if (lastBounds[name] && lastBounds[name].contains(currentMapBounds)) {
+      console.log(`[ConsultMap][${name}] Cache hit: emprise courante incluse, pas de refetch`);
+      return;
+    }
+    
+    // Clear old layers before fetching new ones
+    group.clearLayers();
+    lastBounds[name] = expandBounds(currentMapBounds);
+    const q = '?' + computeBoundsQuery();
+    const fetchLabel = `[${name}] fetch`;
+    const parseLabel = `[${name}] parse`;
+    const renderLabel = `[${name}] render`;
+    
+    pendingFetches[name] = true;
+    console.time(fetchLabel);
+    fetch(cfg.endpoint + q)
+      .then(r => { console.timeEnd(fetchLabel); console.time(parseLabel); return r.json(); })
+      .then(geo => {
+        console.timeEnd(parseLabel); console.time(renderLabel);
+        const gj = L.geoJSON(geo, {
+          style: cfg.style,
+          onEachFeature: (feat, layer) => {
+            const popupContent = createPopupContent(feat, name);
+            if (popupContent) layer.bindPopup(popupContent);
           }
-        }
+        });
+        console.timeEnd(renderLabel);
+        group.addLayer(gj);
+        pendingFetches[name] = false;
+        console.log(`[ConsultMap][${name}] Chargé avec succès`);
+      })
+      .catch(err => {
+        console.warn('Erreur chargement couche', name, err);
+        console.timeEnd(fetchLabel); console.timeEnd(parseLabel); console.timeEnd(renderLabel);
+        pendingFetches[name] = false;
+        // En cas d'erreur, réinitialiser le cache pour permettre une nouvelle tentative
+        delete lastBounds[name];
       });
-      console.timeEnd(renderLabel);
-      group.addLayer(gj);
-      pendingFetches[name] = false;
-      console.log(`[ConsultMap][${name}] Chargé avec succès`);
-    })
-    .catch(err => {
-      console.warn('Erreur chargement couche', name, err);
-      console.timeEnd(fetchLabel); console.timeEnd(parseLabel); console.timeEnd(renderLabel);
-      pendingFetches[name] = false;
-      // En cas d'erreur, réinitialiser le cache pour permettre une nouvelle tentative
-      delete lastBounds[name];
-    });
+  }, LAYER_DEBOUNCE_DELAY);
 }
 
 function reloadGeojsonLayers() {
@@ -381,17 +415,39 @@ map.on('overlayremove', function(e) {
   console.log('[ConsultMap] overlayremove', e.name);
 });
 
-// Debounce du rechargement des couches (900ms) pour éviter surcharges lors de déplacements successifs
+// Debounce global du rechargement (réduit à 300ms car chaque couche a maintenant son propre debounce)
 let reloadTimer = null;
 function scheduleReload(){
   if (reloadTimer) clearTimeout(reloadTimer);
   reloadTimer = setTimeout(() => {
     reloadGeojsonLayers();
-  }, 900);
+    updateGMapLink();
+  }, 300);
 }
 map.on('moveend', scheduleReload);
 map.on('zoomend', scheduleReload);
 reloadGeojsonLayers();
+
+// Changement d'année: invalider caches dynamiques et recharger si visibles
+function onYearChange(){
+  const year = getSelectedYear();
+  console.log('[ConsultMap] onYearChange ->', year);
+  // Annuler tous les timers de debounce en cours
+  Object.keys(layerDebounceTimers).forEach(name => {
+    if (layerDebounceTimers[name]) {
+      clearTimeout(layerDebounceTimers[name]);
+      layerDebounceTimers[name] = null;
+    }
+  });
+  // Invalider les caches de bounds pour forcer le rechargement
+  ['Carrés','IRIS','Cadastre','Parcs'].forEach(layerName => { delete lastBounds[layerName]; });
+  // Recharger seulement les couches présentes
+  Object.keys(dataLayers).forEach(name => {
+    if (!overlayConfig[name].static && map.hasLayer(dataLayers[name])) {
+      updateGeojsonLayer(name);
+    }
+  });
+}
 
 </script>
 </body>

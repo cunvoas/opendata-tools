@@ -15,7 +15,7 @@ import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
  * REsT Controler for Insee.
  */
 @RestController
-@RequestMapping("/map/insee")
+@RequestMapping("/map/insee/carre200m")
 public class GeoJsonCarreInseeController {
 
     @Autowired
@@ -32,7 +32,7 @@ public class GeoJsonCarreInseeController {
      * @return list of carre insee
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
-    @GetMapping("/carre200m/area")
+    @GetMapping("/area")
     public GeoJsonRoot getCarreByArea(
 			@RequestParam("swLat") Double swLat,
 			@RequestParam("swLng") Double swLng,
@@ -55,7 +55,7 @@ public class GeoJsonCarreInseeController {
      * @return  list of carre insee
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
-    @GetMapping("/carre200m/polygon")
+    @GetMapping("/polygon")
     public GeoJsonRoot getCarreByArea(@RequestParam("polygon") Polygon polygon, @RequestParam("annee") Integer annee) {
         if (annee==null) {
         	return inseeCarre200mService.findAllCarreByArea(polygon);
