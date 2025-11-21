@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:insert="~{fragments/fragment-head :: head}"></head>
+<body class="sb-nav-fixed">
+<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+<div id="layoutSidenav">
+  <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+  <div id="layoutSidenav_content">
+    <main>
+      <div class="container-fluid">
+        <h4 class="mt-3">Consultation Cartographique</h4>
+        <p class="text-muted">Vue lecture seule pour explorer les différentes couches géographiques (fonds de carte et données GeoJSON). Sélectionnez la région, la communauté de communes puis la commune pour centrer automatiquement la carte. Les couches se rechargent automatiquement selon le cadre visible.</p>
+
+        <!-- Sélecteurs territoriaux -->
+        <div class="row g-2 mb-2">
+          <div class="col-12 col-md-3">
+            <form id="formSelectRegion" th:action="@{/mvc/consult/region}" method="post" onchange="submit();">
+              <div class="form-floating">
+                <select class="form-select" id="idRegion" name="idRegion">
+                  <option value="" selected disabled>Région...</option>
+                  <option th:each="r : ${regions}" th:value="${r.id}" th:text="${r.name}" th:selected="${territoire != null && r.id == territoire.idRegion}"></option>
+                </select>
+                <label for="idRegion">Région</label>
+              </div>
+            </form>
+          </div>
+          <div class="col-12 col-md-3">
+            <form id="formSelectComm2co" th:action="@{/mvc/consult/epci}" method="post" onchange="submit();">
+              <fieldset id="fsComm2co" th:disabled="${territoire == null || territoire.idRegion == null}">
+                <div class="form-floating">
+                  <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes">
+                    <option value="">EPCI...</option>
+                    <option th:each="c : ${communautesDeCommunes}" th:value="${c.id}" th:text="${c.name}" th:selected="${territoire != null && c.id == territoire.idCommunauteDeCommunes}"></option>
+                  </select>
+                  <label for="idCommunauteDeCommunes">Communauté de communes</label>
+                  <input type="hidden" id="idRegion" name="idRegion" th:value="${territoire != null ? territoire.idRegion : ''}" />
+                </div>
+              </fieldset>
+            </form>
+          </div>
+          <div class="col-12 col-md-3">
+            <form id="formSelectCity" th:action="@{/mvc/consult/city}" method="post">
+              <fieldset id="fsCity" th:disabled="${territoire == null || territoire.idCommunauteDeCommunes == null}">
+                <div class="form-floating">
+                  <input class="form-control" list="communes" id="idCommune-filter" name="idCommune-filter" placeholder="Commune..." 
+                         th:value="${territoire != null && territoire.nameCommune != null ? territoire.nameCommune : ''}" />
+                  <label for="idCommune-filter">Commune</label>
+                  <datalist id="communes">
+                    <option th:each="v : ${communes}" th:value="${v.name}" th:attr="data-value=${v.id}"></option>
+                  </datalist>
+                  <input type="hidden" id="idCommune" name="idCommune" th:value="${territoire != null && territoire.idCommune != null ? territoire.idCommune : ''}" />
+                  <input type="hidden" id="idRegionCity" name="idRegion" th:value="${territoire != null && territoire.idRegion != null ? territoire.idRegion : ''}" />
+                  <input type="hidden" id="idCommunauteDeCommunesCity" name="idCommunauteDeCommunes" th:value="${territoire != null && territoire.idCommunauteDeCommunes != null ? territoire.idCommunauteDeCommunes : ''}" />
+                </div>
+              </fieldset>
+            </form>
+          </div>
+          <!-- Rien ici, le select des couches est déplacé dans la carte -->
+        </div>
+
+        <!-- Carte -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card" style="position:relative;">
+              <div id="mapConsult" style="width:100%; height:calc(100vh - 250px);"></div>
+              <!-- Le contrôle des couches est géré par Leaflet Layers -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+<div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
+<script th:src="@{/mvc/static/js/scripts.js}"></script>
+
+<script th:inline="javascript">
+// ----------- INITIALISATION TERRITOIRE (datalist commune) -----------
+const hasTerritoire = /*[[${territoire != null}]]*/ false;
+let latTpl = null, lonTpl = null;
+if (hasTerritoire) {
+  latTpl = /*[[${territoire.lat}]]*/ null;
+  lonTpl = /*[[${territoire.lon}]]*/ null;
+}
+(function initCommuneDatalist(){
+  const input = document.getElementById('idCommune-filter');
+  if (!input) return;
+  
+  console.log('[ConsultMap] Init datalist commune, hasTerritoire:', hasTerritoire);
+  
+  input.addEventListener('input', function(e){
+    const options = document.querySelectorAll('#communes option');
+    const hiddenInput = document.getElementById('idCommune');
+    const inputValue = e.target.value;
+    
+    console.log('[ConsultMap] Input commune changed:', inputValue);
+    
+    hiddenInput.value = ''; // reset
+    
+    for (const o of options){
+      if (o.value === inputValue) {
+        const dataValue = o.getAttribute('data-value');
+        hiddenInput.value = dataValue;
+        console.log('[ConsultMap] Commune trouvée, id:', dataValue);
+        document.getElementById('formSelectCity').submit();
+        break;
+      }
+    }
+  });
+})();
+
+// ----------- FONDS DE CARTE -----------
+const mapMinZoom=13, mapMaxZoom=18;
+const layerOSM = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a target="_blank" rel="noopener" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: mapMaxZoom,minZoom: mapMinZoom
+});
+const layerWorldStreet = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Esri World Street Map', maxZoom: mapMaxZoom, minZoom: mapMinZoom
+});
+const layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Esri Satellite', maxZoom: mapMaxZoom, minZoom: mapMinZoom
+});
+const layerAeroIgn = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
+  attribution: 'IGN GeoPortail', maxZoom: Math.min(18,mapMaxZoom), minZoom: mapMinZoom
+});
+const baseLayers = { 'IGN Aérien': layerAeroIgn, 'Satellite': layerSatellite, 'WorldStreet': layerWorldStreet, 'OpenStreetMap': layerOSM };
+
+// ----------- MAP -----------
+let center = L.latLng(50.626419,3.0719121); // défaut
+if (latTpl !== null && lonTpl !== null) { center = L.latLng(latTpl, lonTpl); }
+
+// ----------- OVERLAYS DYNAMIQUES (dataLayers comme newPark.html) -----------
+const dataParcs = L.layerGroup();
+const dataCarre = L.layerGroup();
+const dataIris = L.layerGroup();
+const dataCadastre = L.layerGroup();
+const dataVegetation = L.layerGroup();
+const dataLayers = {
+  'Parcs': dataParcs,
+  'Carrés': dataCarre,
+  'IRIS': dataIris,
+  'Cadastre': dataCadastre,
+  'Végétation IGN': dataVegetation
+};
+
+console.log('[ConsultMap] Initialisation carte...');
+const map = L.map('mapConsult', { zoom: 13, layers: [layerOSM] }).setView(center);
+console.log('[ConsultMap] Carte initialisée:', map);
+L.control.scale().addTo(map);
+const layerControl = L.control.layers(baseLayers, dataLayers).addTo(map);
+console.log('[ConsultMap] LayerControl ajouté avec dataLayers:', dataLayers);
+
+function computeBoundsQuery(){
+  const b = map.getBounds();
+  return `swLat=${b.getSouthWest().lat}&swLng=${b.getSouthWest().lng}&neLat=${b.getNorthEast().lat}&neLng=${b.getNorthEast().lng}`;
+}
+
+// Endpoints Thymeleaf (remplacés serveur)
+const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
+const endpointCarre = /*[[@{/mvc/geojson/carreByCorner}]]*/ '';
+const endpointIris = /*[[@{/mvc/geojson/irisByCorner}]]*/ '';
+const endpointCadastre = /*[[@{/mvc/geojson/cadastreByCorner}]]*/ '';
+const endpointVegetation = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/vegetalInseeIgnTopo.json';
+
+// Styles ajustés pour accentuer le contraste bordure/fond tout en conservant une bordure fine
+// - Couleur de bordure plus sombre
+// - fillColor plus claire que la bordure
+// - fillOpacity légèrement augmentée pour lisibilité sans masquer le fond
+// - weight maintenu à 1 (ou réduit depuis 2) pour rester fin
+const overlayConfig = {
+  'Parcs': { endpoint: endpointParcs, style: { color:'#1e4d1c', fillColor:'#3aa637', weight:1, fillOpacity:0.35 } },
+  'Carrés': { endpoint: endpointCarre, style: { color:'#002a99', fillColor:'#3385ff', weight:1, fillOpacity:0.25 } },
+  'IRIS': { endpoint: endpointIris, style: { color:'#b85f00', fillColor:'#ff9d33', weight:1, fillOpacity:0.25 } },
+  'Cadastre': { endpoint: endpointCadastre, style: { color:'#7a7c00', fillColor:'#d6d900', weight:1, fillOpacity:0.18 } },
+  'Végétation IGN': { endpoint: endpointVegetation, style: { color:'#0f4d0f', fillColor:'#2fa42f', weight:1, fillOpacity:0.45 }, static: true }
+};
+console.log('[ConsultMap] overlayConfig:', overlayConfig);
+
+function updateGeojsonLayer(name) {
+  console.log('[ConsultMap] updateGeojsonLayer', name);
+  const cfg = overlayConfig[name];
+  const group = dataLayers[name];
+  group.clearLayers();
+  if (map.hasLayer(group)) {
+    const q = cfg.static ? '' : '?' + computeBoundsQuery();
+    fetch(cfg.endpoint + q)
+      .then(r => r.json())
+      .then(geo => {
+        const gj = L.geoJSON(geo, {
+          style: cfg.style,
+          onEachFeature: (feat, layer) => {
+            if (feat.properties){
+              const nm = feat.properties.name || feat.properties.nom || name;
+              layer.bindPopup(`<strong>${nm}</strong>`);
+            }
+          }
+        });
+        group.addLayer(gj);
+      })
+      .catch(err => console.warn('Erreur chargement couche', name, err));
+  }
+}
+
+function reloadGeojsonLayers() {
+  Object.keys(dataLayers).forEach(updateGeojsonLayer);
+  console.log('[ConsultMap] reloadGeojsonLayers appelé');
+}
+
+map.on('overlayadd', function(e) {
+  if (dataLayers[e.name]) updateGeojsonLayer(e.name);
+  console.log('[ConsultMap] overlayadd', e.name);
+});
+map.on('overlayremove', function(e) {
+  if (dataLayers[e.name]) dataLayers[e.name].clearLayers();
+  console.log('[ConsultMap] overlayremove', e.name);
+});
+
+map.on('moveend', reloadGeojsonLayers);
+map.on('zoomend', reloadGeojsonLayers);
+reloadGeojsonLayers();
+
+</script>
+</body>
+</html>
