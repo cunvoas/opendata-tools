@@ -61,6 +61,9 @@
         <!-- Carte -->
         <div class="row">
           <div class="col-12">
+            <div style="text-align: end; margin-bottom: 10px;">
+              Localiser dans <a id="aGMapLink" href="#" target="_blank" rel="noopener noreferrer" alt="voir la même carte sur GMap">Google Map</a>
+            </div>
             <div class="card" style="position:relative;">
               <div id="mapConsult" style="width:100%; height:calc(100vh - 250px);"></div>
               <!-- Le contrôle des couches est géré par Leaflet Layers -->
@@ -147,7 +150,7 @@ const dataLayers = {
 };
 
 console.log('[ConsultMap] Initialisation carte...');
-const map = L.map('mapConsult', { zoom: 13, layers: [layerOSM] }).setView(center);
+const map = L.map('mapConsult', { zoom: 13, layers: [layerOSM, dataParcs] }).setView(center);
 console.log('[ConsultMap] Carte initialisée:', map);
 L.control.scale().addTo(map);
 const layerControl = L.control.layers(baseLayers, dataLayers).addTo(map);
@@ -164,6 +167,7 @@ const endpointCarre = /*[[@{/mvc/geojson/carreByCorner}]]*/ '';
 const endpointIris = /*[[@{/mvc/geojson/irisByCorner}]]*/ '';
 const endpointCadastre = /*[[@{/mvc/geojson/cadastreByCorner}]]*/ '';
 const endpointVegetation = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/vegetalInseeIgnTopo.json';
+const urlEditPark = /*[[@{/mvc/park/new/check}]]*/ '/mvc/park/new/check';
 
 // Styles ajustés pour accentuer le contraste bordure/fond tout en conservant une bordure fine
 // - Couleur de bordure plus sombre
@@ -221,7 +225,32 @@ function updateGeojsonLayer(name) {
             onEachFeature: (feat, layer) => {
               if (feat.properties){
                 const nm = feat.properties.name || feat.properties.nom || name;
-                layer.bindPopup(`<strong>${nm}</strong>`);
+                let popupContent = `<strong>${nm}</strong>`;
+                // Ajouter un lien d'édition pour les parcs
+                if (name === 'Parcs' && feat.properties.id) {
+                  const sUrlEditPark = window.location.protocol + "//" + window.location.host + urlEditPark + '?idPark=';
+                  popupContent += `<p><a href='${sUrlEditPark}${feat.properties.id}'>Éditer</a></p>`;
+                }
+                // Ajouter id et surface pour la Végétation IGN
+                if (name === 'Végétation IGN') {
+                  if (feat.id) {
+                    popupContent += `<p>ID: ${feat.id}</p>`;
+                  }
+                  if (feat.properties.surface) {
+                    const surface = parseFloat(feat.properties.surface);
+                    if (surface >= 10000) {
+                      const hectares = (surface / 10000).toFixed(2);
+                      popupContent += `<p>Surface: ${hectares} ha</p>`;
+                    } else {
+                      const m2 = Math.round(surface);
+                      popupContent += `<p>Surface: ${m2} m²</p>`;
+                    }
+                  }
+                  if (feat.properties.nature) {
+                    popupContent += `<p>Nature: ${feat.properties.nature}</p>`;
+                  }
+                }
+                layer.bindPopup(popupContent);
               }
             }
           });
@@ -279,7 +308,29 @@ function updateGeojsonLayer(name) {
         onEachFeature: (feat, layer) => {
           if (feat.properties){
             const nm = feat.properties.name || feat.properties.nom || name;
-            layer.bindPopup(`<strong>${nm}</strong>`);
+            let popupContent = `<strong>${nm}</strong>`;
+            // Ajouter un lien d'édition pour les parcs
+            if (name === 'Parcs' && feat.properties.id) {
+              const sUrlEditPark = window.location.protocol + "//" + window.location.host + urlEditPark + '?idPark=';
+              popupContent += `<p><a href='${sUrlEditPark}${feat.properties.id}'>Éditer</a></p>`;
+            }
+            // Ajouter id et surface pour la Végétation IGN
+            if (name === 'Végétation IGN') {
+              if (feat.id) {
+                popupContent += `<p>ID: ${feat.id}</p>`;
+              }
+              if (feat.properties.surface) {
+                const surface = parseFloat(feat.properties.surface);
+                if (surface >= 10000) {
+                  const hectares = (surface / 10000).toFixed(2);
+                  popupContent += `<p>Surface: ${hectares} ha</p>`;
+                } else {
+                  const m2 = Math.round(surface);
+                  popupContent += `<p>Surface: ${m2} m²</p>`;
+                }
+              }
+            }
+            layer.bindPopup(popupContent);
           }
         }
       });
@@ -301,6 +352,24 @@ function reloadGeojsonLayers() {
   // Ne recharge que les dynamiques
   Object.keys(dataLayers).forEach(name => { if (!overlayConfig[name].static) updateGeojsonLayer(name); });
   console.log('[ConsultMap] reloadGeojsonLayers (dynamiques) appelé');
+}
+
+// Fonction pour mettre à jour le lien Google Map
+function getGMapUrl(clkLat, clkLng) {
+  return "https://www.google.com/maps/@" + clkLat + "," + clkLng + ",18.03z";
+}
+
+function updateGMapLink() {
+  const b = map.getBounds();
+  const gmLat = (b.getNorthEast().lat + b.getSouthWest().lat) / 2;
+  const gmLng = (b.getSouthWest().lng + b.getNorthEast().lng) / 2;
+  const lnk = getGMapUrl(gmLat, gmLng);
+  
+  const oGmLink = document.getElementById("aGMapLink");
+  if (oGmLink) {
+    oGmLink.href = lnk;
+    console.log('[ConsultMap] Lien Google Map mis à jour:', lnk);
+  }
 }
 
 map.on('overlayadd', function(e) {

@@ -852,6 +852,33 @@
     loadPrefParks();
     editMap.on('zoomend', scheduleReload);
     editMap.on('moveend', scheduleReload);
+    
+    // Initialiser le lien Google Map au chargement
+    editMap.on('load', function() {
+        const b = editMap.getBounds();
+        const gmLat = (b.getNorthEast().lat + b.getSouthWest().lat) / 2;
+        const gmLng = (b.getSouthWest().lng + b.getNorthEast().lng) / 2;
+        const lnk = getGMapUrl(gmLat, gmLng);
+        
+        const oGmLink = document.getElementById("aGMapLink");
+        if (oGmLink) {
+            oGmLink.href = lnk;
+            console.log('[NewPark] Lien Google Map initialisé:', lnk);
+        }
+    });
+    // Mettre à jour également après le premier loadPrefParks (au cas où l'événement 'load' ne se déclenche pas)
+    setTimeout(() => {
+        const b = editMap.getBounds();
+        const gmLat = (b.getNorthEast().lat + b.getSouthWest().lat) / 2;
+        const gmLng = (b.getSouthWest().lng + b.getNorthEast().lng) / 2;
+        const lnk = getGMapUrl(gmLat, gmLng);
+        
+        const oGmLink = document.getElementById("aGMapLink");
+        if (oGmLink) {
+            oGmLink.href = lnk;
+            console.log('[NewPark] Lien Google Map défini après loadPrefParks:', lnk);
+        }
+    }, 200);
 
     
     //geoman
