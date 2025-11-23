@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:insert="~{fragments/fragment-head :: head}"></head>
+<body class="sb-nav-fixed">
+<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+<div id="layoutSidenav">
+  <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+  <div id="layoutSidenav_content">
+    <main>
+      <div class="container-fluid">
+        <h4 class="mt-3">Consultation Cartographique</h4>
+        <p class="text-muted">Vue lecture seule pour explorer les différentes couches géographiques (fonds de carte et données GeoJSON). Sélectionnez la région, la communauté de communes puis la commune pour centrer automatiquement la carte. Les couches se rechargent automatiquement selon le cadre visible.</p>
+
+        <!-- Sélecteurs territoriaux -->
+        <div class="row g-2 mb-2">
+          <div class="col-12 col-md-3">
+            <form id="formSelectRegion" th:action="@{/mvc/consult/region}" method="post" onchange="submit();">
+              <div class="form-floating">
+                <select class="form-select" id="idRegion" name="idRegion">
+                  <option value="" selected disabled>Région...</option>
+                  <option th:each="r : ${regions}" th:value="${r.id}" th:text="${r.name}" th:selected="${territoire != null && r.id == territoire.idRegion}"></option>
+                </select>
+                <label for="idRegion">Région</label>
+              </div>
+            </form>
+          </div>
+          <div class="col-12 col-md-3">
+            <form id="formSelectComm2co" th:action="@{/mvc/consult/epci}" method="post" onchange="submit();">
+              <fieldset id="fsComm2co" th:disabled="${territoire == null || territoire.idRegion == null}">
+                <div class="form-floating">
+                  <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes">
+                    <option value="">EPCI...</option>
+                    <option th:each="c : ${communautesDeCommunes}" th:value="${c.id}" th:text="${c.name}" th:selected="${territoire != null && c.id == territoire.idCommunauteDeCommunes}"></option>
+                  </select>
+                  <label for="idCommunauteDeCommunes">Communauté de communes</label>
+                  <input type="hidden" id="idRegion" name="idRegion" th:value="${territoire != null ? territoire.idRegion : ''}" />
+                </div>
+              </fieldset>
+            </form>
+          </div>
+          <div class="col-12 col-md-3">
+            <form id="formSelectCity" th:action="@{/mvc/consult/city}" method="post">
+              <fieldset id="fsCity" th:disabled="${territoire == null || territoire.idCommunauteDeCommunes == null}">
+                <div class="form-floating">
+                  <input class="form-control" list="communes" id="idCommune-filter" name="idCommune-filter" placeholder="Commune..." 
+                         th:value="${territoire != null && territoire.nameCommune != null ? territoire.nameCommune : ''}" />
+                  <label for="idCommune-filter">Commune</label>
+                  <datalist id="communes">
+                    <option th:each="v : ${communes}" th:value="${v.name}" th:attr="data-value=${v.id}"></option>
+                  </datalist>
+                  <input type="hidden" id="idCommune" name="idCommune" th:value="${territoire != null && territoire.idCommune != null ? territoire.idCommune : ''}" />
+                  <input type="hidden" id="idRegionCity" name="idRegion" th:value="${territoire != null && territoire.idRegion != null ? territoire.idRegion : ''}" />
+                  <input type="hidden" id="idCommunauteDeCommunesCity" name="idCommunauteDeCommunes" th:value="${territoire != null && territoire.idCommunauteDeCommunes != null ? territoire.idCommunauteDeCommunes : ''}" />
+                </div>
+              </fieldset>
+            </form>
+          </div>
+          <div class="col-12 col-md-3">
+            <div class="form-floating">
+              <select class="form-select" id="selectYear" name="selectYear" onchange="onYearChange()">
+                <option value="" selected>Année...</option>
+              </select>
+              <label for="selectYear">Année</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carte -->
+        <div class="row">
+          <div class="col-12">
+            <div style="text-align: end; margin-bottom: 10px;">
+              Localiser dans <a id="aGMapLink" href="#" target="_blank" rel="noopener noreferrer" alt="voir la même carte sur GMap">Google Map</a>
+            </div>
+            <div class="card" style="position:relative;">
+              <div id="mapConsult" style="width:100%; height:calc(100vh - 250px);"></div>
+              <!-- Le contrôle des couches est géré par Leaflet Layers -->
+            </div>
+            <style>
+              .legend {
+                line-height: 20px;
+                color: #555;
+                background: white;
+                padding: 10px;
+                border-radius: 5px;
+                box-shadow: 0 0 15px rgba(0,0,0,0.2);
+              }
+              .legend i {
+                width: 18px;
+                height: 18px;
+                float: left;
+                margin-right: 8px;
+                opacity: 0.8;
+              }
+              .legend h4 {
+                margin: 0 0 10px;
+                font-size: 14px;
+                font-weight: bold;
+              }
+              .legend .legend-item {
+                margin-bottom: 5px;
+                clear: both;
+              }
+              .legend .legend-toggle {
+                margin-top: 10px;
+                padding-top: 8px;
+                border-top: 1px solid #ccc;
+              }
+              .legend .legend-toggle label {
+                cursor: pointer;
+                font-size: 12px;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+              }
+              .legend .legend-toggle input[type="checkbox"] {
+                cursor: pointer;
+              }
+            </style>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+<div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
+<script th:src="@{/mvc/static/js/scripts.js}"></script>
+
+<script th:inline="javascript">
+// ----------- INITIALISATION TERRITOIRE (datalist commune) -----------
+const hasTerritoire = /*[[${territoire != null}]]*/ false;
+let latTpl = null, lonTpl = null;
+if (hasTerritoire) {
+  latTpl = /*[[${territoire.lat}]]*/ null;
+  lonTpl = /*[[${territoire.lon}]]*/ null;
+}
+// ----------- INITIALISATION SELECT ANNEES -----------
+const endpointYears = /*[[@{/map/years}]]*/ '/map/years';
+
+/**
+ * Récupère l'année sélectionnée dans le sélecteur d'année
+ * @returns {string|null} L'année sélectionnée ou null si aucune sélection
+ */
+function getSelectedYear(){
+  const sel = document.getElementById('selectYear');
+  if (!sel) return null;
+  return sel.value && sel.value !== '' ? sel.value : null;
+}
+
+/**
+ * Initialise le sélecteur d'années en chargeant les années disponibles depuis le serveur
+ * Sélectionne automatiquement l'année la plus récente
+ */
+(function initYearsSelect(){
+  const sel = document.getElementById('selectYear');
+  if (!sel) return;
+  console.log('[ConsultMap] Chargement années depuis', endpointYears);
+  fetch(endpointYears)
+    .then(r => r.json())
+    .then(years => {
+      if (!Array.isArray(years)) { console.warn('[ConsultMap] Format années inattendu', years); return; }
+      years.sort((a,b)=>b-a); // tri décroissant
+      years.forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y;
+        sel.appendChild(opt);
+      });
+      if (years.length>0){
+        sel.value = years[0];
+        console.log('[ConsultMap] Année par défaut sélectionnée:', years[0]);
+      }
+    })
+    .catch(err => console.error('[ConsultMap] Erreur chargement années', err));
+})();
+
+/**
+ * Initialise le datalist de sélection de commune
+ * Gère la soumission automatique du formulaire lors de la sélection d'une commune
+ */
+(function initCommuneDatalist(){
+  const input = document.getElementById('idCommune-filter');
+  if (!input) return;
+  
+  console.log('[ConsultMap] Init datalist commune, hasTerritoire:', hasTerritoire);
+  
+  /**
+   * Gestionnaire de saisie dans le champ commune
+   * Vérifie si la valeur correspond à une option du datalist et soumet le formulaire
+   */
+  input.addEventListener('input', function(e){
+    const options = document.querySelectorAll('#communes option');
+    const hiddenInput = document.getElementById('idCommune');
+    const inputValue = e.target.value;
+    
+    console.log('[ConsultMap] Input commune changed:', inputValue);
+    
+    hiddenInput.value = ''; // reset
+    
+    for (const o of options){
+      if (o.value === inputValue) {
+        const dataValue = o.getAttribute('data-value');
+        hiddenInput.value = dataValue;
+        console.log('[ConsultMap] Commune trouvée, id:', dataValue);
+        document.getElementById('formSelectCity').submit();
+        break;
+      }
+    }
+  });
+})();
+
+// ----------- FONDS DE CARTE -----------
+const mapMinZoom=13, mapMaxZoom=18;
+const layerOSM = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a target="_blank" rel="noopener" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: mapMaxZoom,minZoom: mapMinZoom
+});
+const layerWorldStreet = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Esri World Street Map', maxZoom: mapMaxZoom, minZoom: mapMinZoom
+});
+const layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Esri Satellite', maxZoom: mapMaxZoom, minZoom: mapMinZoom
+});
+const layerAeroIgn = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
+  attribution: 'IGN GeoPortail', maxZoom: Math.min(18,mapMaxZoom), minZoom: mapMinZoom
+});
+const baseLayers = { 'IGN Aérien': layerAeroIgn, 'Satellite': layerSatellite, 'WorldStreet': layerWorldStreet, 'OpenStreetMap': layerOSM };
+
+// ----------- MAP -----------
+let center = L.latLng(50.626419,3.0719121); // défaut
+if (latTpl !== null && lonTpl !== null) { center = L.latLng(latTpl, lonTpl); }
+
+// ----------- OVERLAYS DYNAMIQUES (dataLayers comme newPark.html) -----------
+const dataParcs = L.layerGroup();
+const dataCarre = L.layerGroup();
+const dataIris = L.layerGroup();
+const dataCadastre = L.layerGroup();
+const dataVegetation = L.layerGroup();
+const dataLayers = {
+  'Parcs': dataParcs,
+  'Carrés': dataCarre,
+  'IRIS': dataIris,
+  'Cadastre': dataCadastre,
+  'Végétation IGN': dataVegetation
+};
+
+console.log('[ConsultMap] Initialisation carte...');
+const map = L.map('mapConsult', { zoom: 15, layers: [layerOSM, dataParcs] }).setView(center);
+console.log('[ConsultMap] Carte initialisée:', map);
+L.control.scale().addTo(map);
+const layerControl = L.control.layers(baseLayers, dataLayers).addTo(map);
+console.log('[ConsultMap] LayerControl ajouté avec dataLayers:', dataLayers);
+
+/**
+ * Calcule la requête URL contenant les bornes géographiques de la carte visible
+ * et l'année sélectionnée si applicable
+ * @returns {string} Chaîne de requête formatée avec les paramètres swLat, swLng, neLat, neLng et éventuellement annee
+ */
+function computeBoundsQuery(){
+  const b = map.getBounds();
+  let q = `swLat=${b.getSouthWest().lat}&swLng=${b.getSouthWest().lng}&neLat=${b.getNorthEast().lat}&neLng=${b.getNorthEast().lng}`;
+  const year = getSelectedYear();
+  if (year) q += `&annee=${year}`;
+  return q;
+}
+
+
+// needs to be here for map coloring
+let colorblindMode = false; // Mode daltonien global
+
+/**
+ * Détermine la couleur d'un carré en fonction de sa densité et du mode daltonien
+ * @param {boolean} zoneDense - Indique si le carré est en zone dense
+ * @param {number|string|null} densite - La densité (m²/hab) du carré
+ * @param {boolean} [colorblindMode=false] - Active le mode daltonien avec palette adaptée
+ * @returns {string} Code couleur hexadécimal
+ */
+function  getSquareColor(zoneDense, densite, colorblindMode = false) {
+  // Gris neutre pour valeurs non calculées
+  let color = '#959595';
+
+  if (densite===null || densite==='N/A' || densite==='' ) {
+    return color;
+  }
+  densite = (""+densite).replace(",", ".");
+
+  // Définition des deux palettes de couleurs
+  let level1, level2, level3, level4, level5;
+
+  if (colorblindMode) {
+    // Palette adaptée aux daltoniens (évite confusion rouge/vert et bleu/jaune)
+    // Utilise une progression du orange (mauvais) au bleu foncé (bon)
+    // ColorBrewer2 compatible avec tous types de daltonisme
+    level1 = '#d73027';  // Rouge-orangé foncé (très faible)
+    level2 = '#fc8d59';  // Orange clair (faible)
+    level3 = '#fee090';  // Jaune-orangé pâle (moyen-faible)
+    level4 = '#4575b4';  // Bleu foncé (bon)
+    level5 = '#91bfdb';  // Bleu clair (très bon)
+  } else {
+    // Palette classique (bleu → vert)
+    level1 = '#0000e8';  // Bleu foncé (très faible)
+    level2 = '#6060e8';  // Bleu moyen (faible)
+    level3 = '#b0b0e8';  // Bleu clair (moyen-faible)
+    level4 = '#578817';  // Vert foncé (bon)
+    level5 = '#57ee17';  // Vert clair (très bon)
+  }
+
+  const densiteMinDense=10;
+  const densiteMaxDense=12;
+  const densiteMinNoDense=25;
+  const densiteMaxNoDense=45;
+
+  // default == dense
+  let p25 = 3;
+  let p50 = 6;
+  let densiteMin = densiteMinDense;
+  let densiteMax = densiteMaxDense;
+  if (zoneDense===false) {
+      densiteMin = densiteMinNoDense;
+      densiteMax = densiteMaxNoDense;
+      
+      p25 = 8;
+      p50 = 17;
+  }
+
+
+  if (zoneDense===false || zoneDense===true) {
+      if (densite>=densiteMax) {
+          color=level5;  // Excellent
+      } else if (densite>=densiteMin) {
+          color=level4;  // Bon
+      } else {
+        
+        color = level3;  // Moyen
+        if (densite < p25) {
+          color = level1;  // Très faible
+        } else if (densite < p50) {
+          color = level2;  // Faible
+        }
+      }
+  }
+  return color;
+}
+
+// Endpoints Thymeleaf (remplacés serveur)
+const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
+const endpointCarre = /*[[@{/map/insee/carre200m/area}]]*/ '';
+const endpointIris = /*[[@{/map/insee/iris/area}]]*/ '';
+const endpointCadastre = /*[[@{/mvc/geojson/cadastreByCorner}]]*/ '';
+const endpointVegetation = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/vegetalInseeIgnTopo.json';
+const urlEditPark = /*[[@{/mvc/park/new/check}]]*/ '/mvc/park/new/check';
+
+// Styles ajustés pour accentuer le contraste bordure/fond tout en conservant une bordure fine
+// - Couleur de bordure plus sombre
+// - fillColor plus claire que la bordure
+// - fillOpacity légèrement augmentée pour lisibilité sans masquer le fond
+// - weight maintenu à 1 (ou réduit depuis 2) pour rester fin
+const overlayConfig = {
+  'Parcs': { endpoint: endpointParcs, style: { color:'#1e4d1c', fillColor:'#3aa637', weight:1, fillOpacity:0.35 } },
+  'Carrés': { endpoint: endpointCarre, style: { color:'#002a99', fillColor:'#3385ff', weight:1, fillOpacity:0.25 } },
+  'IRIS': { endpoint: endpointIris, style: { color:'#b85f00', fillColor:'#ff9d33', weight:1, fillOpacity:0.25 } },
+  // Cadastre dynamique: rechargé à chaque mouvement avec cache et debounce
+  'Cadastre': { endpoint: endpointCadastre, style: { color:'#7a7c00', fillColor:'#d6d900', weight:1, fillOpacity:0.18 } },
+  'Végétation IGN': { endpoint: endpointVegetation, style: { color:'#0f4d0f', fillColor:'#2fa42f', weight:1, fillOpacity:0.45 }, static: true }
+};
+console.log('[ConsultMap] overlayConfig:', overlayConfig);
+
+// Cache conditionnel
+const lastBounds = {}; // pour couches dynamiques
+const loadedStatic = {}; // pour couches statiques (chargées une seule fois)
+const staticTimers = {}; // timers de délai unique
+const pendingFetches = {}; // suivi des requêtes en cours pour éviter les doublons
+const layerDebounceTimers = {}; // timers de debounce par couche
+const EXPAND_RATIO = 0.3;
+const LAYER_DEBOUNCE_DELAY = 330; // délai debounce par couche (ms)
+
+/**
+ * Génère le style dynamique pour un carré en fonction de ses propriétés
+ * @param {Object} feature - Feature GeoJSON du carré
+ * @returns {Object} Style Leaflet (color, fillColor, weight, fillOpacity)
+ */
+function getSquareStyle(feature) {
+  const baseStyle = { color:'#002a99', weight:1, fillOpacity:0.4 };
+  if (feature && feature.properties) {
+    const fillColor = getSquareColor(
+      feature.properties.isDense,
+      feature.properties.squareMtePerCapitaOms,
+      colorblindMode
+    );
+    return { ...baseStyle, fillColor };
+  }
+  return baseStyle;
+}
+
+/**
+ * Élargit les bornes géographiques d'un ratio défini (EXPAND_RATIO)
+ * pour anticiper le chargement des données hors du cadre visible
+ * @param {L.LatLngBounds} b - Bornes géographiques Leaflet à élargir
+ * @returns {L.LatLngBounds} Nouvelles bornes élargies
+ */
+function expandBounds(b){
+  const sw = b.getSouthWest();
+  const ne = b.getNorthEast();
+  const latPad = (ne.lat - sw.lat) * EXPAND_RATIO;
+  const lngPad = (ne.lng - sw.lng) * EXPAND_RATIO;
+  return L.latLngBounds(
+    L.latLng(sw.lat - latPad, sw.lng - lngPad),
+    L.latLng(ne.lat + latPad, ne.lng + lngPad)
+  );
+}
+
+/**
+ * Crée le contenu HTML d'une popup Leaflet en fonction de la couche et des propriétés de la feature
+ * @param {Object} feat - Feature GeoJSON contenant les propriétés
+ * @param {string} layerName - Nom de la couche ('Parcs', 'IRIS', 'Carrés', 'Cadastre', 'Végétation IGN')
+ * @returns {string} Contenu HTML formaté pour la popup
+ */
+function createPopupContent(feat, layerName) {
+  if (!feat || !feat.properties) return '';
+  let nm = feat.properties.name || feat.properties.nom || layerName;
+  
+  // Infos spécifiques Cadastre - ajouter idInsee entre parenthèses
+  if (layerName === 'Cadastre' && feat.properties.idInsee) {
+    nm += ` (${feat.properties.idInsee})`;
+  }
+
+
+  // Infos spécifiques Cadastre - ajouter idInsee entre parenthèses
+  if (layerName === 'IRIS' && feat.properties.idIris) {
+    nm += `: ${feat.properties.idIris}`;
+  }
+  
+  let popupContent = `<strong>${nm}</strong>`;
+
+  // Lien édition parcs
+  if (layerName === 'Parcs' && feat.properties.id) {
+    const sUrlEditPark = window.location.protocol + "//" + window.location.host + urlEditPark + '?idPark=' + feat.properties.id;
+    popupContent += `<p><a href='${sUrlEditPark}'>Éditer</a></p>`;
+  }
+
+  // Infos spécifiques IRIS
+  if (layerName === 'IRIS') {
+    if (feat.properties.commune) popupContent += `<p>Commune: ${feat.properties.commune}</p>`;
+    if (feat.properties.people) popupContent += `<p>Population: ${feat.properties.people}</p>`;
+  }
+
+  // Infos spécifiques Carrés
+  if (layerName === 'Carrés') {
+    if (feat.properties.idInspire) popupContent += `<p>${feat.properties.idInspire}</p>`;
+    if (feat.properties.people) popupContent += `<p>Population: ${feat.properties.people}</p>`;
+    
+    let detailData = "";
+    if (feat.properties.surfaceTotalParkOms === null || feat.properties.surfaceTotalParkOms === "") {
+      detailData = "<div style='text-align: center'><b><i>Non calculé</i></b></div>";
+    } else {
+      detailData =
+        "<div><b> " + feat.properties.popParkIncludedOms +
+        "</b> ont accès et <b> " + feat.properties.popParkExcludedOms +
+        "</b> sans</div>" +
+        "<div>Surface accessible: <b>" + feat.properties.surfaceTotalParkOms +
+        " m²</b></div>" +
+        "<div>partagés avec :<b> " + feat.properties.popSquareShareOms +
+        "  </b>hab.</div>" +
+        "<div>Soit : <b>" + feat.properties.squareMtePerCapitaOms +
+        " m²/hab</b></div>" +
+        "<div style='padding-top: 1em;'><i><u>Parcs accessibles:</u><br />";
+      if (feat.properties.commentParks !== "") {
+        detailData += feat.properties.commentParks + "</i></div>";
+      } else {
+        detailData += "Aucun</i></div>";
+      }
+    }
+    popupContent += detailData;
+  }
+
+  // Infos spécifiques Végétation IGN
+  if (layerName === 'Végétation IGN') {
+    if (feat.id) popupContent += `<p>ID: ${feat.id}</p>`;
+    if (feat.properties.surface) {
+      const surface = parseFloat(feat.properties.surface);
+      if (!isNaN(surface)) {
+        if (surface >= 10000) {
+          popupContent += `<p>Surface: ${(surface / 10000).toFixed(2)} ha</p>`;
+        } else {
+          popupContent += `<p>Surface: ${Math.round(surface)} m²</p>`;
+        }
+      }
+    }
+    if (feat.properties.nature) {
+      popupContent += `<p>Nature: ${feat.properties.nature}</p>`;
+    }
+  }
+
+  return popupContent;
+}
+
+/**
+ * Met à jour une couche GeoJSON (chargement des données et rendu)
+ * Gère le cache pour les couches statiques et dynamiques, le debounce et les requêtes en cours
+ * @param {string} name - Nom de la couche à mettre à jour
+ */
+function updateGeojsonLayer(name) {
+  const cfg = overlayConfig[name];
+  const group = dataLayers[name];
+  if (!map.hasLayer(group)) return;
+
+  // Static layer: fetch only once (with optional delay)
+  if (cfg.static) {
+    if (loadedStatic[name]) return; // already loaded
+    if (staticTimers[name]) return; // timer pending
+    
+    /**
+     * Fonction de chargement des données statiques avec mesure de performance
+     */
+    const doLoad = () => {
+      staticTimers[name] = null;
+      const fetchLabel = `[${name}] fetch`;
+      const parseLabel = `[${name}] parse`;
+      const renderLabel = `[${name}] render`;
+      console.time(fetchLabel);
+      fetch(cfg.endpoint)
+        .then(r => { console.timeEnd(fetchLabel); console.time(parseLabel); return r.json(); })
+        .then(geo => {
+          console.timeEnd(parseLabel); console.time(renderLabel);
+          const gj = L.geoJSON(geo, {
+            style: name === 'Carrés' ? getSquareStyle : cfg.style,
+            // Attache une popup à chaque feature de la couche
+            onEachFeature: (feat, layer) => {
+              const popupContent = createPopupContent(feat, name);
+              if (popupContent) layer.bindPopup(popupContent);
+            }
+          });
+          console.timeEnd(renderLabel);
+          group.addLayer(gj);
+          loadedStatic[name] = true;
+          console.log(`[ConsultMap][${name}] Chargé (static)`);
+        })
+        .catch(err => {
+          console.warn('Erreur chargement couche static', name, err);
+          console.timeEnd(fetchLabel); console.timeEnd(parseLabel); console.timeEnd(renderLabel);
+        });
+    };
+    const delay = cfg.loadDelay || 0;
+    if (delay > 0) {
+      staticTimers[name] = setTimeout(doLoad, delay);
+      console.log(`[ConsultMap][${name}] Timer ${delay}ms avant chargement static`);
+    } else {
+      doLoad();
+    }
+    return;
+  }
+
+  // Dynamic layer logic with debounce and bounds cache
+  // Annuler le timer existant pour cette couche
+  if (layerDebounceTimers[name]) {
+    clearTimeout(layerDebounceTimers[name]);
+    layerDebounceTimers[name] = null;
+  }
+
+  // Planifier le chargement avec debounce
+  layerDebounceTimers[name] = setTimeout(() => {
+    layerDebounceTimers[name] = null;
+    
+    const currentMapBounds = map.getBounds();
+    
+    // Vérifier si une requête est déjà en cours pour cette couche
+    if (pendingFetches[name]) {
+      console.log(`[ConsultMap][${name}] Requête déjà en cours, skip`);
+      return;
+    }
+    
+    // Vérifier le cache de bounds
+    if (lastBounds[name] && lastBounds[name].contains(currentMapBounds)) {
+      console.log(`[ConsultMap][${name}] Cache hit: emprise courante incluse, pas de refetch`);
+      return;
+    }
+    
+    // Clear old layers before fetching new ones
+    group.clearLayers();
+    lastBounds[name] = expandBounds(currentMapBounds);
+    const q = '?' + computeBoundsQuery();
+    const fetchLabel = `[${name}] fetch`;
+    const parseLabel = `[${name}] parse`;
+    const renderLabel = `[${name}] render`;
+    
+    pendingFetches[name] = true;
+    console.time(fetchLabel);
+    fetch(cfg.endpoint + q)
+      .then(r => { console.timeEnd(fetchLabel); console.time(parseLabel); return r.json(); })
+      .then(geo => {
+        console.timeEnd(parseLabel); console.time(renderLabel);
+        const gj = L.geoJSON(geo, {
+          style: name === 'Carrés' ? getSquareStyle : cfg.style,
+          // Attache une popup à chaque feature de la couche
+          onEachFeature: (feat, layer) => {
+            const popupContent = createPopupContent(feat, name);
+            if (popupContent) layer.bindPopup(popupContent);
+          }
+        });
+        console.timeEnd(renderLabel);
+        group.addLayer(gj);
+        pendingFetches[name] = false;
+        console.log(`[ConsultMap][${name}] Chargé avec succès`);
+      })
+      .catch(err => {
+        console.warn('Erreur chargement couche', name, err);
+        console.timeEnd(fetchLabel); console.timeEnd(parseLabel); console.timeEnd(renderLabel);
+        pendingFetches[name] = false;
+        // En cas d'erreur, réinitialiser le cache pour permettre une nouvelle tentative
+        delete lastBounds[name];
+      });
+  }, LAYER_DEBOUNCE_DELAY);
+}
+
+/**
+ * Recharge toutes les couches GeoJSON dynamiques (non statiques)
+ */
+function reloadGeojsonLayers() {
+  // Ne recharge que les dynamiques
+  Object.keys(dataLayers).forEach(name => { if (!overlayConfig[name].static) updateGeojsonLayer(name); });
+  console.log('[ConsultMap] reloadGeojsonLayers (dynamiques) appelé');
+}
+
+/**
+ * Génère l'URL Google Maps pour une position donnée
+ * @param {number} clkLat - Latitude
+ * @param {number} clkLng - Longitude
+ * @returns {string} URL Google Maps avec les coordonnées et le zoom
+ */
+function getGMapUrl(clkLat, clkLng) {
+  return "https://www.google.com/maps/@" + clkLat + "," + clkLng + ",18.03z";
+}
+
+/**
+ * Met à jour le lien Google Maps avec le centre de la carte actuelle
+ */
+function updateGMapLink() {
+  const b = map.getBounds();
+  const gmLat = (b.getNorthEast().lat + b.getSouthWest().lat) / 2;
+  const gmLng = (b.getSouthWest().lng + b.getNorthEast().lng) / 2;
+  const lnk = getGMapUrl(gmLat, gmLng);
+  
+  const oGmLink = document.getElementById("aGMapLink");
+  if (oGmLink) {
+    oGmLink.href = lnk;
+    console.log('[ConsultMap] Lien Google Map mis à jour:', lnk);
+  }
+}
+
+/**
+ * Gestionnaire d'ajout de couche overlay
+ * Charge les données GeoJSON pour la couche ajoutée
+ */
+map.on('overlayadd', function(e) {
+  if (dataLayers[e.name]) updateGeojsonLayer(e.name);
+  // Afficher la légende si la couche Carrés est ajoutée
+  if (e.name === 'Carrés') toggleLegend();
+  console.log('[ConsultMap] overlayadd', e.name);
+});
+
+/**
+ * Gestionnaire de retrait de couche overlay
+ * Vide la couche, invalide le cache et permet le rechargement ultérieur
+ */
+map.on('overlayremove', function(e) {
+  if (dataLayers[e.name]) {
+    // Vider la couche
+    dataLayers[e.name].clearLayers();
+    // Invalider le cache d'emprise pour forcer un refetch lors de la prochaine réactivation
+    delete lastBounds[e.name];
+    // Si couche statique: permettre rechargement et annuler timer éventuel
+    if (overlayConfig[e.name] && overlayConfig[e.name].static) {
+      loadedStatic[e.name] = false;
+      if (staticTimers[e.name]) { clearTimeout(staticTimers[e.name]); staticTimers[e.name] = null; }
+    }
+  }
+  // Masquer la légende si la couche Carrés est retirée
+  if (e.name === 'Carrés') toggleLegend();
+  console.log('[ConsultMap] overlayremove', e.name);
+});
+
+// Debounce global du rechargement (réduit à 300ms car chaque couche a maintenant son propre debounce)
+let reloadTimer = null;
+
+/**
+ * Planifie le rechargement des couches et la mise à jour du lien Google Maps
+ * avec un délai de debounce de 300ms
+ */
+function scheduleReload(){
+  if (reloadTimer) clearTimeout(reloadTimer);
+  reloadTimer = setTimeout(() => {
+    reloadGeojsonLayers();
+    updateGMapLink();
+  }, 300);
+}
+map.on('moveend', scheduleReload);
+map.on('zoomend', scheduleReload);
+reloadGeojsonLayers();
+updateGMapLink(); // Initialisation du lien Google Maps au chargement
+
+/**
+ * Gestionnaire du changement d'année sélectionnée
+ * Invalide les caches des couches dynamiques et les recharge si elles sont visibles
+ */
+function onYearChange(){
+  const year = getSelectedYear();
+  console.log('[ConsultMap] onYearChange ->', year);
+  // Annuler tous les timers de debounce en cours
+  Object.keys(layerDebounceTimers).forEach(name => {
+    if (layerDebounceTimers[name]) {
+      clearTimeout(layerDebounceTimers[name]);
+      layerDebounceTimers[name] = null;
+    }
+  });
+  // Invalider les caches de bounds pour forcer le rechargement
+  ['Carrés','IRIS','Cadastre','Parcs'].forEach(layerName => { delete lastBounds[layerName]; });
+  // Recharger seulement les couches présentes
+  Object.keys(dataLayers).forEach(name => {
+    if (!overlayConfig[name].static && map.hasLayer(dataLayers[name])) {
+      updateGeojsonLayer(name);
+    }
+  });
+}
+
+// ----------- LÉGENDE DES COULEURS -----------
+/**
+ * Crée et ajoute la légende des couleurs pour les carrés
+ * La légende s'adapte au mode daltonien activé/désactivé
+ */
+let legendControl = null; // Référence globale au contrôle de légende
+
+function createLegend() {
+  if (legendControl) return; // Éviter de créer plusieurs fois
+  
+  legendControl = L.control({position: 'bottomright'});
+
+  legendControl.onAdd = function (map) {
+    const div = L.DomUtil.create('div', 'info legend');
+    
+    /**
+     * Met à jour le contenu de la légende en fonction du mode daltonien
+     */
+    function updateLegendContent() {
+      const grades = [
+        { label: 'Très faible (< 3 m²/hab)', color: colorblindMode ? '#d73027' : '#0000e8' },
+        { label: 'Faible (3-6 m²/hab)', color: colorblindMode ? '#fc8d59' : '#6060e8' },
+        { label: 'Moyen (6-10 m²/hab)', color: colorblindMode ? '#fee090' : '#b0b0e8' },
+        { label: 'Bon (10-12 m²/hab)', color: colorblindMode ? '#4575b4' : '#578817' },
+        { label: 'Excellent (≥ 12 m²/hab)', color: colorblindMode ? '#91bfdb' : '#57ee17' },
+        { label: 'Non calculé', color: '#959595' }
+      ];
+      
+      let html = '<h4>Densité espaces verts</h4>';
+      html += '<small style="color: #777; display: block; margin-bottom: 8px;">Zone dense (seuils adaptés en zone non dense)</small>';
+      
+      grades.forEach(item => {
+        html += `<div class="legend-item"><i style="background:${item.color}"></i> ${item.label}</div>`;
+      });
+      
+      html += '<div class="legend-toggle"><label><input type="checkbox" id="colorblindToggle" ' + 
+              (colorblindMode ? 'checked' : '') + '> Mode daltonien</label></div>';
+      
+      div.innerHTML = html;
+      
+      // Attacher l'événement au checkbox
+      const checkbox = div.querySelector('#colorblindToggle');
+      if (checkbox) {
+        checkbox.addEventListener('change', function() {
+          colorblindMode = this.checked;
+          console.log('[ConsultMap] Mode daltonien:', colorblindMode);
+          updateLegendContent();
+          // Rafraîchir la couche Carrés si elle est affichée
+          if (map.hasLayer(dataCarre)) {
+            dataCarre.clearLayers();
+            delete lastBounds['Carrés'];
+            updateGeojsonLayer('Carrés');
+          }
+        });
+      }
+    }
+    
+    updateLegendContent();
+    return div;
+  };
+
+  legendControl.addTo(map);
+  console.log('[ConsultMap] Légende ajoutée');
+}
+
+/**
+ * Supprime la légende de la carte
+ */
+function removeLegend() {
+  if (legendControl && map.hasControl(legendControl)) {
+    map.removeControl(legendControl);
+    legendControl = null;
+    console.log('[ConsultMap] Légende supprimée');
+  }
+}
+
+/**
+ * Affiche ou masque la légende selon la visibilité de la couche Carrés
+ */
+function toggleLegend() {
+  if (map.hasLayer(dataCarre)) {
+    createLegend();
+  } else {
+    removeLegend();
+  }
+}
+
+
+</script>
+</body>
+</html>
