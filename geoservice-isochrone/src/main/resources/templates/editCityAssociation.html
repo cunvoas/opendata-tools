@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr" 
+    xmlns:th="http://www.thymeleaf.org" 
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+    <head th:insert="~{fragments/fragment-head :: head}"></head>
+    
+    <body class="sb-nav-fixed">
+        <div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+        <div id="layoutSidenav">
+            <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+            <div id="layoutSidenav_content">
+ <!-- debut MAIN -->
+                <main>
+
+  <div class="container">
+     <div class="col-lg-10">
+     
+            <div class="container-fluid px-4">
+                   <h3 class="mt-4" th:text="#{cityassociation.edit.title}">Gestion des associations Villes - Communauté</h3>
+            </div>
+            
+            <!-- Messages de succès/erreur -->
+            <div class="row" th:if="${successMessage}">
+                <div class="col-12">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <strong>Succès !</strong> <span th:text="${successMessage}">Message</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="row" th:if="${warningMessage}">
+                <div class="col-12">
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <strong>Attention !</strong> <span th:text="${warningMessage}">Message</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="row" th:if="${errorMessage}">
+                <div class="col-12">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>Erreur !</strong> <span th:text="${errorMessage}">Message</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Détails des résultats de l'upload -->
+            <div class="row" th:if="${uploadResult != null}">
+                <div class="col-12">
+                    <div class="card mb-3">
+                        <div class="card-header bg-info text-white">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Détails de l'import CSV
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${!uploadResult.errorList.isEmpty()}" class="mb-3">
+                                <h6 class="text-danger">Erreurs :</h6>
+                                <ul class="small">
+                                    <li th:each="error : ${uploadResult.errorList}" th:text="${error}">Erreur</li>
+                                </ul>
+                            </div>
+                            <div th:if="${!uploadResult.notFoundList.isEmpty()}" class="mb-3">
+                                <h6 class="text-warning">Codes INSEE non trouvés :</h6>
+                                <p class="small" th:text="${#strings.listJoin(uploadResult.notFoundList, ', ')}">Liste</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+            <!-- Filtre par région -->
+            <div class="row mb-4" th:if="${isAdmin}">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-filter me-1"></i>
+                            <txt th:text="#{cityassociation.edit.filter}">Filtrer</txt>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/mvc/management/cityassoc/edit}" method="get">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <select class="form-select" id="regionId" name="regionId" 
+                                                    onchange="this.form.submit()">
+                                                <option value="" th:text="#{cityassociation.filter.allregions}">Toutes les régions</option>
+                                                <option th:each="region : ${regions}" 
+                                                        th:value="${region.id}" 
+                                                        th:text="${region.name}"
+                                                        th:selected="${selectedRegionId != null && selectedRegionId == region.id}"></option>
+                                            </select>
+                                            <label for="regionId" th:text="#{cityassociation.edit.region}">Région</label>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute != null ? selectedCommunaute.id : ''}" />
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4" th:if="${isAdmin}">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-list me-1"></i>
+                            <txt th:text="#{cityassociation.edit.selectcommunity}">Sélectionner une communauté de communes</txt>
+                            <span th:if="${selectedCommunaute != null}" class="float-end">
+                                <a th:href="@{'https://www.google.com/search?q=wiki ' + ${selectedCommunaute.name}}" 
+                                   target="_blank" 
+                                   class="btn btn-sm btn-outline-primary"
+                                   th:title="'Rechercher sur Google : wiki ' + ${selectedCommunaute.name}">
+                                    <i class="fas fa-search me-1"></i>
+                                    Wiki
+                                </a>
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/mvc/management/cityassoc/edit}" method="get">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="communauteCommuneId" name="communauteCommuneId" 
+                                            onchange="this.form.submit()">
+                                        <option value="" th:text="#{cityassociation.edit.choose}">-- Choisir --</option>
+                                        <option th:each="comm2co : ${communautes}" 
+                                                th:value="${comm2co.id}" 
+                                                th:text="${comm2co.name}"
+                                                th:selected="${selectedCommunaute != null && selectedCommunaute.id == comm2co.id}">
+                                            Communauté
+                                        </option>
+                                    </select>
+                                    <label for="communauteCommuneId" th:text="#{cityassociation.edit.community}">Communauté de communes</label>
+                                </div>
+                                <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Titre pour les non-admin -->
+            <div class="row mb-4" th:if="${!isAdmin && selectedCommunaute != null}">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <i class="fas fa-building me-1"></i>
+                            <span th:text="${selectedCommunaute.name}">Communauté</span>
+                            <span class="float-end">
+                                <a th:href="@{'https://www.google.com/search?q=wiki ' + ${selectedCommunaute.name}}" 
+                                   target="_blank" 
+                                   class="btn btn-sm btn-outline-light"
+                                   th:title="'Rechercher sur Google : wiki ' + ${selectedCommunaute.name}">
+                                    <i class="fas fa-search me-1"></i>
+                                    Wiki
+                                </a>
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">
+                                <i class="fas fa-info-circle me-1"></i>
+                                <em>Vous consultez les villes de votre communauté de communes</em>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row" th:if="${selectedCommunaute != null}">
+                <!-- Villes déjà associées -->
+                <div class="col-6" th:classappend="${readOnly} ? 'col-12' : 'col-6'">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <i class="fas fa-check-circle me-1"></i>
+                            <txt th:text="#{cityassociation.edit.associatedcities}">Villes associées</txt>
+                            <span class="badge bg-light text-dark ms-2" th:text="${associatedCities != null ? associatedCities.size() : 0}">0</span>
+                        </div>
+                        <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                            <div th:if="${associatedCities == null || associatedCities.isEmpty()}" class="text-muted">
+                                <txt th:text="#{cityassociation.edit.nocities}">Aucune ville associée</txt>
+                            </div>
+                            <table class="table table-sm table-hover" th:if="${associatedCities != null && !associatedCities.isEmpty()}">
+                                <thead>
+                                    <tr>
+                                        <th th:text="#{cityassociation.edit.cityname}">Ville</th>
+                                        <th th:text="#{cityassociation.edit.postalcode}">Code Postal</th>
+                                        <th th:text="#{cityassociation.edit.action}">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="city : ${associatedCities}">
+                                        <td th:text="${city.name}">Ville</td>
+                                        <td th:text="${city.postalCode}">Code</td>
+                                        <td>
+                                            <form th:if="${!readOnly}" th:action="@{/mvc/management/cityassoc/dissociate}" method="post" style="display: inline;">
+                                                <input type="hidden" name="cityId" th:value="${city.id}" />
+                                                <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
+                                                <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
+                                                <button type="submit" class="btn btn-sm btn-danger" th:text="#{cityassociation.edit.remove}">
+                                                    Retirer
+                                                </button>
+                                            </form>
+                                            <span th:if="${readOnly}" class="text-muted">-</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Villes disponibles -->
+                <div class="col-6" th:if="${!readOnly}">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <i class="fas fa-plus-circle me-1"></i>
+                            <txt th:text="#{cityassociation.edit.availablecities}">Villes disponibles</txt>
+                        </div>
+                        <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="searchCity" th:placeholder="#{cityassociation.edit.search}" placeholder="Rechercher une ville..." onkeyup="filterCities()" />
+                            </div>
+                            <table class="table table-sm table-hover" id="availableCitiesTable">
+                                <thead>
+                                    <tr>
+                                        <th th:text="#{cityassociation.edit.cityname}">Ville</th>
+                                        <th th:text="#{cityassociation.edit.postalcode}">Code Postal</th>
+                                        <th th:text="#{cityassociation.edit.action}">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="city : ${allCities}" 
+                                        th:if="${city.communauteCommune == null || city.communauteCommune.id != selectedCommunaute.id}"
+                                        class="city-row">
+                                        <td th:text="${city.name}" class="city-name">Ville</td>
+                                        <td th:text="${city.postalCode}" class="city-postal">Code</td>
+                                        <td>
+                                            <form th:action="@{/mvc/management/cityassoc/associate}" method="post" style="display: inline;">
+                                                <input type="hidden" name="cityId" th:value="${city.id}" />
+                                                <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
+                                                <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
+                                                <button type="submit" class="btn btn-sm btn-success" th:text="#{cityassociation.edit.add}">
+                                                    Ajouter
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section d'upload CSV -->
+            <div class="row mb-4" th:if="${selectedCommunaute != null && !readOnly}">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <i class="fas fa-file-upload me-1"></i>
+                            <txt th:text="#{cityassociation.edit.csvupload}">Import CSV rapide</txt>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/mvc/management/cityassoc/uploadCsv}" method="post" enctype="multipart/form-data">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label for="csvFile" class="form-label" th:text="#{cityassociation.edit.csvfile}">Fichier CSV :</label>
+                                            <input class="form-control" type="file" id="csvFile" name="file" accept=".csv" required />
+                                            <div class="form-text" th:text="#{cityassociation.edit.csvhelp}">
+                                                Format : un code INSEE (5 chiffres) par ligne. Première ligne ignorée si elle contient "insee" ou "code".
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <div class="mb-3">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-upload me-1"></i>
+                                                <txt th:text="#{cityassociation.edit.csvsubmit}">Importer</txt>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
+                                <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
+                            </form>
+                            
+                            <!-- Exemple de format CSV -->
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#csvExample" aria-expanded="false" aria-controls="csvExample">
+                                    <i class="fas fa-question-circle me-1"></i>
+                                    <txt th:text="#{cityassociation.edit.csvexample}">Voir exemple</txt>
+                                </button>
+                                <div class="collapse mt-2" id="csvExample">
+                                    <div class="card card-body bg-light">
+                                        <small>
+                                            <strong>Exemple de fichier CSV :</strong><br/>
+                                            <code>
+                                                code_insee<br/>
+                                                59001<br/>
+                                                59002<br/>
+                                                59350<br/>
+                                                59512
+                                            </code>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4" th:if="${selectedCommunaute != null}">
+                <div class="col-12">
+                    <a th:if="${isAdmin}" th:href="@{/mvc/management/cityassoc/list}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        <txt th:text="#{cityassociation.edit.back}">Retour à la liste</txt>
+                    </a>
+                    <span th:if="${readOnly}" class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Mode consultation uniquement
+                    </span>
+                </div>
+            </div>
+
+     </div>
+  </div>
+                </main>
+ <!-- fin MAIN -->
+               
+               <div th:insert="~{fragments/fragment-footer :: footer}"></div> 
+            </div>
+            
+        </div>
+        <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+        <script th:src="@{/mvc/static/js/scripts.js}"></script>
+        <script>
+            function filterCities() {
+                const searchInput = document.getElementById('searchCity');
+                const filter = searchInput.value.toLowerCase();
+                const table = document.getElementById('availableCitiesTable');
+                const rows = table.getElementsByClassName('city-row');
+                
+                for (let i = 0; i < rows.length; i++) {
+                    const nameCell = rows[i].getElementsByClassName('city-name')[0];
+                    const postalCell = rows[i].getElementsByClassName('city-postal')[0];
+                    
+                    if (nameCell && postalCell) {
+                        const nameText = nameCell.textContent || nameCell.innerText;
+                        const postalText = postalCell.textContent || postalCell.innerText;
+                        
+                        if (nameText.toLowerCase().indexOf(filter) > -1 || postalText.indexOf(filter) > -1) {
+                            rows[i].style.display = '';
+                        } else {
+                            rows[i].style.display = 'none';
+                        }
+                    }
+                }
+            }
+        </script>
+    </body>
+</html>

@@ -256,11 +256,37 @@
 												nbParcIsochrone</div>
 											<div class="h5 mb-0 font-weight-bold text-gray-800"
 												th:text="${#numbers.formatInteger(dashboard.nbParcIsochrone, 1, 'POINT')}"></div>
-										</div><div class="row mt-3">
+										</div>
+										
+
+										
 									</div>
 								</div>
 							</div>
 						</div>
+						
+						
+                        <div class="col-sm-3 col-md-3 col-lg-3">
+                            <div
+                                class="card bg-info text-white  border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col-auto">
+                                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                        </div>
+                                        <div class="col mr-2">
+                                            <div
+                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+                                                th:text="#{association.nbComputeJobPending}">
+                                                nbComputeJobPending</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
+                                                th:text="${#numbers.formatInteger(dashboard.nbComputeJobPending, 1, 'POINT')}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                                        
 
 					</div>
 

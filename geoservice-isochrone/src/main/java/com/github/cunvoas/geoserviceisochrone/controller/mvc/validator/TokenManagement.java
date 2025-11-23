@@ -41,7 +41,16 @@ public class TokenManagement {
 		SecretKey key = new SecretKeySpec(tokenSecretBytes, "ChaCha20");
 		
 		try {
-			return Base64.getEncoder().encodeToString(encrypt(now.getBytes(), key));
+			// Generate a random nonce for each encryption
+			byte[] nonce = getNonce();
+			byte[] encrypted = encrypt(now.getBytes(), key, nonce);
+			
+			// Combine nonce and encrypted data (nonce is needed for decryption)
+			byte[] combined = new byte[nonce.length + encrypted.length];
+			System.arraycopy(nonce, 0, combined, 0, nonce.length);
+			System.arraycopy(encrypted, 0, combined, nonce.length, encrypted.length);
+			
+			return Base64.getEncoder().encodeToString(combined);
 			
 		} catch (InvalidKeyException e) {
 			log.error("InvalidKeyException during token encryption", e);
@@ -65,10 +74,21 @@ public class TokenManagement {
 		try {
 			byte[]  tokenSecretBytes = Base64.getDecoder().decode(tokenSecret);
 			
-			byte[] tokenBytes = Base64.getDecoder().decode(token);
+			byte[] combined = Base64.getDecoder().decode(token);
+			
+			// Extract nonce and encrypted data
+			if (combined.length < 12) {
+				log.error("Invalid token: too short");
+				return false;
+			}
+			
+			byte[] nonce = new byte[12];
+			byte[] encryptedData = new byte[combined.length - 12];
+			System.arraycopy(combined, 0, nonce, 0, 12);
+			System.arraycopy(combined, 12, encryptedData, 0, encryptedData.length);
 			
 			SecretKey key = new SecretKeySpec(tokenSecretBytes, "ChaCha20");
-			String decrypted=new String(decrypt(tokenBytes, key));
+			String decrypted=new String(decrypt(encryptedData, key, nonce));
 			long tokenTime = Long.parseLong(decrypted);
 			
 			log.info("Token time: {}, now: {}", tokenTime, System.currentTimeMillis());
@@ -103,17 +123,16 @@ public class TokenManagement {
     }
 	
 
-    private static byte[] encrypt(byte[] data, SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException,
+    private static byte[] encrypt(byte[] data, SecretKey key, byte[] nonce) throws NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         if(key == null) throw new InvalidKeyException("SecretKey must NOT be NULL");
-
-        byte[] nonceBytes = new byte[12];// getNonce();
+        if(nonce == null || nonce.length != 12) throw new InvalidAlgorithmParameterException("Nonce must be 12 bytes");
 
         // Get Cipher Instance
         Cipher cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
 
         // Create IvParamterSpec
-        AlgorithmParameterSpec ivParameterSpec = new IvParameterSpec(nonceBytes);
+        AlgorithmParameterSpec ivParameterSpec = new IvParameterSpec(nonce);
 
         // Create SecretKeySpec
         SecretKeySpec keySpec = new SecretKeySpec(key.getEncoded(), "ChaCha20");
@@ -125,15 +144,15 @@ public class TokenManagement {
         return cipher.doFinal(data);
     }
 
-    private static byte[] decrypt(byte[] cipherText, SecretKey key) throws Exception {
+    private static byte[] decrypt(byte[] cipherText, SecretKey key, byte[] nonce) throws Exception {
         if(key == null) throw new InvalidKeyException("SecretKey must NOT be NULL");
-        byte[] nonceBytes = new byte[12];
+        if(nonce == null || nonce.length != 12) throw new InvalidAlgorithmParameterException("Nonce must be 12 bytes");
 
         // Get Cipher Instance
         Cipher cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
 
         // Create IvParamterSpec
-        AlgorithmParameterSpec ivParameterSpec = new IvParameterSpec(nonceBytes);
+        AlgorithmParameterSpec ivParameterSpec = new IvParameterSpec(nonce);
 
         // Create SecretKeySpec
         SecretKeySpec keySpec = new SecretKeySpec(key.getEncoded(), "ChaCha20");

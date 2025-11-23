@@ -33,6 +33,8 @@ public class DashboardSummary {
     private Long nbParcEntance;
     /** Nombre d'isochrones de parcs. */
     private Long nbParcIsochrone;
+        /** Nombre de ComputeJob en attente de calcul. */
+        private Long nbComputeJobPending;
     /** Date de mise à jour des données. */
     private java.util.Date updateDate;
 }

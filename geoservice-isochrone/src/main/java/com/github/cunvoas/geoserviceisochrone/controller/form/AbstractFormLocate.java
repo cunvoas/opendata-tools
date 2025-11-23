@@ -33,8 +33,8 @@ public abstract class AbstractFormLocate {
 	private String nameCommune;
 
 	// locate on map
-	private String mapLat;
-	private String mapLng;
+	protected String mapLat;
+	protected String mapLng;
 	
 	/**
 	 * autolocate by user context.

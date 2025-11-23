@@ -383,7 +383,7 @@
 
 
     // map layers
-    let mapMinZoom=11;
+    let mapMinZoom=14;
     let mapMaxZoom=19;
     
     // https://leaflet-extras.github.io/leaflet-providers/preview/
@@ -426,10 +426,10 @@
     // extras data sur la carte
     const dataPrefecture = L.layerGroup();
     const dataAutmel = L.layerGroup();
-    //const dataCadastre = L.layerGroup();
+    const dataCadastre = L.layerGroup();
     const dataLayers = {
+        "Cadastre des communes": dataCadastre,
     	"Données de la préfecture": dataPrefecture,
-        //"Cadastre des communes": dataCadastre,
     	"Contours des parcs": dataAutmel
     };
     
@@ -508,25 +508,28 @@
     	if (feature.properties.oms) {
     		if (feature.properties.entry) {
 	            layer.setStyle({
-	                "fillOpacity": 0.3,
-	                 "opacity": 0.6,
-	                 "color": "#78e826",
-	                 "fillColor": "#78e826"
+	                "fillOpacity": 0.35,
+	                 "opacity": 1,
+	                 "weight": 2,
+	                 "color": "#2d7a0f",
+	                 "fillColor": "#8ef03e"
 	             });
     		} else {
     		    layer.setStyle({
-	                "fillOpacity": 0.3,
-	                "opacity": 0.6,
-	                "color": "#f6fc26",
-	                "fillColor": "#f6fc26"
+	                "fillOpacity": 0.35,
+	                "opacity": 1,
+	                "weight": 2,
+	                "color": "#b8a600",
+	                "fillColor": "#fffd70"
 	            });
     		}
     	} else {
             layer.setStyle({
-                "fillOpacity": 0.3,
-                 "opacity": 0.6,
-                 "color": "#e96020",
-                 "fillColor": "#e96020"
+                "fillOpacity": 0.35,
+                 "opacity": 1,
+                 "weight": 2,
+                 "color": "#a03000",
+                 "fillColor": "#ff8550"
              });
         }
 
@@ -543,10 +546,11 @@
     
     function customOnEachFeatureCadastre(feature, layer) {
         layer.setStyle({
-            "fillOpacity": 0.3,
-             "opacity": 0.6,
-             "color": "#eef127",
-             "fillColor": "#eef127"
+            "fillOpacity": 0.25,
+             "opacity": 1,
+             "weight": 2,
+             "color": "#9a9000",
+             "fillColor": "#ffff99"
          });
 
         if (feature.properties && feature.properties.nom) {
@@ -647,6 +651,23 @@
     let geojsonPrefLayer = null;
     let geojsonCadastreLayer = null;
     let geojsonParkLayer = null;
+    
+    // Cache et optimisations pour les couches dynamiques
+    const lastBounds = {};
+    const pendingFetches = {};
+    const EXPAND_RATIO = 0.3;
+    
+    function expandBounds(b) {
+        const sw = b.getSouthWest();
+        const ne = b.getNorthEast();
+        const latPad = (ne.lat - sw.lat) * EXPAND_RATIO;
+        const lngPad = (ne.lng - sw.lng) * EXPAND_RATIO;
+        return L.latLngBounds(
+            L.latLng(sw.lat - latPad, sw.lng - lngPad),
+            L.latLng(ne.lat + latPad, ne.lng + lngPad)
+        );
+    }
+    
     // relead parks with map fit
     function loadPrefParks() {
         
@@ -700,15 +721,40 @@
         
         dataAutmel.addLayer(geojsonParkLayer);
         
-        // get shapes: Cadastre
-        /*
-        if (geojsonCadastreLayer!==null) {
-        	dataCadastre.removeLayer(geojsonCadastreLayer);
+        // get shapes: Cadastre (optimisé avec cache)
+        if (editMap.hasLayer(dataCadastre)) {
+            const currentMapBounds = editMap.getBounds();
+            
+            // Vérifier si une requête est déjà en cours
+            if (pendingFetches['cadastre']) {
+                console.log('[NewPark][Cadastre] Requête déjà en cours, skip');
+            } else if (lastBounds['cadastre'] && lastBounds['cadastre'].contains(currentMapBounds)) {
+                // Cache hit: l'emprise courante est incluse dans la dernière emprise chargée
+                console.log('[NewPark][Cadastre] Cache hit: pas de refetch');
+            } else {
+                // Charger les nouvelles données
+                if (geojsonCadastreLayer !== null) {
+                    dataCadastre.removeLayer(geojsonCadastreLayer);
+                    geojsonCadastreLayer = null;
+                }
+                
+                lastBounds['cadastre'] = expandBounds(currentMapBounds);
+                pendingFetches['cadastre'] = true;
+                
+                const sUrlGeoCadastre = window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/cadastreByCorner}]] + '?' + sPos;
+                console.log('[NewPark][Cadastre] Chargement en cours...');
+                
+                geojsonCadastreLayer = new L.GeoJSON.AJAX(sUrlGeoCadastre, {
+                    onEachFeature: customOnEachFeatureCadastre,
+                    onDataLoaded: function() {
+                        pendingFetches['cadastre'] = false;
+                        console.log('[NewPark][Cadastre] Chargé avec succès');
+                    }
+                });
+                dataCadastre.addLayer(geojsonCadastreLayer);
+            }
         }
-        const sUrlGeoCadastre= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/cadastreByCorner}]]+'?'+sPos;
-        geojsonCadastreLayer = new L.GeoJSON.AJAX(sUrlGeoCadastre, {onEachFeature: customOnEachFeatureCadastre});
-        dataCadastre.addLayer(geojsonCadastreLayer);
-        */
+
         
         // works! used when affect
         geojsonPrefLayer.on('click', function(e){
@@ -793,9 +839,46 @@
         });
         
     }
+    
+    // Debounce pour éviter surcharges lors de déplacements successifs (900ms)
+    let reloadTimer = null;
+    function scheduleReload() {
+        if (reloadTimer) clearTimeout(reloadTimer);
+        reloadTimer = setTimeout(() => {
+            loadPrefParks();
+        }, 900);
+    }
+    
     loadPrefParks();
-    editMap.on('zoomend',loadPrefParks);
-    editMap.on('moveend',loadPrefParks);
+    editMap.on('zoomend', scheduleReload);
+    editMap.on('moveend', scheduleReload);
+    
+    // Initialiser le lien Google Map au chargement
+    editMap.on('load', function() {
+        const b = editMap.getBounds();
+        const gmLat = (b.getNorthEast().lat + b.getSouthWest().lat) / 2;
+        const gmLng = (b.getSouthWest().lng + b.getNorthEast().lng) / 2;
+        const lnk = getGMapUrl(gmLat, gmLng);
+        
+        const oGmLink = document.getElementById("aGMapLink");
+        if (oGmLink) {
+            oGmLink.href = lnk;
+            console.log('[NewPark] Lien Google Map initialisé:', lnk);
+        }
+    });
+    // Mettre à jour également après le premier loadPrefParks (au cas où l'événement 'load' ne se déclenche pas)
+    setTimeout(() => {
+        const b = editMap.getBounds();
+        const gmLat = (b.getNorthEast().lat + b.getSouthWest().lat) / 2;
+        const gmLng = (b.getSouthWest().lng + b.getNorthEast().lng) / 2;
+        const lnk = getGMapUrl(gmLat, gmLng);
+        
+        const oGmLink = document.getElementById("aGMapLink");
+        if (oGmLink) {
+            oGmLink.href = lnk;
+            console.log('[NewPark] Lien Google Map défini après loadPrefParks:', lnk);
+        }
+    }, 200);
 
     
     //geoman

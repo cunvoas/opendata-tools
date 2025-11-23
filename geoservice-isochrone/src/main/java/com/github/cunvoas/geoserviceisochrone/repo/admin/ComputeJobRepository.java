@@ -64,4 +64,11 @@ public interface ComputeJobRepository extends JpaRepository<ComputeJob, InseeCar
     @Query(nativeQuery=true, 
     		value="SELECT count(id_inspire), status, insee FROM public.compute_job WHERE insee=:codeInsee group by status, insee order by status" )
     List<Object[]> getStatsByCodeInsee(@Param("codeInsee") String codeInsee);
+    
+    /**
+     * countByStatus.
+     * @param status enum
+     * @return count
+     */
+    Long countByStatus(ComputeJobStatusEnum status);
 }

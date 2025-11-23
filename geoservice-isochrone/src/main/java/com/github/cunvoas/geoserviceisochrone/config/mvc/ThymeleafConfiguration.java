@@ -66,6 +66,7 @@ public class ThymeleafConfiguration  implements WebMvcConfigurer, ApplicationCon
  	public ResourceBundleMessageSource messageSource() {
  		ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
  		messageSource.setBasename("i18n/messages");
+ 		messageSource.setDefaultEncoding("UTF-8");
  		return messageSource;
  	}
  	
