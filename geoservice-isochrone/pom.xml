@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.github.cunvoas</groupId>
 	<artifactId>geoservice-isochrone</artifactId>
-	<version>1.0.24</version>
+	<version>1.0.25</version>
   
 	<properties>
 		<java.version>21</java.version>
@@ -26,7 +26,7 @@
 		
 		
 		<!--<hibernate.version>6.6.1.Final</hibernate.version>-->
-		<hibernate.version>6.6.33.Final</hibernate.version>
+		<hibernate.version>6.6.34.Final</hibernate.version>
 
         
     </properties>
@@ -40,6 +40,13 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
+		</dependency>
+
+		<!-- Lightweight embedded Git client (JGit) -->
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>7.4.0.202509020913-r</version>
 		</dependency>
 
 

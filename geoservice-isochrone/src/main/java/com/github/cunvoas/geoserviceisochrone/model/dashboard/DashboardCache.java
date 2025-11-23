@@ -26,6 +26,7 @@ public class DashboardCache {
     public static final String PARC_REF="PARC_REF";
     public static final String PARC_CHCK="PARC_CHCK";
     public static final String PARC_CALC="PARC_CALC";
+    public static final String COMPUTE_JOB_PENDING="COMPUTE_JOB_PENDING";
 
     /** Code identifiant l'indicateur. */
     @Id
