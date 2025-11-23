@@ -43,6 +43,11 @@ application:
     senderEmail: ${MAILJET_EMAIL}
     senderName: ${MAILJET_NAME}
     attachementPath: /var/isochrone/mail
+  git:
+    localPath: ${MOUNT_PATH}/isochrone/data
+    username: ${GIT_USERNAME}
+    token: ${GIT_TOKEN}
+    defaultBranch: main
   feature-flipping:
     parkAnalysisEnabled: true
     salaryAnalysisEnabled: false
@@ -53,3 +58,8 @@ application:
     photo-path: ${MOUNT_PATH}/isochrone/photo
     photo-path-origin: ${MOUNT_PATH}/isochrone/photo_origin
     export-data-path: ${MOUNT_PATH}/isochrone/data
+
+# Git credentials (mapped to environment variables GIT_USERNAME / GIT_PASSWORD)
+git:
+  username: ${GIT_USERNAME}
+  password: ${GIT_PASSWORD}
