@@ -3,7 +3,7 @@ import { createApp } from 'vue'
 import VueMatomo from 'vue-matomo'
 import HeaderAsso from './components/HeaderAsso.vue'
 import 'leaflet/dist/leaflet.css';
-import './App.css'
+import './assets/tailwind.css'
 import router from './router';
 
 const app = createApp(HeaderAsso);

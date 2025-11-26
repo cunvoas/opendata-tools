@@ -1,36 +1,38 @@
 <template>
-    <div id="appVideoAdmin" valign="top" align="left">
-      <h5>Saisie des parcs et des entrés</h5>
-      <p>
+    <div class="text-left align-top">
+      <h5 class="text-xl font-semibold mb-3">Saisie des parcs et des entrés</h5>
+      <p class="mb-4">
         Les vidéos ci-dessous vous montrent comment saisir les contours des parcs et les entrées de parc.
         <br />
-        L'application des parcs est à disposition des associations contributrices.</p>
-        
+        L'application des parcs est à disposition des associations contributrices.
+      </p>
 
-    <div class="video-controls">
-      <button v-for="(source, index) in sources" 
-              :key="index" 
-              @click="changeVideo(index)"
-              class="video-btn"
-              type="button">
-        {{ source.videoTitle }}
-      </button>
-    </div>
-    <div class="player-wrapper">
-      <h5 id="videoTitle">{{ currentVideo.videoTitle }}</h5>
+      <div class="my-4 text-center">
+        <button 
+          v-for="(source, index) in sources" 
+          :key="index" 
+          @click="changeVideo(index)"
+          class="mx-2 px-4 py-2 bg-green-600 text-white border-none rounded cursor-pointer hover:bg-green-700 transition-colors"
+          type="button">
+          {{ source.videoTitle }}
+        </button>
+      </div>
 
-      <video
-        id="videoPlayer"
-        ref="videoPlayer"
-        class="video-js vjs-big-play-centered vjs-16-9"
-        controls
-        preload="auto"
-      >
-        <source :src="videoSource" type="video/webm" />
-        <p class="vjs-no-js">
-          Pour voir la vidéo, merci d'activer JavaScript
-        </p>
-      </video>
+      <div class="max-w-[800px] mx-auto my-5">
+        <h5 class="text-lg font-medium mb-2">{{ currentVideo.videoTitle }}</h5>
+
+        <video
+          id="videoPlayer"
+          ref="videoPlayer"
+          class="video-js vjs-big-play-centered vjs-16-9 w-full h-auto aspect-video"
+          controls
+          preload="auto"
+        >
+          <source :src="videoSource" type="video/webm" />
+          <p class="vjs-no-js">
+            Pour voir la vidéo, merci d'activer JavaScript
+          </p>
+        </video>
       </div>
     </div>
   </template>
@@ -98,54 +100,23 @@ export default {
   }
 }
   
-  </script>
+</script>
   
 <style scoped>
-  .player-wrapper {
-    max-width: 800px;
-    margin: 20px auto;
-  }
-  
-  .video-js {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16/9;
-  }
-  
-  /* Styles pour les contrôles video.js */
-  .video-js .vjs-control-bar {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    background-color: rgba(43, 51, 63, 0.7);
-  }
-  
-  .video-js .vjs-big-play-button {
-    background-color: rgba(43, 51, 63, 0.7);
-    border: none;
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  
-  /* Styles pour les boutons de sélection de vidéo */
-  .video-controls {
-    margin: 1rem 0;
-    text-align: center;
-  }
-  
-  .video-btn {
-    margin: 0 0.5rem;
-    padding: 0.5rem 1rem;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .video-btn:hover {
-    background: #45a049;
-  }
-  </style>
+/* Keep video.js specific styles */
+.video-js .vjs-control-bar {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  background-color: rgba(43, 51, 63, 0.7);
+}
+
+.video-js .vjs-big-play-button {
+  background-color: rgba(43, 51, 63, 0.7);
+  border: none;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+</style>

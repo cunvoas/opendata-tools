@@ -58,7 +58,7 @@ public class GeoJsonCarreInseeController {
     @GetMapping("/polygon")
     public GeoJsonRoot getCarreByArea(@RequestParam("polygon") Polygon polygon, @RequestParam("annee") Integer annee) {
         if (annee==null) {
-        	return inseeCarre200mService.findAllCarreByArea(polygon);
+        	return inseeCarre200mService.findAllCarreByArea(polygon, 2019);
         } else {
         	return inseeCarre200mService.findAllCarreByArea(polygon, annee);	
         }

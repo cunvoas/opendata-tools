@@ -1,19 +1,17 @@
 <template>
-
-  <div v-if="loaded">
-    <p><b id="villeId">{{ villeNom }}</b></p>
-    <p v-if="shouldDisplayBarChart">
-      <Bar :data="dataBar" :options="barOptions" style="width:80%;height:300px;"  />
-   </p>
-    <p>
-      <Pie :data="dataPie" :options="myOptions" style="width: 80%;height:450px;" />
-    </p>
-    <div style="width:80%;text-align:center;font-size:0.85em;margin-top:-10px;margin-bottom:20px;">
-      <span>Répartition des habitants par seuil de surface de parc accessible</span>
+  <div v-if="loaded" class="flex flex-col items-center w-full">
+    <p class="text-center"><b id="villeId">{{ villeNom }}</b></p>
+    <div v-if="shouldDisplayBarChart" class="w-full max-w-4xl">
+      <Bar :data="dataBar" :options="barOptions" class="w-full h-[300px]" />
+    </div>
+    <div class="w-full max-w-xs mt-6">
+      <Pie :data="dataPie" :options="myOptions" class="w-full h-[300px]" />
+      <div class="text-center text-sm mt-2 mb-5">
+        <span>Répartition des habitants par seuil de surface de parc accessible</span>
+      </div>
     </div>
   </div>
-  <div v-else>Chargement en cours...</div>
-
+  <div v-else class="text-center">Chargement en cours...</div>
 </template>
 
 

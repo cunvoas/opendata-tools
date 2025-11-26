@@ -1,45 +1,40 @@
 <template>
-    <div id="appCarte" valign="top" align="left">
+    <div class="text-left align-top">
         <SearchLocation @update-location="updateLocation" @location-selected="updateLocation" :displaySearchAddress="true" />
         
-        <span style="border: 2px">
-            <div
-                id="map"
-                align="center"
-                valign="middle"
-                style="position: relative, z-index: 10;"
-            >
+        <div class="border-2 border-transparent mt-4">
+            <div class="text-center relative z-10">
                 <Isochrone msg="Cartographie des parcs" :location="location" @colorblind-mode-changed="updateColorblindMode" />
             </div>
-        </span>
-    
+        </div>
     </div>
-    <div>   
-         <span style="border: 2px">
-            <table style="text-align: left">
-                <tr>
-                    <td>Préconisations OMS non respectées :</td>
-                    <td><div class="square" :style="`background-color: ${getLowColor1};`" /></td>
-                    <td><div class="square" :style="`background-color: ${getLowColor2};`" /></td>
-                    <td><div class="square" :style="`background-color: ${getLowColor3};`" /></td>
-                </tr>
-                
-                <tr>
-                    <td>Préconisations OMS respectées :</td>
-                    <td><div class="square" :style="`background-color: ${getHighColor1};`" /></td>
-                    <td><div class="square" :style="`background-color: ${getHighColor2};`" /></td>
-                    <td>&nbsp;</td>
-                </tr>
-                <tr>
-                    <td colspan="4">✓ : plus de 1000 m²</td>
-                </tr>
-                <tr>
-                    <td colspan="4">✖ : non comptabilisé comme un parc</td>
-                </tr>
-
+    
+    <div class="mt-4">   
+        <div class="border-2 border-transparent">
+            <table class="text-left">
+                <tbody>
+                    <tr>
+                        <td class="pr-2">Préconisations OMS non respectées :</td>
+                        <td class="px-1"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getLowColor1};`" /></td>
+                        <td class="px-1"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getLowColor2};`" /></td>
+                        <td class="px-1"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getLowColor3};`" /></td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="pr-2">Préconisations OMS respectées :</td>
+                        <td class="px-1"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getHighColor1};`" /></td>
+                        <td class="px-1"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getHighColor2};`" /></td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">✓ : plus de 1000 m²</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">✖ : non comptabilisé comme un parc</td>
+                    </tr>
+                </tbody>
             </table>
-           </span>
-
+        </div>
     </div>
 </template>
 
@@ -90,40 +85,27 @@ export default {
 </script>
 
 <style>
-#app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-    margin-top: 10px;
-}
-table.legend td {
-    color: #ffffff;
-    font-size: 12px;
-    padding: 2px;
-}
-
+/* Keep Leaflet-specific styles */
 .dataDetail {
     padding: 6px 8px;
-    font:
-        16px/18px Arial,
-        Helvetica,
-        sans-serif;
+    font: 16px/18px Arial, Helvetica, sans-serif;
     background: white;
     background: rgba(255, 255, 255, 0.9);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     border-radius: 5px;
 }
+
 .dataDetail h4 {
     margin: 0 0 5px;
     color: #777;
 }
+
 .legend {
     text-align: left;
     line-height: 18px;
     color: #555;
 }
+
 .legend i {
     width: 18px;
     height: 18px;
@@ -131,9 +113,4 @@ table.legend td {
     margin-right: 8px;
     opacity: 0.7;
 }
-  .square {
-    width: 20px;
-    aspect-ratio: 1 / 1;
-    opacity: 0.4;
-  }
 </style>

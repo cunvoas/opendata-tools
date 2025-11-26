@@ -1,24 +1,47 @@
 <template>
-    <div class="search-location-container">
-        <select v-model="selectedRegion" @change="fetchCom2cos" tabindex="1" class="compact-select">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-2 p-2 bg-gray-50 rounded-md">
+        <select 
+            v-model="selectedRegion" 
+            @change="fetchCom2cos" 
+            tabindex="1" 
+            class="select-field">
             <option v-for="region in regions" :key="region.id" :value="region.id">
                 {{ region.name }}
             </option>
         </select>
-        <select v-model="selectedCom2co" @change="fetchCities" :disabled="!selectedRegion" tabindex="2" class="compact-select">
+        
+        <select 
+            v-model="selectedCom2co" 
+            @change="fetchCities" 
+            :disabled="!selectedRegion" 
+            tabindex="2" 
+            class="select-field disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
             <option v-for="com2co in com2cos" :key="com2co.id" :value="com2co.id">
                 {{ com2co.name }}
             </option>
         </select>
-        <select v-model="selectedCity" @change="handleCityChange" :disabled="!selectedCom2co" tabindex="3" class="compact-select">
+        
+        <select 
+            v-model="selectedCity" 
+            @change="handleCityChange" 
+            :disabled="!selectedCom2co" 
+            tabindex="3" 
+            class="select-field disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
             <option v-for="city in cities" :key="city.id" :value="city.id" :data-insee-code="city.inseeCode" :data-longitude-x="city.lonX" :data-latitude-y="city.latY">
                 {{ city.name }} ({{ city.inseeCode }})
             </option>
         </select>
-        <Autocomplete v-model="selectedAddress" :fetch-items="fetchAddresses" placeholder="Aller à une adresse"
-            :displaySearchAddress="displaySearchAddress" :disabled="!selectedCity" tabindex="4" @location-selected="handleLocationSelected" class="autocomplete-address" />
+        
+        <Autocomplete 
+            v-model="selectedAddress" 
+            :fetch-items="fetchAddresses" 
+            placeholder="Aller à une adresse"
+            :displaySearchAddress="displaySearchAddress" 
+            :disabled="!selectedCity" 
+            tabindex="4" 
+            @location-selected="handleLocationSelected" 
+            class="w-full" />
     </div>
-
 </template>
 
 <script>
@@ -290,49 +313,3 @@ export default {
     }
 };
 </script>
-
-<style scoped>
-.search-location-container {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-    padding: 8px;
-    background-color: #f8f9fa;
-    border-radius: 6px;
-}
-
-.compact-select {
-    padding: 6px 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    background-color: white;
-    font-size: 0.9em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-width: 120px;
-    pointer-events: auto;
-}
-
-.compact-select:hover:not(:disabled) {
-    border-color: #42b983;
-    box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.1);
-}
-
-.compact-select:focus {
-    outline: none;
-    border-color: #42b983;
-    box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-}
-
-.compact-select:disabled {
-    background-color: #f3f4f6;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.autocomplete-address {
-    flex: 1;
-    min-width: 200px;
-}
-</style>

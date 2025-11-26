@@ -1,4 +1,2 @@
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* This file is no longer needed - styles migrated to Tailwind */
+/* Import from assets/tailwind.css instead */

@@ -14,6 +14,9 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.stereotype.Component;
+
+import com.github.cunvoas.geoserviceisochrone.extern.helper.DistanceHelper;
 
 
 /**
@@ -23,6 +26,7 @@ import org.locationtech.jts.geom.PrecisionModel;
  *   - geolatte.* in locationtech.*
  *  
  */
+@Component
 public class GeometryQueryHelper {
 
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -158,4 +162,59 @@ public class GeometryQueryHelper {
 	    Polygon poly = factory.createPolygon(soln.toArray(new Coordinate[] {}));
 	    return poly;
 	  }
+	
+	
+
+    /**
+     * getPolygonFromBounds.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+     * @return
+     */
+    public Polygon getPolygonFromBounds(Double swLat, Double swLng, Double neLat, Double neLng) {
+    	Polygon polygon=null;
+    	
+    	Double x1= swLng;
+    	Double x2= neLng;
+    	Double y1= swLat;
+    	Double y2= neLat;
+    	
+    	Coordinate southWest = new Coordinate(x1,y1);
+    	Coordinate northEast = new Coordinate(x2,y2);
+    	
+    	if (checkDistance(southWest, northEast)) {
+	    	List<Coordinate> coords = new ArrayList<>();
+	    	coords.add( new Coordinate(x1,y1) );
+	    	coords.add( new Coordinate(x1,y2) );
+	    	coords.add( new Coordinate(x2,y2) );
+	    	coords.add( new Coordinate(x2,y1) );
+	    	coords.add( new Coordinate(x1,y1) );
+	    	
+//	    	Coordinate[] array = coords.toArray(Coordinate[]::new);
+	    	Coordinate[] array = coords.toArray(new Coordinate[0]);
+
+	    	polygon= factory.createPolygon(array);
+    	}
+    	
+    	return polygon;
+    }
+    
+
+    /**
+     * check distance between corners to limit big request.
+     * @param southWest
+     * @param northEast
+     * @return
+     */
+    protected boolean checkDistance(Coordinate southWest, Coordinate northEast) {
+    	Double d =  DistanceHelper.crowFlyDistance(
+	    				southWest.getY(), southWest.getX(),
+	    				northEast.getY(), northEast.getX()
+	    			);
+    	return d<50;
+    	
+    }
+    
 }

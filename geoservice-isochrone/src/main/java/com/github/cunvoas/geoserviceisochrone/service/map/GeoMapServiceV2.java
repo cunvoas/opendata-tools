@@ -150,7 +150,10 @@ public class GeoMapServiceV2 {
     private CityRepository cityRepository;
     @Autowired
     private ParcPrefectureRepository parcPrefectureRepository;
+    @Autowired
+    private GeometryQueryHelper geometryQueryHelper;
 	
+    
 	/**
 	 * findCadastreByCity.
 	 * @param id City
@@ -234,7 +237,7 @@ public class GeoMapServiceV2 {
      */
 	public GeoJsonRoot findAllCadastreByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
 		GeoJsonRoot root = new GeoJsonRoot();
-    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	if (polygon!=null) {
     		List<Cadastre> cadastres = cadastreRepository.findCadastreInMapArea(GeometryQueryHelper.toText(polygon));
     		if (cadastres!=null && cadastres.size()>0) {
@@ -266,7 +269,7 @@ public class GeoMapServiceV2 {
      */
     
 	public GeoJsonRoot findAllParkByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
-    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllParkByArea(polygon, annee);
     }
 	
@@ -280,7 +283,7 @@ public class GeoMapServiceV2 {
 	 * @return Outline geojson
 	 */
 	public GeoJsonRoot findAllParkOutlineByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
-    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllParkOutlineByArea(polygon, annee);
     }
 	/**
@@ -292,10 +295,10 @@ public class GeoMapServiceV2 {
 	 * @return Outline geojson
 	 */
 	public GeoJsonRoot findAllParkOutlineByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
-    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllParkOutlineByArea(polygon);
     }
-    
+
     
 	/**
      * findParkPrefectureByArea.
@@ -306,7 +309,7 @@ public class GeoMapServiceV2 {
 	 * @return   ParcPrefecture geojson
 	 */
 	public GeoJsonRoot findParkPrefectureByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
-    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findParkPrefectureByArea(polygon);
     }
     
@@ -320,7 +323,7 @@ public class GeoMapServiceV2 {
 	 * @return   Isochrone geojson
 	 */
 	public GeoJsonRoot findParcEtJardinByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
-    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findParcEtJardinByArea(polygon);
     }
     
@@ -831,11 +834,11 @@ public class GeoMapServiceV2 {
 	 * @FIXME until final front permit to change year.
 	 * @deprecated
 	 */
-	public GeoJsonRoot findAllCarreByArea(Polygon polygon) {
-		//FIXME until final front permit to change year
-		log.error("FIXME findAllCarreByArea(Polygon polygon)");
-		 return this.findAllCarreByArea(polygon, 2019);
-	 }
+//	public GeoJsonRoot findAllCarreByArea(Polygon polygon) {
+//		//FIXME until final front permit to change year
+//		log.error("FIXME findAllCarreByArea(Polygon polygon)");
+//		 return this.findAllCarreByArea(polygon, 2019);
+//	 }
 	 
     /**
      * GET ALL Carre in the map.
@@ -871,7 +874,7 @@ public class GeoMapServiceV2 {
 	 * @return GeoJson carre 
 	 */
 	public GeoJsonRoot findAllIrisByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
-    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllIrisByArea(polygon, annee);
     }
 	
@@ -1105,7 +1108,7 @@ public class GeoMapServiceV2 {
 	 * @return GeoJson carre 
 	 */
 	public GeoJsonRoot findAllCarreByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
-    	Polygon polygon = this.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllCarreByArea(polygon, annee);
     }
     
@@ -1114,7 +1117,6 @@ public class GeoMapServiceV2 {
      * Truncate decimal values ti reduce response size.
      * @param inssePop population
      * @return  population
-     */
 	protected String formatPopulation(String inssePop) {
     	String ret = "";
     	if (StringUtils.isNotBlank(inssePop)) {
@@ -1127,84 +1129,84 @@ public class GeoMapServiceV2 {
     	}
     	return ret;
     }
-    
-    /**
-     * produce the search Polygon for the map.
-     * @param bounds
-     * @return
-     * @throws JsonMappingException
-     * @throws JsonProcessingException
-     */
-    Polygon getPolygonFromBounds(String bounds) throws JsonMappingException, JsonProcessingException {
-    	Polygon polygon=null;
-    	if (StringUtils.isNotBlank(bounds)) {
-	    	ObjectMapper objectMapper = new ObjectMapper();
-	    	Bound bound= objectMapper.readValue(bounds, Bound.class);
-	    	
-	    	Double x1=  bound.getSouthWest().getLng();
-	    	Double x2=  bound.getNorthEast().getLng();
-	    	Double y1= bound.getSouthWest().getLat();
-	    	Double y2= bound.getNorthEast().getLat();
-	    	
-	    	polygon = this.getPolygonFromBounds(y1,x1, y2,x2);
-    	
-    	}
-    	return polygon;
-    }
+//    
+//    /**
+//     * produce the search Polygon for the map.
+//     * @param bounds
+//     * @return
+//     * @throws JsonMappingException
+//     * @throws JsonProcessingException
+//     */
+//    Polygon getPolygonFromBounds(String bounds) throws JsonMappingException, JsonProcessingException {
+//    	Polygon polygon=null;
+//    	if (StringUtils.isNotBlank(bounds)) {
+//	    	ObjectMapper objectMapper = new ObjectMapper();
+//	    	Bound bound= objectMapper.readValue(bounds, Bound.class);
+//	    	
+//	    	Double x1=  bound.getSouthWest().getLng();
+//	    	Double x2=  bound.getNorthEast().getLng();
+//	    	Double y1= bound.getSouthWest().getLat();
+//	    	Double y2= bound.getNorthEast().getLat();
+//	    	
+//	    	polygon = geometryQueryHelper.getPolygonFromBounds(y1,x1, y2,x2);
+//    	
+//    	}
+//    	return polygon;
+//    }
     
 
-    /**
-     * getPolygonFromBounds.
-     * @param swLat south-west latitude
-     * @param swLng south-west longitude
-     * @param neLat north-est latitude
-     * @param neLng north-est longitude
-     * @return
-     */
-    protected Polygon getPolygonFromBounds(Double swLat, Double swLng, Double neLat, Double neLng) {
-    	Polygon polygon=null;
-    	
-    	Double x1= swLng;
-    	Double x2= neLng;
-    	Double y1= swLat;
-    	Double y2= neLat;
-    	
-    	Coordinate southWest = new Coordinate(x1,y1);
-    	Coordinate northEast = new Coordinate(x2,y2);
-    	
-    	if (checkDistance(southWest, northEast)) {
-	    	List<Coordinate> coords = new ArrayList<>();
-	    	coords.add( new Coordinate(x1,y1) );
-	    	coords.add( new Coordinate(x1,y2) );
-	    	coords.add( new Coordinate(x2,y2) );
-	    	coords.add( new Coordinate(x2,y1) );
-	    	coords.add( new Coordinate(x1,y1) );
-	    	
-//	    	Coordinate[] array = coords.toArray(Coordinate[]::new);
-	    	Coordinate[] array = coords.toArray(new Coordinate[0]);
-
-	    	polygon= factory.createPolygon(array);
-    	}
-    	
-    	return polygon;
-    }
-    
-    
-    
-    /**
-     * check distance between corners to limit big request.
-     * @param southWest
-     * @param northEast
-     * @return
-     */
-    protected boolean checkDistance(Coordinate southWest, Coordinate northEast) {
-    	Double d =  DistanceHelper.crowFlyDistance(
-	    				southWest.getY(), southWest.getX(),
-	    				northEast.getY(), northEast.getX()
-	    			);
-    	return d<50;
-    	
-    }
-    
+//    /**
+//     * getPolygonFromBounds.
+//     * @param swLat south-west latitude
+//     * @param swLng south-west longitude
+//     * @param neLat north-est latitude
+//     * @param neLng north-est longitude
+//     * @return
+//     */
+//    protected Polygon getPolygonFromBounds(Double swLat, Double swLng, Double neLat, Double neLng) {
+//    	Polygon polygon=null;
+//    	
+//    	Double x1= swLng;
+//    	Double x2= neLng;
+//    	Double y1= swLat;
+//    	Double y2= neLat;
+//    	
+//    	Coordinate southWest = new Coordinate(x1,y1);
+//    	Coordinate northEast = new Coordinate(x2,y2);
+//    	
+//    	if (checkDistance(southWest, northEast)) {
+//	    	List<Coordinate> coords = new ArrayList<>();
+//	    	coords.add( new Coordinate(x1,y1) );
+//	    	coords.add( new Coordinate(x1,y2) );
+//	    	coords.add( new Coordinate(x2,y2) );
+//	    	coords.add( new Coordinate(x2,y1) );
+//	    	coords.add( new Coordinate(x1,y1) );
+//	    	
+////	    	Coordinate[] array = coords.toArray(Coordinate[]::new);
+//	    	Coordinate[] array = coords.toArray(new Coordinate[0]);
+//
+//	    	polygon= factory.createPolygon(array);
+//    	}
+//    	
+//    	return polygon;
+//    }
+//    
+//    
+//    
+//    /**
+//     * check distance between corners to limit big request.
+//     * @param southWest
+//     * @param northEast
+//     * @return
+//     */
+//    protected boolean checkDistance(Coordinate southWest, Coordinate northEast) {
+//    	Double d =  DistanceHelper.crowFlyDistance(
+//	    				southWest.getY(), southWest.getX(),
+//	    				northEast.getY(), northEast.getX()
+//	    			);
+//    	return d<50;
+//    	
+//    }
+//    
     
 }
