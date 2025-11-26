@@ -784,5 +784,11 @@ WHERE
 GROUP BY annee, seuil
 
 
+--=========================
+
+
+SELECT *
+FROM public.ign_topo_vegetal
+where insee_id in (SELECT insee_code FROM public.city where id_comm2co=1) and geo300m is not null and nature not in ('Haie')
 
 

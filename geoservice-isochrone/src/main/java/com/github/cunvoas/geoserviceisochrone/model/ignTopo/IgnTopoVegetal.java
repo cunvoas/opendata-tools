@@ -49,9 +49,15 @@ public class IgnTopoVegetal {
     private String idSource;
     
     
-    @Column(name="geometry")
+    @Column(name="shape")
     private Geometry geometry;
     
+    @Column(name="surface")
+    private Double surface;
+    @Column(name="geo300m")
+    private Geometry geo300m;
+    @Column(name="centre")
+    private Geometry centre;
 
 
     
