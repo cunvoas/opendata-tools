@@ -1,10 +1,7 @@
 <template>
-    <div id="appInformation" valign="top" align="left">
-
-
-        <span style="border: 2px">
-
-            <h1>Informations sur l'application</h1>
+    <div class="text-left align-top">
+        <div class="border-2 border-transparent prose max-w-none">
+            <h1 class="text-3xl font-bold mb-4">Informations sur l'application</h1>
             <h2>Objectifs</h2>
             <p>
                 L'objectif de cette application est de permettre aux habitants des villes et des regroupements de communes de visualiser sur une carte les parcs et jardins qui sont accessibles à pied.
@@ -108,10 +105,7 @@
                 <br />
                 Les bénévoles des associations et les utilisateurs de l'application pour la saisie des données.
             </p>
-
-
-        </span>
-
+        </div>
     </div>
 </template>
 
@@ -140,20 +134,3 @@ export default {
     }
 };
 </script>
-
-<style>
-#app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-    margin-top: 10px;
-}
-
-table.legend td {
-    color: #ffffff;
-    font-size: 12px;
-    padding: 2px;
-}
-</style>

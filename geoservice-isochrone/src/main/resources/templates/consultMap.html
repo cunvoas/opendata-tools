@@ -347,7 +347,8 @@ const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
 const endpointCarre = /*[[@{/map/insee/carre200m/area}]]*/ '';
 const endpointIris = /*[[@{/map/insee/iris/area}]]*/ '';
 const endpointCadastre = /*[[@{/mvc/geojson/cadastreByCorner}]]*/ '';
-const endpointVegetation = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/vegetalInseeIgnTopo.json';
+//const endpointVegetation = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/vegetalInseeIgnTopo.json';
+const endpointVegetation =  /*[[@{/map/ign-topo/vegetal}]]*/ '';
 const urlEditPark = /*[[@{/mvc/park/new/check}]]*/ '/mvc/park/new/check';
 
 // Styles ajustés pour accentuer le contraste bordure/fond tout en conservant une bordure fine
@@ -361,7 +362,7 @@ const overlayConfig = {
   'IRIS': { endpoint: endpointIris, style: { color:'#b85f00', fillColor:'#ff9d33', weight:1, fillOpacity:0.25 } },
   // Cadastre dynamique: rechargé à chaque mouvement avec cache et debounce
   'Cadastre': { endpoint: endpointCadastre, style: { color:'#7a7c00', fillColor:'#d6d900', weight:1, fillOpacity:0.18 } },
-  'Végétation IGN': { endpoint: endpointVegetation, style: { color:'#0f4d0f', fillColor:'#2fa42f', weight:1, fillOpacity:0.45 }, static: true }
+  'Végétation IGN': { endpoint: endpointVegetation, style: { color:'#0f4d0f', fillColor:'#2fa42f', weight:1, fillOpacity:0.45 } }
 };
 console.log('[ConsultMap] overlayConfig:', overlayConfig);
 
@@ -475,7 +476,11 @@ function createPopupContent(feat, layerName) {
 
   // Infos spécifiques Végétation IGN
   if (layerName === 'Végétation IGN') {
-    if (feat.id) popupContent += `<p>ID: ${feat.id}</p>`;
+    if (feat.properties.id) {
+      popupContent += `<p>ID: ${feat.properties.id}</p>`;
+    } else if (feat.id) {
+      popupContent += `<p>ID: ${feat.id}</p>`;
+    }
     if (feat.properties.surface) {
       const surface = parseFloat(feat.properties.surface);
       if (!isNaN(surface)) {
@@ -713,7 +718,7 @@ function onYearChange(){
     }
   });
   // Invalider les caches de bounds pour forcer le rechargement
-  ['Carrés','IRIS','Cadastre','Parcs'].forEach(layerName => { delete lastBounds[layerName]; });
+  ['Carrés','IRIS','Cadastre','Parcs','Végétation IGN'].forEach(layerName => { delete lastBounds[layerName]; });
   // Recharger seulement les couches présentes
   Object.keys(dataLayers).forEach(name => {
     if (!overlayConfig[name].static && map.hasLayer(dataLayers[name])) {
