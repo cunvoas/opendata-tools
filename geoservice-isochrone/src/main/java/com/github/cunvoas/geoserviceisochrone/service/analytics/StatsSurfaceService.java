@@ -69,7 +69,7 @@ public class StatsSurfaceService {
 	private static String[] colors= {"#0000e8","#6060e8","#b0b0e8","#578817","#57ee17"};
 
 	private static String[] txtSeuilOMS= {
-			"Non respect des minimas OMS",
+			"Non respect des minima OMS",
 			"Minimim conseillé par l'OMS",
 			"Préconisé par l'OMS" };
 	
