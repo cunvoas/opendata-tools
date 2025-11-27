@@ -3,6 +3,7 @@
         <div class="border-2 border-transparent prose max-w-none">
             <h1 class="text-3xl font-bold mb-4">Informations sur l'application</h1>
             <h2 class="font-bold underline my-4">Objectifs</h2>
+
             <p>
                 L'objectif de cette application est de permettre aux habitants des villes et des regroupements de communes de visualiser sur une carte les parcs et jardins qui sont accessibles à pied.
                 <br />
