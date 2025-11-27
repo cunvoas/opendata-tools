@@ -308,6 +308,7 @@ public class StatsSurfaceService {
 			Seuil seuil = new Seuil();
 			json.getSeuils().add(seuil);
 			seuil.setSurface(txtSeuilOMS[index]);
+			seuil.setSeuilId(index);
 			seuil.setBarColor(colors[index+2]);
 			seuil.setHabitants(stat.getHabitants());
 			seuil.setRatio(String.valueOf(100*stat.getHabitants().intValue()/populationTotale)+"");
