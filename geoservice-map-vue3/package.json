@@ -11,7 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^1.13.1",
+    "axios": "^1.13.2",
     "chartjs": "^0.3.24",
     "video.js": "^8.23.4",
     "vue": "^3.5.24",
