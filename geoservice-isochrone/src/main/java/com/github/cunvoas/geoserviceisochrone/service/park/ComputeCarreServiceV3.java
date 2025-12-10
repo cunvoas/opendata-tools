@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.TopologyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -308,6 +307,11 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 		computed.setPopIncludedOms(dto.resultOms.popInc);
 		computed.setPopExcludedOms(dto.resultOms.popExc);
 		
+		// Compute missing surface to reach minimum and advised OMS standards
+		computed.setMissingSurfaceMini(computeMissingSurface(dto, carreShape, applicationBusinessProperties.getMinUrbSquareMeterPerCapita(), applicationBusinessProperties.getMinSubUrbSquareMeterPerCapita()));
+		computed.setMissingSurfaceAdvised(computeMissingSurface(dto, carreShape, applicationBusinessProperties.getRecoUrbSquareMeterPerCapita(), applicationBusinessProperties.getRecoSubUrbSquareMeterPerCapita()));
+		
+		
 		if (Boolean.TRUE.equals(dto.withSufficient)) {
 			computed.setIsSustainablePark(Boolean.TRUE);
 			//TODO 
@@ -540,6 +544,14 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 		
 		
 		// surface intersection algorithm
+		/*
+		 * Algorithme d'intersection de surface :
+		 * Pour chaque carré de 200m intersectant le parc, on calcule l'intersection géométrique entre la forme du carré et celle du parc.
+		 * La surface de cette intersection est ensuite utilisée pour proratiser la population du carré (selon la proportion de surface intersectée).
+		 * On additionne la population proratisée de chaque carré pour obtenir la population totale du parc.
+		 * Enfin, la surface par habitant est calculée en divisant la surface totale du parc par la population totale obtenue.
+		 * Ce calcul permet de tenir compte de la répartition spatiale réelle des habitants par rapport à la surface accessible du parc.
+		 */
 		BigDecimal population = BigDecimal.ZERO;
 		for (InseeCarre200mOnlyShape carreShape : shapes) {
 			Geometry parkOnCarre = carreShape.getGeoShape().intersection(park.getPolygon());
@@ -634,7 +646,14 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 			
 			
 			
-			// surface intersection algorithm
+			/*
+			 * Algorithme d'intersection de surface :
+			 * Pour chaque carré de 200m intersectant le parc, on calcule l'intersection géométrique entre la forme du carré et celle de l'isochone d'accessibilité du parc.
+			 * La surface de cette intersection est ensuite utilisée pour proratiser la population du carré (selon la proportion de surface intersectée).
+			 * On additionne la population proratisée de chaque carré pour obtenir la population totale du parc.
+			 * Enfin, la surface par habitant est calculée en divisant la surface totale du parc par la population totale obtenue.
+			 * Ce calcul permet de tenir compte de la répartition spatiale réelle des habitants par rapport à la surface accessible du parc.
+			 */
 			BigDecimal population = BigDecimal.ZERO;
 			for (InseeCarre200mOnlyShape carreShape : shapes) {
 				Geometry parkOnCarre = carreShape.getGeoShape().intersection(park.getPolygon());
@@ -660,6 +679,41 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 		
 		}
 		return parcCpu;
+	}
+
+	
+	/**
+	 * Compute missing surface to reach OMS standards (minimum or advised).
+	 * <p>
+	 * Formula: MAX(0, (standardPerCapita * populationInIsochroneOms) - surfaceTotalParkOms)
+	 * </p>
+	 * The standard is selected based on density:
+	 * - Urban (isDense = true): use urbStandard
+	 * - Suburban (isDense = false): use subUrbStandard
+	 * 
+	 * @param dto ComputeDto containing the computation results
+	 * @param carreShape the square shape being analyzed
+	 * @param urbStandard the standard per capita for urban zones (in m²/inhabitant)
+	 * @param subUrbStandard the standard per capita for suburban zones (in m²/inhabitant)
+	 * @return missing surface to reach the standard, or ZERO if already sufficient
+	 */
+	protected BigDecimal computeMissingSurface(ComputeDto dto, InseeCarre200mOnlyShape carreShape, 
+			Double urbStandard, Double subUrbStandard) {
+		
+		// Select standard based on density
+		Double standard = dto.isDense ? urbStandard : subUrbStandard;
+		
+		// Calculate required surface: standard * population
+		BigDecimal requiredSurface = BigDecimal.valueOf(standard * dto.resultOms.populationInIsochrone.doubleValue());
+		
+		// Calculate missing surface: required - available
+		BigDecimal missingSurface = requiredSurface.subtract(dto.resultOms.surfaceTotalParks);
+		
+		// Return maximum of 0 and calculated missing surface
+		if (missingSurface.compareTo(BigDecimal.ZERO) > 0) {
+			return missingSurface.setScale(2, RoundingMode.HALF_EVEN);
+		}
+		return BigDecimal.ZERO;
 	}
 
 	

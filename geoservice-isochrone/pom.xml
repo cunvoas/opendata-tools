@@ -352,6 +352,14 @@
 </dependency>
 
 
+
+
+      <dependency>
+        <groupId>org.choco-solver</groupId>
+        <artifactId>choco-solver</artifactId>
+        <version>4.10.18</version>
+        </dependency>
+        
 	</dependencies>
 	
 	

@@ -754,9 +754,6 @@ public class GeoMapServiceV2 {
 			
 			Boolean allInhabitant = pacEd.getPopAll()!=null?pacEd.getPopAll().equals(pacEd.getPopIncludedOms()):Boolean.FALSE;
 			
-			if ("LAEA200M_N15407E19138".equals(pacEd.getIdCarre200())) {
-				int debug=0;
-			}
 			if (sph>thresholdReco && allInhabitant) {
 				color = THRESHOLD_PERFECT;
 			} else if (sph>thresholdReco && !allInhabitant) {
