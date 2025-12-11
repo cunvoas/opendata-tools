@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -20,9 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.CadastreView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.Carre200AndShapeView;
@@ -30,9 +26,8 @@ import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.IrisView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.IsochroneView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkGardenView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkPrefView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkProposalView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkView;
-import com.github.cunvoas.geoserviceisochrone.extern.helper.DistanceHelper;
-import com.github.cunvoas.geoserviceisochrone.extern.leaflet.Bound;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
@@ -53,12 +48,14 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.IrisDataComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
@@ -130,6 +127,10 @@ public class GeoMapServiceV2 {
     private IrisDataRepository irisDataRepository;
     @Autowired
     private IrisDataComputedRepository irisDataComputedRepository;
+    
+
+    @Autowired
+    private ParkProposalRepository parkProposalRepository;
     
     @Autowired
     private ParkAreaRepository parkAreaRepository;
@@ -272,6 +273,22 @@ public class GeoMapServiceV2 {
     	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllParkByArea(polygon, annee);
     }
+
+	  
+    /**
+     * findParkProposalByArea.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+     * @return  ParkProposal geojson
+     */
+    
+	public GeoJsonRoot findParkProposalByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	return this.findParkProposalByArea(polygon, annee);
+    }
+	
 	
 	/**
 	 * findAllParkOutlineByArea.
@@ -506,7 +523,6 @@ public class GeoMapServiceV2 {
 	public GeoJsonRoot findAllParkByArea(Polygon polygon, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		
-
     	if (polygon!=null) {
 			List<ParkArea> parkAreas =  parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(polygon));
 			if (!CollectionUtils.isEmpty(parkAreas)) {
@@ -535,6 +551,38 @@ public class GeoMapServiceV2 {
 	}
 	
 	
+
+	/**
+	 * findParkProposalByArea.
+	 * @param polygon Polygon
+	 * @return   park proposal geojson
+	 */
+	public GeoJsonRoot findParkProposalByArea(Polygon polygon, Integer annee) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
+    	if (polygon!=null) {
+			List<ParkProposal> proposals =  parkProposalRepository.findParkProposalInMapArea(annee, GeometryQueryHelper.toText(polygon));
+			if (!CollectionUtils.isEmpty(proposals)) {
+				for (ParkProposal proposal : proposals) {
+					GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					feature.setGeometry(proposal.getCentre());
+					
+					
+					ParkProposalView pv = new ParkProposalView();
+					
+					pv.setId(String.valueOf(proposal.getIdInspire()));
+					pv.setDense(proposal.getIsDense());
+					pv.setRadius(proposal.getRadius());
+					pv.setSurface(Math.round(proposal.getParkSurface().longValue()));
+					
+					feature.setProperties(pv);
+					
+				}
+			}
+    	}
+		return root;
+	}
 	
 	
 	/**

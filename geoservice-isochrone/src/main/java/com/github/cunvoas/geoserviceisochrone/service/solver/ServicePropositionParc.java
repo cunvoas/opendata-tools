@@ -19,8 +19,10 @@ import com.github.cunvoas.geoserviceisochrone.extern.helper.DistanceHelper;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalWorkRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
@@ -39,10 +41,11 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class ServicePropositionParc {
-	
 
-	private static final double MIN_PARK_SURFACE = 1000.0; // m²
-	private static final double CARRE_SIZE = 200.0; // mètres (200m x 200m)	
+	private static final double MIN_PARK_SURFACE = 1_000; // m²
+	private static final double CARRE_SIZE = 200; // mètres (200m x 200m)	
+	private static final double CARRE_SURFACE = 40_000; // m²
+	
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	
@@ -58,12 +61,13 @@ public class ServicePropositionParc {
 
 	@Autowired
 	private ParkProposalWorkRepository parkProposalWorkRepository;
+	@Autowired
+	private ParkProposalRepository parkProposalRepository;
 	
 	
 	public void saveProposals(Map<String, ParkProposalWork> proposals) {
 		if (proposals!=null && !proposals.isEmpty()) {
 			List<ParkProposalWork> list = new ArrayList<>(proposals.values());
-			//proposals.values().stream().toList()
 			parkProposalWorkRepository.saveAll(list);
 		}
 	}
@@ -137,9 +141,15 @@ public class ServicePropositionParc {
 					carreMap.size(), insee, annee, dense, recoSquareMeterPerCapita, minSquareMeterPerCapita, urbanDistance);
 		}
 		
+		List<ParkProposal> proposals = new ArrayList<>();
+		
 		for (int i=0; i<carreMap.size(); i++) {
-			this.calculeEtapeProposition(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
+			ParkProposal proposal = this.calculeEtapeProposition(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
+			if (proposal!=null) {
+				proposals.add(proposal);
+			}
 		}
+		parkProposalRepository.saveAll(proposals);
 		
 //		this.calculePropositionSolver(carreMap, recoSquareMeterPerCapita, urbanDistance);
 		
@@ -429,20 +439,33 @@ public class ServicePropositionParc {
 	 * 
 	 * @author github.com/cunvoas
 	 */
-	public void calculeEtapeProposition(Map<String, ParkProposalWork> carreMap,  Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
+	public ParkProposal calculeEtapeProposition(Map<String, ParkProposalWork> carreMap,  Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
 		List<ParkProposalWork> sorted = sortProposalsByDeficit(carreMap);
 //		List<ParkProposal> sorted = sortProposalsByPersona(carreMap);
+		
+		ParkProposal proposalResult = null;
 		
 		if (!sorted.isEmpty()) {
 			ParkProposalWork toProcess = sorted.get(0);
 			if (toProcess.getSurfacePerCapita().doubleValue() > minSquareMeterPerCapita) {
 				log.info("Toutes les propositions de la commune sont traitées.");
-				return;
+				return proposalResult;
 			}
 			List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), carreMap, urbanDistance);
 
-			Double newParkSurface = Math.max(recoSquareMeterPerCapita-toProcess.getSurfacePerCapita().doubleValue(), 0) * toProcess.getAccessingPopulation().doubleValue();
+			// calcul de la surface de parc à ajouter pour atteindre la densité recommandée
+			// comprise entre 0 et 40 000 m² (surface max d'un carré de 200m x 200m)
+			Double newParkSurface = Math.min(Math.max(recoSquareMeterPerCapita-toProcess.getSurfacePerCapita().doubleValue(), 0), CARRE_SURFACE) * toProcess.getAccessingPopulation().doubleValue();
 			if (newParkSurface>=MIN_PARK_SURFACE) {
+				
+				
+				proposalResult = new ParkProposal();
+				proposalResult.setAnnee(toProcess.getAnnee());
+				proposalResult.setIdInspire(toProcess.getIdInspire());
+				proposalResult.setParkSurface(BigDecimal.valueOf(newParkSurface));
+				proposalResult.setCentre(toProcess.getCentre());
+				proposalResult.setIsDense(toProcess.getIsDense());
+				
 				// appliquer la proposition
 				toProcess.setNewSurface(BigDecimal.valueOf(newParkSurface));
 				toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
@@ -488,6 +511,7 @@ public class ServicePropositionParc {
 		
 		
 		}
+		return proposalResult;
 	}
 	
 	

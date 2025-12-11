@@ -4,11 +4,41 @@
 
 Ce package contient les tests unitaires pour le service `ServicePropositionParc`, qui calcule les propositions d'augmentation de surface de parc par carré INSEE de 200m x 200m.
 
+Le service propose **deux approches complémentaires** pour résoudre le problème d'optimisation de l'allocation des parcs :
+1. **Approche itérative** (`calculeEtapeProposition`) : traite les carrés un par un, par ordre de déficit décroissant
+2. **Approche globale** (`calculePropositionSolver`) : utilise Choco Solver pour optimiser l'allocation sur l'ensemble de la ville
+
 ## Classe de test : ServicePropositionParcTest
 
 ### Méthode testée : `calculeEtapeProposition`
 
-Cette méthode implémente un algorithme itératif pour proposer l'ajout de parcs dans les zones sous-dotées.
+Cette méthode implémente un algorithme itératif qui traite le carré avec le plus grand déficit à chaque itération.
+
+**Signature :**
+```java
+public ParkProposal calculeEtapeProposition(
+    Map<String, ParkProposalWork> carreMap,
+    Double minSquareMeterPerCapita,
+    Double recoSquareMeterPerCapita,
+    Integer urbanDistance
+)
+```
+
+**Algorithme :**
+1. Trier les carrés par déficit décroissant (`missingSurface`)
+2. Sélectionner le carré avec le plus grand déficit
+3. Si `surfacePerCapita > minSquareMeterPerCapita` → arrêt (tous les carrés sont suffisamment dotés)
+4. Calculer : `surfaceÀAjouter = min(max(recoSquareMeterPerCapita - surfacePerCapita, 0), 40000) × accessingPopulation`
+5. Si `surfaceÀAjouter ≥ 1000 m²` :
+   - Créer un objet `ParkProposal` avec la surface proposée
+   - Mettre à jour `newSurface`, `newMissingSurface` et `surfacePerCapita` du carré
+   - Identifier les voisins dans le rayon `urbanDistance` (+100m de marge)
+   - Mettre à jour `newSurface`, `newSurfacePerCapita` et `newMissingSurface` de chaque voisin
+6. Sinon : ne rien faire (pas d'objet `ParkProposal` créé)
+
+**Retour :**
+- `ParkProposal` si un parc ≥ 1000 m² est proposé
+- `null` sinon
 
 #### Scénarios de test
 
@@ -35,7 +65,7 @@ Cette méthode implémente un algorithme itératif pour proposer l'ajout de parc
 - Surface calculée : 100 m² (< 1000 m²)
 
 **Résultat attendu :**
-- `localSurface` reste `null`
+- `newSurface` reste `null`
 - Aucune modification des données
 
 ##### 3. `testCalculeEtapeProposition_sansDeficit_neRienFaire`
@@ -152,7 +182,7 @@ Cette méthode utilise Choco Solver pour résoudre le problème d'optimisation g
 
 ### Méthode utilitaire : `createParkProposal`
 
-Crée des instances de `ParkProposal` pour les tests avec les paramètres :
+Crée des instances de `ParkProposalWork` pour les tests avec les paramètres :
 - `idInspire` : identifiant unique du carré
 - `longitude` / `latitude` : coordonnées géographiques
 - `surfacePerCapita` : surface actuelle par habitant (m²/hab)
@@ -194,6 +224,7 @@ mvn test -Dtest=ServicePropositionParcTest#testCalculeEtapeProposition_avecDefic
 - **JUnit 5** : framework de test
 - **Mockito** : mocking des dépendances
 - **JTS (Java Topology Suite)** : manipulation des géométries
+- **Choco Solver** : solveur de contraintes pour l'optimisation globale
 
 ## Points d'attention
 
@@ -201,3 +232,41 @@ mvn test -Dtest=ServicePropositionParcTest#testCalculeEtapeProposition_avecDefic
 2. **Arrondis :** Utilisation de `BigDecimal` pour les calculs financiers/surfaciques
 3. **Performance :** L'algorithme est itératif, prévoir des timeouts pour les grandes communes
 4. **Isolation :** Les tests sont indépendants et peuvent s'exécuter dans n'importe quel ordre
+
+## Détails d'implémentation
+
+### Calcul de la surface à ajouter
+
+La formule utilisée dans `calculeEtapeProposition` est :
+```java
+surfaceÀAjouter = min(max(recoSquareMeterPerCapita - surfacePerCapita, 0), 40000) × accessingPopulation
+```
+
+Cette formule garantit que :
+- La surface ajoutée ne dépasse pas la taille maximale d'un carré (40 000 m²)
+- On ne propose pas de surface négative
+- La proposition vise à atteindre la densité recommandée
+
+### Mise à jour des voisins
+
+Quand un parc est ajouté dans un carré :
+1. Les voisins dans le rayon `urbanDistance + 100m` sont identifiés
+2. Leur `newSurface` est augmentée de la surface du nouveau parc
+3. Leur `newSurfacePerCapita` est recalculée : `(accessingSurface + newParkSurface) / accessingPopulation`
+4. Leur `newMissingSurface` est mise à jour
+
+### Critères d'arrêt
+
+L'algorithme itératif s'arrête quand :
+- Tous les carrés ont `surfacePerCapita > minSquareMeterPerCapita`
+- OU la surface proposée pour le prochain carré serait < 1000 m²
+
+### Optimisation avec Choco Solver
+
+Le solver modélise le problème comme suit :
+- **Variables** : une IntVar par carré représentant la surface à ajouter [0..40000]
+- **Contraintes** : chaque surface = 0 OU ≥ 1000
+- **Objectif** : minimiser la somme des écarts absolus entre densité réelle et densité cible
+- **Voisinage** : pré-calculé pour optimiser les performances
+
+Le solver garantit une solution optimale globale mais peut être plus lent sur de grandes communes (> 100 carrés).
