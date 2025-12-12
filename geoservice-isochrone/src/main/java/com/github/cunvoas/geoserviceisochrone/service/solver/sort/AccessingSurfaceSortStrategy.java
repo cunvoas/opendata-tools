@@ -9,15 +9,15 @@ import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 /**
  * Sorts proposals by surface per capita ascending.
  */
-public class PersonaProposalSortStrategy implements ProposalSortStrategy {
+public class AccessingSurfaceSortStrategy implements ProposalSortStrategy {
     @Override
     public List<ParkProposalWork> sort(Map<String, ParkProposalWork> carreMap) {
         List<ParkProposalWork> proposals = new ArrayList<>(carreMap.values());
         proposals.sort((p1, p2) -> {
-            Double scpc1 = p1.getNewSurfacePerCapita() != null ? p1.getNewSurfacePerCapita().doubleValue() : 0;
-            Double scpc2 = p2.getNewSurfacePerCapita() != null ? p2.getNewSurfacePerCapita().doubleValue() : 0;
+            Double accs1 = p1.getAccessingSurface() != null ? p1.getAccessingSurface().doubleValue() : 0;
+            Double accs2 = p2.getAccessingSurface() != null ? p2.getAccessingSurface().doubleValue() : 0;
             // croissant
-            return Double.compare(scpc1, scpc2);
+            return Double.compare(accs1, accs2);
         });
         return proposals;
     }

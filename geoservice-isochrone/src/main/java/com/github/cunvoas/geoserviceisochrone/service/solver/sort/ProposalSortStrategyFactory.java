@@ -9,7 +9,8 @@ public final class ProposalSortStrategyFactory {
 
     public enum Type {
         DEFICIT,
-        PERSONA
+        PERSONA,
+        ACCESSING_SURFACE
     }
 
     public static ProposalSortStrategy create(Type type) {
@@ -18,6 +19,9 @@ public final class ProposalSortStrategyFactory {
                 return new DeficitProposalSortStrategy();
             case PERSONA:
                 return new PersonaProposalSortStrategy();
+            case ACCESSING_SURFACE:
+                return new AccessingSurfaceSortStrategy();
+                
             default:
                 throw new IllegalArgumentException("Unknown strategy type: " + type);
         }
