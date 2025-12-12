@@ -147,28 +147,20 @@ public class ServicePropositionParc {
 					carreMap.size(), insee, annee, dense, recoSquareMeterPerCapita, minSquareMeterPerCapita, urbanDistance);
 		}
 		
+		List<ParkProposal> proposals = null;
 		
 		// ALGO 1 : approche déléguée via stratégie (itérative par défaut)
-		ProposalComputationStrategy computation = ProposalComputationStrategyFactory.create(
-				ProposalComputationStrategyFactory.Type.ITERATIVE, this, MIN_PARK_SURFACE);
-		List<ParkProposal> proposals = computation.compute(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
-		if (!proposals.isEmpty()) {
-			parkProposalRepository.saveAll(proposals);
-		}
+		ProposalComputationStrategy computation = ProposalComputationStrategyFactory.create(ProposalComputationStrategyFactory.Type.ITERATIVE, this, MIN_PARK_SURFACE);
+		proposals = computation.compute(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
 
 		
 		// ALGO 2 : approche solver global (exemple d'utilisation via stratégie)
-		// ProposalComputationStrategy solver = ProposalComputationStrategyFactory.create(
-		//         ProposalComputationStrategyFactory.Type.SOLVER, this, MIN_PARK_SURFACE);
-		// solver.compute(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
+		ProposalComputationStrategy solver = ProposalComputationStrategyFactory.create(ProposalComputationStrategyFactory.Type.SOLVER, this, MIN_PARK_SURFACE);
+		proposals = solver.compute(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
 		
-		// utilisation du solver pour trouver des solutions car chaque carré interragit avec ses voisins pour les distances d'accibilité.
-		// chaque proposition est >= 1000m² ou 0m²
-		// tous les carrés voisins sont pris en compte pour le calcul de la densité
-		// la densité cible est de 12m²/habitant
-		// pour les carrés avec les moins de parc, réaliser une proposition d'augmentation
-		// l'appliquer dans les calculs jurs'à ce que tous les carrés sent traités directement ou non.
-		
+		if (proposals!=null && !proposals.isEmpty()) {
+			parkProposalRepository.saveAll(proposals);
+		}
 		return carreMap;
 	}
 	
