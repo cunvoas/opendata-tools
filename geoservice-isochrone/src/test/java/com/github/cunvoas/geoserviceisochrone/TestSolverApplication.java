@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @SpringBootTest
 @Slf4j
-@ActiveProfiles({"secret","pi_nuc"}) //pi_nuc rep
+@ActiveProfiles({"secret","rep"}) //pi_nuc rep
 class TestSolverApplication {
 
 	@Autowired

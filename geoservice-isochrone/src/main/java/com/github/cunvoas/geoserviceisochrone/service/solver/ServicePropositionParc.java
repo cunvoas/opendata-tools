@@ -29,6 +29,11 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyS
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
 import lombok.extern.slf4j.Slf4j;
+import com.github.cunvoas.geoserviceisochrone.service.solver.sort.ProposalSortStrategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.sort.ProposalSortStrategyFactory;
+import com.github.cunvoas.geoserviceisochrone.service.solver.sort.ProposalSortStrategyFactory.Type;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategyFactory;
 
 /**
  * Service pour calculer les propositions d'augmentation de parc par carré 
@@ -42,7 +47,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ServicePropositionParc {
 
-	private static final double MIN_PARK_SURFACE = 1_000; // m²
+	private static final double AT_LEAST_PARK_SURFACE = 1_000; // m²
+	private static final double MIN_PARK_SURFACE = 650; // m²
 	private static final double CARRE_SIZE = 200; // mètres (200m x 200m)	
 	private static final double CARRE_SURFACE = 40_000; // m²
 	
@@ -141,17 +147,20 @@ public class ServicePropositionParc {
 					carreMap.size(), insee, annee, dense, recoSquareMeterPerCapita, minSquareMeterPerCapita, urbanDistance);
 		}
 		
-		List<ParkProposal> proposals = new ArrayList<>();
 		
-		for (int i=0; i<carreMap.size(); i++) {
-			ParkProposal proposal = this.calculeEtapeProposition(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
-			if (proposal!=null) {
-				proposals.add(proposal);
-			}
+		// ALGO 1 : approche déléguée via stratégie (itérative par défaut)
+		ProposalComputationStrategy computation = ProposalComputationStrategyFactory.create(
+				ProposalComputationStrategyFactory.Type.ITERATIVE, this, MIN_PARK_SURFACE);
+		List<ParkProposal> proposals = computation.compute(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
+		if (!proposals.isEmpty()) {
+			parkProposalRepository.saveAll(proposals);
 		}
-		parkProposalRepository.saveAll(proposals);
+
 		
-//		this.calculePropositionSolver(carreMap, recoSquareMeterPerCapita, urbanDistance);
+		// ALGO 2 : approche solver global (exemple d'utilisation via stratégie)
+		// ProposalComputationStrategy solver = ProposalComputationStrategyFactory.create(
+		//         ProposalComputationStrategyFactory.Type.SOLVER, this, MIN_PARK_SURFACE);
+		// solver.compute(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
 		
 		// utilisation du solver pour trouver des solutions car chaque carré interragit avec ses voisins pour les distances d'accibilité.
 		// chaque proposition est >= 1000m² ou 0m²
@@ -216,32 +225,11 @@ public class ServicePropositionParc {
 			log.warn("Carte des carrés vide, aucune proposition à calculer");
 			return;
 		}
-		
-		log.info("Démarrage du calcul avec Choco Solver pour {} carrés", carreMap.size());
-		
-		// Créer le modèle Choco Solver
-		Model model = new Model("Optimisation Globale Parcs");
-		
-		// Indexation des carrés pour accès rapide
+
+		log.info("Démarrage du calcul itératif avec Choco Solver pour {} carrés", carreMap.size());
+
+		// Pré-calcul des voisinages (ne change pas entre les itérations)
 		List<String> carreIds = new ArrayList<>(carreMap.keySet());
-		Map<String, Integer> carreIndex = new HashMap<>();
-		for (int i = 0; i < carreIds.size(); i++) {
-			carreIndex.put(carreIds.get(i), i);
-		}
-		
-		// Variables : surface à ajouter pour chaque carré
-		IntVar[] surfacesAAjouter = new IntVar[carreIds.size()];
-		for (int i = 0; i < carreIds.size(); i++) {
-			surfacesAAjouter[i] = model.intVar("surface_" + carreIds.get(i), 0, 40000);
-			
-			// Contrainte : 0 OU >= 1000 m²
-			model.or(
-				model.arithm(surfacesAAjouter[i], "=", 0),
-				model.arithm(surfacesAAjouter[i], ">=", (int)MIN_PARK_SURFACE)
-			).post();
-		}
-		
-		// Pré-calcul des voisinages pour optimisation
 		Map<String, List<String>> voisinagesIds = new HashMap<>();
 		for (String idInspire : carreIds) {
 			List<ParkProposalWork> voisins = findNeighbors(idInspire, carreMap, urbanDistance);
@@ -251,134 +239,139 @@ public class ServicePropositionParc {
 			}
 			voisinagesIds.put(idInspire, voisinsIds);
 		}
-		
-		// Variables pour les écarts à la densité recommandée
-		IntVar[] ecarts = new IntVar[carreIds.size()];
-		IntVar[] ecartsAbsolus = new IntVar[carreIds.size()];
-		
-		for (int i = 0; i < carreIds.size(); i++) {
-			String idInspire = carreIds.get(i);
-			ParkProposalWork carre = carreMap.get(idInspire);
-			
-			int population = carre.getAccessingPopulation().intValue();
-			if (population == 0) {
-				// Pas de population, pas d'écart
-				ecarts[i] = model.intVar(0);
-				ecartsAbsolus[i] = model.intVar(0);
-				continue;
+
+		int maxIterations = carreIds.size();
+		for (int iter = 1; iter <= maxIterations; iter++) {
+			// Vérifier s'il reste des carrés en déficit notable
+			boolean resteDeficit = carreMap.values().stream().anyMatch(p -> {
+				double pop = p.getAccessingPopulation().doubleValue();
+				double densite = p.getSurfacePerCapita() != null ? p.getSurfacePerCapita().doubleValue() : 0d;
+				return pop > 0 && densite < recoSquareMeterPerCapita;
+			});
+
+			if (!resteDeficit) {
+				log.info("Itération {}: plus de déficit significatif, arrêt.", iter);
+				break;
 			}
-			
-			int surfaceExistante = carre.getAccessingSurface().intValue();
-			int surfaceCible = (int)(population * recoSquareMeterPerCapita);
-			
-			// Calculer la surface totale après ajouts (carré + voisins)
-			// surfaceTotale = surfaceExistante + surfaceAAjouter[i] + somme(surfacesAAjouter[voisins])
-			
-			List<String> voisinsIds = voisinagesIds.get(idInspire);
-			IntVar[] surfacesVoisins = new IntVar[voisinsIds.size() + 1];
-			surfacesVoisins[0] = surfacesAAjouter[i]; // Surface du carré lui-même
-			
-			for (int j = 0; j < voisinsIds.size(); j++) {
-				String voisinId = voisinsIds.get(j);
-				Integer voisinIdx = carreIndex.get(voisinId);
-				if (voisinIdx != null) {
-					surfacesVoisins[j + 1] = surfacesAAjouter[voisinIdx];
-				} else {
-					// Voisin hors map (ne devrait pas arriver)
-					surfacesVoisins[j + 1] = model.intVar(0);
-				}
-			}
-			
-			// Somme des surfaces ajoutées (carré + voisins)
-			IntVar sommeSurfacesAjoutees = model.intVar("somme_" + idInspire, 0, 40000 * (voisinsIds.size() + 1));
-			model.sum(surfacesVoisins, "=", sommeSurfacesAjoutees).post();
-			
-			// Surface totale accessible après ajouts
-			IntVar surfaceTotale = model.intVar("total_" + idInspire, 
-					surfaceExistante, surfaceExistante + 40000 * (voisinsIds.size() + 1));
-			model.arithm(surfaceTotale, "=", sommeSurfacesAjoutees, "+", surfaceExistante).post();
-			
-			// Variable pour la surface cible
-			IntVar surfaceCibleVar = model.intVar("cible_" + idInspire, surfaceCible);
-			
-			// Écart = surfaceCible - surfaceTotale
-			ecarts[i] = model.intVar("ecart_" + idInspire, 
-					surfaceExistante - surfaceCible, 
-					surfaceExistante + 40000 * (voisinsIds.size() + 1) - surfaceCible);
-			model.arithm(ecarts[i], "=", surfaceCibleVar, "-", surfaceTotale).post();
-			
-			// Écart absolu pour la fonction objectif
-			ecartsAbsolus[i] = model.intVar("ecart_abs_" + idInspire, 0, 
-					Math.max(Math.abs(surfaceExistante - surfaceCible), 
-							Math.abs(surfaceExistante + 40000 * (voisinsIds.size() + 1) - surfaceCible)));
-			model.absolute(ecartsAbsolus[i], ecarts[i]).post();
-		}
-		
-		// Objectif : minimiser la somme des écarts absolus
-		// On peut pondérer par la population pour privilégier les zones peuplées
-		IntVar objectif = model.intVar("objectif", 0, IntVar.MAX_INT_BOUND);
-		model.sum(ecartsAbsolus, "=", objectif).post();
-		
-		model.setObjective(Model.MINIMIZE, objectif);
-		
-		// Résolution
-		log.info("Lancement de la résolution...");
-		if (model.getSolver().solve()) {
-			log.info("Solution trouvée ! Application des propositions...");
-			
-			// Appliquer les solutions
-			int nbParcsAjoutes = 0;
-			double surfaceTotaleAjoutee = 0;
-			
+
+			Model model = new Model("Optimisation Parcs - itération " + iter);
+
+			// Variables : surface à ajouter pour chaque carré (0 ou >= 1000)
+			IntVar[] surfacesAAjouter = new IntVar[carreIds.size()];
 			for (int i = 0; i < carreIds.size(); i++) {
-				int surfaceProposee = surfacesAAjouter[i].getValue();
-				
-				if (surfaceProposee > 0) {
-					String idInspire = carreIds.get(i);
-					ParkProposalWork carre = carreMap.get(idInspire);
-					
-					carre.setNewSurface(BigDecimal.valueOf(surfaceProposee));
-					nbParcsAjoutes++;
-					surfaceTotaleAjoutee += surfaceProposee;
-					
-					log.info("Carré {} : ajout de {} m² de parc", idInspire, surfaceProposee);
-				}
+				String id = carreIds.get(i);
+				ParkProposalWork carre = carreMap.get(id);
+				int population = carre.getAccessingPopulation().intValue();
+				int surfaceExistante = carre.getAccessingSurface().intValue();
+
+				// Besoin théorique pour atteindre la reco
+				int besoinTheorique = population > 0 ? (int)Math.max(0, Math.min((int)(population * recoSquareMeterPerCapita) - surfaceExistante, CARRE_SURFACE)) : 0;
+				int upperBound = Math.max(besoinTheorique, 0);
+
+				surfacesAAjouter[i] = model.intVar("add_" + id, 0, upperBound > 0 ? upperBound : (int)CARRE_SURFACE);
+				// 0 OU >= MIN_PARK_SURFACE lorsque une addition est décidée
+				model.or(
+					model.arithm(surfacesAAjouter[i], "=", 0),
+					model.arithm(surfacesAAjouter[i], ">=", (int)MIN_PARK_SURFACE)
+				).post();
 			}
-			
-			// Recalculer les surfaces par habitant pour tous les carrés
-			for (String idInspire : carreIds) {
+
+			// Calcul de l'écart absolu à la densité recommandée après ajout local + voisins
+			IntVar[] ecartsAbsolus = new IntVar[carreIds.size()];
+			for (int i = 0; i < carreIds.size(); i++) {
+				String idInspire = carreIds.get(i);
 				ParkProposalWork carre = carreMap.get(idInspire);
-				double surfaceAccessible = carre.getAccessingSurface().doubleValue();
-				
-				// Ajouter les surfaces des voisins
-				List<String> voisinsIds = voisinagesIds.get(idInspire);
-				for (String voisinId : voisinsIds) {
-					ParkProposalWork voisin = carreMap.get(voisinId);
-					if (voisin != null && voisin.getNewSurface() != null) {
-						surfaceAccessible += voisin.getNewSurface().doubleValue();
+				int population = carre.getAccessingPopulation().intValue();
+
+				if (population == 0) {
+					ecartsAbsolus[i] = model.intVar(0);
+					continue;
+				}
+
+				int surfaceExistante = carre.getAccessingSurface().intValue();
+				List<String> voisins = voisinagesIds.get(idInspire);
+
+				// Somme des ajouts voisins + local
+				List<IntVar> additions = new ArrayList<>();
+				additions.add(surfacesAAjouter[i]);
+				for (String vId : voisins) {
+					int vIndex = carreIds.indexOf(vId);
+					if (vIndex >= 0) {
+						additions.add(surfacesAAjouter[vIndex]);
 					}
 				}
-				
-				// Ajouter la surface locale
-				if (carre.getNewSurface() != null) {
-					surfaceAccessible += carre.getNewSurface().doubleValue();
-				}
-				
-				// Recalculer la densité
-				double population = carre.getAccessingPopulation().doubleValue();
-				if (population > 0) {
-					double nouvelleDensite = surfaceAccessible / population;
-					carre.setSurfacePerCapita(BigDecimal.valueOf(nouvelleDensite));
+				IntVar[] additionsArr = additions.toArray(new IntVar[0]);
+				int maxAdd = (int)(CARRE_SURFACE * (additionsArr.length));
+				IntVar sommeAdd = model.intVar("sumAdd_" + idInspire, 0, maxAdd);
+				model.sum(additionsArr, "=", sommeAdd).post();
+
+				// Surface totale après ajouts
+				IntVar surfaceTotale = model.intVar("total_" + idInspire, surfaceExistante, surfaceExistante + maxAdd);
+				model.arithm(surfaceTotale, "=", sommeAdd, "+", surfaceExistante).post();
+
+				// Densité cible en surface brute
+				int surfaceCible = (int)(population * recoSquareMeterPerCapita);
+				IntVar ecart = model.intVar("ecart_" + idInspire, -(surfaceCible), surfaceCible + maxAdd);
+				model.arithm(ecart, "=", model.intVar(surfaceCible), "-", surfaceTotale).post();
+
+				ecartsAbsolus[i] = model.intVar("abs_" + idInspire, 0, surfaceCible + maxAdd);
+				model.absolute(ecartsAbsolus[i], ecart).post();
+			}
+
+			// Objectif : minimiser la somme des écarts absolus
+			IntVar objectif = model.intVar("obj_" + iter, 0, IntVar.MAX_INT_BOUND);
+			model.sum(ecartsAbsolus, "=", objectif).post();
+			model.setObjective(Model.MINIMIZE, objectif);
+
+			log.info("Itération {}: résolution du modèle...", iter);
+			boolean solved = model.getSolver().solve();
+			if (!solved) {
+				log.warn("Itération {}: aucune solution trouvée, arrêt.", iter);
+				break;
+			}
+
+			// Appliquer les ajouts non nuls
+			int ajouts = 0;
+			double surfaceAjoutee = 0d;
+			for (int i = 0; i < carreIds.size(); i++) {
+				int add = surfacesAAjouter[i].getValue();
+				if (add > 0) {
+					ajouts++;
+					surfaceAjoutee += add;
+					ParkProposalWork p = carreMap.get(carreIds.get(i));
+					p.setNewSurface(BigDecimal.valueOf(add));
+					p.setNewMissingSurface(p.getMissingSurface() != null ? p.getMissingSurface().subtract(BigDecimal.valueOf(add)).max(BigDecimal.ZERO) : BigDecimal.ZERO);
 				}
 			}
-			
-			log.info("Optimisation terminée : {} parcs ajoutés pour une surface totale de {:.2f} m²", 
-					nbParcsAjoutes, surfaceTotaleAjoutee);
-			log.info("Écart total à l'objectif : {}", objectif.getValue());
-			
-		} else {
-			log.warn("Aucune solution trouvée par le solveur");
+
+			log.info("Itération {}: {} ajouts, {:.2f} m² ajoutés.", iter, ajouts, surfaceAjoutee);
+
+			if (ajouts == 0) {
+				log.info("Itération {}: aucun ajout proposé (seuil 1000 m²), arrêt.", iter);
+				break;
+			}
+
+			// Mettre à jour les densités locales après application
+			for (String idInspire : carreIds) {
+				ParkProposalWork carre = carreMap.get(idInspire);
+				double totalSurface = carre.getAccessingSurface().doubleValue();
+				if (carre.getNewSurface() != null) {
+					totalSurface += carre.getNewSurface().doubleValue();
+				}
+				for (String vId : voisinagesIds.get(idInspire)) {
+					ParkProposalWork voisin = carreMap.get(vId);
+					if (voisin != null && voisin.getNewSurface() != null) {
+						totalSurface += voisin.getNewSurface().doubleValue();
+					}
+				}
+				double pop = carre.getAccessingPopulation().doubleValue();
+				if (pop > 0) {
+					carre.setSurfacePerCapita(BigDecimal.valueOf(totalSurface / pop));
+				}
+			}
 		}
+
+		log.info("Calcul itératif terminé.");
 	}
 	
 	/**
@@ -439,12 +432,11 @@ public class ServicePropositionParc {
 	 * 
 	 * @author github.com/cunvoas
 	 */
-	public ParkProposal calculeEtapeProposition(Map<String, ParkProposalWork> carreMap,  Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
+	public ParkProposal calculeEtapeProposition(Double minParkSurface, Map<String, ParkProposalWork> carreMap,  Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
 		List<ParkProposalWork> sorted = sortProposalsByDeficit(carreMap);
-//		List<ParkProposal> sorted = sortProposalsByPersona(carreMap);
+		//List<ParkProposalWork> sorted = sortProposalsByPersona(carreMap);
 		
 		ParkProposal proposalResult = null;
-		
 		if (!sorted.isEmpty()) {
 			ParkProposalWork toProcess = sorted.get(0);
 			if (toProcess.getSurfacePerCapita().doubleValue() > minSquareMeterPerCapita) {
@@ -456,7 +448,7 @@ public class ServicePropositionParc {
 			// calcul de la surface de parc à ajouter pour atteindre la densité recommandée
 			// comprise entre 0 et 40 000 m² (surface max d'un carré de 200m x 200m)
 			Double newParkSurface = Math.min(Math.max(recoSquareMeterPerCapita-toProcess.getSurfacePerCapita().doubleValue(), 0), CARRE_SURFACE) * toProcess.getAccessingPopulation().doubleValue();
-			if (newParkSurface>=MIN_PARK_SURFACE) {
+			if (newParkSurface>=minParkSurface) {
 				
 				
 				proposalResult = new ParkProposal();
@@ -475,10 +467,6 @@ public class ServicePropositionParc {
 				Double newSurfacePerCapita = newTotalSurface / toProcess.getAccessingPopulation().doubleValue();
 				toProcess.setSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
 				
-//				carreMap.put(toProcess.getIdInspire(), toProcess);
-				
-//				log.warn("Proposition pour le carré {} : ajouter {} m² de parc.", toProcess.getIdInspire(), newParkSurface);
-				
 				// mettre à jour les voisins
 				for (ParkProposalWork neighbor : neighbors) {
 					Double neighborNewTotalSurface = neighbor.getAccessingSurface().doubleValue() + newParkSurface;
@@ -488,16 +476,13 @@ public class ServicePropositionParc {
 						//log.error("neighbor {} accessingPopulation={}", neighbor.getIdInspire(), neighbor.getAccessingPopulation().doubleValue());
 						
 						neighborNewSurfacePerCapita = neighborNewTotalSurface / neighbor.getAccessingPopulation().doubleValue();
-//						log.error("neighborNewSurfacePerCapita={}", neighborNewSurfacePerCapita);
 						neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborNewSurfacePerCapita));
 					
 					} else {
 						neighbor.setNewSurfacePerCapita(null);
 					}
-					neighbor.setNewSurface(new BigDecimal(neighborNewTotalSurface));
+					neighbor.setNewSurface(new BigDecimal(String.valueOf(neighborNewTotalSurface)));
 					neighbor.setNewMissingSurface( toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)).max(BigDecimal.ZERO));
-
-//					carreMap.put(neighbor.getIdInspire(), neighbor);
 				}
 				
 				log.error("Proposition pour le carré {} : ajout de parc (surface proposée: {}).", 
@@ -508,8 +493,6 @@ public class ServicePropositionParc {
 						toProcess.getIdInspire(), MIN_PARK_SURFACE);
 				//toProcess.setNewSurface(null);
 			}
-		
-		
 		}
 		return proposalResult;
 	}
@@ -522,15 +505,8 @@ public class ServicePropositionParc {
 	 * test: 268566.01
 	 */
 	public List<ParkProposalWork> sortProposalsByDeficit(Map<String, ParkProposalWork> carreMap) {
-		List<ParkProposalWork> proposals = new ArrayList<>(carreMap.values());
-		
-		// Trier les propositions par déficit décroissant
-		proposals.sort((p1, p2) -> {
-			Double deficit1 = p1.getNewMissingSurface()!=null?p1.getNewMissingSurface().doubleValue():0;
-			Double deficit2 = p2.getNewMissingSurface()!=null?p2.getNewMissingSurface().doubleValue():0;
-			return Double.compare(deficit2, deficit1);
-		});
-		return proposals;
+		ProposalSortStrategy strategy = ProposalSortStrategyFactory.create(Type.DEFICIT);
+		return strategy.sort(carreMap);
 	}
 	
 
@@ -542,16 +518,8 @@ public class ServicePropositionParc {
 	 * test: xxxs
 	 */
 	public List<ParkProposalWork> sortProposalsByPersona(Map<String, ParkProposalWork> carreMap) {
-		List<ParkProposalWork> proposals = new ArrayList<>(carreMap.values());
-		
-		// Trier les propositions par déficit décroissant
-		proposals.sort((p1, p2) -> {
-
-			Double deficit1 = p1.getNewSurfacePerCapita()!=null?p1.getNewSurfacePerCapita().doubleValue():0;
-			Double deficit2 = p2.getNewSurfacePerCapita()!=null?p2.getNewSurfacePerCapita().doubleValue():0;
-			return Double.compare(deficit2, deficit1);
-		});
-		return proposals;
+		ProposalSortStrategy strategy = ProposalSortStrategyFactory.create(Type.PERSONA);
+		return strategy.sort(carreMap);
 	}
 	
 	
