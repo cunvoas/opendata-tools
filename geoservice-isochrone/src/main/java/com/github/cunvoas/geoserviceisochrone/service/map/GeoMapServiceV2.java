@@ -29,6 +29,7 @@ import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkGarden
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkPrefView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkProposalView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ProjetSimulView;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
@@ -50,6 +51,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.IrisDataComputedRepository;
@@ -57,6 +59,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
@@ -132,6 +135,10 @@ public class GeoMapServiceV2 {
 
     @Autowired
     private ParkProposalRepository parkProposalRepository;
+    
+
+    @Autowired
+    private ProjectSimulatorRepository projectSimulatorRepository;
     
     @Autowired
     private ParkAreaRepository parkAreaRepository;
@@ -315,6 +322,19 @@ public class GeoMapServiceV2 {
 	public GeoJsonRoot findAllParkOutlineByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllParkOutlineByArea(polygon);
+    }
+	
+	/**
+     * getProjectByArea.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return Outline geojson
+	 */
+	public GeoJsonRoot findProjetSimulationByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	return this.findProjetSimulationByArea(polygon);
     }
 
     
@@ -590,6 +610,48 @@ public class GeoMapServiceV2 {
 					pv.setRadius(proposal.getRadius());
 					pv.setSurface(Math.round(proposal.getParkSurface().longValue()));
 					
+					feature.setProperties(pv);
+					
+				}
+			}
+    	}
+		return root;
+	}
+	
+
+	/**
+	 * findProjetSimulationByArea.
+	 * @param polygon Polygon
+	 * @return   park proposal geojson
+	 */
+	public GeoJsonRoot findProjetSimulationByArea(Polygon polygon) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
+    	if (polygon!=null) {
+			List<ProjectSimulator> proposals =  projectSimulatorRepository.findInMapArea( GeometryQueryHelper.toText(polygon));
+			if (!CollectionUtils.isEmpty(proposals)) {
+				for (ProjectSimulator proposal : proposals) {
+					GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					feature.setGeometry(proposal.getShapeArea());
+					
+					ProjetSimulView pv = new ProjetSimulView();
+					
+					pv.setId(String.valueOf(proposal.getId()));
+					pv.setDense(proposal.getIsDense());
+					pv.setName(proposal.getName());
+					if (proposal.getSurfaceArea()!=null) {
+						pv.setSurfaceArea(Math.round(proposal.getSurfaceArea().longValue()));
+					}
+					if (proposal.getSurfaceFloor()!=null) {
+						pv.setSurfaceFloor(Math.round(proposal.getSurfaceFloor().longValue()));
+					}
+					if (proposal.getSurfacePark()!=null) {
+						pv.setSurfacePark(Math.round(proposal.getSurfacePark().longValue()));
+					}
+					if (proposal.getPopulation()!=null) {
+						pv.setPopulation(Math.round(proposal.getPopulation().longValue()));
+					}
 					feature.setProperties(pv);
 					
 				}

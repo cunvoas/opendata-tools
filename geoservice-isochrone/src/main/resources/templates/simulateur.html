@@ -82,12 +82,10 @@
                   <table class="table table-hover table-sm mb-0">
                     <thead class="table-light sticky-top">
                       <tr>
-                        <th>ID</th>
-                        <th>Année</th>
-                        <th>Type</th>
+                        <th>Nom</th>
+                        <th>Surface zone</th>
                         <th>Population</th>
-                        <th>Surface zone (m²)</th>
-                        <th>Surface parc (m²)</th>
+                        <th>Surface parc</th>
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -95,17 +93,12 @@
                       <tr th:if="${projects == null || #lists.isEmpty(projects)}">
                         <td colspan="7" class="text-center text-muted py-3">
                           <i class="fas fa-info-circle"></i> Aucun projet pour cette commune. Sélectionnez une commune ou créez un nouveau projet.
-                        </td>
+                        </
                       </tr>
                       <tr th:each="project, iterStat : ${projects}" th:if="${iterStat.index < 5}">
-                        <td th:text="${project.id}">#</td>
-                        <td th:text="${project.annee}">2024</td>
-                        <td>
-                          <span class="badge bg-primary" th:if="${project.isDense}">Dense</span>
-                          <span class="badge bg-secondary" th:if="${project.isDense == null || !project.isDense}">Non dense</span>
-                        </td>
-                        <td th:text="${project.population != null ? #numbers.formatDecimal(project.population, 0, 0) : '-'}">-</td>
+                        <td th:text="${project.name}">nom</td>
                         <td th:text="${project.surfaceArea != null ? #numbers.formatDecimal(project.surfaceArea, 0, 0) : '-'}">-</td>
+                        <td th:text="${project.population != null ? #numbers.formatDecimal(project.population, 0, 0) : '-'}">-</td>
                         <td th:text="${project.surfacePark != null ? #numbers.formatDecimal(project.surfacePark, 0, 0) : '-'}">-</td>
                         <td>
                           <form th:action="@{/mvc/simulation/load}" method="post" style="display: inline;">
@@ -141,6 +134,10 @@
                 <div class="card-header">Paramètres du projet</div>
                 <div class="card-body">
                   <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-6 col-lg-6">
+                      <label for="name" class="form-label">Nom du projet</label>
+                      <input type="text" class="form-control" id="name" name="name" placeholder="Nom du projet">
+                    </div>
                     <div class="col-12 col-md-3 col-lg-3">
                       <label for="annee" class="form-label">Année</label>
                       <input type="number" class="form-control" id="annee" name="annee" placeholder="2024">
@@ -153,10 +150,6 @@
                           Zone dense
                         </label>
                       </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-6">
-                      <label for="name" class="form-label">Nom du projet</label>
-                      <input type="text" class="form-control" id="name" name="name" placeholder="Nom du projet">
                     </div>
                   </div>
                   
@@ -173,8 +166,8 @@
                   
                   <div class="row g-2 mt-3">
                     <div class="col-12 col-md-6">
-                      <label for="floorSurface" class="form-label">Surface plancher (m²)</label>
-                      <input type="number" step="0.01" class="form-control" id="floorSurface" name="floorSurface" placeholder="5000">
+                      <label for="surfaceFloor" class="form-label">Surface plancher (m²)</label>
+                      <input type="number" step="0.01" class="form-control" id="surfaceFloor" name="surfaceFloor" placeholder="5000">
                     </div>
                     <div class="col-12 col-md-6">
                       <label for="population" class="form-label">Population estimée</label>
@@ -185,7 +178,7 @@
                   <div class="row g-2 mt-3">
                     <div class="col-12 col-md-6">
                       <label for="surfaceArea" class="form-label">Surface de la zone (m²)</label>
-                      <input type="number" step="0.01" class="form-control" id="surfaceArea" name="surfaceArea" placeholder="10000" readonly>
+                      <input type="number" step="0.01" class="form-control" id="surfaceArea" name="surfaceArea" placeholder="10000">
                     </div>
                     <div class="col-12 col-md-6">
                       <label for="surfacePark" class="form-label">Surface parc prévue (m²)</label>
@@ -307,6 +300,23 @@ overlays['Projets'] = dataProjectZone;
 
 L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
 
+// Légende des états de parcs (couleurs alignées avec consultMap)
+const legend = L.control({ position: 'bottomright' });
+legend.onAdd = function () {
+  const div = L.DomUtil.create('div', 'info legend');
+  div.style.background = 'white';
+  div.style.padding = '8px';
+  div.style.borderRadius = '4px';
+  div.style.boxShadow = '0 0 8px rgba(0,0,0,0.2)';
+  const labels = [];
+  labels.push(`<i style="background:#3aa637;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc inclus OMS`);
+  labels.push(`<i style="background:#e96020;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc exclus OMS`);
+  labels.push(`<i style="background:#DC20E9;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Futur parc ou détruit`);
+  div.innerHTML = labels.join('<br>');
+  return div;
+};
+legend.addTo(map);
+
 // ----------- LEAFLET-GEOMAN DRAWING -----------
 // Configuration de leaflet-geoman pour le dessin
 map.pm.setLang('fr');
@@ -395,6 +405,27 @@ map.on('pm:remove', function(e) {
 
 // ----------- CHARGEMENT PARCS -----------
 const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
+const endpointProjects = /*[[@{/mvc/geojson/projectByCorner}]]*/ '';
+
+/**
+ * Détermine le style dynamique d'un parc en fonction de ses propriétés
+ */
+function getParkStyle(feature) {
+  let fillColor = '#3aa637'; // Couleur par défaut (parc inclus OMS)
+  
+  if (feature && feature.properties) {
+    // Vérifier d'abord si le parc est actif
+    if (feature.properties.actif === false) {
+      fillColor = '#DC20E9'; // Futur parc ou détruit
+    } else if (feature.properties.oms === false) {
+      fillColor = '#e96020'; // Parc exclus OMS
+    } else if (feature.properties.oms === true) {
+      fillColor = '#3aa637'; // Parc inclus OMS
+    }
+  }
+  
+  return { color: '#1e4d1c', fillColor, weight: 1, fillOpacity: 0.35 };
+}
 
 /**
  * Charge les parcs dans la zone visible
@@ -410,14 +441,7 @@ function loadParcs() {
     .then(geojson => {
       dataParcs.clearLayers();
       L.geoJSON(geojson, {
-        style: function(feature) {
-          return {
-            color: '#1e4d1c',
-            fillColor: '#3aa637',
-            weight: 1,
-            fillOpacity: 0.35
-          };
-        },
+        style: function(feature) { return getParkStyle(feature); },
         onEachFeature: function(feature, layer) {
           if (feature.properties && feature.properties.name) {
             layer.bindPopup('<b>' + feature.properties.name + '</b>');
@@ -434,9 +458,63 @@ function loadParcs() {
     .catch(err => console.error('[Simulateur] Erreur chargement parcs', err));
 }
 
+/**
+ * Charge les projets de simulation dans la zone visible
+ */
+function loadProjects() {
+  if (!endpointProjects) return;
+  
+  const b = map.getBounds();
+  const url = `${endpointProjects}?swLat=${b.getSouthWest().lat}&swLng=${b.getSouthWest().lng}&neLat=${b.getNorthEast().lat}&neLng=${b.getNorthEast().lng}`;
+  
+  fetch(url)
+    .then(r => r.json())
+    .then(geojson => {
+      dataProjectZone.clearLayers();
+      
+      // Re-add current layer if it exists
+      if (currentLayer) {
+        currentLayer.addTo(dataProjectZone);
+      }
+      
+      L.geoJSON(geojson, {
+        style: function(feature) {
+          return {
+            color: '#0066cc',
+            fillColor: '#3399ff',
+            weight: 2,
+            fillOpacity: 0.25
+          };
+        },
+        onEachFeature: function(feature, layer) {
+          let popupContent = '<b>Projet de simulation</b><br>';
+          if (feature.properties) {
+            if (feature.properties.nom) popupContent += 'Nom: ' + feature.properties.nom + '<br>';
+            if (feature.properties.annee) popupContent += 'Année: ' + feature.properties.annee + '<br>';
+            if (feature.properties.population) popupContent += 'Population: ' + feature.properties.population + '<br>';
+            if (feature.properties.surfaceArea) popupContent += 'Surface: ' + Math.round(feature.properties.surfaceArea) + ' m²<br>';
+          }
+          layer.bindPopup(popupContent);
+          
+          // Empêcher toute édition Geoman sur les projets existants
+          if (layer.pm) {
+            layer.pm.setOptions({ pmIgnore: true });
+            layer.pm.disable();
+          }
+        }
+      }).addTo(dataProjectZone);
+      console.log('[Simulateur] Projets chargés:', geojson.features ? geojson.features.length : 0);
+    })
+    .catch(err => console.error('[Simulateur] Erreur chargement projets', err));
+}
+
 // Chargement initial et au déplacement
-map.on('moveend', loadParcs);
+map.on('moveend', function() {
+  loadParcs();
+  loadProjects();
+});
 loadParcs();
+loadProjects();
 
 console.log('[Simulateur] Carte initialisée');
 
@@ -470,7 +548,7 @@ console.log('[Simulateur] Carte initialisée');
 
 // ----------- CALCUL AUTOMATIQUE POPULATION -----------
 (function initAutoPopulation(){
-  const floorEl = document.getElementById('floorSurface');
+  const floorEl = document.getElementById('surfaceFloor');
   const avgEl = document.getElementById('avgAreaAccommodation');
   const densityEl = document.getElementById('densityPerAccommodation');
   const populationEl = document.getElementById('population');

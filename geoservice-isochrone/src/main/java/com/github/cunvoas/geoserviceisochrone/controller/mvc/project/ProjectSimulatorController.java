@@ -129,7 +129,7 @@ public class ProjectSimulatorController {
             form.setAnnee(ps.getAnnee());
             form.setIsDense(ps.getIsDense());
             form.setPopulation(ps.getPopulation());
-            form.setFloorSurface(ps.getFloorSurface());
+            form.setFloorSurface(ps.getSurfaceFloor());
             form.setDensityPerAccommodation(ps.getDensityPerAccommodation());
             form.setAvgAreaAccommodation(ps.getAvgAreaAccommodation());
             form.setSurfaceArea(ps.getSurfaceArea());
@@ -185,6 +185,11 @@ public class ProjectSimulatorController {
         }
         
         // TODO: traitement du simulateur (calculs métier)
+        ProjectSimulator bo = map(form);
+        bo = projectSimulatorService.save(bo);
+        
+        
+        
         
         populate(form);
         model.addAttribute(FORM_KEY, form);
@@ -192,6 +197,24 @@ public class ProjectSimulatorController {
         model.addAttribute("communautesDeCommunes", form.getCommunautesDeCommunes());
         model.addAttribute("communes", form.getCommunes());
         return VIEW;
+    }
+    
+    
+    private ProjectSimulator map(FormProjectSimulator form) {
+    	ProjectSimulator bo = new ProjectSimulator();
+    	bo.setId(form.getId());
+		bo.setAnnee(form.getAnnee());
+		bo.setIsDense(form.getIsDense());
+		bo.setPopulation(form.getPopulation());
+		bo.setSurfaceFloor(form.getFloorSurface());
+		bo.setDensityPerAccommodation(form.getDensityPerAccommodation());
+		bo.setAvgAreaAccommodation(form.getAvgAreaAccommodation());
+		bo.setSurfaceArea(form.getSurfaceArea());
+		bo.setSurfacePark(form.getSurfacePark());
+		bo.setIdCommune(form.getIdCommune());
+		bo.setName(form.getName());
+		bo.setShapeArea(form.getShapeArea());
+    	return bo;
     }
     
     /**
@@ -259,16 +282,4 @@ public class ProjectSimulatorController {
         return ps;
     }
 
-    /**
-     * Persist a ProjectSimulator (REST endpoint).
-     * @param projectSimulator payload
-     * @return saved instance
-     */
-    @PostMapping("/save")
-    @ResponseBody
-    public ProjectSimulator save(@RequestBody ProjectSimulator projectSimulator) {
-        ProjectSimulator saved = projectSimulatorService.save(projectSimulator);
-        log.info("Saved ProjectSimulator id={}", saved != null ? saved.getId() : null);
-        return saved;
-    }
 }

@@ -16,4 +16,14 @@ public interface ProjectSimulatorRepository extends JpaRepository<ProjectSimulat
 	@Query("SELECT p FROM project_simul p WHERE p.idCommune = :idCommune ORDER BY p.annee DESC, p.id DESC")
 	List<ProjectSimulator> findByIdCommune(@Param("idCommune") Long idCommune);
 
+	/** 
+	 * findParkProposalInMapArea.
+	 * @param mapArea shape in string
+	 * @return list of ParkArea
+	 */
+	@Query(nativeQuery = true, 
+			   value = "SELECT pp.* FROM project_simul pp WHERE ST_Intersects(pp.shape_area, ?1)")
+	public List<ProjectSimulator> findInMapArea(String sPolygon);
+
+	
 }
