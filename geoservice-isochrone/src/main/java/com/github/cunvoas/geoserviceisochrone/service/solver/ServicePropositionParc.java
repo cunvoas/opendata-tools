@@ -66,6 +66,11 @@ public class ServicePropositionParc {
 			parkProposalWorkRepository.saveAll(list);
 		}
 	}
+	public void saveProposals(List<ParkProposal> proposals) {
+		if (proposals!=null && !proposals.isEmpty()) {
+			parkProposalRepository.saveAll(proposals);
+		}
+	}
 	
 	/**
 	 * Fait une propostion avec une approche par carré.
@@ -73,6 +78,7 @@ public class ServicePropositionParc {
 	 * @param annee
 	 */
 	public Map<String, ParkProposalWork> calculeProposition(String insee, Integer annee) {
+		log.warn("Calcul des propositions de parc pour la commune {} en {}", insee, annee);
 		
 		Boolean dense = serviceOpenData.isDistanceDense(insee);
 		// Distance OMS selon densité
@@ -110,7 +116,12 @@ public class ServicePropositionParc {
 				
 				// ( Seuil OMS – MAX (0, surface disponible  - seuil OMS) ) * Nb Habitant qui ont accès
 				Double densiteMissing = Math.max(recoSquareMeterPerCapita - carreCputd.getSurfaceParkPerCapitaOms().doubleValue(), 0);
-				parkProposal.setMissingSurface(BigDecimal.valueOf(densiteMissing*carreCputd.getPopAll().doubleValue())); 
+				
+				BigDecimal popAll =carreCputd.getPopAll();
+				if (popAll==null) {
+					popAll=BigDecimal.ZERO;
+				}
+				parkProposal.setMissingSurface(BigDecimal.valueOf(densiteMissing*popAll.doubleValue())); 
 				parkProposal.setAccessingPopulation(carreCputd.getPopAll());
 				parkProposal.setAccessingSurface(carreCputd.getSurfaceTotalParkOms());
 				
@@ -144,11 +155,13 @@ public class ServicePropositionParc {
 
 		
 		// ALGO 2 : approche solver global (exemple d'utilisation via stratégie)
-//		ProposalComputationStrategy solver = ProposalComputationStrategyFactory.create(ProposalComputationStrategyFactory.Type.SOLVER, AbstractComputationtrategy.MIN_PARK_SURFACE);
+//		ProposalComputationStrategy solver = ProposalComputationStrategyFactory.create(ProposalComputationStrategyFactory.Type.SOLVER_2, AbstractComputationtrategy.MIN_PARK_SURFACE);
 //		proposals = solver.compute(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
 		
 		if (proposals!=null && !proposals.isEmpty()) {
 			parkProposalRepository.saveAll(proposals);
+		} else {
+			log.warn("Aucune proposition calculée pour la commune {} en {}", insee, annee);
 		}
 		return carreMap;
 	}

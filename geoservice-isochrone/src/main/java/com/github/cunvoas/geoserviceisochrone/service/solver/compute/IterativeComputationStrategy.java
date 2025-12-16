@@ -40,8 +40,6 @@ public class IterativeComputationStrategy extends AbstractComputationtrategy  {
         return proposals;
     }
     
-    
-
 
 	
 	/**
@@ -117,7 +115,14 @@ public class IterativeComputationStrategy extends AbstractComputationtrategy  {
 
 			// calcul de la surface de parc à ajouter pour atteindre la densité recommandée
 			// comprise entre 0 et 40 000 m² (surface max d'un carré de 200m x 200m)
-			Double newParkSurface = Math.min(Math.max(recoSquareMeterPerCapita-toProcess.getSurfacePerCapita().doubleValue(), 0), AbstractComputationtrategy.CARRE_SURFACE) * toProcess.getAccessingPopulation().doubleValue();
+			Double newParkSurface = 
+					Math.min(
+							Math.max(
+									recoSquareMeterPerCapita-toProcess.getSurfacePerCapita().doubleValue(),
+									0), 
+						AbstractComputationtrategy.CARRE_SURFACE
+						) * toProcess.getAccessingPopulation().doubleValue();
+			
 			if (newParkSurface>=minParkSurface) {
 				
 				proposalResult = new ParkProposal();

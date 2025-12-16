@@ -71,14 +71,15 @@ public abstract class AbstractComputationtrategy implements ProposalComputationS
 		
 		// Récupérer le centroïde du carré central
 		Geometry centreGeom = centre.getCentre();
-		Coordinate centreCentroid = centreGeom.getCentroid().getCoordinate();
+		Coordinate centroid = centreGeom.getCentroid().getCoordinate();
 		
 		// Rechercher les carrés dans cette zone
 		for (Map.Entry<String, ParkProposalWork> parkProposal : carreMap.entrySet()) {
 			if (!parkProposal.getKey().equals(idInspire)) {
+				// calcul de la distance au centroïde mètres
 				Double distance = 1_000 * DistanceHelper.crowFlyDistance(
-						centreCentroid.y, 
-						centreCentroid.x,
+						centroid.y, 
+						centroid.x,
 						parkProposal.getValue().getCentre().getCentroid().getY(),
 						parkProposal.getValue().getCentre().getCentroid().getX());
 				
@@ -88,6 +89,10 @@ public abstract class AbstractComputationtrategy implements ProposalComputationS
 			}
 		}
 
+		if (neighbors.size()>24) {
+			log.warn("Nombre de voisins ({}) supérieur à 24 pour le carré {} en zone urbaine", neighbors.size(), idInspire);
+			
+		}
 		log.info("Trouvé {} voisins pour le carré {}", neighbors.size(), idInspire);
 		return neighbors;
 	}

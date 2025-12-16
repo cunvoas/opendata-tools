@@ -6,6 +6,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -503,6 +504,7 @@ public class GeoMapServiceV2 {
 						ParkType pt = parkTypeService.get(park.getTypeId());
 						pv.setOms(pt.getOms());
 					}
+					pv.setActif(getActif(park));
 					
 					ParkArea pa =parkAreaRepository.findByIdParcEtJardin(park.getId());
 					pv.setEntry(pa!=null && pa.getPolygon()!=null);
@@ -513,6 +515,18 @@ public class GeoMapServiceV2 {
     		}
     	}
 		return root;
+	}
+	
+	public boolean getActif(ParcEtJardin park) {
+		boolean ret = true;
+		Date now = new Date();
+		if (park.getDateDebut()!=null && now.before(park.getDateDebut())) {
+			ret = false;
+		}
+		if (park.getDateFin()!=null && now.after(park.getDateFin())) {
+			ret = false;
+		}
+		return ret;
 	}
 	
 	/**

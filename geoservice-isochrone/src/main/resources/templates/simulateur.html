@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:insert="~{fragments/fragment-head :: head}"></head>
+<body class="sb-nav-fixed">
+<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+<div id="layoutSidenav">
+  <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+  <div id="layoutSidenav_content">
+    <main>
+      <div class="container-fluid">
+        <h4 class="mt-3">Simulateur de Projet</h4>
+        <p class="text-muted">Simulez un projet d'aménagement avec paramètres de population, surface et densité. La carte permet de visualiser et définir les zones du projet.</p>
+
+        <!-- Sélecteurs de territoire -->
+        <div class="row input-group border border-dark rounded-3 mb-3">
+          <h6 class="col-12 mt-2">Sélection du territoire</h6>
+          <div class="col-3">
+            <div class="card" style="text-align: center">
+              <form id="formSelectRegion" th:action="@{/mvc/simulation/region}" th:object="${formSimulateur}" method="post" onchange="submit();">
+                <div class="form-floating">
+                  <select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+                    <option value="" selected disabled>Choisir une région...</option>
+                    <option th:each="region : ${regions}" 
+                      th:value="${region.id}" 
+                      th:text="${region.name}"></option>
+                  </select>
+                  <label for="idRegion">Région</label>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="card" style="text-align: center">
+              <form id="formSelectComm2co" th:action="@{/mvc/simulation/commDeCo}" th:object="${formSimulateur}" method="post" onchange="submit();">
+                <fieldset id="fsComm2co" th:disabled="${formSimulateur.idRegion == null}">
+                  <div class="form-floating">
+                    <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+                      <option value="">EPCI...</option>
+                      <option th:each="commDeCo : ${communautesDeCommunes}" 
+                        th:value="${commDeCo.id}" 
+                        th:text="${commDeCo.name}"></option>
+                    </select>
+                    <label for="idCommunauteDeCommunes">Communauté de communes</label>
+                    <input type="hidden" id="idRegionComm" name="idRegion" th:field="*{idRegion}" />
+                  </div>
+                </fieldset>
+              </form>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card" style="text-align: center">
+              <form id="formSelectCity" th:action="@{/mvc/simulation/city}" method="POST" th:object="${formSimulateur}">
+                <fieldset id="fsCity" th:disabled="${formSimulateur.idCommunauteDeCommunes == null}">
+                  <div class="form-floating">
+                    <input class="form-control" list="communes" id="idCommune-filter" name="idCommune-filter" 
+                           th:value="${formSimulateur.nameCommune}" placeholder="Commune..." />
+                    <label for="idCommune-filter">Commune</label>
+                    <datalist id="communes">
+                      <option th:each="commune : ${communes}" 
+                        th:value="${commune.name}" 
+                        th:attr="data-value=${commune.id}"></option>
+                    </datalist>
+                    <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+                    <input type="hidden" id="idRegionCity" name="idRegion" th:field="*{idRegion}" />
+                    <input type="hidden" id="idCommunauteDeCommunesCity" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+                  </div>
+                </fieldset>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Liste des projets existants -->
+        <div class="row mb-3">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h6 class="mb-0">Projets existants sur cette commune <span class="badge bg-info" th:text="${projects != null ? projects.size() : 0}">0</span></h6>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                  <table class="table table-hover table-sm mb-0">
+                    <thead class="table-light sticky-top">
+                      <tr>
+                        <th>ID</th>
+                        <th>Année</th>
+                        <th>Type</th>
+                        <th>Population</th>
+                        <th>Surface zone (m²)</th>
+                        <th>Surface parc (m²)</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:if="${projects == null || #lists.isEmpty(projects)}">
+                        <td colspan="7" class="text-center text-muted py-3">
+                          <i class="fas fa-info-circle"></i> Aucun projet pour cette commune. Sélectionnez une commune ou créez un nouveau projet.
+                        </td>
+                      </tr>
+                      <tr th:each="project, iterStat : ${projects}" th:if="${iterStat.index < 5}">
+                        <td th:text="${project.id}">#</td>
+                        <td th:text="${project.annee}">2024</td>
+                        <td>
+                          <span class="badge bg-primary" th:if="${project.isDense}">Dense</span>
+                          <span class="badge bg-secondary" th:if="${project.isDense == null || !project.isDense}">Non dense</span>
+                        </td>
+                        <td th:text="${project.population != null ? #numbers.formatDecimal(project.population, 0, 0) : '-'}">-</td>
+                        <td th:text="${project.surfaceArea != null ? #numbers.formatDecimal(project.surfaceArea, 0, 0) : '-'}">-</td>
+                        <td th:text="${project.surfacePark != null ? #numbers.formatDecimal(project.surfacePark, 0, 0) : '-'}">-</td>
+                        <td>
+                          <form th:action="@{/mvc/simulation/load}" method="post" style="display: inline;">
+                            <input type="hidden" name="projectId" th:value="${project.id}" />
+                            <input type="hidden" name="idRegion" th:value="${formSimulateur.idRegion}" />
+                            <input type="hidden" name="idCommunauteDeCommunes" th:value="${formSimulateur.idCommunauteDeCommunes}" />
+                            <input type="hidden" name="idCommune" th:value="${formSimulateur.idCommune}" />
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                              <i class="fas fa-edit"></i> Éditer
+                            </button>
+                          </form>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulaire de simulation -->
+        <form th:action="@{/mvc/simulation/compute}" method="post" th:object="${formSimulateur}">
+          <input type="hidden" name="id" th:field="*{id}" />
+          <input type="hidden" name="idRegion" th:field="*{idRegion}" />
+          <input type="hidden" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+          <input type="hidden" name="idCommune" th:field="*{idCommune}" />
+          <div class="row g-3 mb-3">
+            <!-- Colonne gauche : paramètres -->
+            <div class="col-12 col-lg-6">
+              <div class="card">
+                <div class="card-header">Paramètres du projet</div>
+                <div class="card-body">
+                  <div class="row g-2">
+                    <div class="col-12 col-md-6">
+                      <label for="annee" class="form-label">Année</label>
+                      <input type="number" class="form-control" id="annee" name="annee" placeholder="2024">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="isDense" class="form-label">Type de zone</label>
+                      <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="isDense" name="isDense">
+                        <label class="form-check-label" for="isDense">
+                          Zone dense
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="row g-2 mt-3">
+                    <div class="col-12 col-md-6">
+                      <label for="population" class="form-label">Population estimée</label>
+                      <input type="number" step="0.01" class="form-control" id="population" name="population" placeholder="1000">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="floorSurface" class="form-label">Surface plancher (m²)</label>
+                      <input type="number" step="0.01" class="form-control" id="floorSurface" name="floorSurface" placeholder="5000">
+                    </div>
+                  </div>
+                  
+                  <div class="row g-2 mt-3">
+                    <div class="col-12 col-md-6">
+                      <label for="densityPerAccommodation" class="form-label">Densité par logement</label>
+                      <input type="number" step="0.01" class="form-control" id="densityPerAccommodation" name="densityPerAccommodation" placeholder="2.16">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="avgAreaAccommodation" class="form-label">Surface moy. logement (m²)</label>
+                      <input type="number" step="0.01" class="form-control" id="avgAreaAccommodation" name="avgAreaAccommodation" placeholder="68">
+                    </div>
+                  </div>
+                  
+                  <div class="row g-2 mt-3">
+                    <div class="col-12 col-md-6">
+                      <label for="surfaceArea" class="form-label">Surface de la zone (m²)</label>
+                      <input type="number" step="0.01" class="form-control" id="surfaceArea" name="surfaceArea" placeholder="10000">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="surfacePark" class="form-label">Surface parc prévue (m²)</label>
+                      <input type="number" step="0.01" class="form-control" id="surfacePark" name="surfacePark" placeholder="2000">
+                    </div>
+                  </div>
+                  
+                  <div class="row mt-3">
+                    <div class="col-12">
+                      <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-calculator"></i> Calculer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Colonne droite : carte -->
+            <div class="col-12 col-lg-6">
+              <div class="card">
+                <div class="card-header">Localisation du projet</div>
+                <div class="card-body p-0">
+                  <div id="mapSimulator" style="width:100%; height:400px;"></div>
+                </div>
+                <div class="card-footer text-muted small">
+                  Cliquez sur la carte pour définir la zone du projet
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Résultats de simulation -->
+          <div class="row mt-3">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">Résultats de simulation</div>
+                <div class="card-body">
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Les résultats de simulation apparaîtront ici après calcul.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+<div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
+<script th:src="@{/mvc/static/js/scripts.js}"></script>
+
+<script th:inline="javascript">
+// ----------- CONFIGURATION CARTE -----------
+const mapMinZoom = 10;
+const mapMaxZoom = 18;
+
+// Coordonnées par défaut
+const latInit = 50.626419;
+const lonInit = 3.0719121;
+const zoomInit = 15;
+
+// ----------- FONDS DE CARTE -----------
+const layerOSM = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a target="_blank" rel="noopener" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: mapMaxZoom,
+  minZoom: mapMinZoom
+});
+
+const layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Esri Satellite',
+  maxZoom: mapMaxZoom,
+  minZoom: mapMinZoom
+});
+
+const layerAeroIgn = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
+  attribution: 'IGN GeoPortail',
+  maxZoom: Math.min(18, mapMaxZoom),
+  minZoom: mapMinZoom
+});
+
+const baseLayers = {
+  'IGN Aérien': layerAeroIgn,
+  'Satellite': layerSatellite,
+  'OpenStreetMap': layerOSM
+};
+
+// ----------- INITIALISATION CARTE -----------
+console.log('[Simulateur] Initialisation carte...', latInit, lonInit, zoomInit);
+const map = L.map('mapSimulator', {
+  zoom: zoomInit,
+  layers: [layerOSM]
+}).setView([latInit, lonInit], zoomInit);
+
+L.control.scale().addTo(map);
+L.control.layers(baseLayers, {}).addTo(map);
+
+// ----------- OVERLAYS DYNAMIQUES -----------
+const dataParcs = L.layerGroup().addTo(map);
+const dataProjectZone = L.layerGroup().addTo(map);
+
+// Marqueur de zone de projet (peut être déplacé)
+let projectMarker = null;
+let projectZone = null;
+
+/**
+ * Ajoute un marqueur de projet sur la carte
+ */
+map.on('click', function(e) {
+  const lat = e.latlng.lat;
+  const lng = e.latlng.lng;
+  
+  if (projectMarker) {
+    map.removeLayer(projectMarker);
+  }
+  
+  projectMarker = L.marker([lat, lng], {
+    draggable: true,
+    icon: L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    })
+  }).addTo(map);
+  
+  projectMarker.bindPopup('Zone du projet<br>Lat: ' + lat.toFixed(6) + '<br>Lng: ' + lng.toFixed(6)).openPopup();
+  
+  console.log('[Simulateur] Marqueur placé:', lat, lng);
+});
+
+// ----------- CHARGEMENT PARCS -----------
+const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
+
+/**
+ * Charge les parcs dans la zone visible
+ */
+function loadParcs() {
+  if (!endpointParcs) return;
+  
+  const b = map.getBounds();
+  const url = `${endpointParcs}?swLat=${b.getSouthWest().lat}&swLng=${b.getSouthWest().lng}&neLat=${b.getNorthEast().lat}&neLng=${b.getNorthEast().lng}`;
+  
+  fetch(url)
+    .then(r => r.json())
+    .then(geojson => {
+      dataParcs.clearLayers();
+      L.geoJSON(geojson, {
+        style: function(feature) {
+          return {
+            color: '#1e4d1c',
+            fillColor: '#3aa637',
+            weight: 1,
+            fillOpacity: 0.35
+          };
+        },
+        onEachFeature: function(feature, layer) {
+          if (feature.properties && feature.properties.name) {
+            layer.bindPopup('<b>' + feature.properties.name + '</b>');
+          }
+        }
+      }).addTo(dataParcs);
+      console.log('[Simulateur] Parcs chargés:', geojson.features ? geojson.features.length : 0);
+    })
+    .catch(err => console.error('[Simulateur] Erreur chargement parcs', err));
+}
+
+// Chargement initial et au déplacement
+map.on('moveend', loadParcs);
+loadParcs();
+
+console.log('[Simulateur] Carte initialisée');
+
+// ----------- GESTION DATALIST COMMUNES -----------
+(function initCommuneDatalist(){
+  const input = document.getElementById('idCommune-filter');
+  if (!input) return;
+  
+  console.log('[Simulateur] Init datalist commune');
+  
+  input.addEventListener('input', function(e){
+    const options = document.querySelectorAll('#communes option');
+    const hiddenInput = document.getElementById('idCommune');
+    const inputValue = e.target.value;
+    
+    console.log('[Simulateur] Input commune changed:', inputValue);
+    
+    hiddenInput.value = '';
+    
+    for (const o of options){
+      if (o.value === inputValue) {
+        const dataValue = o.getAttribute('data-value');
+        hiddenInput.value = dataValue;
+        console.log('[Simulateur] Commune trouvée, id:', dataValue);
+        document.getElementById('formSelectCity').submit();
+        break;
+      }
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

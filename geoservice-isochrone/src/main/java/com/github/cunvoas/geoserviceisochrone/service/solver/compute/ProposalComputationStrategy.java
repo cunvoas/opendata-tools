@@ -10,6 +10,14 @@ import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
  * Strategy interface to compute park proposals.
  */
 public interface ProposalComputationStrategy {
+	
+    /**
+     * @param carreMap
+     * @param minSquareMeterPerCapita
+     * @param recoSquareMeterPerCapita
+     * @param urbanDistance
+     * @return
+     */
     List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
                                Double minSquareMeterPerCapita,
                                Double recoSquareMeterPerCapita,

@@ -253,6 +253,20 @@ L.control.scale().addTo(map);
 const layerControl = L.control.layers(baseLayers, dataLayers).addTo(map);
 console.log('[ConsultMap] LayerControl ajouté avec dataLayers:', dataLayers);
 
+const legend = L.control({position: 'bottomright'});
+legend.onAdd = function (map) {
+    const div = L.DomUtil.create('div', 'info legend');
+    const labels = [];
+
+    labels.push(`<i style="background:#3aa637"></i> Parc inclus OMS`);
+    labels.push(`<i style="background:#e96020"></i> Parc exclus OMS`);
+    labels.push(`<i style="background:#DC20E9"></i> Futur Parc ou détruit`);
+    div.innerHTML = labels.join('<br>');
+    return div;
+};
+legend.addTo(map);
+
+
 /**
  * Calcule la requête URL contenant les bornes géographiques de la carte visible
  * et l'année sélectionnée si applicable
@@ -353,6 +367,28 @@ const endpointCadastre = /*[[@{/mvc/geojson/cadastreByCorner}]]*/ '';
 //const endpointVegetation = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/vegetalInseeIgnTopo.json';
 const endpointVegetation =  /*[[@{/map/ign-topo/vegetal}]]*/ '';
 const urlEditPark = /*[[@{/mvc/park/new/check}]]*/ '/mvc/park/new/check';
+
+/**
+ * Détermine le style dynamique d'un parc en fonction de ses propriétés
+ * @param {Object} feature - Feature GeoJSON du parc
+ * @returns {Object} Style Leaflet (color, fillColor, weight, fillOpacity)
+ */
+function getParkStyle(feature) {
+  let fillColor = '#3aa637'; // Couleur par défaut (parc inclus OMS)
+  
+  if (feature && feature.properties) {
+    // Vérifier d'abord si le parc est actif
+    if (feature.properties.actif === false) {
+      fillColor = '#DC20E9'; // Futur parc ou détruit
+    } else if (feature.properties.oms === false) {
+      fillColor = '#e96020'; // Parc exclus OMS
+    } else if (feature.properties.oms === true) {
+      fillColor = '#3aa637'; // Parc inclus OMS
+    }
+  }
+  
+  return { color:'#1e4d1c', fillColor: fillColor, weight:1, fillOpacity:0.35 };
+}
 
 // Styles ajustés pour accentuer le contraste bordure/fond tout en conservant une bordure fine
 // - Couleur de bordure plus sombre
@@ -469,6 +505,11 @@ function createPopupContent(feat, layerName) {
   if (layerName === 'Parcs' && feat.properties.id) {
     const sUrlEditPark = window.location.protocol + "//" + window.location.host + urlEditPark + '?idPark=' + feat.properties.id;
     popupContent += `<p><a href='${sUrlEditPark}'>Éditer</a></p>`;
+
+    // changer la couleur si feat.properties.oms=true => #3aa637
+    // changer la couleur si feat.properties.oms=false => #e96020
+    // changer la couleur si feat.properties.actif=false => #DC20E9
+
   }
 
   // Infos spécifiques IRIS
@@ -533,7 +574,7 @@ function createPopupContent(feat, layerName) {
     if (feat.properties.radius) {
       const radius = parseFloat(feat.properties.radius);
       if (!isNaN(radius)) {
-        popupContent += `<p>Rayon: ${Math.round(radius)} m</p>`;
+        popupContent += `<p>Diamètre: ${Math.round(2*radius)} m</p>`;
         const surface = parseFloat(feat.properties.surface);
         if (surface >= 10000) {
           popupContent += `<p>Surface: ${(surface / 10000).toFixed(2)} ha</p>`;
@@ -575,8 +616,19 @@ function updateGeojsonLayer(name) {
         .then(r => { console.timeEnd(fetchLabel); console.time(parseLabel); return r.json(); })
         .then(geo => {
           console.timeEnd(parseLabel); console.time(renderLabel);
+          
+          // Déterminer le style en fonction de la couche
+          let styleFunction;
+          if (name === 'Carrés') {
+            styleFunction = getSquareStyle;
+          } else if (name === 'Parcs') {
+            styleFunction = getParkStyle;
+          } else {
+            styleFunction = cfg.style;
+          }
+          
           const gj = L.geoJSON(geo, {
-            style: name === 'Carrés' ? getSquareStyle : cfg.style,
+            style: styleFunction,
             // Attache une popup à chaque feature de la couche
             onEachFeature: (feat, layer) => {
               const popupContent = createPopupContent(feat, name);
@@ -657,8 +709,18 @@ function updateGeojsonLayer(name) {
           }
         } else {
           // Rendu classique avec GeoJSON
+          // Déterminer le style en fonction de la couche
+          let styleFunction;
+          if (name === 'Carrés') {
+            styleFunction = getSquareStyle;
+          } else if (name === 'Parcs') {
+            styleFunction = getParkStyle;
+          } else {
+            styleFunction = cfg.style;
+          }
+          
           const gj = L.geoJSON(geo, {
-            style: name === 'Carrés' ? getSquareStyle : cfg.style,
+            style: styleFunction,
             // Attache une popup à chaque feature de la couche
             onEachFeature: (feat, layer) => {
               const popupContent = createPopupContent(feat, name);
