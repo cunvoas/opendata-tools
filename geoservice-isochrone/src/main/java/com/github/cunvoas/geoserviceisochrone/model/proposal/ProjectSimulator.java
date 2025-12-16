@@ -36,6 +36,8 @@ public class ProjectSimulator {
 	
 	private BigDecimal surfacePark;
 	private Geometry shapePark;
+
+	private String name;
 	
 
 }

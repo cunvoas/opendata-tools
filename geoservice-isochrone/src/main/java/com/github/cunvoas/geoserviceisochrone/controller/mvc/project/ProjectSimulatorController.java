@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.controller.mvc.project;
 
 import java.util.List;
 
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,8 +14,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.bedatadriven.jackson.datatype.jts.serialization.GeometrySerializer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormProjectSimulator;
+import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.project.ProjectSimulatorService;
@@ -29,14 +36,26 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProjectSimulatorController {
 
+    private static final String VIEW = "simulateur";
+    private static final String FORM_KEY = "formSimulateur";
+
     @Autowired
     private ProjectSimulatorService projectSimulatorService;
     
     @Autowired
     private ServiceReadReferences serviceReadReferences;
 
-    private static final String VIEW = "simulateur";
-    private static final String FORM_KEY = "formSimulateur";
+    @Autowired
+    private GeoJson2GeometryHelper geoJson2GeometryHelper;
+
+    private final ObjectMapper geometryWriter;
+
+    public ProjectSimulatorController() {
+        geometryWriter = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Geometry.class, new GeometrySerializer());
+        geometryWriter.registerModule(module);
+    }
 
     /**
      * Display the simulator view.
@@ -90,6 +109,10 @@ public class ProjectSimulatorController {
                 form.setMapLng(String.valueOf(c.getX()));
                 form.setMapLat(String.valueOf(c.getY()));
             }
+            if (form.getIsDense() == null) {
+                Boolean dense = serviceReadReferences.isCityDense(form.getIdCommune());
+                form.setIsDense(dense);
+            }
         }
         return show(form, model);
     }
@@ -112,6 +135,15 @@ public class ProjectSimulatorController {
             form.setSurfaceArea(ps.getSurfaceArea());
             form.setSurfacePark(ps.getSurfacePark());
             form.setIdCommune(ps.getIdCommune());
+            form.setName(ps.getName());
+            form.setShapeArea(ps.getShapeArea());
+            try {
+                if (ps.getShapeArea() != null) {
+                    form.setSGeometry(geometryWriter.writeValueAsString(ps.getShapeArea()));
+                }
+            } catch (JsonProcessingException e) {
+                log.error("loadProject() - Error serializing geometry: {}", e.getMessage(), e);
+            }
             
             // Recharger le contexte territorial
             if (ps.getIdCommune() != null) {
@@ -127,14 +159,33 @@ public class ProjectSimulatorController {
 
     /**
      * Handle form submission.
+        * @param sGeometry GeoJSON string representing the project zone
      * @param form form object
      * @param model Spring model
      * @return view name
      */
     @PostMapping("/compute")
-    public String compute(@ModelAttribute FormProjectSimulator form, Model model) {
-        log.info("compute() - form={}", form);
-        // TODO: traitement du simulateur
+    public String compute(
+            @ModelAttribute FormProjectSimulator form,
+            @RequestParam(required = false) String sGeometry,
+            Model model) {
+        log.info("compute() - form={}, sGeometry={}", form, sGeometry != null ? "provided" : "null");
+        
+        // Parse geometry if provided
+        if (sGeometry != null && !sGeometry.isEmpty()) {
+            try {
+                Geometry geometry = geoJson2GeometryHelper.parse(sGeometry);
+                form.setShapeArea(geometry);
+                form.setSGeometry(sGeometry);
+                log.info("compute() - Geometry parsed successfully: {}", geometry.getGeometryType());
+            } catch (JsonProcessingException e) {
+                log.error("compute() - Error parsing geometry: {}", e.getMessage(), e);
+                model.addAttribute("error", "Erreur lors du traitement de la zone dessinée");
+            }
+        }
+        
+        // TODO: traitement du simulateur (calculs métier)
+        
         populate(form);
         model.addAttribute(FORM_KEY, form);
         model.addAttribute("regions", form.getRegions());
@@ -158,6 +209,11 @@ public class ProjectSimulatorController {
                 if (location != null) {
                     form.setMapLng(String.valueOf(location.getX()));
                     form.setMapLat(String.valueOf(location.getY()));
+                }
+
+                if (form.getIsDense() == null) {
+                    Boolean dense = serviceReadReferences.isCityDense(form.getIdCommune());
+                    form.setIsDense(dense);
                 }
             }
         }
@@ -185,7 +241,7 @@ public class ProjectSimulatorController {
         
         // Set city name if city is selected
         if (form.getIdCommune() != null) {
-            com.github.cunvoas.geoserviceisochrone.model.opendata.City city = serviceReadReferences.getCityById(form.getIdCommune());
+            City city = serviceReadReferences.getCityById(form.getIdCommune());
             form.setNameCommune(city != null ? city.getName() : "");
         }
     }

@@ -133,18 +133,19 @@
           <input type="hidden" name="idRegion" th:field="*{idRegion}" />
           <input type="hidden" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
           <input type="hidden" name="idCommune" th:field="*{idCommune}" />
+          <input type="hidden" id="sGeometry" name="sGeometry" th:value="${formSimulateur.sGeometry}" />
           <div class="row g-3 mb-3">
             <!-- Colonne gauche : paramètres -->
             <div class="col-12 col-lg-6">
               <div class="card">
                 <div class="card-header">Paramètres du projet</div>
                 <div class="card-body">
-                  <div class="row g-2">
-                    <div class="col-12 col-md-6">
+                  <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-3 col-lg-3">
                       <label for="annee" class="form-label">Année</label>
                       <input type="number" class="form-control" id="annee" name="annee" placeholder="2024">
                     </div>
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-3 col-lg-3">
                       <label for="isDense" class="form-label">Type de zone</label>
                       <div class="form-check mt-2">
                         <input class="form-check-input" type="checkbox" id="isDense" name="isDense">
@@ -153,16 +154,9 @@
                         </label>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div class="row g-2 mt-3">
-                    <div class="col-12 col-md-6">
-                      <label for="population" class="form-label">Population estimée</label>
-                      <input type="number" step="0.01" class="form-control" id="population" name="population" placeholder="1000">
-                    </div>
-                    <div class="col-12 col-md-6">
-                      <label for="floorSurface" class="form-label">Surface plancher (m²)</label>
-                      <input type="number" step="0.01" class="form-control" id="floorSurface" name="floorSurface" placeholder="5000">
+                    <div class="col-12 col-md-6 col-lg-6">
+                      <label for="name" class="form-label">Nom du projet</label>
+                      <input type="text" class="form-control" id="name" name="name" placeholder="Nom du projet">
                     </div>
                   </div>
                   
@@ -179,8 +173,19 @@
                   
                   <div class="row g-2 mt-3">
                     <div class="col-12 col-md-6">
+                      <label for="floorSurface" class="form-label">Surface plancher (m²)</label>
+                      <input type="number" step="0.01" class="form-control" id="floorSurface" name="floorSurface" placeholder="5000">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="population" class="form-label">Population estimée</label>
+                      <input type="number" step="0.01" class="form-control" id="population" name="population" placeholder="1000">
+                    </div>
+                  </div>
+                  
+                  <div class="row g-2 mt-3">
+                    <div class="col-12 col-md-6">
                       <label for="surfaceArea" class="form-label">Surface de la zone (m²)</label>
-                      <input type="number" step="0.01" class="form-control" id="surfaceArea" name="surfaceArea" placeholder="10000">
+                      <input type="number" step="0.01" class="form-control" id="surfaceArea" name="surfaceArea" placeholder="10000" readonly>
                     </div>
                     <div class="col-12 col-md-6">
                       <label for="surfacePark" class="form-label">Surface parc prévue (m²)</label>
@@ -207,7 +212,7 @@
                   <div id="mapSimulator" style="width:100%; height:400px;"></div>
                 </div>
                 <div class="card-footer text-muted small">
-                  Cliquez sur la carte pour définir la zone du projet
+                  Utilisez les outils de dessin pour définir la zone du projet
                 </div>
               </div>
             </div>
@@ -271,6 +276,19 @@ const baseLayers = {
   'OpenStreetMap': layerOSM
 };
 
+const overlays = {};
+
+// GeoJSON déjà présent (si édition)
+const existingGeometryString = /*[[${formSimulateur.sGeometry != null ? '"' + #strings.escapeJavaScript(formSimulateur.sGeometry) + '"' : 'null'}]]*/ null;
+let existingGeometry = null;
+if (existingGeometryString && existingGeometryString !== 'null') {
+  try {
+    existingGeometry = JSON.parse(existingGeometryString);
+  } catch (e) {
+    console.error('[Simulateur] Impossible de parser la géométrie existante', e);
+  }
+}
+
 // ----------- INITIALISATION CARTE -----------
 console.log('[Simulateur] Initialisation carte...', latInit, lonInit, zoomInit);
 const map = L.map('mapSimulator', {
@@ -279,42 +297,100 @@ const map = L.map('mapSimulator', {
 }).setView([latInit, lonInit], zoomInit);
 
 L.control.scale().addTo(map);
-L.control.layers(baseLayers, {}).addTo(map);
 
 // ----------- OVERLAYS DYNAMIQUES -----------
 const dataParcs = L.layerGroup().addTo(map);
 const dataProjectZone = L.layerGroup().addTo(map);
 
-// Marqueur de zone de projet (peut être déplacé)
-let projectMarker = null;
-let projectZone = null;
+overlays['Parcs existants'] = dataParcs;
+overlays['Projets'] = dataProjectZone;
 
-/**
- * Ajoute un marqueur de projet sur la carte
- */
-map.on('click', function(e) {
-  const lat = e.latlng.lat;
-  const lng = e.latlng.lng;
+L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
+
+// ----------- LEAFLET-GEOMAN DRAWING -----------
+// Configuration de leaflet-geoman pour le dessin
+map.pm.setLang('fr');
+map.pm.setGlobalOptions({
+  pmIgnore: false
+});
+
+// Ajout des contrôles de dessin
+map.pm.addControls({
+  position: 'topleft',
+  drawPolygon: true,
+  drawRectangle: false,
+  drawCircle: false,
+  drawMarker: false,
+  drawPolyline: false,
+  drawCircleMarker: false,
+  editMode: true,
+  dragMode: false,
+  cutPolygon: false,
+  removalMode: true
+});
+
+// Variable pour stocker la couche actuelle
+let currentLayer = null;
+
+// Afficher la géométrie existante si présente
+if (existingGeometry) {
+  const geoLayer = L.geoJSON(existingGeometry);
+  const layers = geoLayer.getLayers();
+  if (layers.length > 0) {
+    currentLayer = layers[0];
+    currentLayer.addTo(dataProjectZone);
+    if (currentLayer.pm) {
+      currentLayer.pm.enable();
+    }
+    if (currentLayer.getBounds) {
+      map.fitBounds(currentLayer.getBounds(), { padding: [20, 20] });
+    }
+    // Mettre à jour le champ caché pour soumission
+    document.getElementById('sGeometry').value = JSON.stringify(existingGeometry);
+  }
+}
+
+// Événement de création d'une forme
+map.on('pm:create', function(e) {
+  console.log('[Geoman] Forme créée:', e);
   
-  if (projectMarker) {
-    map.removeLayer(projectMarker);
+  // Suppression de la couche précédente si elle existe
+  if (currentLayer) {
+    map.removeLayer(currentLayer);
   }
   
-  projectMarker = L.marker([lat, lng], {
-    draggable: true,
-    icon: L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
-    })
-  }).addTo(map);
+  currentLayer = e.layer;
+  dataProjectZone.clearLayers();
+  currentLayer.addTo(dataProjectZone);
   
-  projectMarker.bindPopup('Zone du projet<br>Lat: ' + lat.toFixed(6) + '<br>Lng: ' + lng.toFixed(6)).openPopup();
+  // Conversion en GeoJSON et stockage
+  const geoJson = currentLayer.toGeoJSON();
+  document.getElementById('sGeometry').value = JSON.stringify(geoJson);
   
-  console.log('[Simulateur] Marqueur placé:', lat, lng);
+  console.log('[Geoman] GeoJSON capturé:', geoJson);
+});
+
+// Événement de modification d'une forme
+map.on('pm:edit', function(e) {
+  console.log('[Geoman] Forme modifiée:', e);
+  
+  if (currentLayer) {
+    const geoJson = currentLayer.toGeoJSON();
+    document.getElementById('sGeometry').value = JSON.stringify(geoJson);
+    console.log('[Geoman] GeoJSON mis à jour:', geoJson);
+  }
+});
+
+// Événement de suppression d'une forme
+map.on('pm:remove', function(e) {
+  console.log('[Geoman] Forme supprimée:', e);
+  
+  if (e.layer === currentLayer) {
+    currentLayer = null;
+    dataProjectZone.clearLayers();
+    document.getElementById('sGeometry').value = '';
+    console.log('[Geoman] GeoJSON effacé');
+  }
 });
 
 // ----------- CHARGEMENT PARCS -----------
@@ -345,6 +421,11 @@ function loadParcs() {
         onEachFeature: function(feature, layer) {
           if (feature.properties && feature.properties.name) {
             layer.bindPopup('<b>' + feature.properties.name + '</b>');
+          }
+          // Empêcher toute édition Geoman sur les parcs existants
+          if (layer.pm) {
+            layer.pm.setOptions({ pmIgnore: true });
+            layer.pm.disable();
           }
         }
       }).addTo(dataParcs);
@@ -385,6 +466,35 @@ console.log('[Simulateur] Carte initialisée');
       }
     }
   });
+})();
+
+// ----------- CALCUL AUTOMATIQUE POPULATION -----------
+(function initAutoPopulation(){
+  const floorEl = document.getElementById('floorSurface');
+  const avgEl = document.getElementById('avgAreaAccommodation');
+  const densityEl = document.getElementById('densityPerAccommodation');
+  const populationEl = document.getElementById('population');
+
+  if (!floorEl || !avgEl || !densityEl || !populationEl) return;
+
+  const computePopulation = () => {
+    const floor = parseFloat(floorEl.value);
+    const avg = parseFloat(avgEl.value);
+    const density = parseFloat(densityEl.value);
+    if (isNaN(floor) || isNaN(avg) || isNaN(density) || avg === 0) {
+      return;
+    }
+    const pop = (floor / avg) * density;
+    populationEl.value = Math.round(pop);
+  };
+
+  ['input', 'change'].forEach(evt => {
+    floorEl.addEventListener(evt, computePopulation);
+    avgEl.addEventListener(evt, computePopulation);
+    densityEl.addEventListener(evt, computePopulation);
+  });
+
+  computePopulation();
 })();
 </script>
 

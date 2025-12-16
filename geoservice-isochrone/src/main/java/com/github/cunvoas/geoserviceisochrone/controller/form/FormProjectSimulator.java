@@ -3,6 +3,8 @@ package com.github.cunvoas.geoserviceisochrone.controller.form;
 import java.math.BigDecimal;
 import java.time.Year;
 
+import org.locationtech.jts.geom.Geometry;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -25,6 +27,9 @@ public class FormProjectSimulator extends AbstractFormLocate {
     
     private BigDecimal surfaceArea;
     private BigDecimal surfacePark;
+    private Geometry shapeArea;
+    private String sGeometry;
+    private String name;
     
     // Coordonnées carte (valeurs par défaut, redéfinies depuis AbstractFormLocate)
     public FormProjectSimulator() {
