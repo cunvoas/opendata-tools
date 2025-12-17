@@ -78,24 +78,26 @@
                 <h6 class="mb-0">Projets existants sur cette commune <span class="badge bg-info" th:text="${projects != null ? projects.size() : 0}">0</span></h6>
               </div>
               <div class="card-body p-0">
-                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                  <table class="table table-hover table-sm mb-0">
+                <div class="table-responsive">
+                  <table class="table table-hover table-sm mb-0" id="projectsTable">
                     <thead class="table-light sticky-top">
                       <tr>
-                        <th>Nom</th>
+                        <th style="cursor: pointer;" onclick="sortProjectsTable()">
+                          Nom <i class="fas fa-sort" id="sortIcon"></i>
+                        </th>
                         <th class="text-end">Surface zone</th>
                         <th class="text-end">Population</th>
                         <th class="text-end">Surface parc</th>
                         <th class="text-center">Action</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      <tr th:if="${projects == null || #lists.isEmpty(projects)}">
-                        <td colspan="7" class="text-center text-muted py-3">
+                    <tbody id="projectsTableBody">
+                      <tr th:if="${projects == null || #lists.isEmpty(projects)}" class="empty-row">
+                        <td colspan="5" class="text-center text-muted py-3">
                           <i class="fas fa-info-circle"></i> Aucun projet pour cette commune. Sélectionnez une commune ou créez un nouveau projet.
-                        </
+                        </td>
                       </tr>
-                      <tr th:each="project, iterStat : ${projects}" th:if="${iterStat.index < 5}">
+                      <tr th:each="project, iterStat : ${projects}" class="project-row" th:data-name="${project.name}">
                         <td th:text="${project.name}">nom</td>
                         <td class="text-end" th:text="${project.surfaceArea != null ? (project.surfaceArea > 10000 ? #numbers.formatDecimal(project.surfaceArea / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(project.surfaceArea, 0, 0) + ' m²') : '-'}">-</td>
                         <td class="text-end" th:text="${project.population != null ? #numbers.formatDecimal(project.population, 0, 0) : '-'}">-</td>
@@ -111,6 +113,20 @@
                       </tr>
                     </tbody>
                   </table>
+                </div>
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top" id="paginationContainer" th:if="${projects != null && projects.size() > 0}">
+                  <small class="text-muted" id="paginationInfo">Page 1</small>
+                  <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                      <li class="page-item" id="prevPage">
+                        <a class="page-link" href="#" onclick="changePage(-1); return false;">«</a>
+                      </li>
+                      <li class="page-item" id="nextPage">
+                        <a class="page-link" href="#" onclick="changePage(1); return false;">»</a>
+                      </li>
+                    </ul>
+                  </nav>
                 </div>
               </div>
             </div>
@@ -294,7 +310,7 @@ console.log('[Simulateur] Initialisation carte, position:', locateWorkPlace);
 const map = L.map('mapSimulator', {
     zoom: zoomInit,
     layers: [ layerAeroIgn, layerSatellite,layerOSM]
-}).setView(locateWorkPlace);;
+}).setView(locateWorkPlace, zoomInit);
 
 
 // ----------- OVERLAYS DYNAMIQUES -----------
@@ -672,7 +688,91 @@ function computeSimulation() {
 }
 
 
-map.setView(locateWorkPlace);
+// ----------- PAGINATION ET TRI DU TABLEAU PROJETS -----------
+let currentPage = 1;
+const itemsPerPage = 4;
+let sortAscending = true;
+
+function initProjectsTable() {
+  const rows = document.querySelectorAll('#projectsTableBody .project-row');
+  if (rows.length === 0) return;
+  
+  updatePagination();
+}
+
+function updatePagination() {
+  const rows = Array.from(document.querySelectorAll('#projectsTableBody .project-row'));
+  const totalRows = rows.length;
+  const totalPages = Math.ceil(totalRows / itemsPerPage);
+  
+  if (totalRows === 0) {
+    document.getElementById('paginationContainer')?.classList.add('d-none');
+    return;
+  }
+  
+  // Afficher/masquer les lignes selon la page courante
+  rows.forEach((row, index) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    row.style.display = (index >= startIndex && index < endIndex) ? '' : 'none';
+  });
+  
+  // Mettre à jour l'info de pagination
+  const paginationInfo = document.getElementById('paginationInfo');
+  if (paginationInfo) {
+    paginationInfo.textContent = `Page ${currentPage} / ${totalPages}`;
+  }
+  
+  // Gérer l'état des boutons précédent/suivant
+  const prevPage = document.getElementById('prevPage');
+  const nextPage = document.getElementById('nextPage');
+  if (prevPage) prevPage.classList.toggle('disabled', currentPage === 1);
+  if (nextPage) nextPage.classList.toggle('disabled', currentPage === totalPages);
+}
+
+function changePage(delta) {
+  const rows = document.querySelectorAll('#projectsTableBody .project-row');
+  const totalPages = Math.ceil(rows.length / itemsPerPage);
+  
+  const newPage = currentPage + delta;
+  if (newPage >= 1 && newPage <= totalPages) {
+    currentPage = newPage;
+    updatePagination();
+  }
+}
+
+function sortProjectsTable() {
+  const tbody = document.getElementById('projectsTableBody');
+  const rows = Array.from(tbody.querySelectorAll('.project-row'));
+  const sortIcon = document.getElementById('sortIcon');
+  
+  if (rows.length === 0) return;
+  
+  // Trier les lignes par nom
+  rows.sort((a, b) => {
+    const nameA = (a.dataset.name || '').toLowerCase();
+    const nameB = (b.dataset.name || '').toLowerCase();
+    return sortAscending ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+  });
+  
+  // Réorganiser les lignes dans le tbody
+  rows.forEach(row => tbody.appendChild(row));
+  
+  // Inverser le sens du tri pour le prochain clic
+  sortAscending = !sortAscending;
+  
+  // Mettre à jour l'icône
+  if (sortIcon) {
+    sortIcon.className = sortAscending ? 'fas fa-sort-down' : 'fas fa-sort-up';
+  }
+  
+  // Revenir à la première page après tri
+  currentPage = 1;
+  updatePagination();
+}
+
+// Initialiser le tableau au chargement
+initProjectsTable();
 
 </script>
 

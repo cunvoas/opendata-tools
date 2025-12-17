@@ -14,7 +14,7 @@ import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
  */
 public interface ProjectSimulatorRepository extends JpaRepository<ProjectSimulator, Long> {
 
-	@Query("SELECT p FROM project_simul p WHERE p.idCommune = :idCommune ORDER BY p.annee DESC, p.id DESC")
+	@Query("SELECT p FROM project_simul p WHERE p.idCommune = :idCommune ORDER BY p.name ASC")
 	List<ProjectSimulator> findByIdCommune(@Param("idCommune") Long idCommune);
 
 	/** 

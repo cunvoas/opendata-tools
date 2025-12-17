@@ -1,6 +1,5 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.project;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -216,8 +215,6 @@ public class ProjectSimulatorController {
 		if (geometry != null) {
 			bo.setShapeArea(geometry);
 			bo.setCenterArea(geometry.getCentroid());
-			
-			bo.setSurfaceArea(new BigDecimal(projectSimulatorService.getSurface(geometry)));
 			log.debug("mapToBo() - Geometry assigned: type={}", geometry.getGeometryType());
 		}
     	return bo;
