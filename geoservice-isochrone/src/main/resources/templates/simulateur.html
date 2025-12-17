@@ -295,22 +295,46 @@ const overlays = {};
 
 // custom location on load
 function locatePlace(lat, lon) {
-  return L.latLng(lat, lon);
+  return L.latLng(parseFloat(lat), parseFloat(lon));
 }
-let locateWorkPlace= L.latLng(latInit,lonInit);
-const mLng = document.getElementById("mapLng").value;
+
+// Déterminer la position de la carte
 const mLat = document.getElementById("mapLat").value;
-if (mLng!="" && mLat!="") {
+const mLng = document.getElementById("mapLng").value;
+console.log('[Simulateur] Coordonnées du formulaire - lat:', mLat, 'lng:', mLng);
+
+let locateWorkPlace;
+if (mLat && mLng && mLat.trim() !== "" && mLng.trim() !== "" && !isNaN(parseFloat(mLat)) && !isNaN(parseFloat(mLng))) {
   locateWorkPlace = locatePlace(mLat, mLng);
+  console.log('[Simulateur] Position personnalisée:', locateWorkPlace);
+} else {
+  locateWorkPlace = L.latLng(latInit, lonInit);
+  console.log('[Simulateur] Position par défaut:', locateWorkPlace);
 }
 
 
 // ----------- INITIALISATION CARTE -----------
-console.log('[Simulateur] Initialisation carte, position:', locateWorkPlace);
+// Stocker les coordonnées cibles
+const targetLat = locateWorkPlace.lat;
+const targetLng = locateWorkPlace.lng;
+console.log('[Simulateur] Initialisation carte, position:', targetLat, targetLng);
+
 const map = L.map('mapSimulator', {
+    center: [targetLat, targetLng],
     zoom: zoomInit,
-    layers: [ layerAeroIgn, layerSatellite,layerOSM]
-}).setView(locateWorkPlace, zoomInit);
+    layers: [layerOSM],
+    keyboard: false
+});
+
+console.log('[Simulateur] Centre de la carte après init:', map.getCenter());
+
+// Forcer le recentrage après que le DOM soit stable
+setTimeout(function() {
+  window.scrollTo(0, 0);
+  map.invalidateSize();
+  map.setView([targetLat, targetLng], zoomInit, { animate: false, reset: true });
+  console.log('[Simulateur] Recentrage forcé sur:', targetLat, targetLng, '- Centre actuel:', map.getCenter());
+}, 200);
 
 
 // ----------- OVERLAYS DYNAMIQUES -----------

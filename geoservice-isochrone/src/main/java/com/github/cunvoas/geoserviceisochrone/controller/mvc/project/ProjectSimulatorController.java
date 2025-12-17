@@ -136,9 +136,9 @@ public class ProjectSimulatorController {
             form.setIdCommune(ps.getIdCommune());
             form.setName(ps.getName());
             
-            if (ps.getCenterPark()!=null) {
-            	 form.setMapLng(String.valueOf(ps.getCenterPark().getX()));
-                 form.setMapLat(String.valueOf(ps.getCenterPark().getY()));
+            if (ps.getCenterArea()!=null) {
+            	 form.setMapLng(String.valueOf(ps.getCenterArea().getX()));
+                 form.setMapLat(String.valueOf(ps.getCenterArea().getY()));
                  
             } else if (ps.getIdCommune() != null) {
                 Coordinate c = serviceReadReferences.getCoordinate(ps.getIdCommune());
@@ -168,12 +168,6 @@ public class ProjectSimulatorController {
             Model model) {
         log.info("compute() - form={}, sGeometry={}", form, sGeometry != null ? "provided" : "null");
         
-        // Validate geometry is provided
-        if (sGeometry == null || sGeometry.trim().isEmpty()) {
-            log.warn("compute() - No geometry provided");
-            model.addAttribute("error", "Veuillez dessiner une zone sur la carte avant de calculer");
-            return show(form, model);
-        }
         
         Geometry geometry = null;
         String sGeom = form.getSGeometry();
@@ -191,9 +185,9 @@ public class ProjectSimulatorController {
         ProjectSimulator bo = mapToBo(form, geometry);
         
         
-        projectSimulatorService.save(bo);
+        bo = projectSimulatorService.save(bo);
         
-        return show(form, model);
+        return loadProject(bo.getId(), form, model);
     }
     
     
@@ -231,11 +225,15 @@ public class ProjectSimulatorController {
         if (form.getIdRegion() == null) {
             form.autoLocate();
             if (form.getIdCommune() != null) {
-                Coordinate location = serviceReadReferences.getCoordinate(form.getIdCommune());
-                if (location != null) {
-                    form.setMapLng(String.valueOf(location.getX()));
-                    form.setMapLat(String.valueOf(location.getY()));
-                }
+            	
+            	// on a déjà localisé avec le projet
+            	if (form.getMapLng()==null && form.getMapLng()==null) {
+	                Coordinate location = serviceReadReferences.getCoordinate(form.getIdCommune());
+	                if (location != null) {
+	                    form.setMapLng(String.valueOf(location.getX()));
+	                    form.setMapLat(String.valueOf(location.getY()));
+	                }
+            	}
 
                 if (form.getIsDense() == null) {
                     Boolean dense = serviceReadReferences.isCityDense(form.getIdCommune());
