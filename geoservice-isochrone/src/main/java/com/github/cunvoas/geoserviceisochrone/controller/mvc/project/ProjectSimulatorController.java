@@ -1,7 +1,9 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.project;
 
+import java.math.BigDecimal;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,10 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bedatadriven.jackson.datatype.jts.serialization.GeometrySerializer;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -120,7 +120,7 @@ public class ProjectSimulatorController {
     /**
      * Load a project for editing.
      */
-    @PostMapping("/load")
+    @GetMapping("/load")
     public String loadProject(@RequestParam("projectId") Long projectId, @ModelAttribute FormProjectSimulator form, Model model) {
         log.info("loadProject() - projectId={}", projectId);
         ProjectSimulator ps = projectSimulatorService.getById(projectId);
@@ -136,23 +136,21 @@ public class ProjectSimulatorController {
             form.setSurfacePark(ps.getSurfacePark());
             form.setIdCommune(ps.getIdCommune());
             form.setName(ps.getName());
-            form.setShapeArea(ps.getShapeArea());
-            try {
-                if (ps.getShapeArea() != null) {
-                    form.setSGeometry(geometryWriter.writeValueAsString(ps.getShapeArea()));
-                }
-            } catch (JsonProcessingException e) {
-                log.error("loadProject() - Error serializing geometry: {}", e.getMessage(), e);
-            }
             
-            // Recharger le contexte territorial
-            if (ps.getIdCommune() != null) {
+            if (ps.getCenterPark()!=null) {
+            	 form.setMapLng(String.valueOf(ps.getCenterPark().getX()));
+                 form.setMapLat(String.valueOf(ps.getCenterPark().getY()));
+                 
+            } else if (ps.getIdCommune() != null) {
                 Coordinate c = serviceReadReferences.getCoordinate(ps.getIdCommune());
                 if (c != null) {
                     form.setMapLng(String.valueOf(c.getX()));
                     form.setMapLat(String.valueOf(c.getY()));
                 }
             }
+            
+            
+           
         }
         return show(form, model);
     }
@@ -171,36 +169,36 @@ public class ProjectSimulatorController {
             Model model) {
         log.info("compute() - form={}, sGeometry={}", form, sGeometry != null ? "provided" : "null");
         
-        // Parse geometry if provided
-        if (sGeometry != null && !sGeometry.isEmpty()) {
-            try {
-                Geometry geometry = geoJson2GeometryHelper.parse(sGeometry);
-                form.setShapeArea(geometry);
-                form.setSGeometry(sGeometry);
-                log.info("compute() - Geometry parsed successfully: {}", geometry.getGeometryType());
-            } catch (JsonProcessingException e) {
-                log.error("compute() - Error parsing geometry: {}", e.getMessage(), e);
-                model.addAttribute("error", "Erreur lors du traitement de la zone dessinée");
-            }
+        // Validate geometry is provided
+        if (sGeometry == null || sGeometry.trim().isEmpty()) {
+            log.warn("compute() - No geometry provided");
+            model.addAttribute("error", "Veuillez dessiner une zone sur la carte avant de calculer");
+            return show(form, model);
         }
         
-        // TODO: traitement du simulateur (calculs métier)
-        ProjectSimulator bo = map(form);
-        bo = projectSimulatorService.save(bo);
+        Geometry geometry = null;
+        String sGeom = form.getSGeometry();
+		try {
+			if ( StringUtils.isNotBlank(sGeom) ) {
+				log.info("start process parseGeoman");
+				geometry = geoJson2GeometryHelper.parseGeoman(sGeom);
+				log.info("end process parseGeoman");
+			}
+		} catch (JsonProcessingException e) {
+			log.error("geoman parsing error = ", sGeom);
+		}	
+        
+        // Traitement du simulateur avec la géométrie (comme pour NewPark)
+        ProjectSimulator bo = mapToBo(form, geometry);
         
         
+        projectSimulatorService.save(bo);
         
-        
-        populate(form);
-        model.addAttribute(FORM_KEY, form);
-        model.addAttribute("regions", form.getRegions());
-        model.addAttribute("communautesDeCommunes", form.getCommunautesDeCommunes());
-        model.addAttribute("communes", form.getCommunes());
-        return VIEW;
+        return show(form, model);
     }
     
     
-    private ProjectSimulator map(FormProjectSimulator form) {
+    private ProjectSimulator mapToBo(FormProjectSimulator form, Geometry geometry) {
     	ProjectSimulator bo = new ProjectSimulator();
     	bo.setId(form.getId());
 		bo.setAnnee(form.getAnnee());
@@ -213,7 +211,15 @@ public class ProjectSimulatorController {
 		bo.setSurfacePark(form.getSurfacePark());
 		bo.setIdCommune(form.getIdCommune());
 		bo.setName(form.getName());
-		bo.setShapeArea(form.getShapeArea());
+		
+		// Assigner la géométrie parsée (comme pour NewPark)
+		if (geometry != null) {
+			bo.setShapeArea(geometry);
+			bo.setCenterArea(geometry.getCentroid());
+			
+			bo.setSurfaceArea(new BigDecimal(projectSimulatorService.getSurface(geometry)));
+			log.debug("mapToBo() - Geometry assigned: type={}", geometry.getGeometryType());
+		}
     	return bo;
     }
     
@@ -269,17 +275,5 @@ public class ProjectSimulatorController {
         }
     }
 
-    /**
-     * Fetch a ProjectSimulator by its id (REST endpoint).
-     * @param id identifier of the project simulator
-     * @return the ProjectSimulator or null if not found
-     */
-    @GetMapping("/byId")
-    @ResponseBody
-    public ProjectSimulator getById(@RequestParam("id") Long id) {
-        ProjectSimulator ps = projectSimulatorService.getById(id);
-        log.debug("getById({})-> {}", id, ps);
-        return ps;
-    }
 
 }

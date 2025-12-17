@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.service.project;
 
 import java.util.List;
 
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,5 +32,16 @@ public class ProjectSimulatorService {
 		}
 		return projectSimulatorRepository.findByIdCommune(idCommune);
 	}
+	
+	
+	/**
+	 * Calcule la surface d'une géométrie.
+	 * @param geom Géométrie à mesurer
+	 * @return Surface de la géométrie
+	 */
+	public Long getSurface(Geometry geom) {
+		return projectSimulatorRepository.getSurface(geom);
+	}
+
 	
 }

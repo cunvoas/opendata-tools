@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="²http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head th:insert="~{fragments/fragment-head :: head}"></head>
 <body class="sb-nav-fixed">
 <div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
@@ -83,10 +83,10 @@
                     <thead class="table-light sticky-top">
                       <tr>
                         <th>Nom</th>
-                        <th>Surface zone</th>
-                        <th>Population</th>
-                        <th>Surface parc</th>
-                        <th>Action</th>
+                        <th class="text-end">Surface zone</th>
+                        <th class="text-end">Population</th>
+                        <th class="text-end">Surface parc</th>
+                        <th class="text-center">Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -97,15 +97,12 @@
                       </tr>
                       <tr th:each="project, iterStat : ${projects}" th:if="${iterStat.index < 5}">
                         <td th:text="${project.name}">nom</td>
-                        <td th:text="${project.surfaceArea != null ? #numbers.formatDecimal(project.surfaceArea, 0, 0) : '-'}">-</td>
-                        <td th:text="${project.population != null ? #numbers.formatDecimal(project.population, 0, 0) : '-'}">-</td>
-                        <td th:text="${project.surfacePark != null ? #numbers.formatDecimal(project.surfacePark, 0, 0) : '-'}">-</td>
-                        <td>
-                          <form th:action="@{/mvc/simulation/load}" method="post" style="display: inline;">
+                        <td class="text-end" th:text="${project.surfaceArea != null ? (project.surfaceArea > 10000 ? #numbers.formatDecimal(project.surfaceArea / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(project.surfaceArea, 0, 0) + ' m²') : '-'}">-</td>
+                        <td class="text-end" th:text="${project.population != null ? #numbers.formatDecimal(project.population, 0, 0) : '-'}">-</td>
+                        <td class="text-end" th:text="${project.surfacePark != null ? (project.surfacePark > 10000 ? #numbers.formatDecimal(project.surfacePark / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(project.surfacePark, 0, 0) + ' m²') : '-'}">-</td>
+                        <td class="text-center">
+                          <form th:action="@{/mvc/simulation/load}" method="get" style="display: inline;">
                             <input type="hidden" name="projectId" th:value="${project.id}" />
-                            <input type="hidden" name="idRegion" th:value="${formSimulateur.idRegion}" />
-                            <input type="hidden" name="idCommunauteDeCommunes" th:value="${formSimulateur.idCommunauteDeCommunes}" />
-                            <input type="hidden" name="idCommune" th:value="${formSimulateur.idCommune}" />
                             <button type="submit" class="btn btn-sm btn-outline-primary">
                               <i class="fas fa-edit"></i> Éditer
                             </button>
@@ -121,17 +118,24 @@
         </div>
 
         <!-- Formulaire de simulation -->
-        <form th:action="@{/mvc/simulation/compute}" method="post" th:object="${formSimulateur}">
+        <form id="formCompute" th:action="@{/mvc/simulation/compute}" method="post" th:object="${formSimulateur}">
           <input type="hidden" name="id" th:field="*{id}" />
           <input type="hidden" name="idRegion" th:field="*{idRegion}" />
           <input type="hidden" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
           <input type="hidden" name="idCommune" th:field="*{idCommune}" />
           <input type="hidden" id="sGeometry" name="sGeometry" th:value="${formSimulateur.sGeometry}" />
+          <input type="hidden" id="mapLat" name="mapLat" th:field="*{mapLat}"/>
+          <input type="hidden" id="mapLng" name="mapLng" th:field="*{mapLng}"/>
           <div class="row g-3 mb-3">
             <!-- Colonne gauche : paramètres -->
             <div class="col-12 col-lg-6">
               <div class="card">
-                <div class="card-header">Paramètres du projet</div>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <span>Paramètres du projet</span>
+                  <button type="button" class="btn btn-sm btn-outline-primary" onclick="clearProjectForm()">
+                    <i class="fas fa-plus"></i> Nouveau
+                  </button>
+                </div>
                 <div class="card-body">
                   <div class="row g-2 align-items-end">
                     <div class="col-12 col-md-6 col-lg-6">
@@ -188,7 +192,7 @@
                   
                   <div class="row mt-3">
                     <div class="col-12">
-                      <button type="submit" class="btn btn-primary w-100">
+                      <button type="button" onclick="computeSimulation()" class="btn btn-primary w-100">
                         <i class="fas fa-calculator"></i> Calculer
                       </button>
                     </div>
@@ -235,14 +239,15 @@
 <script th:src="@{/mvc/static/js/scripts.js}"></script>
 
 <script th:inline="javascript">
+
 // ----------- CONFIGURATION CARTE -----------
 const mapMinZoom = 10;
 const mapMaxZoom = 18;
+const zoomInit = 15;
 
 // Coordonnées par défaut
 const latInit = 50.626419;
 const lonInit = 3.0719121;
-const zoomInit = 15;
 
 // ----------- FONDS DE CARTE -----------
 const layerOSM = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -271,25 +276,26 @@ const baseLayers = {
 
 const overlays = {};
 
-// GeoJSON déjà présent (si édition)
-const existingGeometryString = /*[[${formSimulateur.sGeometry != null ? '"' + #strings.escapeJavaScript(formSimulateur.sGeometry) + '"' : 'null'}]]*/ null;
-let existingGeometry = null;
-if (existingGeometryString && existingGeometryString !== 'null') {
-  try {
-    existingGeometry = JSON.parse(existingGeometryString);
-  } catch (e) {
-    console.error('[Simulateur] Impossible de parser la géométrie existante', e);
-  }
+
+// custom location on load
+function locatePlace(lat, lon) {
+  return L.latLng(lat, lon);
+}
+let locateWorkPlace= L.latLng(latInit,lonInit);
+const mLng = document.getElementById("mapLng").value;
+const mLat = document.getElementById("mapLat").value;
+if (mLng!="" && mLat!="") {
+  locateWorkPlace = locatePlace(mLat, mLng);
 }
 
-// ----------- INITIALISATION CARTE -----------
-console.log('[Simulateur] Initialisation carte...', latInit, lonInit, zoomInit);
-const map = L.map('mapSimulator', {
-  zoom: zoomInit,
-  layers: [layerOSM]
-}).setView([latInit, lonInit], zoomInit);
 
-L.control.scale().addTo(map);
+// ----------- INITIALISATION CARTE -----------
+console.log('[Simulateur] Initialisation carte, position:', locateWorkPlace);
+const map = L.map('mapSimulator', {
+    zoom: zoomInit,
+    layers: [ layerAeroIgn, layerSatellite,layerOSM]
+}).setView(locateWorkPlace);;
+
 
 // ----------- OVERLAYS DYNAMIQUES -----------
 const dataParcs = L.layerGroup().addTo(map);
@@ -299,6 +305,7 @@ overlays['Parcs existants'] = dataParcs;
 overlays['Projets'] = dataProjectZone;
 
 L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
+
 
 // Légende des états de parcs (couleurs alignées avec consultMap)
 const legend = L.control({ position: 'bottomright' });
@@ -311,7 +318,7 @@ legend.onAdd = function () {
   const labels = [];
   labels.push(`<i style="background:#3aa637;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc inclus OMS`);
   labels.push(`<i style="background:#e96020;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc exclus OMS`);
-  labels.push(`<i style="background:#DC20E9;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Futur parc ou détruit`);
+  labels.push(`<i style="background:#DC20E9;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc futur ou détruit`);
   div.innerHTML = labels.join('<br>');
   return div;
 };
@@ -321,98 +328,127 @@ legend.addTo(map);
 // Configuration de leaflet-geoman pour le dessin
 map.pm.setLang('fr');
 map.pm.setGlobalOptions({
+  allowSelfIntersection: false,
   pmIgnore: false
 });
 
 // Ajout des contrôles de dessin
 map.pm.addControls({
-  position: 'topleft',
-  drawPolygon: true,
-  drawRectangle: false,
-  drawCircle: false,
-  drawMarker: false,
-  drawPolyline: false,
-  drawCircleMarker: false,
-  editMode: true,
-  dragMode: false,
-  cutPolygon: false,
-  removalMode: true
+	  position: 'topleft',  
+	  drawControls: true,
+	  editControls: true,
+	  optionsControls: true,
+	  customControls: true,
+	  oneBlock: true,
+	  
+	  drawMarker: false,
+	  drawPolyline: false,
+	  drawRectangle: false,
+	  drawPolygon: true,
+	  drawCircle: false,
+	  drawCircleMarker: false,
+	  drawText: false,
+	  editMode: true,
+	  dragMode: false,
+	  cutPolygon: false,
+	  removalMode: true,
+	  rotateMode: false,
 });
 
+
+// ----------- CHARGEMENT GÉOMÉTRIE EXISTANTE -----------
 // Variable pour stocker la couche actuelle
 let currentLayer = null;
 
-// Afficher la géométrie existante si présente
-if (existingGeometry) {
-  const geoLayer = L.geoJSON(existingGeometry);
-  const layers = geoLayer.getLayers();
-  if (layers.length > 0) {
-    currentLayer = layers[0];
-    currentLayer.addTo(dataProjectZone);
-    if (currentLayer.pm) {
-      currentLayer.pm.enable();
-    }
-    if (currentLayer.getBounds) {
-      map.fitBounds(currentLayer.getBounds(), { padding: [20, 20] });
-    }
-    // Mettre à jour le champ caché pour soumission
-    document.getElementById('sGeometry').value = JSON.stringify(existingGeometry);
-  }
+/**
+ * Met à jour le popup avec le nom du projet sur la forme (clic pour afficher)
+ */
+function updateProjectLabel() {
+  if (!currentLayer) return;
+  
+  const projectName = document.getElementById('name').value;
+  
+  // Supprimer l'ancien popup s'il existe
+  currentLayer.unbindPopup();
+  
+  if (!projectName || projectName.trim() === '') return;
+  
+  // Ajouter un popup au clic sur la forme (comme les parcs)
+  currentLayer.bindPopup('<b>' + projectName + '</b>');
+  
+  console.log('[Simulateur] Label du projet mis à jour:', projectName);
 }
 
 // Événement de création d'une forme
-map.on('pm:create', function(e) {
-  console.log('[Geoman] Forme créée:', e);
+map.on('pm:create', ({ layer }) => {
+  console.log('[Geoman] Forme créée:', layer);
   
   // Suppression de la couche précédente si elle existe
   if (currentLayer) {
     map.removeLayer(currentLayer);
   }
   
-  currentLayer = e.layer;
-  dataProjectZone.clearLayers();
+  currentLayer = layer;
   currentLayer.addTo(dataProjectZone);
   
-  // Conversion en GeoJSON et stockage
-  const geoJson = currentLayer.toGeoJSON();
-  document.getElementById('sGeometry').value = JSON.stringify(geoJson);
+  // Mettre à jour le label du projet
+  updateProjectLabel();
   
-  console.log('[Geoman] GeoJSON capturé:', geoJson);
+  // Ajouter listener d'édition sur cette couche
+  layer.on('pm:edit', e => {
+    console.log('[Geoman] Forme modifiée:', e);
+    
+    const self_drawn = map.pm.getGeomanDrawLayers(true);
+    const strPoly = JSON.stringify(self_drawn.toGeoJSON());
+    document.getElementById('sGeometry').value = strPoly;
+    console.log('[Geoman] GeoJSON mis à jour:', strPoly);
+    
+    // Mettre à jour la position du label
+    updateProjectLabel();
+  });
 });
 
-// Événement de modification d'une forme
-map.on('pm:edit', function(e) {
-  console.log('[Geoman] Forme modifiée:', e);
+// Événement après avoir terminé le dessin
+map.on('pm:drawend', function (e) {
+  console.log('[Geoman] Dessin terminé');
   
-  // Vérifier que ce n'est pas un parc
-  if (e.layer && e.layer._isParc) {
-    console.warn('[Geoman] Tentative de modification sur un parc bloquée');
-    return;
-  }
+  const self_drawn = map.pm.getGeomanDrawLayers(true);
+  const strPoly = JSON.stringify(self_drawn.toGeoJSON());
+  document.getElementById('sGeometry').value = strPoly;
+  console.log('[Geoman] GeoJSON capturé:', strPoly);
+});
+
+// Événement après modification d'une forme
+map.on('pm:change', function (e) {
+  console.log('[Geoman] Modification détectée');
   
-  if (currentLayer) {
-    const geoJson = currentLayer.toGeoJSON();
-    document.getElementById('sGeometry').value = JSON.stringify(geoJson);
-    console.log('[Geoman] GeoJSON mis à jour:', geoJson);
-  }
+  const layerToDraw = e.layer;
+  const strPoly = JSON.stringify(layerToDraw.toGeoJSON());
+  document.getElementById('sGeometry').value = strPoly;
+  console.log('[Geoman] GeoJSON mis à jour:', strPoly);
 });
 
 // Événement de suppression d'une forme
-map.on('pm:remove', function(e) {
-  console.log('[Geoman] Forme supprimée:', e);
+map.on('pm:remove', ({ layer }) => {
+  console.log('[Geoman] Forme supprimée:', layer);
   
   // Vérifier que ce n'est pas un parc
-  if (e.layer && e.layer._isParc) {
+  if (layer && layer._isParc) {
     console.warn('[Geoman] Tentative de suppression sur un parc bloquée');
     return;
   }
   
-  if (e.layer === currentLayer) {
+  if (layer === currentLayer) {
     currentLayer = null;
     dataProjectZone.clearLayers();
     document.getElementById('sGeometry').value = '';
     console.log('[Geoman] GeoJSON effacé');
   }
+});
+
+// Écouteur sur le champ nom du projet pour mettre à jour le label
+document.getElementById('name').addEventListener('input', function() {
+  updateProjectLabel();
 });
 
 // ----------- CHARGEMENT PARCS -----------
@@ -500,8 +536,10 @@ function loadProjects() {
         },
         onEachFeature: function(feature, layer) {
           let popupContent = '';
-          if (feature.properties && feature.properties.nom) {
-            popupContent = '<b>' + feature.properties.nom + '</b><br>';
+          let projectName = '';
+          if (feature.properties && feature.properties.name) {
+            projectName = feature.properties.name;
+            popupContent = '<b>' + feature.properties.name + '</b><br>';
           } else {
             popupContent = '<b>Projet de simulation</b><br>';
           }
@@ -510,13 +548,8 @@ function loadProjects() {
             if (feature.properties.population) popupContent += 'Population: ' + feature.properties.population + '<br>';
             if (feature.properties.surfaceArea) popupContent += 'Surface: ' + Math.round(feature.properties.surfaceArea) + ' m²<br>';
           }
+          // Afficher les infos du projet au clic sur la forme (comme les parcs)
           layer.bindPopup(popupContent);
-          
-          // Empêcher toute édition Geoman sur les projets existants
-          if (layer.pm) {
-            layer.pm.setOptions({ pmIgnore: true });
-            layer.pm.disable();
-          }
         }
       }).addTo(dataProjectZone);
       console.log('[Simulateur] Projets chargés:', geojson.features ? geojson.features.length : 0);
@@ -590,7 +623,60 @@ console.log('[Simulateur] Carte initialisée');
 
   computePopulation();
 })();
+
+// Fonction pour effacer le formulaire et créer un nouveau projet
+function clearProjectForm() {
+  console.log('[Simulateur] clearProjectForm() appelée');
+  
+  // Effacer les champs du formulaire
+  document.getElementById('id').value = '';
+  document.getElementById('name').value = '';
+  document.getElementById('annee').value = '';
+  document.getElementById('isDense').checked = false;
+  document.getElementById('densityPerAccommodation').value = '';
+  document.getElementById('avgAreaAccommodation').value = '';
+  document.getElementById('surfaceFloor').value = '';
+  document.getElementById('population').value = '';
+  document.getElementById('surfaceArea').value = '';
+  document.getElementById('surfacePark').value = '';
+  document.getElementById('sGeometry').value = '';
+  
+  // Effacer la géométrie de la carte
+  if (currentLayer) {
+    dataProjectZone.removeLayer(currentLayer);
+    currentLayer = null;
+  }
+  
+  // Supprimer le label du projet
+  if (projectLabel) {
+    map.removeLayer(projectLabel);
+    projectLabel = null;
+  }
+  
+  console.log('[Simulateur] Formulaire effacé');
+}
+
+// Fonction pour calculer la simulation (comme savePark dans newPark.html)
+function computeSimulation() {
+  console.log('[Simulateur] computeSimulation() appelée');
+  
+
+  // Récupérer les couches dessinées pour s'assurer que sGeometry est à jour
+  const self_drawn = map.pm.getGeomanDrawLayers(true);
+  const strPoly = JSON.stringify(self_drawn.toGeoJSON());
+  document.getElementById('sGeometry').value = strPoly;
+  
+  
+  // Soumettre le formulaire
+  document.getElementById('formCompute').submit();
+}
+
+
+map.setView(locateWorkPlace);
+
 </script>
 
 </body>
 </html>
+
+

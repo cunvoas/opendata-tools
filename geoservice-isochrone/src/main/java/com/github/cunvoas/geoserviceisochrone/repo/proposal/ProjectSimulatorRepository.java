@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.repo.proposal;
 
 import java.util.List;
 
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,5 +26,12 @@ public interface ProjectSimulatorRepository extends JpaRepository<ProjectSimulat
 			   value = "SELECT pp.* FROM project_simul pp WHERE ST_Intersects(pp.shape_area, ?1)")
 	public List<ProjectSimulator> findInMapArea(String sPolygon);
 
+	/**
+	 * getSurface.
+	 * @param polygon shape
+	 * @return surface of shape
+	 */
+	@Query(nativeQuery = true,  value = "SELECT ST_Area(?1, true)")
+	Long getSurface(Geometry polygon);
 	
 }
