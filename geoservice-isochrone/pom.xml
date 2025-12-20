@@ -23,7 +23,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		
 		<postgresql.version>42.7.8</postgresql.version>
-		<hibernate.version>6.6.36.Final</hibernate.version>
+		<hibernate.version>6.6.37.Final</hibernate.version>
     </properties>
 	
 
@@ -135,7 +135,7 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.82</version>
+			<version>1.83</version>
 		</dependency>
 		<!-- basics DTOs & Fast calls to get external data -->
         <dependency>
