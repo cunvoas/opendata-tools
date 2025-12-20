@@ -66,8 +66,6 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 	private static final Double SURFACE_CARRE = 40_000d;
 	
 	@Autowired
-	private LaposteRepository laposteRepository;
-	@Autowired
 	private CadastreRepository cadastreRepository;
 	
 	@Autowired
@@ -95,28 +93,6 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	
 	
-	/**
-	 * computeCarreByInseeCode.
-	 * @param inseeCode code
-	 */
-//	public void computeCarreByInseeCode(String inseeCode) {
-//		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
-//		computeCarreByCadastre(cadastre);
-//	}
-	
-//	/**
-//	 * computeCarreByCarre200m.
-//	 * @param idInspire id
-//	 */
-//	public void computeCarreByCarre200m(String idInspire) {
-//		Optional<InseeCarre200mOnlyShape> oCarreShape = inseeCarre200mOnlyShapeRepository.findById(idInspire);
-//		if (oCarreShape.isPresent()) {
-//			InseeCarre200mOnlyShape carreShape = oCarreShape.get();
-//			Boolean isDense = serviceOpenData.isDistanceDense(carreShape.getCodeInsee());
-//			computeCarreShape(carreShape, isDense);
-//		}
-//	}
-
 	/**
 	 * Vérifie si un parc est actif pour une année donnée.
 	 * @param pa ParkArea à vérifier

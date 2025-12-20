@@ -59,41 +59,6 @@ public abstract class AbstractComputationtrategy implements ProposalComputationS
 	 * @return liste des carrés voisins (max 24 ou 143 selon densité)
 	 */
 	public List<ParkProposalWork> findNeighbors(String idInspire, Map<String, ParkProposalWork> carreMap, Integer urbanDistance) {
-		List<ParkProposalWork> neighbors = new ArrayList<>();
-		
-		// Récupérer le carré central
-		ParkProposalWork centre = carreMap.get(idInspire);
-		
-		if (centre == null) {
-			log.warn("Carré central {} introuvable dans la carte des carrés", idInspire);
-			return neighbors;
-		}
-		
-		// Récupérer le centroïde du carré central
-		Geometry centreGeom = centre.getCentre();
-		Coordinate centroid = centreGeom.getCentroid().getCoordinate();
-		
-		// Rechercher les carrés dans cette zone
-		for (Map.Entry<String, ParkProposalWork> parkProposal : carreMap.entrySet()) {
-			if (!parkProposal.getKey().equals(idInspire)) {
-				// calcul de la distance au centroïde mètres
-				Double distance = 1_000 * DistanceHelper.crowFlyDistance(
-						centroid.y, 
-						centroid.x,
-						parkProposal.getValue().getCentre().getCentroid().getY(),
-						parkProposal.getValue().getCentre().getCentroid().getX());
-				
-				if (distance<urbanDistance+100) { // +100m pour le périmètre vs le centroïde
-					neighbors.add(parkProposal.getValue());
-				}
-			}
-		}
-
-		if (neighbors.size()>24) {
-			log.warn("Nombre de voisins ({}) supérieur à 24 pour le carré {} en zone urbaine", neighbors.size(), idInspire);
-			
-		}
-		log.info("Trouvé {} voisins pour le carré {}", neighbors.size(), idInspire);
-		return neighbors;
+		return ParkProposalHelper.findNeighbors(idInspire, carreMap, urbanDistance);
 	}
 }

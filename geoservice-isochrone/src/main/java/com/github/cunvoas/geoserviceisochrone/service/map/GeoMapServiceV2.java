@@ -464,7 +464,11 @@ public class GeoMapServiceV2 {
 
 					GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
-					feature.setGeometry(park.getContour());
+					if (park.getContour()!=null) {
+						feature.setGeometry(park.getContour());
+					} else if (park.getCoordonnee()!=null) {
+						feature.setGeometry(park.getCoordonnee());
+					}
 					
 					ParkGardenView pv = new ParkGardenView();
 					feature.setProperties(pv);
@@ -483,6 +487,7 @@ public class GeoMapServiceV2 {
 					} else {
 						pv.setOms(park.getOmsCustom());
 					}
+					pv.setActif(getActif(park));
 					
 					
     			}
@@ -518,11 +523,15 @@ public class GeoMapServiceV2 {
 					pv.setId(String.valueOf(park.getId()));
 					pv.setName(park.getName());
 					
-					if (park.getOmsCustom()!=null) {
+
+					pv.setSurface(park.getSurface());
+					if (park.getOmsCustom()==null) {
+						if (park.getTypeId()!=null){
+							ParkType pt = parkTypeService.get(park.getTypeId());
+							pv.setOms(pt.getOms());
+						}
+					} else {
 						pv.setOms(park.getOmsCustom());
-					} else if (park.getTypeId()!=null){
-						ParkType pt = parkTypeService.get(park.getTypeId());
-						pv.setOms(pt.getOms());
 					}
 					pv.setActif(getActif(park));
 					
@@ -675,22 +684,31 @@ public class GeoMapServiceV2 {
     		List<ParcEtJardin> parkPrefs =  parkJardinRepository.findByArea(polygon);
 			
     		if (!CollectionUtils.isEmpty(parkPrefs)) {
-				for (ParcEtJardin parcJardin : parkPrefs) {
+				for (ParcEtJardin park : parkPrefs) {
 					
 					GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
-					feature.setGeometry(parcJardin.getCoordonnee());
+					if (park.getContour()!=null) {
+						feature.setGeometry(park.getContour());
+					} else if (park.getCoordonnee()!=null) {
+						feature.setGeometry(park.getCoordonnee());
+					}
 					
 					ParkGardenView pv = new ParkGardenView();
-					pv.setId(String.valueOf(parcJardin.getId()));
-					pv.setName(parcJardin.getName());
-					pv.setSurface(parcJardin.getSurface());
+					pv.setId(String.valueOf(park.getId()));
+					pv.setName(park.getName());
+
+					pv.setSurface(park.getSurface());
 					
-					if (parcJardin.getSource()!=null) {
-						pv.setSource(parcJardin.getSource().toString());
+					if (park.getOmsCustom()==null) {
+						if (park.getTypeId()!=null){
+							ParkType pt = parkTypeService.get(park.getTypeId());
+							pv.setOms(pt.getOms());
+						}
 					} else {
-						pv.setSource(ParcSourceEnum.OPENDATA.toString());
+						pv.setOms(park.getOmsCustom());
 					}
+					pv.setActif(getActif(park));
 					
 					feature.setProperties(pv);
 				}

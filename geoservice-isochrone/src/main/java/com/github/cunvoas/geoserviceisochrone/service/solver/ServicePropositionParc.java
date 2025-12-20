@@ -98,7 +98,6 @@ public class ServicePropositionParc {
 		// Récupérer les carrés de la commune
 		List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findCarreByInseeCode(insee, true);
 		
-		
 		//préparation des données pour le calcul
 		Map<String, ParkProposalWork> carreMap = new HashMap<>();
 		for (InseeCarre200mOnlyShape shape : carreShapes) {
