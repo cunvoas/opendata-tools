@@ -4,7 +4,7 @@
         
         <div class="border-2 border-transparent mt-4">
             <div class="text-center relative z-10">
-                <Isochrone msg="Cartographie des parcs" :location="location" @colorblind-mode-changed="updateColorblindMode" />
+                <Isochrone msg="Cartographie des parcs" :location="location" @colorblind-mode-changed="updateColorblindMode" @parcs-visibility-changed="updateParcsLegend" />
             </div>
         </div>
     </div>
@@ -32,6 +32,19 @@
                     <tr>
                         <td colspan="4">✖ : non comptabilisé comme un parc</td>
                     </tr>
+
+                    <tr id="legend-parks-1" v-show="showParcsLegend">
+                        <td class="pr-2">Parcs comptabilisé :</td>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: #3aa637`" /></td>
+                   </tr>
+                    <tr id="legend-parks-2" v-show="showParcsLegend">
+                        <td class="pr-2" >Parcs noncomptabilisé :</td>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: #e96020`" /></td>
+                    </tr>
+                    <tr id="legend-parks-3" v-show="showParcsLegend">
+                        <td class="pr-2" >Parcs futur ou détruit :</td>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: #DC20E9`" /></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -51,7 +64,8 @@ export default {
     data() {
         return {
             location: null,
-            colorblindMode: false
+            colorblindMode: false,
+            showParcsLegend: false
         };
     },
     computed: {
@@ -79,6 +93,9 @@ export default {
         },
         updateColorblindMode(isColorblindMode) {
             this.colorblindMode = isColorblindMode;
+        },
+        updateParcsLegend(isShowParcs) {
+            this.showParcsLegend = isShowParcs;
         }
     }
 };

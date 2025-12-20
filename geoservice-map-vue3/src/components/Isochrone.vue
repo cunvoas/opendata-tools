@@ -410,6 +410,11 @@ export default {
     }
   },
 
+  watch: {
+    showParcs(newValue) {
+      this.$emit('parcs-visibility-changed', newValue);
+    }
+  },
   methods: {
     onColorModeChange() {
       // Sauvegarder le mode dans le localStorage
