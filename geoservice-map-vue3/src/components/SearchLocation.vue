@@ -72,7 +72,7 @@ export default {
             selectedCityInseeCode: null,
             locX: null,
             locY: null,
-            selectedAddress: true
+            selectedAddress: null
         };
     },
     async mounted() {
@@ -101,30 +101,11 @@ export default {
             this.selectedCity = '2878';
         }
 
-        // Chain the fetch operations with proper event simulation
+        // Chain the fetch operations
         await this.fetchRegions();
         
-        // Simulate region selection event
-        const regionEvent = {
-            target: {
-                options: [{
-                    text: this.regions.find(r => r.id === this.selectedRegion)?.name || ''
-                }],
-                selectedIndex: 0
-            }
-        };
-        await this.fetchCom2cos(regionEvent);
-
-        // Simulate com2co selection event
-        const com2coEvent = {
-            target: {
-                options: [{
-                    text: this.com2cos.find(c => c.id === this.selectedCom2co)?.name || ''
-                }],
-                selectedIndex: 0
-            }
-        };
-        await this.fetchCities(com2coEvent);
+        // Fetch com2cos data (this will also call fetchCities if needed)
+        await this.fetchCom2cos();
 
         // Emit the loaded location if we have complete data
         if (locationData) {
@@ -187,22 +168,15 @@ export default {
                 // Wait for the next tick to ensure com2cos are loaded
                 await this.$nextTick();
                 
-                // If we have a saved com2co, find it in the loaded data
+                // Always fetch cities if we have a selectedCom2co (from localStorage or default)
                 if (this.selectedCom2co) {
-                    
                     const com2coOption = this.com2cos.find(com2co => com2co.id === this.selectedCom2co);
                     if (com2coOption) {
-                        // Simulate change event for fetchCities
-                        const event = {
-                            target: {
-                                options: [{
-                                    text: com2coOption.name
-                                }],
-                                selectedIndex: 0
-                            }
-                        };
-                        await this.fetchCities(event);
+                        // Assign the com2co name directly
+                        this.selectedCom2coName = com2coOption.name;
                     }
+                    // Chain the call to fetchCities regardless of whether we found the com2co
+                    await this.fetchCities(null);
                 } else {
                     // Reset dependent fields if no com2co is selected
                     this.cities = [];
@@ -218,41 +192,69 @@ export default {
         async fetchCities(event) { // call by com2co
             if (!this.selectedCom2co) return;
             try {
-                const selectedOption = event.target.options[event.target.selectedIndex];
-                this.selectedCom2coName = selectedOption.text;
+                // Only process event if it's a real event (not during initial load)
+                if (event && event.target && event.target.options) {
+                    const selectedOption = event.target.options[event.target.selectedIndex];
+                    this.selectedCom2coName = selectedOption.text;
+                } else if (!this.selectedCom2coName) {
+                    // If no name is set yet, find it from the loaded com2cos
+                    const com2coOption = this.com2cos.find(c => c.id === this.selectedCom2co);
+                    if (com2coOption) {
+                        this.selectedCom2coName = com2coOption.name;
+                    }
+                }
+                
                 const response = await axios.get(`https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/cities/com2co/cities_${this.selectedCom2co}.json`);
                 this.cities = response.data;
                 
                 // Si nous avons un selectedCity sauvegardé, attendons que les données soient chargées
                 await this.$nextTick();
                 
+                console.log('fetchCities - selectedCity:', this.selectedCity, 'type:', typeof this.selectedCity);
+                console.log('First city in data:', this.cities[0]);
+                
                 // Si nous sommes dans le contexte du chargement initial
                 if (this.selectedCity) {
                     
-                    const cityOption = this.cities.find(city => city.id === this.selectedCity);
+                    const cityOption = this.cities.find(city => String(city.id) === String(this.selectedCity));
+                    console.log('City found:', cityOption);
+                    
                     if (cityOption) {
-                        // Simuler l'événement change pour déclencher handleCityChange
-                        const event = {
-                            target: {
-                                options: [{
-                                    text: `${cityOption.name} (${cityOption.inseeCode})`,
-                                    getAttribute: (attr) => {
-                                        switch(attr) {
-                                            case 'data-insee-code':
-                                                return cityOption.inseeCode;
-                                            case 'data-longitude-x':
-                                                return cityOption.lonX;
-                                            case 'data-latitude-y':
-                                                return cityOption.latY;
-                                            default:
-                                                return null;
-                                        }
-                                    }
-                                }],
-                                selectedIndex: 0
-                            }
+                        // Assign city data directly
+                        this.selectedCityName = `${cityOption.name} (${cityOption.inseeCode})`;
+                        this.selectedCityInseeCode = cityOption.inseeCode;
+                        this.locX = cityOption.lonX;
+                        this.locY = cityOption.latY;
+                        
+                        console.log('City loaded:', {
+                            selectedCityInseeCode: this.selectedCityInseeCode,
+                            selectedCityName: this.selectedCityName,
+                            locX: this.locX,
+                            locY: this.locY
+                        });
+                        
+                        // Save to localStorage
+                        const loc = {
+                            "locType": "city",
+                            "regionId": this.selectedRegion,
+                            "com2coId": this.selectedCom2co,
+                            "com2coName": this.selectedCom2coName,
+                            "cityId": this.selectedCity,
+                            "cityName": this.selectedCityName,
+                            "cityInsee": this.selectedCityInseeCode,
+                            "lonX": this.locX,
+                            "latY": this.locY
                         };
-                        this.handleCityChange(event);
+                        localStorage.setItem('location-selected', JSON.stringify(loc));
+                        
+                        // Emit the update-location event
+                        this.$emit('update-location', loc);
+                        
+                        // Trigger initial address API call after all city data is loaded
+                        if (this.fromLocalStorage) {
+                            await this.fetchAddresses('');
+                            this.fromLocalStorage = false;
+                        }
                     }
                 }
             } catch (error) {
@@ -279,7 +281,7 @@ export default {
                 return [];
             }
         }, 350),
-        handleCityChange(event) {  // call by city
+        handleCityChange(event) {  // call by city - direct user selection
             const selectedOption = event.target.options[event.target.selectedIndex];
             this.selectedCityName = selectedOption.text;
             this.selectedCityInseeCode = selectedOption.getAttribute('data-insee-code');
@@ -297,10 +299,8 @@ export default {
                 "latY": this.locY
             };
 
-
             // Save to localStorage instead of cookies
             localStorage.setItem('location-selected', JSON.stringify(loc));
-            
 
             //console.log("handleCityChange.emit"+JSON.stringify(loc));
             this.$emit('update-location', loc);
