@@ -144,6 +144,32 @@ import debounce from 'lodash/debounce';
 const MODE='static';
 
 // needs to be here for map coloring
+// Fonction pour obtenir les couleurs des parcs selon le mode (normal ou daltonien)
+function getParkColor(oms, actif, colorblindMode = false) {
+  let fillColor = '#3aa637'; // Couleur par défaut (parc inclus OMS) - vert
+  
+  if (colorblindMode) {
+    // Palette adaptée aux daltoniens
+    if (actif === false) {
+      fillColor = '#9467BD';  // Violet pour parcs inactifs
+    } else if (oms === false) {
+      fillColor = '#FF7F0E';  // Orange pour parcs exclus OMS
+    } else if (oms === true) {
+      fillColor = '#2CA02C';  // Vert foncé pour parcs inclus OMS
+    }
+  } else {
+    // Palette classique
+    if (actif === false) {
+      fillColor = '#DC20E9';  // Magenta pour parcs inactifs
+    } else if (oms === false) {
+      fillColor = '#e96020';  // Orange pour parcs exclus OMS
+    } else if (oms === true) {
+      fillColor = '#3aa637';  // Vert pour parcs inclus OMS
+    }
+  }
+  return fillColor;
+}
+
 // Fonction pour obtenir les couleurs selon le mode (normal ou daltonien)
 function  getSquareColor(zoneDense, densite, colorblindMode = false) {
   // Gris neutre pour valeurs non calculées
@@ -710,6 +736,57 @@ export default {
       });
     },
 
+    onDetailPark() {
+      // Dépendance explicite au mode daltonien pour forcer le recalcul
+      const colorblindMode = this.colorblindMode;
+      console.log('onDetailPark - colorblindMode:', colorblindMode);
+      return (feature, layer) => {
+        let oms = feature.properties.oms;
+        let valid =''
+        if (oms === false) {
+          valid = "✖";
+        }
+
+        let formattedSurface = feature.properties.surface;
+        let unit = ' m²';
+        
+        if (feature.properties.surface) {
+           if (feature.properties.surface > 1000 && oms!==false) {
+            valid = "✓";
+           }
+
+          if (feature.properties.surface > 10000) {
+            const surfaceInHa = feature.properties.surface / 10000;
+            formattedSurface = new Intl.NumberFormat('fr-FR', { 
+              minimumFractionDigits: 2, 
+              maximumFractionDigits: 2 
+            }).format(surfaceInHa);
+            unit = ' ha';
+          } else {
+            formattedSurface = new Intl.NumberFormat('fr-FR').format(Math.round(feature.properties.surface));
+          }
+        }
+        
+        layer.bindTooltip(
+          "<div>Nom: " + valid +" "+ feature.properties.name +
+          "</div><div>Surface: " + formattedSurface + unit + 
+          "</div><div>Ville: " + feature.properties.city +"</div>",
+          { permanent: false, sticky: true }
+        );
+
+        // Appliquer la couleur avec le mode daltonien
+        const fillColor = getParkColor(
+          feature.properties.oms,
+          feature.properties.actif,
+          colorblindMode
+        );
+        layer.setStyle({
+          fillColor: fillColor,
+          color: fillColor,
+        });
+      };
+    },
+
   },
   /**
    * Vue lifecycle hook called after the component has been mounted to the DOM.
@@ -764,24 +841,13 @@ export default {
       };
     },
     styleParcFunction() {
-      //const fillColor = this.fillColor; // important! need touch fillColor in computed for re-calculate when change fillColor
+      const colorblindMode = this.colorblindMode;
       return (feature) => {
-        let fillColor = '#3aa637'; // Couleur par défaut (parc inclus OMS)
-        if (feature && feature.properties) {
-          // Vérifier d'abord si le parc est actif
-          if (feature.properties.actif === false) {
-            fillColor = '#DC20E9'; // Futur parc ou détruit
-          } else if (feature.properties.oms === false) {
-            fillColor = '#e96020'; // Parc exclus OMS
-          } else if (feature.properties.oms === true) {
-            fillColor = '#3aa637'; // Parc inclus OMS
-          }
-        }
-                //   color:'#24216a', 
-        //   fillColor: statusColor, 
-        //   weight:1, 
-        //   opacity:0.2, 
-        //   fillOpacity:0.15 
+        let fillColor = getParkColor(
+          feature?.properties?.oms,
+          feature?.properties?.actif,
+          colorblindMode
+        );
         return {
           weight: 1,
           color: fillColor,
@@ -928,44 +994,6 @@ export default {
            "</div>",
           //{ permanent: false, sticky: true }
         );
-      };
-    },
-
-    onDetailPark() {
-      return (feature, layer) => {
-        let oms = feature.properties.oms;
-        let valid =''
-        if (oms === false) {
-          valid = "✖";
-        }
-
-        let formattedSurface = feature.properties.surface;
-        let unit = ' m²';
-        
-        if (feature.properties.surface) {
-           if (feature.properties.surface > 1000 && oms!==false) {
-            valid = "✓";
-           }
-
-          if (feature.properties.surface > 10000) {
-            const surfaceInHa = feature.properties.surface / 10000;
-            formattedSurface = new Intl.NumberFormat('fr-FR', { 
-              minimumFractionDigits: 2, 
-              maximumFractionDigits: 2 
-            }).format(surfaceInHa);
-            unit = ' ha';
-          } else {
-            formattedSurface = new Intl.NumberFormat('fr-FR').format(Math.round(feature.properties.surface));
-          }
-        }
-        
-        layer.bindTooltip(
-          "<div>Nom: " + valid +" "+ feature.properties.name +
-          "</div><div>Surface: " + formattedSurface + unit + 
-          "</div><div>Ville: " + feature.properties.city +"</div>",
-          { permanent: false, sticky: true }
-        );
-
       };
     },
   },

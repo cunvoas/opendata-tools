@@ -35,15 +35,15 @@
 
                     <tr id="legend-parks-1" v-show="showParcsLegend">
                         <td class="pr-2">Parcs comptabilisé :</td>
-                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: #3aa637`" /></td>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getParcComptabiliseColor}`" /></td>
                    </tr>
                     <tr id="legend-parks-2" v-show="showParcsLegend">
-                        <td class="pr-2" >Parcs noncomptabilisé :</td>
-                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: #e96020`" /></td>
+                        <td class="pr-2" >Parcs non comptabilisé :</td>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getParcNonComptabiliseColor}`" /></td>
                     </tr>
                     <tr id="legend-parks-3" v-show="showParcsLegend">
                         <td class="pr-2" >Parcs futur ou détruit :</td>
-                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: #DC20E9`" /></td>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getParcFuturOuDetruitColor}`" /></td>
                     </tr>
                 </tbody>
             </table>
@@ -83,6 +83,15 @@ export default {
         },
         getHighColor2() {
             return this.colorblindMode ? '#4575b4' : '#578817';
+        },
+        getParcComptabiliseColor() {
+            return this.colorblindMode ? '#2CA02C' : '#3aa637';
+        },
+        getParcNonComptabiliseColor() {
+            return this.colorblindMode ? '#FF7F0E' : '#e96020';
+        },
+        getParcFuturOuDetruitColor() {
+            return this.colorblindMode ? '#9467BD' : '#DC20E9';
         }
     },
     methods: {
