@@ -760,13 +760,29 @@ export default {
     },
     styleParcFunction() {
       //const fillColor = this.fillColor; // important! need touch fillColor in computed for re-calculate when change fillColor
-      return () => {
+      return (feature) => {
+        let fillColor = '#3aa637'; // Couleur par défaut (parc inclus OMS)
+        if (feature && feature.properties) {
+          // Vérifier d'abord si le parc est actif
+          if (feature.properties.actif === false) {
+            fillColor = '#DC20E9'; // Futur parc ou détruit
+          } else if (feature.properties.oms === false) {
+            fillColor = '#e96020'; // Parc exclus OMS
+          } else if (feature.properties.oms === true) {
+            fillColor = '#3aa637'; // Parc inclus OMS
+          }
+        }
+                //   color:'#24216a', 
+        //   fillColor: statusColor, 
+        //   weight:1, 
+        //   opacity:0.2, 
+        //   fillOpacity:0.15 
         return {
-          weight: 2,
-          color: "#B08C60",
-          opacity: 0.9,
-          fillColor: "#608C60",
-          fillOpacity: 0.3,
+          weight: 1,
+          color: fillColor,
+          fillColor: fillColor,
+          opacity: 0.6,
+          fillOpacity: 0.5,
         };
       };
     },
@@ -944,6 +960,7 @@ export default {
           "</div><div>Ville: " + feature.properties.city +"</div>",
           { permanent: false, sticky: true }
         );
+
       };
     },
   },
