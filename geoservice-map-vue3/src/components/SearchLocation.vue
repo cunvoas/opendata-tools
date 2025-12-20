@@ -265,8 +265,11 @@ export default {
             }
         },
         fetchAddresses: debounce(async function (query) {
-            // debounce to avoid too many requests, call at least with 2 characters and wait 350ms after last keyup
-            if (!this.selectedCity && !this.selectedCityInseeCode && query.length < 3) return [];
+            // Don't call API if query is less than 3 characters
+            if (!query || query.length < 3) return [];
+            // Don't call API if city is not selected
+            if (!this.selectedCity && !this.selectedCityInseeCode) return [];
+            
             try {
                 const response = await axios.get(`https://api-adresse.data.gouv.fr/search/?citycode=${this.selectedCityInseeCode}&q=` + encodeURI(query), { timeout: 5000 });
                 const geojson = response.data;
