@@ -433,10 +433,7 @@ export default {
       },
       immediate: true,
       deep: true
-    }
-  },
-
-  watch: {
+    },
     showParcs(newValue) {
       this.$emit('parcs-visibility-changed', newValue);
     }
@@ -736,13 +733,19 @@ export default {
       });
     },
 
-    onDetailPark() {
-      // Dépendance explicite au mode daltonien pour forcer le recalcul
-      const colorblindMode = this.colorblindMode;
-      console.log('onDetailPark - colorblindMode:', colorblindMode);
-      return (feature, layer) => {
+    onDetailPark(feature, layer) {
+      try {
+        // Dépendance explicite au mode daltonien pour forcer le recalcul
+        const colorblindMode = this.colorblindMode;
+        console.log('onDetailPark - colorblindMode:', colorblindMode);
+        
+        if (!feature || !feature.properties) {
+          console.warn('onDetailPark: feature or feature.properties is missing', feature);
+          return;
+        }
+        
         let oms = feature.properties.oms;
-        let valid =''
+        let valid = ''
         if (oms === false) {
           valid = "✖";
         }
@@ -751,9 +754,9 @@ export default {
         let unit = ' m²';
         
         if (feature.properties.surface) {
-           if (feature.properties.surface > 1000 && oms!==false) {
+          if (feature.properties.surface > 1000 && oms!==false) {
             valid = "✓";
-           }
+          }
 
           if (feature.properties.surface > 10000) {
             const surfaceInHa = feature.properties.surface / 10000;
@@ -767,10 +770,13 @@ export default {
           }
         }
         
+        const parkName = feature.properties.name || 'N/A';
+        const parkCity = feature.properties.city || 'N/A';
+        
         layer.bindTooltip(
-          "<div>Nom: " + valid +" "+ feature.properties.name +
+          "<div>Nom: " + valid +" "+ parkName +
           "</div><div>Surface: " + formattedSurface + unit + 
-          "</div><div>Ville: " + feature.properties.city +"</div>",
+          "</div><div>Ville: " + parkCity +"</div>",
           { permanent: false, sticky: true }
         );
 
@@ -784,7 +790,9 @@ export default {
           fillColor: fillColor,
           color: fillColor,
         });
-      };
+      } catch (error) {
+        console.error('Error in onDetailPark:', error, feature);
+      }
     },
 
   },
@@ -810,7 +818,7 @@ export default {
      */
     detailParcs() {
       return {
-        onEachFeature: this.onDetailPark,
+        onEachFeature: (feature, layer) => this.onDetailPark(feature, layer),
       };
     },
     detailIsochrone() {

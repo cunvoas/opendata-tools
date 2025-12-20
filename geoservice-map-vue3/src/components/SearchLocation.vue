@@ -310,7 +310,17 @@ export default {
         },
         handleLocationSelected(loc) {
            //console.log("handleLocationSelected.emit"+JSON.stringify(loc));
-            this.$emit('update-location', loc);
+            // Enrich the location object with region and com2co information
+            const enrichedLoc = {
+                ...loc,
+                "regionId": this.selectedRegion,
+                "com2coId": this.selectedCom2co,
+                "com2coName": this.selectedCom2coName,
+                "cityId": this.selectedCity,
+                "cityName": this.selectedCityName,
+                "cityInsee": this.selectedCityInseeCode
+            };
+            this.$emit('update-location', enrichedLoc);
         }
 
     }
