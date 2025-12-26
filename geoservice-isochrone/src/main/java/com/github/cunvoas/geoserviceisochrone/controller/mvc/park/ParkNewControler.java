@@ -163,6 +163,11 @@ public class ParkNewControler {
 			Model model) {
 		
 		ParcEtJardin pj = serviceReadReferences.getParcEtJardinById(idPark);
+		if (pj == null) {
+			model.addAttribute("parkNotFound", true);
+			model.addAttribute(formName, form);
+			return formName;
+		}
 		return getForm(form, model, pj);
 	}
 	

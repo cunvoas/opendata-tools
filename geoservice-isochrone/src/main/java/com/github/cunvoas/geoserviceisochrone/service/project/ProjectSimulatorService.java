@@ -152,11 +152,6 @@ public class ProjectSimulatorService {
 				applicationBusinessProperties.getRecoUrbSquareMeterPerCapita() :
 					applicationBusinessProperties.getRecoSubUrbSquareMeterPerCapita();
 
-		// Surface mini par habitant
-		Double minSquareMeterPerCapita = dense ?
-				applicationBusinessProperties.getMinUrbSquareMeterPerCapita() :
-					applicationBusinessProperties.getMinSubUrbSquareMeterPerCapita();
-
 		Integer annee = applicationBusinessProperties.getDerniereAnnee();
 		
 		// carre de la ville
@@ -169,23 +164,98 @@ public class ProjectSimulatorService {
 			carreForSimulation.addAll(neighbors);
 		}
 		
-		List<InseeCarre200mComputedV2> carreComputed=new ArrayList<>();
-		for (ParkProposalWork parkProposalWork : carreForSimulation) {
-			// for each square, get computed data
-			Optional<InseeCarre200mComputedV2> opt = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, parkProposalWork.getIdInspire());
-			if (opt.isPresent()) {
-				carreComputed.add(opt.get());
-			} else {
-				// add object in case an unpopulated square
-				InseeCarre200mComputedV2 empty=new InseeCarre200mComputedV2();
-				empty.setIdInspire(parkProposalWork.getIdInspire());
-				empty.setAnnee(annee);
-				empty.setPopIncludedOms(BigDecimal.ZERO);
-			}
-		}
-		//TODO
+		// Calcul de la projection du projet sur les parcs disponibles
+		// 1. Calculer la surface du projet de parc
+		Long surfaceParkProjet = projectSimulator.getSurfacePark() != null ? 
+				projectSimulator.getSurfacePark().longValue() : 0L;
 		
-		 
+		// 2. Pour chaque carré impacté, recalculer les métriques avec le nouveau parc
+		BigDecimal totalPopAffected = BigDecimal.ZERO;
+		BigDecimal totalSurfaceMissingBefore = BigDecimal.ZERO;
+		BigDecimal totalSurfaceMissingAfter = BigDecimal.ZERO;
+		BigDecimal totalSurfaceParkAvailable = BigDecimal.ZERO;
+		
+		for (ParkProposalWork carre : carreForSimulation) {
+			BigDecimal popAccessing = carre.getAccessingPopulation() != null ? carre.getAccessingPopulation() : BigDecimal.ZERO;
+			BigDecimal surfaceParkOms = carre.getAccessingSurface() != null ? carre.getAccessingSurface() : BigDecimal.ZERO;
+			
+			// Surface manquante avant le projet (déjà calculée dans ParkProposalWork)
+			BigDecimal missingBefore = carre.getMissingSurface() != null ? carre.getMissingSurface() : BigDecimal.ZERO;
+			
+			// Nouvelle surface disponible après ajout du parc (répartie sur tous les carrés)
+			BigDecimal newSurfacePark = surfaceParkOms.add(BigDecimal.valueOf(surfaceParkProjet));
+			
+			// Nouvelle surface par habitant
+			BigDecimal newSurfacePerCapita = popAccessing.compareTo(BigDecimal.ZERO) > 0 ?
+					newSurfacePark.divide(popAccessing, 2, BigDecimal.ROUND_HALF_UP) : BigDecimal.ZERO;
+			
+			// Surface manquante après le projet
+			Double densiteMissingAfter = Math.max(recoSquareMeterPerCapita - newSurfacePerCapita.doubleValue(), 0);
+			BigDecimal missingAfter = BigDecimal.valueOf(densiteMissingAfter * popAccessing.doubleValue());
+			
+			// Agrégation des résultats
+			totalPopAffected = totalPopAffected.add(popAccessing);
+			totalSurfaceMissingBefore = totalSurfaceMissingBefore.add(missingBefore);
+			totalSurfaceMissingAfter = totalSurfaceMissingAfter.add(missingAfter);
+			totalSurfaceParkAvailable = totalSurfaceParkAvailable.add(surfaceParkOms);
+		}
+		
+		// 3. Mettre à jour le ProjectSimulator avec les résultats
+		projectSimulator.setPopulation(totalPopAffected);
+		
+		// Stocker les métriques calculées dans des champs de commentaire (log pour traçabilité)
+		log.info("Simulation du projet '{}' pour {} habitants affectés", 
+				projectSimulator.getName(), totalPopAffected);
+		log.info("Surface manquante AVANT projet: {} m² (recommandation OMS: {} m²/hab)", 
+				totalSurfaceMissingBefore, recoSquareMeterPerCapita);
+		log.info("Surface manquante APRÈS projet: {} m² (gain: {} m²)", 
+				totalSurfaceMissingAfter, 
+				totalSurfaceMissingBefore.subtract(totalSurfaceMissingAfter));
+		log.info("Surface totale de parcs disponibles: {} m² (+ {} m² du projet)", 
+				totalSurfaceParkAvailable, surfaceParkProjet);
+		
+		// 4. Vérifier si les critères OMS sont respectés après simulation
+		if (totalSurfaceMissingAfter.compareTo(BigDecimal.ZERO) > 0) {
+			// Les critères OMS ne sont pas respectés, proposer des ajustements
+			BigDecimal totalSurfaceParkAfter = totalSurfaceParkAvailable.add(BigDecimal.valueOf(surfaceParkProjet));
+			
+			// Calculer la surface de parc supplémentaire nécessaire pour respecter l'OMS
+			BigDecimal surfaceParkNecessaire = BigDecimal.valueOf(totalPopAffected.doubleValue() * recoSquareMeterPerCapita);
+			BigDecimal surfaceParkManquante = surfaceParkNecessaire.subtract(totalSurfaceParkAfter);
+			
+			if (surfaceParkManquante.compareTo(BigDecimal.ZERO) > 0) {
+				log.warn("⚠️ Critères OMS NON respectés - Surface de parc manquante: {} m²", surfaceParkManquante);
+				log.info("💡 Proposition pour respecter l'OMS: augmenter la surface de parc de {} m²", surfaceParkManquante);
+			}
+			
+			// Proposer une population réduite basée sur la surface plancher disponible
+			if (projectSimulator.getSurfaceFloor() != null && 
+				projectSimulator.getAvgAreaAccommodation() != null && 
+				projectSimulator.getDensityPerAccommodation() != null &&
+				projectSimulator.getAvgAreaAccommodation().compareTo(BigDecimal.ZERO) > 0) {
+				
+				// Calculer la population optimale: (surface plancher / surface par logement) * densité par logement
+				BigDecimal nbLogements = projectSimulator.getSurfaceFloor().divide(
+						projectSimulator.getAvgAreaAccommodation(), 2, BigDecimal.ROUND_HALF_UP);
+				BigDecimal populationOptimale = nbLogements.multiply(projectSimulator.getDensityPerAccommodation());
+				
+				// Calculer la surface de parc nécessaire pour cette population
+				BigDecimal surfaceParkOptimale = BigDecimal.valueOf(
+						(totalPopAffected.doubleValue() - populationOptimale.doubleValue() + populationOptimale.doubleValue()) * recoSquareMeterPerCapita)
+						.subtract(totalSurfaceParkAvailable);
+				
+				if (surfaceParkOptimale.compareTo(BigDecimal.ZERO) > 0) {
+					log.info("💡 Alternative: réduire la population du projet à {} habitants (au lieu de {})", 
+							populationOptimale, projectSimulator.getProjetPeople());
+					log.info("   Surface de parc nécessaire: {} m² pour {} logements de {} m² avec {} hab/logement",
+							surfaceParkOptimale, nbLogements.intValue(), 
+							projectSimulator.getAvgAreaAccommodation(), 
+							projectSimulator.getDensityPerAccommodation());
+				}
+			}
+		} else {
+			log.info("✅ Critères OMS respectés après simulation du projet");
+		}
 		
 		return projectSimulatorRepository.save(projectSimulator);
 	}

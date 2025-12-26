@@ -12,6 +12,12 @@
 
 				<div class="container">
 
+				<!-- Message d'erreur parc non trouvé -->
+				<div th:if="${parkNotFound}" class="alert alert-warning alert-dismissible fade show" role="alert">
+					<strong>Attention !</strong> <span th:text="#{park.new.notFound}">Ce parc n'existe pas.</span>
+					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				</div>
+
 <p class="d-inline-flex gap-1">
 	<button id="btnNew" onclick="manageCreateDisabled()" type="button" class="btn btn-outline-success" th:text="#{park.new.create}">Create</button>
 	<button id="btnUpdate" onclick="manageUpdateDisabled()" type="button" class="btn btn-outline-success" th:text="#{park.new.update}">Update</button>

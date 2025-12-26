@@ -109,12 +109,12 @@ class TestExporterApplication {
 	
 	
 	@Test
-	@Disabled
+//	@Disabled
 	@Order(100)
 	void writeLiveDataByCom2coAndYear() {
 		
 		Integer[] annees= {2015,2017,2019};
-		Integer annee=2019;
+//		Integer annee=2019;
 		Long com2coId=1l;
 		
 		CommunauteCommune com2co=serviceReadReferences.getCommunauteCommuneById(com2coId);
@@ -149,7 +149,7 @@ class TestExporterApplication {
 	}
 
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(22)
 	void writeGeoJsonParkOutline() {
 		try {
@@ -210,7 +210,7 @@ class TestExporterApplication {
 	
 
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(26)
 	void writeStatsSurfaceByCom2CoIdAndAnneeAll() {
 

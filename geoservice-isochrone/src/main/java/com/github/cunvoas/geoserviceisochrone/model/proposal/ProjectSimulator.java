@@ -43,4 +43,12 @@ public class ProjectSimulator {
 	private String name;
 	
 
+	public BigDecimal getProjetPeople() {
+		if (densityPerAccommodation!=null && surfaceArea!=null && avgAreaAccommodation!=null && !BigDecimal.ZERO.equals(avgAreaAccommodation)) {
+			return densityPerAccommodation.multiply(surfaceArea.divide(avgAreaAccommodation));
+		} else {
+			return null;
+		}
+	}
+
 }
