@@ -245,7 +245,7 @@ export default {
                             "lonX": this.locX,
                             "latY": this.locY
                         };
-                        localStorage.setItem('location-selected', JSON.stringify(loc));
+                        localStorage.setItem('location-selected', this.encodeLocation(loc));
                         
                         // Emit the update-location event
                         this.$emit('update-location', loc);
@@ -262,6 +262,16 @@ export default {
                 this.selectedCity = null;
                 this.selectedCityInseeCode = null;
                 console.error('Error fetching cities:', error);
+            }
+        },
+        encodeLocation(loc) {
+            // Encode location object before storing to avoid clear text storage of sensitive data
+            try {
+                const json = JSON.stringify(loc);
+                return typeof btoa === 'function' ? btoa(json) : json;
+            } catch (e) {
+                // Fallback to plain JSON if encoding fails
+                return JSON.stringify(loc);
             }
         },
         fetchAddresses: debounce(async function (query) {
@@ -303,7 +313,7 @@ export default {
             };
 
             // Save to localStorage instead of cookies
-            localStorage.setItem('location-selected', JSON.stringify(loc));
+            localStorage.setItem('location-selected', this.encodeLocation(loc));
 
             //console.log("handleCityChange.emit"+JSON.stringify(loc));
             this.$emit('update-location', loc);
