@@ -8,7 +8,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 
-import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
 
 /**
  * Exemple d'utilisation de la méthode calculePropositionSolver
@@ -22,7 +22,7 @@ public class ExempleUtilisationSolver {
 	
 	public static void main(String[] args) {
 		// Simulation d'un quartier de 5 carrés avec différents niveaux de déficit
-		Map<String, ParkProposalWork> quartier = creerQuartierExemple();
+		Map<String, ProjectSimulatorWork> quartier = creerQuartierExemple();
 		
 		// Configuration OMS pour zone urbaine dense
 		Double densiteRecommandee = 12.0; // m²/habitant
@@ -49,8 +49,8 @@ public class ExempleUtilisationSolver {
 	/**
 	 * Crée un quartier fictif de 5 carrés avec différents profils.
 	 */
-	private static Map<String, ParkProposalWork> creerQuartierExemple() {
-		Map<String, ParkProposalWork> quartier = new HashMap<>();
+	private static Map<String, ProjectSimulatorWork> creerQuartierExemple() {
+		Map<String, ProjectSimulatorWork> quartier = new HashMap<>();
 		
 		// Carré 1 : Centre-ville dense, très peu de parc
 		quartier.put("CARRE_A", creerCarre(
@@ -103,7 +103,7 @@ public class ExempleUtilisationSolver {
 	/**
 	 * Crée un carré avec les paramètres donnés.
 	 */
-	private static ParkProposalWork creerCarre(
+	private static ProjectSimulatorWork creerCarre(
 			String id, 
 			double lon, 
 			double lat,
@@ -111,7 +111,7 @@ public class ExempleUtilisationSolver {
 			double surfaceExistante,
 			double densiteActuelle) {
 		
-		ParkProposalWork carre = new ParkProposalWork();
+		ProjectSimulatorWork carre = new ProjectSimulatorWork();
 		carre.setAnnee(2023);
 		carre.setIdInspire(id);
 		carre.setIsDense(true);
@@ -137,13 +137,13 @@ public class ExempleUtilisationSolver {
 	/**
 	 * Affiche l'état actuel de tous les carrés du quartier.
 	 */
-	private static void afficherEtatQuartier(Map<String, ParkProposalWork> quartier) {
+	private static void afficherEtatQuartier(Map<String, ProjectSimulatorWork> quartier) {
 		System.out.printf("%-10s | %8s | %12s | %12s | %10s%n",
 			"Carré", "Pop.", "Surf. exist.", "Densité", "Déficit");
 		System.out.println("-".repeat(70));
 		
-		for (Map.Entry<String, ParkProposalWork> entry : quartier.entrySet()) {
-			ParkProposalWork carre = entry.getValue();
+		for (Map.Entry<String, ProjectSimulatorWork> entry : quartier.entrySet()) {
+			ProjectSimulatorWork carre = entry.getValue();
 			System.out.printf("%-10s | %8d | %10.0f m² | %8.1f m²/h | %8.0f m²%n",
 				entry.getKey(),
 				carre.getAccessingPopulation().intValue(),
@@ -157,12 +157,12 @@ public class ExempleUtilisationSolver {
 	/**
 	 * Affiche les propositions d'ajout de parc.
 	 */
-	private static void afficherPropositions(Map<String, ParkProposalWork> quartier) {
+	private static void afficherPropositions(Map<String, ProjectSimulatorWork> quartier) {
 		double surfaceTotaleAjoutee = 0;
 		int nbParcs = 0;
 		
-		for (Map.Entry<String, ParkProposalWork> entry : quartier.entrySet()) {
-			ParkProposalWork carre = entry.getValue();
+		for (Map.Entry<String, ProjectSimulatorWork> entry : quartier.entrySet()) {
+			ProjectSimulatorWork carre = entry.getValue();
 			
 			if (carre.getNewSurface() != null && carre.getNewSurface().doubleValue() > 0) {
 				double surface = carre.getNewSurface().doubleValue();

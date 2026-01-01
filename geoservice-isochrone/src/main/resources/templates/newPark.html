@@ -14,7 +14,7 @@
 
 				<!-- Message d'erreur parc non trouvé -->
 				<div th:if="${parkNotFound}" class="alert alert-warning alert-dismissible fade show" role="alert">
-					<strong>Attention !</strong> <span th:text="#{park.new.notFound}">Ce parc n'existe pas.</span>
+					<strong><span th:text="#{park.new.warning}">Attention</span></strong> <span th:text="#{park.new.notFound}">not exists</span>
 					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 				</div>
 

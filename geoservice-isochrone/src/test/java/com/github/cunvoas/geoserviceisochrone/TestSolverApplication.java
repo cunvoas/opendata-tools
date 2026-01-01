@@ -13,7 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
-import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.service.solver.ServicePropositionParc;
 
@@ -40,13 +40,13 @@ class TestSolverApplication {
 	void calculePropositionInsee() {
 
 		try {
-			Map<String, ParkProposalWork> map =  tested.calculeProposition("59350", 2019);
+			Map<String, ProjectSimulatorWork> map =  tested.calculeProposition("59350", 2019);
 			
 			Assertions.assertNotNull(map);
 			if (map!=null && !map.isEmpty()) {
 				//tested.saveProposals(map);
 				
-				for (ParkProposalWork ppw : map.values()) {
+				for (ProjectSimulatorWork ppw : map.values()) {
 					log.info("Proposal for square {} : add park area = {} m²",ppw.getIdInspire(),ppw.getNewMissingSurface());
 				}
 			}
@@ -72,7 +72,7 @@ class TestSolverApplication {
 				for (City city : c2c.getCities()) {
 					
 					try {
-						Map<String, ParkProposalWork> map =  tested.calculeProposition(city.getInseeCode(), 2019);
+						Map<String, ProjectSimulatorWork> map =  tested.calculeProposition(city.getInseeCode(), 2019);
 						
 						Assertions.assertNotNull(map);
 						if (map!=null && !map.isEmpty()) {

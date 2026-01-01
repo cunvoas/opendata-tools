@@ -20,6 +20,7 @@ public class ProjectSimulator {
 	private Long id;
 	
 	private Long idCommune;
+	private String insee;
 	
 	/**
 	 * Année de la donnée.

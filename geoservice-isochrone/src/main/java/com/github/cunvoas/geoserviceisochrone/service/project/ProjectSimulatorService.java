@@ -15,16 +15,17 @@ import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
-import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWorkRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
-import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ParkProposalHelper;
+import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,13 +65,17 @@ public class ProjectSimulatorService {
 	private InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;
 	@Autowired
 	private InseeCarre200mComputedV2Repository inseeCarre200mComputedV2Repository;
+//	@Autowired
+//	private ServiceOpenData serviceOpenData;
 	@Autowired
-	private ServiceOpenData serviceOpenData;
+	private ServiceReadReferences serviceReadReferences;
 	@Autowired
 	private Filosofil200mRepository filosofil200mRepository;
 	
 	@Autowired
 	private ProjectSimulatorRepository projectSimulatorRepository;
+	@Autowired
+	private ProjectSimulatorlWorkRepository projectSimulatorlWorkRepository;
 	
 
 	
@@ -120,7 +125,7 @@ public class ProjectSimulatorService {
 	}
 
 	/**
-	 * Simule l'impact d'un projet d'aménagement sur les surfaces de parc.
+	 * Simule l'impact d'un projet d'aménagement sur les surfaces disponibles/hab de parc.
 	 * 
 	 * Cette méthode:
 	 * 1. Identifie les carrés INSEE impactés par la géométrie du projet
@@ -134,15 +139,13 @@ public class ProjectSimulatorService {
 	 * @see #populate(Integer, String, Boolean, Double)
 	 */
 	public ProjectSimulator simulate(ProjectSimulator projectSimulator) {
-		String insee=null;
 		
-		// get all squares in area
-		List<InseeCarre200mOnlyShape> carreShapes4Area = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(projectSimulator.getShapeArea(), false);
-		if (carreShapes4Area!=null && !carreShapes4Area.isEmpty()) {
-			insee = carreShapes4Area.get(0).getCodeInsee();
-		}
+		City city = serviceReadReferences.getCity(projectSimulator.getIdCommune());
+		String insee=city.getInseeCode();
 		
-		Boolean dense = serviceOpenData.isDistanceDense(insee);
+
+		Boolean dense = serviceReadReferences.isCityDense(projectSimulator.getIdCommune());
+//		Boolean dense = serviceOpenData.isDistanceDense(insee);
 		// Distance OMS selon densité
 		Integer urbanDistance = Integer.valueOf(dense ? 
 				applicationBusinessProperties.getOmsUrbanDistance() :
@@ -152,35 +155,32 @@ public class ProjectSimulatorService {
 				applicationBusinessProperties.getRecoUrbSquareMeterPerCapita() :
 					applicationBusinessProperties.getRecoSubUrbSquareMeterPerCapita();
 
+		// calcul seulement pour la dernière année
 		Integer annee = applicationBusinessProperties.getDerniereAnnee();
 		
-		// carre de la ville
-		Map<String, ParkProposalWork> carreMap = populate(annee, insee, dense, recoSquareMeterPerCapita);
+		projectSimulator.setAnnee(annee);
+		projectSimulator.setIsDense(dense);
+		projectSimulator.setInsee(insee);
 		
-		// carres impactés par le projet
-		Set<ParkProposalWork> carreForSimulation = new HashSet<>();
-		for (InseeCarre200mOnlyShape inseeCarre200mOnlyShape : carreShapes4Area) {
-			List<ParkProposalWork>  neighbors = ParkProposalHelper.findNeighbors(inseeCarre200mOnlyShape.getIdInspire(), carreMap, urbanDistance);
-			carreForSimulation.addAll(neighbors);
-		}
+		// tous les carres de la ville
+		Map<String, ProjectSimulatorWork> carreMap = populate(projectSimulator, urbanDistance, recoSquareMeterPerCapita);
+		
 		
 		// Calcul de la projection du projet sur les parcs disponibles
 		// 1. Calculer la surface du projet de parc
 		Long surfaceParkProjet = projectSimulator.getSurfacePark() != null ? 
 				projectSimulator.getSurfacePark().longValue() : 0L;
 		
-		// 2. Pour chaque carré impacté, recalculer les métriques avec le nouveau parc
-		BigDecimal totalPopAffected = BigDecimal.ZERO;
-		BigDecimal totalSurfaceMissingBefore = BigDecimal.ZERO;
-		BigDecimal totalSurfaceMissingAfter = BigDecimal.ZERO;
-		BigDecimal totalSurfaceParkAvailable = BigDecimal.ZERO;
 		
-		for (ParkProposalWork carre : carreForSimulation) {
+		List<ProjectSimulatorWork> items = new ArrayList<>();
+		
+		// 2. Pour chaque carré impacté, reporter les métriques du projet
+		for (Map.Entry<String, ProjectSimulatorWork> elt : carreMap.entrySet()) {
+			ProjectSimulatorWork carre = elt.getValue();
+			items.add(carre);
+			
 			BigDecimal popAccessing = carre.getAccessingPopulation() != null ? carre.getAccessingPopulation() : BigDecimal.ZERO;
 			BigDecimal surfaceParkOms = carre.getAccessingSurface() != null ? carre.getAccessingSurface() : BigDecimal.ZERO;
-			
-			// Surface manquante avant le projet (déjà calculée dans ParkProposalWork)
-			BigDecimal missingBefore = carre.getMissingSurface() != null ? carre.getMissingSurface() : BigDecimal.ZERO;
 			
 			// Nouvelle surface disponible après ajout du parc (répartie sur tous les carrés)
 			BigDecimal newSurfacePark = surfaceParkOms.add(BigDecimal.valueOf(surfaceParkProjet));
@@ -193,70 +193,15 @@ public class ProjectSimulatorService {
 			Double densiteMissingAfter = Math.max(recoSquareMeterPerCapita - newSurfacePerCapita.doubleValue(), 0);
 			BigDecimal missingAfter = BigDecimal.valueOf(densiteMissingAfter * popAccessing.doubleValue());
 			
-			// Agrégation des résultats
-			totalPopAffected = totalPopAffected.add(popAccessing);
-			totalSurfaceMissingBefore = totalSurfaceMissingBefore.add(missingBefore);
-			totalSurfaceMissingAfter = totalSurfaceMissingAfter.add(missingAfter);
-			totalSurfaceParkAvailable = totalSurfaceParkAvailable.add(surfaceParkOms);
+			// Mettre à jour les champs du carré
+			carre.setNewSurface(newSurfacePark);
+			carre.setNewSurfacePerCapita(newSurfacePerCapita);
+			carre.setNewMissingSurface(missingAfter);
 		}
+		
+		projectSimulatorlWorkRepository.saveAll(items);
 		
 		// 3. Mettre à jour le ProjectSimulator avec les résultats
-		projectSimulator.setPopulation(totalPopAffected);
-		
-		// Stocker les métriques calculées dans des champs de commentaire (log pour traçabilité)
-		log.info("Simulation du projet '{}' pour {} habitants affectés", 
-				projectSimulator.getName(), totalPopAffected);
-		log.info("Surface manquante AVANT projet: {} m² (recommandation OMS: {} m²/hab)", 
-				totalSurfaceMissingBefore, recoSquareMeterPerCapita);
-		log.info("Surface manquante APRÈS projet: {} m² (gain: {} m²)", 
-				totalSurfaceMissingAfter, 
-				totalSurfaceMissingBefore.subtract(totalSurfaceMissingAfter));
-		log.info("Surface totale de parcs disponibles: {} m² (+ {} m² du projet)", 
-				totalSurfaceParkAvailable, surfaceParkProjet);
-		
-		// 4. Vérifier si les critères OMS sont respectés après simulation
-		if (totalSurfaceMissingAfter.compareTo(BigDecimal.ZERO) > 0) {
-			// Les critères OMS ne sont pas respectés, proposer des ajustements
-			BigDecimal totalSurfaceParkAfter = totalSurfaceParkAvailable.add(BigDecimal.valueOf(surfaceParkProjet));
-			
-			// Calculer la surface de parc supplémentaire nécessaire pour respecter l'OMS
-			BigDecimal surfaceParkNecessaire = BigDecimal.valueOf(totalPopAffected.doubleValue() * recoSquareMeterPerCapita);
-			BigDecimal surfaceParkManquante = surfaceParkNecessaire.subtract(totalSurfaceParkAfter);
-			
-			if (surfaceParkManquante.compareTo(BigDecimal.ZERO) > 0) {
-				log.warn("⚠️ Critères OMS NON respectés - Surface de parc manquante: {} m²", surfaceParkManquante);
-				log.info("💡 Proposition pour respecter l'OMS: augmenter la surface de parc de {} m²", surfaceParkManquante);
-			}
-			
-			// Proposer une population réduite basée sur la surface plancher disponible
-			if (projectSimulator.getSurfaceFloor() != null && 
-				projectSimulator.getAvgAreaAccommodation() != null && 
-				projectSimulator.getDensityPerAccommodation() != null &&
-				projectSimulator.getAvgAreaAccommodation().compareTo(BigDecimal.ZERO) > 0) {
-				
-				// Calculer la population optimale: (surface plancher / surface par logement) * densité par logement
-				BigDecimal nbLogements = projectSimulator.getSurfaceFloor().divide(
-						projectSimulator.getAvgAreaAccommodation(), 2, BigDecimal.ROUND_HALF_UP);
-				BigDecimal populationOptimale = nbLogements.multiply(projectSimulator.getDensityPerAccommodation());
-				
-				// Calculer la surface de parc nécessaire pour cette population
-				BigDecimal surfaceParkOptimale = BigDecimal.valueOf(
-						(totalPopAffected.doubleValue() - populationOptimale.doubleValue() + populationOptimale.doubleValue()) * recoSquareMeterPerCapita)
-						.subtract(totalSurfaceParkAvailable);
-				
-				if (surfaceParkOptimale.compareTo(BigDecimal.ZERO) > 0) {
-					log.info("💡 Alternative: réduire la population du projet à {} habitants (au lieu de {})", 
-							populationOptimale, projectSimulator.getProjetPeople());
-					log.info("   Surface de parc nécessaire: {} m² pour {} logements de {} m² avec {} hab/logement",
-							surfaceParkOptimale, nbLogements.intValue(), 
-							projectSimulator.getAvgAreaAccommodation(), 
-							projectSimulator.getDensityPerAccommodation());
-				}
-			}
-		} else {
-			log.info("✅ Critères OMS respectés après simulation du projet");
-		}
-		
 		return projectSimulatorRepository.save(projectSimulator);
 	}
 	
@@ -270,26 +215,40 @@ public class ProjectSimulatorService {
 	 * - Les surfaces recommandées par l'OMS
 	 * - Les données de population locale (Filosofil)
 	 * 
-	 * @param annee Année d'analyse (dernière année disponible généralement)
-	 * @param insee Code INSEE de la commune
-	 * @param dense Indicateur de densité urbaine (true = dense, false = sous-urbain)
+	 * @param projectSimulator Le projet de simulation avec insee, année et densité
 	 * @param recoSquareMeterPerCapita Surface recommandée par habitant selon l'OMS (en m²/hab)
 	 * @return Map des carrés INSEE avec leurs données de proposition (clé: idInspire)
 	 */
-	public Map<String, ParkProposalWork> populate(Integer annee, String insee, Boolean dense, Double recoSquareMeterPerCapita) {
+	public Map<String, ProjectSimulatorWork> populate(ProjectSimulator projectSimulator, Integer urbanDistance, Double recoSquareMeterPerCapita) {
 
+		Integer annee=projectSimulator.getAnnee();
+		String insee=projectSimulator.getInsee();
+		Boolean dense=projectSimulator.getIsDense();
+		
 		// Récupérer les carrés de la commune
 		List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findCarreByInseeCode(insee, true);
-				
+
+		// Récupérer les carrés du projet
+		List<InseeCarre200mOnlyShape> carreShapesProjet = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(projectSimulator.getShapeArea());
+		
+
+		// carres impactés par le projet (voisins du projet)
+		Set<InseeCarre200mOnlyShape> carreForSimulation = new HashSet<>();
+		for (InseeCarre200mOnlyShape carreShapeProject : carreShapesProjet) {
+			List<InseeCarre200mOnlyShape>  neighbors = ProjectSimulatorHelper.findNeighbors(carreShapeProject, carreShapes, urbanDistance);
+			carreForSimulation.addAll(neighbors);
+		}
+		
+		
 		//préparation des données pour le calcul
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
-		for (InseeCarre200mOnlyShape shape : carreShapes) {
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
+		for (InseeCarre200mOnlyShape shape : carreForSimulation) {
 			Optional<InseeCarre200mComputedV2> oCarreCputd = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
 			if (oCarreCputd.isPresent()) {
 				InseeCarre200mComputedV2 carreCputd = oCarreCputd.get();
 				Filosofil200m filo = filosofil200mRepository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
 				
-				ParkProposalWork parkProposal = new ParkProposalWork();
+				ProjectSimulatorWork parkProposal = new ProjectSimulatorWork();
 				parkProposal.setAnnee(annee);
 				parkProposal.setIdInspire(shape.getIdInspire());
 				parkProposal.setCentre(shape.getGeoPoint2d());

@@ -18,7 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
-import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
@@ -60,7 +60,7 @@ class ServicePropositionParcTest {
 	/**
 	 * Crée un ParkProposal de test avec les données fournies.
 	 */
-	private ParkProposalWork createParkProposal(
+	private ProjectSimulatorWork createParkProposal(
 			String idInspire, 
 			double longitude, 
 			double latitude,
@@ -69,7 +69,7 @@ class ServicePropositionParcTest {
 			int accessingPopulation,
 			double accessingSurface) {
 		
-		ParkProposalWork proposal = new ParkProposalWork();
+		ProjectSimulatorWork proposal = new ProjectSimulatorWork();
 		proposal.setAnnee(2023);
 		proposal.setIdInspire(idInspire);
 		proposal.setIsDense(true);
@@ -90,10 +90,10 @@ class ServicePropositionParcTest {
 	@Test
 	void testCalculeEtapeProposition_avecDeficitImportant_ajouteParc() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		
 		// Carré avec déficit important (2 m²/hab au lieu de 12)
-		ParkProposalWork carre1 = createParkProposal(
+		ProjectSimulatorWork carre1 = createParkProposal(
 				"CRS3035RES200mN2000000E3000000", 
 				3.0, 50.0,
 				2.0,  // surfacePerCapita actuelle
@@ -104,7 +104,7 @@ class ServicePropositionParcTest {
 		carreMap.put(carre1.getIdInspire(), carre1);
 		
 		// Carrés voisins
-		ParkProposalWork voisin1 = createParkProposal(
+		ProjectSimulatorWork voisin1 = createParkProposal(
 				"CRS3035RES200mN2000200E3000000",
 				3.001, 50.001,
 				8.0,
@@ -134,10 +134,10 @@ class ServicePropositionParcTest {
 	@Test
 	void testCalculeEtapeProposition_avecDeficitFaible_nAjoutePasDeParc() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		
 		// Carré avec déficit faible (11 m²/hab au lieu de 12)
-		ParkProposalWork carre1 = createParkProposal(
+		ProjectSimulatorWork carre1 = createParkProposal(
 				"CRS3035RES200mN2000000E3000000",
 				3.0, 50.0,
 				11.0, // surfacePerCapita actuelle
@@ -162,10 +162,10 @@ class ServicePropositionParcTest {
 	@Test
 	void testCalculeEtapeProposition_sansDeficit_neRienFaire() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		
 		// Carré sans déficit (14 m²/hab > 12)
-		ParkProposalWork carre1 = createParkProposal(
+		ProjectSimulatorWork carre1 = createParkProposal(
 				"CRS3035RES200mN2000000E3000000",
 				3.0, 50.0,
 				14.0, // surfacePerCapita actuelle > recommandée
@@ -192,10 +192,10 @@ class ServicePropositionParcTest {
 	@Test
 	void testCalculeEtapeProposition_metAJourVoisins() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		
 		// Carré principal avec déficit
-		ParkProposalWork principal = createParkProposal(
+		ProjectSimulatorWork principal = createParkProposal(
 				"CRS3035RES200mN2000000E3000000",
 				3.0, 50.0,
 				2.0,
@@ -206,7 +206,7 @@ class ServicePropositionParcTest {
 		carreMap.put(principal.getIdInspire(), principal);
 		
 		// Voisin proche (< 300m)
-		ParkProposalWork voisinProche = createParkProposal(
+		ProjectSimulatorWork voisinProche = createParkProposal(
 				"CRS3035RES200mN2000200E3000000",
 				3.0018, 50.0018, // ~200m du principal
 				6.0,
@@ -235,7 +235,7 @@ class ServicePropositionParcTest {
 	@Test
 	void testCalculeEtapeProposition_carreMapVide() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		Double minSquareMeterPerCapita = 8.0;
 		Double recoSquareMeterPerCapita = 12.0;
 		Integer urbanDistance = 300;
@@ -249,18 +249,18 @@ class ServicePropositionParcTest {
 	@Test
 	void testSortProposalsByDeficit_triCorrect() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		
-		ParkProposalWork carre1 = createParkProposal("ID1", 3.0, 50.0, 10.0, 2000.0, 1000, 10000.0);
-		ParkProposalWork carre2 = createParkProposal("ID2", 3.1, 50.1, 5.0, 7000.0, 1000, 5000.0);
-		ParkProposalWork carre3 = createParkProposal("ID3", 3.2, 50.2, 12.0, 0.0, 1000, 12000.0);
+		ProjectSimulatorWork carre1 = createParkProposal("ID1", 3.0, 50.0, 10.0, 2000.0, 1000, 10000.0);
+		ProjectSimulatorWork carre2 = createParkProposal("ID2", 3.1, 50.1, 5.0, 7000.0, 1000, 5000.0);
+		ProjectSimulatorWork carre3 = createParkProposal("ID3", 3.2, 50.2, 12.0, 0.0, 1000, 12000.0);
 		
 		carreMap.put("ID1", carre1);
 		carreMap.put("ID2", carre2);
 		carreMap.put("ID3", carre3);
 		
 		// When
-		List<ParkProposalWork> sorted = service.sortProposalsByDeficit(carreMap);
+		List<ProjectSimulatorWork> sorted = service.sortProposalsByDeficit(carreMap);
 		
 		// Then
 		assertEquals(3, sorted.size());
@@ -272,11 +272,11 @@ class ServicePropositionParcTest {
 	@Test
 	void testFindNeighbors_trouveVoisinsProches() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		
-		ParkProposalWork centre = createParkProposal("CENTRE", 3.0, 50.0, 10.0, 2000.0, 1000, 10000.0);
-		ParkProposalWork voisinProche = createParkProposal("PROCHE", 3.0018, 50.0018, 10.0, 2000.0, 1000, 10000.0); // ~200m
-		ParkProposalWork voisinLoin = createParkProposal("LOIN", 3.1, 50.1, 10.0, 2000.0, 1000, 10000.0); // ~15km
+		ProjectSimulatorWork centre = createParkProposal("CENTRE", 3.0, 50.0, 10.0, 2000.0, 1000, 10000.0);
+		ProjectSimulatorWork voisinProche = createParkProposal("PROCHE", 3.0018, 50.0018, 10.0, 2000.0, 1000, 10000.0); // ~200m
+		ProjectSimulatorWork voisinLoin = createParkProposal("LOIN", 3.1, 50.1, 10.0, 2000.0, 1000, 10000.0); // ~15km
 		
 		carreMap.put("CENTRE", centre);
 		carreMap.put("PROCHE", voisinProche);
@@ -285,7 +285,7 @@ class ServicePropositionParcTest {
 		Integer urbanDistance = 300;
 		
 		// When
-		List<ParkProposalWork> neighbors = service.findNeighbors("CENTRE", carreMap, urbanDistance);
+		List<ProjectSimulatorWork> neighbors = service.findNeighbors("CENTRE", carreMap, urbanDistance);
 		
 		// Then
 		assertEquals(1, neighbors.size(), "Devrait trouver 1 voisin proche");
@@ -295,11 +295,11 @@ class ServicePropositionParcTest {
 	@Test
 	void testFindNeighbors_carreCentreInexistant() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		Integer urbanDistance = 300;
 		
 		// When
-		List<ParkProposalWork> neighbors = service.findNeighbors("INEXISTANT", carreMap, urbanDistance);
+		List<ProjectSimulatorWork> neighbors = service.findNeighbors("INEXISTANT", carreMap, urbanDistance);
 		
 		// Then
 		assertTrue(neighbors.isEmpty(), "Devrait retourner une liste vide si le carré central n'existe pas");
@@ -310,10 +310,10 @@ class ServicePropositionParcTest {
 	@Test
 	void testCalculePropositionSolver_resoudProblemeGlobal() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		
 		// Carré 1 : déficit important
-		ParkProposalWork carre1 = createParkProposal(
+		ProjectSimulatorWork carre1 = createParkProposal(
 				"CRS3035RES200mN2000000E3000000",
 				3.0, 50.0,
 				2.0,  // surfacePerCapita très faible
@@ -324,7 +324,7 @@ class ServicePropositionParcTest {
 		carreMap.put(carre1.getIdInspire(), carre1);
 		
 		// Carré 2 : déficit moyen
-		ParkProposalWork carre2 = createParkProposal(
+		ProjectSimulatorWork carre2 = createParkProposal(
 				"CRS3035RES200mN2000200E3000000",
 				3.0018, 50.0018, // ~200m du carré 1
 				6.0,
@@ -335,7 +335,7 @@ class ServicePropositionParcTest {
 		carreMap.put(carre2.getIdInspire(), carre2);
 		
 		// Carré 3 : déficit faible
-		ParkProposalWork carre3 = createParkProposal(
+		ProjectSimulatorWork carre3 = createParkProposal(
 				"CRS3035RES200mN2000400E3000000",
 				3.0036, 50.0036, // ~400m du carré 1, hors portée
 				10.0,
@@ -372,7 +372,7 @@ class ServicePropositionParcTest {
 	@Test
 	void testCalculePropositionSolver_avecCarreMapVide() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		Double recoSquareMeterPerCapita = 12.0;
 		Integer urbanDistance = 300;
 		
@@ -385,10 +385,10 @@ class ServicePropositionParcTest {
 	@Test
 	void testCalculePropositionSolver_carresSansDéficit() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		
 		// Tous les carrés ont déjà assez de parc
-		ParkProposalWork carre1 = createParkProposal(
+		ProjectSimulatorWork carre1 = createParkProposal(
 				"CRS3035RES200mN2000000E3000000",
 				3.0, 50.0,
 				15.0, // déjà > 12 m²/hab
@@ -398,7 +398,7 @@ class ServicePropositionParcTest {
 		);
 		carreMap.put(carre1.getIdInspire(), carre1);
 		
-		ParkProposalWork carre2 = createParkProposal(
+		ProjectSimulatorWork carre2 = createParkProposal(
 				"CRS3035RES200mN2000200E3000000",
 				3.0018, 50.0018,
 				13.0,
@@ -425,10 +425,10 @@ class ServicePropositionParcTest {
 	@Test
 	void testCalculePropositionSolver_optimiseVoisinage() {
 		// Given
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		
 		// Créer 3 carrés voisins avec déficit
-		ParkProposalWork carre1 = createParkProposal(
+		ProjectSimulatorWork carre1 = createParkProposal(
 				"CRS3035RES200mN2000000E3000000",
 				3.0, 50.0,
 				5.0,
@@ -438,7 +438,7 @@ class ServicePropositionParcTest {
 		);
 		carreMap.put(carre1.getIdInspire(), carre1);
 		
-		ParkProposalWork carre2 = createParkProposal(
+		ProjectSimulatorWork carre2 = createParkProposal(
 				"CRS3035RES200mN2000200E3000000",
 				3.0018, 50.0018,
 				5.0,
@@ -448,7 +448,7 @@ class ServicePropositionParcTest {
 		);
 		carreMap.put(carre2.getIdInspire(), carre2);
 		
-		ParkProposalWork carre3 = createParkProposal(
+		ProjectSimulatorWork carre3 = createParkProposal(
 				"CRS3035RES200mN2000000E3000200",
 				3.0018, 50.0,
 				5.0,

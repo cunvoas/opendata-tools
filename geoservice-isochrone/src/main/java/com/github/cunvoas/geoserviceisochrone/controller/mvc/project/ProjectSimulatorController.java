@@ -47,7 +47,7 @@ public class ProjectSimulatorController {
     @Autowired
     private GeoJson2GeometryHelper geoJson2GeometryHelper;
 
-    private final ObjectMapper geometryWriter;
+    private ObjectMapper geometryWriter;
 
     public ProjectSimulatorController() {
         geometryWriter = new ObjectMapper();
@@ -185,7 +185,7 @@ public class ProjectSimulatorController {
         ProjectSimulator bo = mapToBo(form, geometry);
         
         
-        bo = projectSimulatorService.save(bo);
+        bo = projectSimulatorService.simulate(bo);
         
         return loadProject(bo.getId(), form, model);
     }
@@ -218,6 +218,9 @@ public class ProjectSimulatorController {
      * Populate form with reference data.
      */
     private void populate(FormProjectSimulator form) {
+    	if (form==null) {
+    		return;
+    	}
         log.debug("populate() - idRegion={}, idCommunauteDeCommunes={}, idCommune={}",
             form.getIdRegion(), form.getIdCommunauteDeCommunes(), form.getIdCommune());
         
