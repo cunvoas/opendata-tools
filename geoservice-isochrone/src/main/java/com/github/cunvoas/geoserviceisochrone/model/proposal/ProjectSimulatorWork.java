@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.model.proposal;
 import java.math.BigDecimal;
 
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
 
@@ -30,6 +31,10 @@ public class ProjectSimulatorWork {
 	@Column(name="idInspire",length=30)
 	private String idInspire;
 	
+	@Column(name="project_simulator_id")
+	private Long idProjectSimulator;
+	
+	
 	/**
 	 * ( Seuil OMS – MAX (0, surface disponible  - seuil OMS) ) * Nb Habitant qui ont accès
 	 */
@@ -52,6 +57,9 @@ public class ProjectSimulatorWork {
 	@Column(name="centre")
 	private Point centre;
 
+	@Column(name="geo_shape", columnDefinition = "geometry(Polygon,4326)")
+	private Polygon geoShape;
+	
 	@Column(name="new_surf", precision = 12, scale = 2)
 	private BigDecimal newSurface;
 	@Column(name="new_surf_per_capita", precision = 12, scale = 2)

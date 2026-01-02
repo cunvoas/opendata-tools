@@ -1,10 +1,13 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.project;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bedatadriven.jackson.datatype.jts.serialization.GeometrySerializer;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,6 +26,7 @@ import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelp
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.project.ProjectSimulatorService;
 
@@ -155,14 +160,15 @@ public class ProjectSimulatorController {
     }
 
     /**
-     * Handle form submission.
-        * @param sGeometry GeoJSON string representing the project zone
+     * Handle form submission and return JSON response for AJAX requests.
+     * @param sGeometry GeoJSON string representing the project zone
      * @param form form object
      * @param model Spring model
-     * @return view name
+     * @return JSON response or view name
      */
-    @PostMapping("/compute")
-    public String compute(
+    @PostMapping(value = "/compute", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_HTML_VALUE})
+    @ResponseBody
+    public Object compute(
             @ModelAttribute FormProjectSimulator form,
             @RequestParam(required = false) String sGeometry,
             Model model) {
@@ -187,7 +193,15 @@ public class ProjectSimulatorController {
         
         bo = projectSimulatorService.simulate(bo);
         
-        return loadProject(bo.getId(), form, model);
+        // Récupérer les ProjectSimulatorWork associés
+        List<ProjectSimulatorWork> projectWorks = projectSimulatorService.getProjectWorks(bo.getId());
+        
+        // Retourner JSON pour les requêtes AJAX
+        Map<String, Object> response = new HashMap<>();
+        response.put("simulationResult", bo);
+        response.put("projectWorks", projectWorks);
+        
+        return response;
     }
     
     

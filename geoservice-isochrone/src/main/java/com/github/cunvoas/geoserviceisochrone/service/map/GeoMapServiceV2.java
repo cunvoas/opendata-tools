@@ -30,6 +30,7 @@ import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkPrefVi
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkProposalView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ProjetSimulView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ProjetSimulWorkView;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
@@ -52,6 +53,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.IrisDataComputedRepository;
@@ -60,6 +62,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWorkRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
@@ -131,7 +134,7 @@ public class GeoMapServiceV2 {
     private IrisDataRepository irisDataRepository;
     @Autowired
     private IrisDataComputedRepository irisDataComputedRepository;
-    
+
 
     @Autowired
     private ParkProposalRepository parkProposalRepository;
@@ -139,6 +142,8 @@ public class GeoMapServiceV2 {
 
     @Autowired
     private ProjectSimulatorRepository projectSimulatorRepository;
+	@Autowired
+	private ProjectSimulatorlWorkRepository projectSimulatorlWorkRepository;
     
     @Autowired
     private ParkAreaRepository parkAreaRepository;
@@ -637,9 +642,9 @@ public class GeoMapServiceV2 {
 		GeoJsonRoot root = new GeoJsonRoot();
 		
     	if (polygon!=null) {
-			List<ProjectSimulator> proposals =  projectSimulatorRepository.findInMapArea( GeometryQueryHelper.toText(polygon));
-			if (!CollectionUtils.isEmpty(proposals)) {
-				for (ProjectSimulator proposal : proposals) {
+			List<ProjectSimulator> simuls =  projectSimulatorRepository.findInMapArea( GeometryQueryHelper.toText(polygon));
+			if (!CollectionUtils.isEmpty(simuls)) {
+				for (ProjectSimulator proposal : simuls) {
 					GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
 					feature.setGeometry(proposal.getShapeArea());
@@ -669,6 +674,42 @@ public class GeoMapServiceV2 {
 		return root;
 	}
 	
+
+	/**
+	 * findProjetSimulationWorkByArea.
+	 * @param polygon Polygon
+	 * @return   park proposal geojson
+	 */
+	public GeoJsonRoot findProjetSimulationWorkById(Long idSimulation) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
+    	if (idSimulation!=null) {
+    		List<ProjectSimulatorWork> simuls =  projectSimulatorlWorkRepository.findByIdProjectSimulator(idSimulation);
+			if (!CollectionUtils.isEmpty(simuls)) {
+				for (ProjectSimulatorWork simul : simuls) {
+					GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					
+					feature.setGeometry(simul.getGeoShape());
+					ProjetSimulWorkView pv = new ProjetSimulWorkView();
+					pv.setIdInspire(String.valueOf(simul.getIdInspire()));
+					
+					pv.setAccessingPopulation(formatDec(simul.getAccessingPopulation()));
+					pv.setLocalPopulation(formatDec(simul.getLocalPopulation()));
+					
+					pv.setAccessingSurface(formatDec(simul.getAccessingSurface()));
+					pv.setMissingSurface(formatDec(simul.getMissingSurface()));
+					pv.setSurfacePerCapita(formatDec(simul.getSurfacePerCapita()));
+					
+					pv.setNewSurface(formatDec(simul.getNewSurface()));
+					pv.setNewMissingSurface(formatDec(simul.getNewMissingSurface()));
+					pv.setNewSurfacePerCapita(formatDec(simul.getNewSurfacePerCapita()));
+					
+				}
+			}
+    	}
+    	return root;
+    }
 	
 	/**
 	 * findParcEtJardinByArea.

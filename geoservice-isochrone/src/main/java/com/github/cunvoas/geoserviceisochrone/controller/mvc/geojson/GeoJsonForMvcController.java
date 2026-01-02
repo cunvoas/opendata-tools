@@ -117,6 +117,17 @@ public class GeoJsonForMvcController {
         return geoMapService.findProjetSimulationByArea(swLat, swLng, neLat, neLng);
     }
 	
+	/**
+	 * récupère les données d'un projet de simulation par son identifiant.
+	 * @param idProject
+	 * @return Objet GeoJson du projet de simulation
+	 */
+	@GetMapping("/projectWorkById")
+	public GeoJsonRoot findProjetSimulationByArea(
+			@RequestParam("id") Long idProject
+		) {
+        return geoMapService.findProjetSimulationWorkById(idProject);
+    }
 	
 	/**
 	 * Récupère les données cadastrales dans une zone géographique donnée.

@@ -199,10 +199,14 @@ public class ProjectSimulatorService {
 			carre.setNewMissingSurface(missingAfter);
 		}
 		
+		projectSimulator = projectSimulatorRepository.save(projectSimulator);
+		for (ProjectSimulatorWork item : items) {
+			item.setIdProjectSimulator(projectSimulator.getId());
+		}
 		projectSimulatorlWorkRepository.saveAll(items);
 		
 		// 3. Mettre à jour le ProjectSimulator avec les résultats
-		return projectSimulatorRepository.save(projectSimulator);
+		return projectSimulator;
 	}
 	
 	
@@ -251,6 +255,8 @@ public class ProjectSimulatorService {
 				ProjectSimulatorWork parkProposal = new ProjectSimulatorWork();
 				parkProposal.setAnnee(annee);
 				parkProposal.setIdInspire(shape.getIdInspire());
+				
+				parkProposal.setGeoShape(shape.getGeoShape());
 				parkProposal.setCentre(shape.getGeoPoint2d());
 				parkProposal.setIsDense(dense);
 				parkProposal.setSurfacePerCapita(carreCputd.getSurfaceParkPerCapitaOms());
@@ -289,5 +295,22 @@ public class ProjectSimulatorService {
 		}
 		
 		return carreMap;
+	}
+
+	/**
+	 * Récupère les travaux de simulation associés à un projet.
+	 * 
+	 * @param projectId Identifiant du projet de simulation
+	 * @return Liste des travaux de simulation pour ce projet
+	 */
+	public List<ProjectSimulatorWork> getProjectWorks(Long projectId) {
+		ProjectSimulator project = getById(projectId);
+		if (project == null || project.getAnnee() == null) {
+			return List.of();
+		}
+		
+		// Récupérer tous les travaux pour l'année du projet
+		// Les travaux sont identifiés par (annee, idInspire)
+		return projectSimulatorlWorkRepository.findByAnnee(project.getAnnee());
 	}
 }
