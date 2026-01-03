@@ -13,7 +13,7 @@ cp -Rf $DIST_PATH/dist/* $GH_PAGES_LOCAL_PATH/
 cp -f  $DIST_PATH/404.html $GH_PAGES_LOCAL_PATH/
 cp -f  $DIST_PATH/favicon.ico $GH_PAGES_LOCAL_PATH/
 
-echo "github pages folder: $GH_PAGES_LOCAL_PATH" 
+
 
 
 

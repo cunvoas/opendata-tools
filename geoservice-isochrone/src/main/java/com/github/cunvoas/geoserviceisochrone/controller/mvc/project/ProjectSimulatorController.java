@@ -80,6 +80,11 @@ public class ProjectSimulatorController {
         model.addAttribute("communautesDeCommunes", form.getCommunautesDeCommunes());
         model.addAttribute("communes", form.getCommunes());
         model.addAttribute("projects", projects);
+        
+        if (form.getId() != null) {
+        	List<ProjectSimulatorWork> works = projectSimulatorService.getProjectWorks(form.getId());
+        	model.addAttribute("projectWorks", works.stream().distinct().toList());
+		}
         return VIEW;
     }
     
@@ -166,9 +171,8 @@ public class ProjectSimulatorController {
      * @param model Spring model
      * @return JSON response or view name
      */
-    @PostMapping(value = "/compute", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_HTML_VALUE})
-    @ResponseBody
-    public Object compute(
+    @PostMapping("/compute")
+    public String compute(
             @ModelAttribute FormProjectSimulator form,
             @RequestParam(required = false) String sGeometry,
             Model model) {
@@ -189,24 +193,21 @@ public class ProjectSimulatorController {
         
         // Traitement du simulateur avec la géométrie (comme pour NewPark)
         ProjectSimulator bo = mapToBo(form, geometry);
-        
-        
         bo = projectSimulatorService.simulate(bo);
         
-        // Récupérer les ProjectSimulatorWork associés
-        List<ProjectSimulatorWork> projectWorks = projectSimulatorService.getProjectWorks(bo.getId());
-        
-        // Retourner JSON pour les requêtes AJAX
-        Map<String, Object> response = new HashMap<>();
-        response.put("simulationResult", bo);
-        response.put("projectWorks", projectWorks);
-        
-        return response;
+        return show(form, model);
     }
     
     
-    private ProjectSimulator mapToBo(FormProjectSimulator form, Geometry geometry) {
-    	ProjectSimulator bo = new ProjectSimulator();
+    private ProjectSimulator mapToBo(FormProjectSimulator form, Geometry geometry ) {
+    	ProjectSimulator bo =null;
+    	if (form != null && form.getId()!=null) {
+    		bo  = projectSimulatorService.getById(form.getId());
+		}
+    	if(bo == null) {
+			bo = new ProjectSimulator();
+		}
+    	
     	bo.setId(form.getId());
 		bo.setAnnee(form.getAnnee());
 		bo.setIsDense(form.getIsDense());

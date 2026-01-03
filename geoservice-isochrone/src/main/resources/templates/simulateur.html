@@ -217,6 +217,8 @@
               </div>
             </div>
             
+
+
             <!-- Colonne droite : carte -->
             <div class="col-12 col-lg-6">
               <div class="card">
@@ -231,35 +233,129 @@
             </div>
           </div>
           
-          <!-- Résultats de simulation -->
-          <div class="row mt-3" id="resultsSection" style="display: none;">
+
+          <!-- Message si pas de résultats -->
+          <div class="row mt-3" th:if="${projectWorks == null || projectWorks.isEmpty()}">
             <div class="col-12">
-              <div class="card">
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Aucun résultat de simulation disponible. Calculez une simulation pour voir les résultats.
+              </div>
+            </div>
+          </div>
+
+          <!-- Résultats de simulation et projectWorks -->
+          <div class="row mt-3" th:if="${projectWorks != null && !projectWorks.isEmpty()}">
+            <!-- Gauche: Résultats et table projectWork -->
+            <div class="col-12 col-lg-6">
+              <!-- Résultats de simulation -->
+              <div class="card" th:if="${simulationResult != null}">
                 <div class="card-header">Résultats de simulation</div>
-                <div class="card-body" id="resultsContent">
-                  <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> Les résultats de simulation apparaîtront ici après calcul.
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-12 col-md-6">
+                      <div class="card text-center border-primary">
+                        <div class="card-body">
+                          <h6 class="text-muted">Population estimée</h6>
+                          <h3 class="text-primary" th:text="${simulationResult.population != null ? #numbers.formatDecimal(simulationResult.population, 0, 0) : '-'}">-</h3>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="col-12 col-md-6">
+                      <div class="card text-center border-success">
+                        <div class="card-body">
+                          <h6 class="text-muted">Surface zone (m²)</h6>
+                          <h3 class="text-success" th:text="${simulationResult.surfaceArea != null ? (simulationResult.surfaceArea > 10000 ? #numbers.formatDecimal(simulationResult.surfaceArea / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(simulationResult.surfaceArea, 0, 0) + ' m²') : '-'}">-</h3>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="col-12 col-md-6">
+                      <div class="card text-center border-info">
+                        <div class="card-body">
+                          <h6 class="text-muted">Surface parc (m²)</h6>
+                          <h3 class="text-info" th:text="${simulationResult.surfacePark != null ? (simulationResult.surfacePark > 10000 ? #numbers.formatDecimal(simulationResult.surfacePark / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(simulationResult.surfacePark, 0, 0) + ' m²') : '-'}">-</h3>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="col-12 col-md-6">
+                      <div class="card text-center border-warning">
+                        <div class="card-body">
+                          <h6 class="text-muted">Densité</h6>
+                          <h3 class="text-warning" th:text="${simulationResult.densityPerAccommodation != null ? #numbers.formatDecimal(simulationResult.densityPerAccommodation, 0, 2) : '-'}">-</h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Détails supplémentaires -->
+                  <div class="row mt-3" th:if="${simulationResult.isDense != null || simulationResult.annee != null || simulationResult.floorSurface != null}">
+                    <div class="col-12">
+                      <h6>Paramètres du projet</h6>
+                      <dl class="row small">
+                        <dt class="col-sm-3" th:if="${simulationResult.annee != null}">Année:</dt>
+                        <dd class="col-sm-9" th:if="${simulationResult.annee != null}" th:text="${simulationResult.annee}">-</dd>
+                        
+                        <dt class="col-sm-3" th:if="${simulationResult.isDense != null}">Type de zone:</dt>
+                        <dd class="col-sm-9" th:if="${simulationResult.isDense != null}" th:text="${simulationResult.isDense ? 'Zone dense' : 'Zone non dense'}">-</dd>
+                        
+                        <dt class="col-sm-3" th:if="${simulationResult.floorSurface != null}">Surface plancher:</dt>
+                        <dd class="col-sm-9" th:if="${simulationResult.floorSurface != null}" th:text="${simulationResult.floorSurface > 10000 ? #numbers.formatDecimal(simulationResult.floorSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(simulationResult.floorSurface, 0, 0) + ' m²'}">-</dd>
+                        
+                        <dt class="col-sm-3" th:if="${simulationResult.avgAreaAccommodation != null}">Surface moy. logement:</dt>
+                        <dd class="col-sm-9" th:if="${simulationResult.avgAreaAccommodation != null}" th:text="${#numbers.formatDecimal(simulationResult.avgAreaAccommodation, 0, 2) + ' m²'}">-</dd>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Table des ProjectWork -->
+              <div class="card mt-3" th:if="${projectWorks != null && !projectWorks.isEmpty()}">
+                <div class="card-header">
+                  <h6 class="mb-0">Éléments du projet <span class="badge bg-info" th:text="${projectWorks.size()}">0</span></h6>
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover table-sm mb-0" id="projectWorkTable">
+                      <thead class="table-light sticky-top">
+                        <tr>
+                          <th>Nom</th>
+                          <th>Type</th>
+                          <th class="text-center">Statut</th>
+                        </tr>
+                      </thead>
+                      <tbody id="projectWorkTableBody">
+                        <tr th:each="work : ${projectWorks}" style="cursor: pointer;" onclick="loadProjectWorkById([[${work.id}]])">
+                          <td th:text="${work.idInspire ?: '(sans nom)'}">Nom</td>
+                          <td th:text="${work.isDense != null ? (work.isDense ? 'Zone dense' : 'Zone non dense') : '-'}">Type</td>
+                          <td class="text-center">
+                            <span class="badge bg-secondary">N/A</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+            
+            <!-- Droite: Carte pour ProjectWorkById -->
+            <div class="col-12 col-lg-6">
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="mb-0">Visualisation - <span id="projectWorkMapTitle">Sélectionnez un élément</span></h6>
+                </div>
+                <div class="card-body p-0">
+                  <div id="mapProjectWorkById" style="width:100%; height:500px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                    <span class="text-muted">Cliquez sur un élément du projet pour afficher sa géométrie</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          
-          <!-- Carte des ProjectSimulatorWork -->
-          <div class="row mt-3" id="projectWorkSection" style="display: none;">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-header">Visualisation des travaux (ProjectSimulatorWork)</div>
-                <div class="card-body p-0">
-                  <div id="mapProjectWork" style="width:100%; height:500px;"></div>
-                </div>
-                <div class="card-footer text-muted small">
-                  Affichage des résultats de simulation sur la carte
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
       </div>
     </main>
   </div>
@@ -730,31 +826,9 @@ function computeSimulation() {
   const strPoly = JSON.stringify(self_drawn.toGeoJSON());
   document.getElementById('sGeometry').value = strPoly;
   
-  // Récupérer le formulaire
+  // Récupérer le formulaire et le soumettre normalement
   const form = document.getElementById('formCompute');
-  const formData = new FormData(form);
-  
-  // Soumettre en AJAX pour capturer la réponse
-  fetch(form.action, {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log('[Simulateur] Résultats reçus:', data);
-    // Afficher les résultats
-    displaySimulationResults(data);
-    // Scroller vers les résultats
-    setTimeout(() => {
-      document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
-    }, 300);
-  })
-  .catch(error => {
-    console.error('[Simulateur] Erreur lors du calcul:', error);
-    document.getElementById('resultsContent').innerHTML = 
-      '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Erreur lors du calcul de la simulation.</div>';
-    document.getElementById('resultsSection').style.display = 'block';
-  });
+  form.submit();
 }
 
 
@@ -845,17 +919,17 @@ function sortProjectsTable() {
 initProjectsTable();
 
 // ----------- GESTION DES RÉSULTATS DE SIMULATION -----------
-// Carte pour les ProjectSimulatorWork
-let mapProjectWork = null;
-let projectWorkLayers = {};
+// Carte pour ProjectWorkById
+let mapProjectWorkById = null;
+let currentProjectWorkId = null;
 
 /**
- * Initialise la carte pour les ProjectSimulatorWork
+ * Initialise la carte pour ProjectWorkById
  */
-function initMapProjectWork() {
-  if (mapProjectWork) return;
+function initMapProjectWorkById() {
+  if (mapProjectWorkById) return;
   
-  mapProjectWork = L.map('mapProjectWork', {
+  mapProjectWorkById = L.map('mapProjectWorkById', {
     center: [targetLat, targetLng],
     zoom: zoomInit,
     layers: [layerOSM],
@@ -863,192 +937,179 @@ function initMapProjectWork() {
   });
   
   // Ajouter les contrôles de fonds de carte
-  L.control.layers(baseLayers, {}, { collapsed: false }).addTo(mapProjectWork);
+  L.control.layers(baseLayers, {}, { collapsed: false }).addTo(mapProjectWorkById);
   
-  console.log('[Simulateur] Carte ProjectWork initialisée');
+  console.log('[Simulateur] Carte ProjectWorkById initialisée');
   
   setTimeout(function() {
-    mapProjectWork.invalidateSize();
-    mapProjectWork.setView([targetLat, targetLng], zoomInit, { animate: false, reset: true });
+    mapProjectWorkById.invalidateSize();
+    mapProjectWorkById.setView([targetLat, targetLng], zoomInit, { animate: false, reset: true });
   }, 200);
 }
 
 /**
- * Affiche les résultats de simulation
+ * Charge et affiche les données du ProjectWork spécifique
  */
-function displaySimulationResults(data) {
-  console.log('[Simulateur] Affichage des résultats:', data);
-  
-  const resultsSection = document.getElementById('resultsSection');
-  const resultsContent = document.getElementById('resultsContent');
-  const projectWorkSection = document.getElementById('projectWorkSection');
-  
-  if (!data || !data.simulationResult) {
-    resultsContent.innerHTML = '<div class="alert alert-warning">Aucun résultat à afficher.</div>';
-    resultsSection.style.display = 'none';
-    projectWorkSection.style.display = 'none';
+function loadProjectWorkById(projectWorkId) {
+  if (!projectWorkId) {
+    console.warn('[Simulateur] ProjectWorkId vide');
     return;
   }
   
-  // Afficher la section des résultats
-  resultsSection.style.display = 'block';
+  currentProjectWorkId = projectWorkId;
   
-  const result = data.simulationResult;
-  let html = '<div class="row">';
-  
-  // Afficher les métriques principales
-  html += '<div class="col-12 col-md-6 col-lg-3">';
-  html += '<div class="card text-center border-primary">';
-  html += '<div class="card-body">';
-  html += '<h6 class="text-muted">Population estimée</h6>';
-  html += '<h3 class="text-primary">' + (result.population ? Math.round(result.population).toLocaleString('fr-FR') : '-') + '</h3>';
-  html += '</div>';
-  html += '</div>';
-  html += '</div>';
-  
-  html += '<div class="col-12 col-md-6 col-lg-3">';
-  html += '<div class="card text-center border-success">';
-  html += '<div class="card-body">';
-  html += '<h6 class="text-muted">Surface zone (m²)</h6>';
-  html += '<h3 class="text-success">' + (result.surfaceArea ? (result.surfaceArea > 10000 ? (result.surfaceArea / 10000).toFixed(2) + ' ha' : Math.round(result.surfaceArea).toLocaleString('fr-FR') + ' m²') : '-') + '</h3>';
-  html += '</div>';
-  html += '</div>';
-  html += '</div>';
-  
-  html += '<div class="col-12 col-md-6 col-lg-3">';
-  html += '<div class="card text-center border-info">';
-  html += '<div class="card-body">';
-  html += '<h6 class="text-muted">Surface parc (m²)</h6>';
-  html += '<h3 class="text-info">' + (result.surfacePark ? (result.surfacePark > 10000 ? (result.surfacePark / 10000).toFixed(2) + ' ha' : Math.round(result.surfacePark).toLocaleString('fr-FR') + ' m²') : '-') + '</h3>';
-  html += '</div>';
-  html += '</div>';
-  html += '</div>';
-  
-  html += '<div class="col-12 col-md-6 col-lg-3">';
-  html += '<div class="card text-center border-warning">';
-  html += '<div class="card-body">';
-  html += '<h6 class="text-muted">Densité</h6>';
-  html += '<h3 class="text-warning">' + (result.densityPerAccommodation ? result.densityPerAccommodation.toFixed(2) : '-') + '</h3>';
-  html += '</div>';
-  html += '</div>';
-  html += '</div>';
-  
-  html += '</div>';
-  
-  // Afficher les détails supplémentaires si disponibles
-  if (result.isDense !== undefined || result.annee || result.floorSurface) {
-    html += '<div class="row mt-3">';
-    html += '<div class="col-12">';
-    html += '<h6>Paramètres du projet</h6>';
-    html += '<dl class="row small">';
-    
-    if (result.annee) {
-      html += '<dt class="col-sm-3">Année:</dt>';
-      html += '<dd class="col-sm-9">' + result.annee + '</dd>';
-    }
-    if (result.isDense !== undefined) {
-      html += '<dt class="col-sm-3">Type de zone:</dt>';
-      html += '<dd class="col-sm-9">' + (result.isDense ? 'Zone dense' : 'Zone non dense') + '</dd>';
-    }
-    if (result.floorSurface) {
-      html += '<dt class="col-sm-3">Surface plancher:</dt>';
-      html += '<dd class="col-sm-9">' + (result.floorSurface > 10000 ? (result.floorSurface / 10000).toFixed(2) + ' ha' : Math.round(result.floorSurface).toLocaleString('fr-FR') + ' m²') + '</dd>';
-    }
-    if (result.avgAreaAccommodation) {
-      html += '<dt class="col-sm-3">Surface moy. logement:</dt>';
-      html += '<dd class="col-sm-9">' + result.avgAreaAccommodation.toFixed(2) + ' m²</dd>';
-    }
-    
-    html += '</dl>';
-    html += '</div>';
-    html += '</div>';
+  if (!mapProjectWorkById) {
+    initMapProjectWorkById();
   }
   
-  resultsContent.innerHTML = html;
+  const endpoint = /*[[@{/mvc/geojson/projectWorkById}]]*/ '/mvc/geojson/projectWorkById';
+  const url = `${endpoint}?id=${encodeURIComponent(projectWorkId)}`;
   
-  // Afficher la carte des ProjectSimulatorWork si disponibles
-  if (data.projectWorks && data.projectWorks.length > 0) {
-    projectWorkSection.style.display = 'block';
-    initMapProjectWork();
-    displayProjectWorks(data.projectWorks);
-  } else {
-    projectWorkSection.style.display = 'none';
-  }
+  console.log('[Simulateur] Chargement ProjectWorkById:', url);
+  
+  fetch(url)
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(geojson => {
+      console.log('[Simulateur] GeoJSON reçu:', geojson);
+      
+      // Vider les couches précédentes (sauf les TileLayers)
+      const layersToRemove = [];
+      mapProjectWorkById.eachLayer(layer => {
+        if (!(layer instanceof L.TileLayer) && !(layer instanceof L.Control)) {
+          layersToRemove.push(layer);
+        }
+      });
+      layersToRemove.forEach(layer => mapProjectWorkById.removeLayer(layer));
+      
+      // Afficher le GeoJSON
+      if (geojson && geojson.features && geojson.features.length > 0) {
+        L.geoJSON(geojson, {
+          style: function(feature) {
+            return {
+              color: '#0066cc',
+              fillColor: '#3399ff',
+              weight: 2,
+              fillOpacity: 0.5
+            };
+          },
+          pointToLayer: function(feature, latlng) {
+            return L.circleMarker(latlng, {
+              radius: 8,
+              fillColor: '#0066cc',
+              color: '#000',
+              weight: 2,
+              opacity: 1,
+              fillOpacity: 0.7
+            });
+          },
+          onEachFeature: function(feature, layer) {
+            let popupContent = '';
+            if (feature.properties) {
+              if (feature.properties.name) {
+                popupContent += '<b>' + feature.properties.name + '</b><br>';
+              }
+              Object.keys(feature.properties).forEach(key => {
+                if (key !== 'name') {
+                  popupContent += key + ': ' + feature.properties[key] + '<br>';
+                }
+              });
+            }
+            if (popupContent) {
+              layer.bindPopup(popupContent);
+            }
+          }
+        }).addTo(mapProjectWorkById);
+        
+        // Ajuster les limites
+        const allCoords = [];
+        geojson.features.forEach(feature => {
+          if (feature.geometry && feature.geometry.coordinates) {
+            if (feature.geometry.type === 'Point') {
+              allCoords.push([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]);
+            } else if (feature.geometry.type === 'Polygon') {
+              feature.geometry.coordinates[0].forEach(c => allCoords.push([c[1], c[0]]));
+            } else if (feature.geometry.type === 'MultiPolygon') {
+              feature.geometry.coordinates.forEach(polygon => {
+                polygon[0].forEach(c => allCoords.push([c[1], c[0]]));
+              });
+            } else if (feature.geometry.type === 'LineString') {
+              feature.geometry.coordinates.forEach(c => allCoords.push([c[1], c[0]]));
+            } else if (feature.geometry.type === 'MultiLineString') {
+              feature.geometry.coordinates.forEach(line => {
+                line.forEach(c => allCoords.push([c[1], c[0]]));
+              });
+            }
+          }
+        });
+        
+        if (allCoords.length > 0) {
+          const bounds = L.latLngBounds(allCoords);
+          if (bounds.isValid()) {
+            mapProjectWorkById.fitBounds(bounds, { padding: [50, 50] });
+          }
+        }
+      }
+      
+      // Mettre à jour le titre
+      const projectWorkName = geojson.features && geojson.features[0] && geojson.features[0].properties && geojson.features[0].properties.name 
+        ? geojson.features[0].properties.name 
+        : 'Projet #' + projectWorkId;
+      document.getElementById('projectWorkMapTitle').textContent = projectWorkName;
+    })
+    .catch(err => {
+      console.error('[Simulateur] Erreur chargement ProjectWorkById', err);
+      const mapDiv = document.getElementById('mapProjectWorkById');
+      mapDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #dc3545;"><i class="fas fa-exclamation-circle"></i> Erreur lors du chargement de la géométrie.</div>';
+    });
 }
 
 /**
- * Affiche les ProjectSimulatorWork sur la deuxième carte
+ * Affiche le tableau des ProjectSimulatorWork
  */
-function displayProjectWorks(projectWorks) {
-  if (!mapProjectWork) {
-    initMapProjectWork();
-  }
+function displayProjectWorksTable(projectWorks) {
+  console.log('[Simulateur] Affichage du tableau de', projectWorks.length, 'ProjectSimulatorWork');
   
-  console.log('[Simulateur] Affichage de', projectWorks.length, 'ProjectSimulatorWork');
+  const tableBody = document.getElementById('projectWorkTableBody');
+  const countBadge = document.getElementById('projectWorkCount');
   
-  // Vider les couches précédentes
-  Object.values(projectWorkLayers).forEach(layer => mapProjectWork.removeLayer(layer));
-  projectWorkLayers = {};
+  tableBody.innerHTML = '';
+  countBadge.textContent = projectWorks.length;
   
-  const geojsonFeatures = {
-    type: 'FeatureCollection',
-    features: projectWorks.map(work => ({
-      type: 'Feature',
-      geometry: work.geometry || { type: 'Point', coordinates: [0, 0] },
-      properties: {
-        id: work.id,
-        name: work.name || 'Sans titre',
-        type: work.type || 'Inconnu',
-        status: work.status || 'actif',
-        description: work.description || ''
-      }
-    }))
-  };
-  
-  L.geoJSON(geojsonFeatures, {
-    style: function(feature) {
-      const color = feature.properties.status === 'completed' ? '#28a745' : 
-                   feature.properties.status === 'in_progress' ? '#ffc107' : '#0066cc';
-      return {
-        color: color,
-        fillColor: color,
-        weight: 2,
-        fillOpacity: 0.4
-      };
-    },
-    pointToLayer: function(feature, latlng) {
-      const color = feature.properties.status === 'completed' ? '#28a745' : 
-                   feature.properties.status === 'in_progress' ? '#ffc107' : '#0066cc';
-      return L.circleMarker(latlng, {
-        radius: 6,
-        fillColor: color,
-        color: '#000',
-        weight: 2,
-        opacity: 1,
-        fillOpacity: 0.7
-      });
-    },
-    onEachFeature: function(feature, layer) {
-      let popupContent = '<b>' + feature.properties.name + '</b><br>';
-      popupContent += 'Type: ' + feature.properties.type + '<br>';
-      popupContent += 'Statut: ' + feature.properties.status;
-      if (feature.properties.description) {
-        popupContent += '<br>' + feature.properties.description;
-      }
-      layer.bindPopup(popupContent);
+  projectWorks.forEach(work => {
+    const row = document.createElement('tr');
+    row.style.cursor = 'pointer';
+    row.onclick = function() {
+      loadProjectWorkById(work.id);
+    };
+    
+    // Déterminer la couleur du statut
+    let statusBadgeClass = 'bg-secondary';
+    let statusText = work.status || 'inconnu';
+    
+    if (work.status === 'completed') {
+      statusBadgeClass = 'bg-success';
+      statusText = 'Complété';
+    } else if (work.status === 'in_progress') {
+      statusBadgeClass = 'bg-warning text-dark';
+      statusText = 'En cours';
+    } else if (work.status === 'pending') {
+      statusBadgeClass = 'bg-info';
+      statusText = 'En attente';
     }
-  }).addTo(mapProjectWork);
-  
-  // Ajuster le zoom et le centre
-  const bounds = L.latLngBounds(projectWorks.map(work => 
-    work.geometry && work.geometry.coordinates 
-      ? [work.geometry.coordinates[1], work.geometry.coordinates[0]]
-      : [targetLat, targetLng]
-  ));
-  
-  if (bounds.isValid()) {
-    mapProjectWork.fitBounds(bounds, { padding: [50, 50] });
-  }
+    
+    row.innerHTML = `
+      <td>${work.name || '(sans nom)'}</td>
+      <td>${work.type || '-'}</td>
+      <td class="text-center">
+        <span class="badge ${statusBadgeClass}">${statusText}</span>
+      </td>
+    `;
+    
+    tableBody.appendChild(row);
+  });
 }
 
 </script>
