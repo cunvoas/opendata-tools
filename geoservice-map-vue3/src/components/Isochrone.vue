@@ -59,7 +59,7 @@
 
       <l-control position="bottomleft" >
         <div id="customControl" class="dataDetail">
-          <h4>&nbsp;m²/habitant de parcs&nbsp;</h4>
+          <h4 @dblclick="copyShareableUrl" :title="shareableUrl" style="cursor: pointer;">&nbsp;m²/habitant de parcs&nbsp;</h4>
           <div id="legend" class="legend">            
             <div id="legendContent" v-html="htmlLegend" />
           </div>
@@ -138,6 +138,7 @@ import L, { latLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { buildShareableUrl } from '../utils/urlParams.js';
 import debounce from 'lodash/debounce';
 
 
@@ -343,6 +344,7 @@ export default {
       annee: "2019",
       region: "9",
       com2co: "1",
+      shareableUrl: null,
       fillColor: "#A0DCA0",
       tileProviders: [
         {
@@ -425,7 +427,10 @@ export default {
             this.callGeoJsonParcs();
             this.callGeoJsonIsochrones();
             this.callGeoJsonCarres();
-            this.callGeoJsonCadastre();         
+            this.callGeoJsonCadastre();
+            
+            // Mettre à jour le lien shareable
+            this.updateShareableUrl();
           }
 
 
@@ -1033,6 +1038,30 @@ export default {
       //    but this is not reachable
       self.loading = false;
     });
+    },
+    updateShareableUrl() {
+      // Mettre à jour le lien shareable en fonction de la localisation actuelle
+      const savedLocation = localStorage.getItem('location-selected');
+      if (savedLocation) {
+        try {
+          const locationData = JSON.parse(savedLocation);
+          this.shareableUrl = buildShareableUrl(locationData);
+        } catch (e) {
+          console.error('Erreur lors de la création du lien shareable:', e);
+          this.shareableUrl = null;
+        }
+      }
+    },
+    copyShareableUrl() {
+      if (!this.shareableUrl) return;
+      
+      // Copier le lien dans le presse-papiers
+      navigator.clipboard.writeText(this.shareableUrl).then(() => {
+        // Confirmation discrète via la console
+        console.log('Lien copié dans le presse-papiers:', this.shareableUrl);
+      }).catch(err => {
+        console.error('Erreur lors de la copie:', err);
+      });
   },
 };
 </script>

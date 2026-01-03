@@ -147,6 +147,49 @@ export function hasGeographicalParams() {
 }
 
 /**
+ * Builds a shareable URL based on the current location context from localStorage
+ * Takes location data and generates a complete URL with all geographical parameters
+ * 
+ * @param {Object} locationData - Location data object containing regionId, com2coId, cityId, latY, lonX, cityName, locType
+ * @returns {string} The complete shareable URL with geographical parameters
+ * 
+ * @example
+ * // Location data from localStorage
+ * const locationData = {
+ *   regionId: '9',
+ *   com2coId: '1',
+ *   cityId: '2878',
+ *   latY: 50.6349747,
+ *   lonX: 3.046428,
+ *   cityName: 'Lille',
+ *   locType: 'city'
+ * };
+ * buildShareableUrl(locationData);
+ * // Returns: "http://example.com/?city=9,1,2878,50.6349747,3.046428,Lille,city"
+ */
+export function buildShareableUrl(locationData) {
+  if (!locationData) return null;
+  
+  const city = {
+    regionId: locationData.regionId || null,
+    com2coId: locationData.com2coId || null,
+    cityId: locationData.cityId || null,
+    latY: locationData.latY,
+    lonX: locationData.lonX,
+    name: locationData.cityName || null,
+    locType: locationData.locType || 'city'
+  };
+  
+  // Use buildUrlWithParams with the constructed city object
+  return buildUrlWithParams({
+    regionId: locationData.regionId,
+    c2cId: locationData.com2coId,
+    city: city,
+    keepExisting: false
+  });
+}
+
+/**
  * Removes all geographical parameters from the current URL
  * Useful for resetting to the default state
  * 
