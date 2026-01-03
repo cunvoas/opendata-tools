@@ -23,7 +23,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		
 		<postgresql.version>42.7.8</postgresql.version>
-		<hibernate.version>6.6.37.Final</hibernate.version>
+		<hibernate.version>6.6.38.Final</hibernate.version>
     </properties>
 	
 
@@ -41,7 +41,7 @@
 		<dependency>
 			<groupId>org.eclipse.jgit</groupId>
 			<artifactId>org.eclipse.jgit</artifactId>
-			<version>7.4.0.202509020913-r</version>
+			<version>7.5.0.202512021534-r</version>
 		</dependency>
 
 
