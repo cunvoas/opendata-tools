@@ -236,12 +236,14 @@ const dataCarre = L.layerGroup();
 const dataIris = L.layerGroup();
 const dataCadastre = L.layerGroup();
 const dataVegetation = L.layerGroup();
+const dataProposalParcs = L.layerGroup();
 const dataLayers = {
   'Parcs': dataParcs,
   'Carrés': dataCarre,
   'IRIS': dataIris,
   'Cadastre': dataCadastre,
-  'Végétation IGN': dataVegetation
+  'Végétation IGN': dataVegetation,
+  'Proposition de parcs': dataProposalParcs
 };
 
 console.log('[ConsultMap] Initialisation carte...');
@@ -250,6 +252,20 @@ console.log('[ConsultMap] Carte initialisée:', map);
 L.control.scale().addTo(map);
 const layerControl = L.control.layers(baseLayers, dataLayers).addTo(map);
 console.log('[ConsultMap] LayerControl ajouté avec dataLayers:', dataLayers);
+
+const legend = L.control({position: 'bottomright'});
+legend.onAdd = function (map) {
+    const div = L.DomUtil.create('div', 'info legend');
+    const labels = [];
+
+    labels.push(`<i style="background:#3aa637"></i> Parc inclus OMS`);
+    labels.push(`<i style="background:#e96020"></i> Parc exclus OMS`);
+    labels.push(`<i style="background:#DC20E9"></i> Futur Parc ou détruit`);
+    div.innerHTML = labels.join('<br>');
+    return div;
+};
+legend.addTo(map);
+
 
 /**
  * Calcule la requête URL contenant les bornes géographiques de la carte visible
@@ -344,12 +360,35 @@ function  getSquareColor(zoneDense, densite, colorblindMode = false) {
 
 // Endpoints Thymeleaf (remplacés serveur)
 const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
+const endpointParkProposal = /*[[@{/map/park/proposal}]]*/ '';
 const endpointCarre = /*[[@{/map/insee/carre200m/area}]]*/ '';
 const endpointIris = /*[[@{/map/insee/iris/area}]]*/ '';
 const endpointCadastre = /*[[@{/mvc/geojson/cadastreByCorner}]]*/ '';
 //const endpointVegetation = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/vegetalInseeIgnTopo.json';
 const endpointVegetation =  /*[[@{/map/ign-topo/vegetal}]]*/ '';
 const urlEditPark = /*[[@{/mvc/park/new/check}]]*/ '/mvc/park/new/check';
+
+/**
+ * Détermine le style dynamique d'un parc en fonction de ses propriétés
+ * @param {Object} feature - Feature GeoJSON du parc
+ * @returns {Object} Style Leaflet (color, fillColor, weight, fillOpacity)
+ */
+function getParkStyle(feature) {
+  let fillColor = '#3aa637'; // Couleur par défaut (parc inclus OMS)
+  
+  if (feature && feature.properties) {
+    // Vérifier d'abord si le parc est actif
+    if (feature.properties.actif === false) {
+      fillColor = '#DC20E9'; // Futur parc ou détruit
+    } else if (feature.properties.oms === false) {
+      fillColor = '#e96020'; // Parc exclus OMS
+    } else if (feature.properties.oms === true) {
+      fillColor = '#3aa637'; // Parc inclus OMS
+    }
+  }
+  
+  return { color:'#1e4d1c', fillColor: fillColor, weight:1, fillOpacity:0.35 };
+}
 
 // Styles ajustés pour accentuer le contraste bordure/fond tout en conservant une bordure fine
 // - Couleur de bordure plus sombre
@@ -359,6 +398,7 @@ const urlEditPark = /*[[@{/mvc/park/new/check}]]*/ '/mvc/park/new/check';
 const overlayConfig = {
   'Parcs': { endpoint: endpointParcs, style: { color:'#1e4d1c', fillColor:'#3aa637', weight:1, fillOpacity:0.35 } },
   'Carrés': { endpoint: endpointCarre, style: { color:'#002a99', fillColor:'#3385ff', weight:1, fillOpacity:0.25 } },
+  'Proposition de parcs': { endpoint: endpointParkProposal, style: { color:'#d4691e', fillColor:'#ff9900', weight:2, fillOpacity:0.3 }, useCircles: true },
   'IRIS': { endpoint: endpointIris, style: { color:'#b85f00', fillColor:'#ff9d33', weight:1, fillOpacity:0.25 } },
   // Cadastre dynamique: rechargé à chaque mouvement avec cache et debounce
   'Cadastre': { endpoint: endpointCadastre, style: { color:'#7a7c00', fillColor:'#d6d900', weight:1, fillOpacity:0.18 } },
@@ -411,6 +451,34 @@ function expandBounds(b){
 }
 
 /**
+ * Crée un cercle à partir d'une feature avec un rayon en mètres
+ * @param {Object} feature - Feature GeoJSON (Point avec propriété radius)
+ * @param {Object} style - Style Leaflet (color, fillColor, weight, fillOpacity)
+ * @returns {L.Circle} Cercle Leaflet avec rayon en mètres
+ */
+function createCircleFromFeature(feature, style) {
+  if (!feature.geometry || feature.geometry.type !== 'Point') {
+    console.warn('Feature invalide pour cercle:', feature);
+    return null;
+  }
+  
+  const coords = feature.geometry.coordinates;
+  const lat = coords[1];
+  const lng = coords[0];
+  const radius = feature.properties.radius || 300; // rayon par défaut en mètres
+  
+  const circle = L.circle([lat, lng], {
+    radius: radius,
+    color: style.color,
+    fillColor: style.fillColor,
+    weight: style.weight,
+    fillOpacity: style.fillOpacity
+  });
+  
+  return circle;
+}
+
+/**
  * Crée le contenu HTML d'une popup Leaflet en fonction de la couche et des propriétés de la feature
  * @param {Object} feat - Feature GeoJSON contenant les propriétés
  * @param {string} layerName - Nom de la couche ('Parcs', 'IRIS', 'Carrés', 'Cadastre', 'Végétation IGN')
@@ -437,6 +505,11 @@ function createPopupContent(feat, layerName) {
   if (layerName === 'Parcs' && feat.properties.id) {
     const sUrlEditPark = window.location.protocol + "//" + window.location.host + urlEditPark + '?idPark=' + feat.properties.id;
     popupContent += `<p><a href='${sUrlEditPark}'>Éditer</a></p>`;
+
+    // changer la couleur si feat.properties.oms=true => #3aa637
+    // changer la couleur si feat.properties.oms=false => #e96020
+    // changer la couleur si feat.properties.actif=false => #DC20E9
+
   }
 
   // Infos spécifiques IRIS
@@ -496,6 +569,22 @@ function createPopupContent(feat, layerName) {
     }
   }
 
+  // Infos spécifiques Proposition de parcs (cercles)
+  if (layerName === 'Proposition de parcs') {
+    if (feat.properties.radius) {
+      const radius = parseFloat(feat.properties.radius);
+      if (!isNaN(radius)) {
+        popupContent += `<p>Diamètre: ${Math.round(2*radius)} m</p>`;
+        const surface = parseFloat(feat.properties.surface);
+        if (surface >= 10000) {
+          popupContent += `<p>Surface: ${(surface / 10000).toFixed(2)} ha</p>`;
+        } else {
+          popupContent += `<p>Surface: ${Math.round(surface)} m²</p>`;
+        }
+      }
+    }
+  }
+
   return popupContent;
 }
 
@@ -527,8 +616,19 @@ function updateGeojsonLayer(name) {
         .then(r => { console.timeEnd(fetchLabel); console.time(parseLabel); return r.json(); })
         .then(geo => {
           console.timeEnd(parseLabel); console.time(renderLabel);
+          
+          // Déterminer le style en fonction de la couche
+          let styleFunction;
+          if (name === 'Carrés') {
+            styleFunction = getSquareStyle;
+          } else if (name === 'Parcs') {
+            styleFunction = getParkStyle;
+          } else {
+            styleFunction = cfg.style;
+          }
+          
           const gj = L.geoJSON(geo, {
-            style: name === 'Carrés' ? getSquareStyle : cfg.style,
+            style: styleFunction,
             // Attache une popup à chaque feature de la couche
             onEachFeature: (feat, layer) => {
               const popupContent = createPopupContent(feat, name);
@@ -594,16 +694,43 @@ function updateGeojsonLayer(name) {
       .then(r => { console.timeEnd(fetchLabel); console.time(parseLabel); return r.json(); })
       .then(geo => {
         console.timeEnd(parseLabel); console.time(renderLabel);
-        const gj = L.geoJSON(geo, {
-          style: name === 'Carrés' ? getSquareStyle : cfg.style,
-          // Attache une popup à chaque feature de la couche
-          onEachFeature: (feat, layer) => {
-            const popupContent = createPopupContent(feat, name);
-            if (popupContent) layer.bindPopup(popupContent);
+        
+        // Si la couche utilise des cercles au lieu de polygones
+        if (cfg.useCircles) {
+          if (geo.features) {
+            geo.features.forEach(feat => {
+              const circle = createCircleFromFeature(feat, cfg.style);
+              if (circle) {
+                const popupContent = createPopupContent(feat, name);
+                if (popupContent) circle.bindPopup(popupContent);
+                group.addLayer(circle);
+              }
+            });
           }
-        });
+        } else {
+          // Rendu classique avec GeoJSON
+          // Déterminer le style en fonction de la couche
+          let styleFunction;
+          if (name === 'Carrés') {
+            styleFunction = getSquareStyle;
+          } else if (name === 'Parcs') {
+            styleFunction = getParkStyle;
+          } else {
+            styleFunction = cfg.style;
+          }
+          
+          const gj = L.geoJSON(geo, {
+            style: styleFunction,
+            // Attache une popup à chaque feature de la couche
+            onEachFeature: (feat, layer) => {
+              const popupContent = createPopupContent(feat, name);
+              if (popupContent) layer.bindPopup(popupContent);
+            }
+          });
+          group.addLayer(gj);
+        }
+        
         console.timeEnd(renderLabel);
-        group.addLayer(gj);
         pendingFetches[name] = false;
         console.log(`[ConsultMap][${name}] Chargé avec succès`);
       })

@@ -20,5 +20,6 @@ public class ParkGardenView extends GeoJsonProperty {
 	private Double surface;
 	private Boolean oms;
 	private Boolean entry;
+	private Boolean actif;
 	
 }

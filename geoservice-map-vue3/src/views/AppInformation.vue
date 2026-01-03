@@ -2,14 +2,15 @@
     <div class="text-left align-top">
         <div class="border-2 border-transparent prose max-w-none">
             <h1 class="text-3xl font-bold mb-4">Informations sur l'application</h1>
-            <h2>Objectifs</h2>
+            <h2 class="font-bold underline my-4">Objectifs</h2>
+
             <p>
                 L'objectif de cette application est de permettre aux habitants des villes et des regroupements de communes de visualiser sur une carte les parcs et jardins qui sont accessibles à pied.
                 <br />
                 Elle permet aussi de connaître les territoires qui respectent le nombre de m²/habitant d'espaces verts publics de proximité préconisés par l'Organisation mondiale de la santé (OMS).
             </p>
 
-            <h2>Parcs et Jardins</h2>
+            <h2 class="font-bold underline my-4">Parcs et Jardins</h2>
             <p>
                Les parcs et jardins publics sont des espaces verts accessibles qui permettent de se détendre, de se promener, de jouer, de se reposer, de pique-niquer, de lire, de se rencontrer, de s’aérer...
                <br />
@@ -31,7 +32,7 @@
                 Certaines villes proposent également les données de parc via opendata et elles ont été intégrées.
                 <br />
             </p>
-            <h2>Les données utilisées et l'algorithme</h2>
+            <h2 class="font-bold underline my-4">Les données utilisées et l'algorithme</h2>
             <p>
                 Nous utilisons les données disponibles en OpenData lorsque cela est possible auquel s'ajoute un travail
                 collaboratif de plusieurs assocations qui a permis de recenser les entrées de chaque parcs.<br />
@@ -64,7 +65,7 @@
                 Ce calcul est réalisé avec les dernières données de l'INSEE rendues publiques.
             </p>
 
-            <h2>Code source et contribution à l'application</h2>
+            <h2 class="font-bold underline my-4">Code source et contribution à l'application</h2>
             <p>
                 Le programme est disponible en opensource. Il a été réalisé par des bénévoles et des associations. Il
                 est
@@ -75,16 +76,16 @@
                 améliorations.
                 <br />
                 Le programme peut aussi être copié en respectant la <a target="_blank" rel="noopener noreferrer"
-                    href="https://www.gnu.org/licenses/gpl-3.0.fr.html">licence GPLv3</a>.
+                    href="https://www.gnu.org/licenses/gpl-3.0.fr.html" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">licence GPLv3</a>.
                 <br />
                 Pour plus d'information, vous pouvez consulter la documentation sur le site du projet.
             </p>
 
-            <h2>Contribution à la saisie</h2>
+            <h2 class="font-bold underline my-4">Contribution à la saisie</h2>
             <p>
                 Les contributions aux données sont réalisées sur une application dédiée. Pour y accéder, il faut en
                 faire la
-                demande via <a href="javascript:void(0);" @click="sendRequest">email</a>
+                demande via <a href="javascript:void(0);" @click="sendRequest" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold cursor-pointer">email</a>
                 <br />
                 Nous limitons le nombres de contributeur par territoire afin de garantir la qualité des données et la
                 stabilité de notre application.
@@ -93,7 +94,7 @@
                 public.
             </p>
 
-            <h2>Contributions et remerciements</h2>
+            <h2 class="font-bold underline my-4">Contributions et remerciements</h2>
             <p>
                 Philippe de Deûl'Air pour le contrôles des calculs.
                 <br />

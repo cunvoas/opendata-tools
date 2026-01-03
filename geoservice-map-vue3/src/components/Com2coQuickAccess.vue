@@ -42,7 +42,7 @@ export default {
                 },
                 {
                     id: 'all',
-                    name: 'Densité confondues',
+                    name: 'Densités confondues',
                     suffix: 'all'
                 }
             ]

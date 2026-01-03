@@ -191,6 +191,38 @@ public class ServiceReadReferences {
 	public City getCity(Long id) {
 		return cityRepository.getReferenceById(id);
 	}
+
+	/**
+	 * Indique si la commune est classée dense selon l'INSEE.
+	 * @param cityId identifiant interne de la commune
+	 * @return TRUE si dense, FALSE sinon, null si inconnue
+	 */
+	public Boolean isCityDense(Long cityId) {
+		if (cityId == null) {
+			return null;
+		}
+		City city = getCityById(cityId);
+		if (city == null) {
+			log.warn("isCityDense - city not found, id={}", cityId);
+			return null;
+		}
+		return isInseeDense(city.getInseeCode());
+	}
+
+	private Boolean isInseeDense(String inseeCode) {
+		if (inseeCode == null) {
+			return null;
+		}
+		Boolean dense = null;
+		Optional<InseeDensiteCommune> idc = inseeDensiteCommuneRepository.findById(inseeCode);
+		if (idc.isPresent()) {
+			String cd = idc.get().getCodeDensite();
+			dense = applicationBusinessProperties.getInseeCodeDensite().indexOf(cd) != -1;
+		} else {
+			log.warn("isInseeDense - densite not found, insee={}", inseeCode);
+		}
+		return dense;
+	}
 	
 	/**
 	 * Retourne les coordonnées d'une ville à partir de son identifiant.

@@ -99,6 +99,32 @@ public class GeoJsonParkController {
 
 
     /**
+     * get park outline by area.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+     * @param annee year
+     * @return list of park outline
+     */
+    @CrossOrigin(origins = "${web.cors.allowed-origins}")
+    @GetMapping("/proposal")
+    public GeoJsonRoot getParkProposalByArea(
+    			@RequestParam("swLat") Double swLat,
+    			@RequestParam("swLng") Double swLng,
+    			@RequestParam("neLat") Double neLat,
+    			@RequestParam("neLng") Double neLng,
+    			@RequestParam("annee") Integer annee
+    		) {
+    	if (annee==null) {
+    		annee=applicationBusinessProperties.getDerniereAnnee();
+    	}
+        return geoMapService.findParkProposalByArea(annee, swLat, swLng, neLat, neLng);
+    }
+    
+
+
+    /**
      * get park by city.
      * @param coords of a point(lat, lng)
      * @param zoom zoom index

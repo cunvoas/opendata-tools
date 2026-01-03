@@ -114,7 +114,7 @@ class TestExporterApplication {
 	void writeLiveDataByCom2coAndYear() {
 		
 		Integer[] annees= {2015,2017,2019};
-		Integer annee=2019;
+//		Integer annee=2019;
 		Long com2coId=1l;
 		
 		CommunauteCommune com2co=serviceReadReferences.getCommunauteCommuneById(com2coId);
@@ -215,13 +215,13 @@ class TestExporterApplication {
 	void writeStatsSurfaceByCom2CoIdAndAnneeAll() {
 
 			try {
-//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2015, 1L);
-//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2017, 1L);
-//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2019, 1L);
-//
-//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2015, 1L);
-//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2017, 1L);
-//				statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2019, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2015, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2017, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(2019, 1L);
+
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2015, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2017, 1L);
+			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(2019, 1L);
 				
 			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(2015, 1L);
 			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(2017, 1L);

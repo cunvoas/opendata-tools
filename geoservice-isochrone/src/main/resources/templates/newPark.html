@@ -12,6 +12,12 @@
 
 				<div class="container">
 
+				<!-- Message d'erreur parc non trouvé -->
+				<div th:if="${parkNotFound}" class="alert alert-warning alert-dismissible fade show" role="alert">
+					<strong><span th:text="#{park.new.warning}">Attention</span></strong> <span th:text="#{park.new.notFound}">not exists</span>
+					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				</div>
+
 <p class="d-inline-flex gap-1">
 	<button id="btnNew" onclick="manageCreateDisabled()" type="button" class="btn btn-outline-success" th:text="#{park.new.create}">Create</button>
 	<button id="btnUpdate" onclick="manageUpdateDisabled()" type="button" class="btn btn-outline-success" th:text="#{park.new.update}">Update</button>
@@ -910,9 +916,6 @@
 	  rotateMode: false,
 	}); 
     
-    // alert(calcCrow(59.3293371,13.4877472,59.3225525,13.4619422).toFixed(1));
-
-
     
     function presave() {
     	const strPoly = JSON.stringify(L.PM.Utils.findLayers(map)[0].toGeoJSON());

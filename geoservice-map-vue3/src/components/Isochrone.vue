@@ -59,7 +59,7 @@
 
       <l-control position="bottomleft" >
         <div id="customControl" class="dataDetail">
-          <h4>&nbsp;m²/habitant de parcs&nbsp;</h4>
+          <h4 @dblclick="copyShareableUrl" style="cursor: pointer;">&nbsp;m²/habitant de parcs&nbsp;</h4>
           <div id="legend" class="legend">            
             <div id="legendContent" v-html="htmlLegend" />
           </div>
@@ -138,12 +138,39 @@ import L, { latLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { buildShareableUrl } from '../utils/urlParams.js';
 import debounce from 'lodash/debounce';
 
 
 const MODE='static';
 
 // needs to be here for map coloring
+// Fonction pour obtenir les couleurs des parcs selon le mode (normal ou daltonien)
+function getParkColor(oms, actif, colorblindMode = false) {
+  let fillColor = '#3aa637'; // Couleur par défaut (parc inclus OMS) - vert
+  
+  if (colorblindMode) {
+    // Palette adaptée aux daltoniens
+    if (actif === false) {
+      fillColor = '#9467BD';  // Violet pour parcs inactifs
+    } else if (oms === false) {
+      fillColor = '#FF7F0E';  // Orange pour parcs exclus OMS
+    } else if (oms === true) {
+      fillColor = '#2CA02C';  // Vert foncé pour parcs inclus OMS
+    }
+  } else {
+    // Palette classique
+    if (actif === false) {
+      fillColor = '#DC20E9';  // Magenta pour parcs inactifs
+    } else if (oms === false) {
+      fillColor = '#e96020';  // Orange pour parcs exclus OMS
+    } else if (oms === true) {
+      fillColor = '#3aa637';  // Vert pour parcs inclus OMS
+    }
+  }
+  return fillColor;
+}
+
 // Fonction pour obtenir les couleurs selon le mode (normal ou daltonien)
 function  getSquareColor(zoneDense, densite, colorblindMode = false) {
   // Gris neutre pour valeurs non calculées
@@ -317,6 +344,7 @@ export default {
       annee: "2019",
       region: "9",
       com2co: "1",
+      shareableUrl: null,
       fillColor: "#A0DCA0",
       tileProviders: [
         {
@@ -399,7 +427,10 @@ export default {
             this.callGeoJsonParcs();
             this.callGeoJsonIsochrones();
             this.callGeoJsonCarres();
-            this.callGeoJsonCadastre();         
+            this.callGeoJsonCadastre();
+            
+            // Mettre à jour le lien shareable
+            this.updateShareableUrl();
           }
 
 
@@ -407,9 +438,11 @@ export default {
       },
       immediate: true,
       deep: true
+    },
+    showParcs(newValue) {
+      this.$emit('parcs-visibility-changed', newValue);
     }
   },
-
   methods: {
     onColorModeChange() {
       // Sauvegarder le mode dans le localStorage
@@ -705,6 +738,68 @@ export default {
       });
     },
 
+    onDetailPark(feature, layer) {
+      try {
+        // Dépendance explicite au mode daltonien pour forcer le recalcul
+        const colorblindMode = this.colorblindMode;
+        console.log('onDetailPark - colorblindMode:', colorblindMode);
+        
+        if (!feature || !feature.properties) {
+          console.warn('onDetailPark: feature or feature.properties is missing', feature);
+          return;
+        }
+        
+        let oms = feature.properties.oms;
+        let valid = ''
+        if (oms === false) {
+          valid = "✖";
+        }
+
+        let formattedSurface = feature.properties.surface;
+        let unit = ' m²';
+        
+        if (feature.properties.surface) {
+          if (feature.properties.surface > 1000 && oms!==false) {
+            valid = "✓";
+          }
+
+          if (feature.properties.surface > 10000) {
+            const surfaceInHa = feature.properties.surface / 10000;
+            formattedSurface = new Intl.NumberFormat('fr-FR', { 
+              minimumFractionDigits: 2, 
+              maximumFractionDigits: 2 
+            }).format(surfaceInHa);
+            unit = ' ha';
+          } else {
+            formattedSurface = new Intl.NumberFormat('fr-FR').format(Math.round(feature.properties.surface));
+          }
+        }
+        
+        const parkName = feature.properties.name || 'N/A';
+        const parkCity = feature.properties.city || 'N/A';
+        
+        layer.bindTooltip(
+          "<div>Nom: " + valid +" "+ parkName +
+          "</div><div>Surface: " + formattedSurface + unit + 
+          "</div><div>Ville: " + parkCity +"</div>",
+          { permanent: false, sticky: true }
+        );
+
+        // Appliquer la couleur avec le mode daltonien
+        const fillColor = getParkColor(
+          feature.properties.oms,
+          feature.properties.actif,
+          colorblindMode
+        );
+        layer.setStyle({
+          fillColor: fillColor,
+          color: fillColor,
+        });
+      } catch (error) {
+        console.error('Error in onDetailPark:', error, feature);
+      }
+    },
+
   },
   /**
    * Vue lifecycle hook called after the component has been mounted to the DOM.
@@ -728,7 +823,7 @@ export default {
      */
     detailParcs() {
       return {
-        onEachFeature: this.onDetailPark,
+        onEachFeature: (feature, layer) => this.onDetailPark(feature, layer),
       };
     },
     detailIsochrone() {
@@ -759,14 +854,19 @@ export default {
       };
     },
     styleParcFunction() {
-      //const fillColor = this.fillColor; // important! need touch fillColor in computed for re-calculate when change fillColor
-      return () => {
+      const colorblindMode = this.colorblindMode;
+      return (feature) => {
+        let fillColor = getParkColor(
+          feature?.properties?.oms,
+          feature?.properties?.actif,
+          colorblindMode
+        );
         return {
-          weight: 2,
-          color: "#B08C60",
-          opacity: 0.9,
-          fillColor: "#608C60",
-          fillOpacity: 0.3,
+          weight: 1,
+          color: fillColor,
+          fillColor: fillColor,
+          opacity: 0.6,
+          fillOpacity: 0.5,
         };
       };
     },
@@ -909,43 +1009,6 @@ export default {
         );
       };
     },
-
-    onDetailPark() {
-      return (feature, layer) => {
-        let oms = feature.properties.oms;
-        let valid =''
-        if (oms === false) {
-          valid = "✖";
-        }
-
-        let formattedSurface = feature.properties.surface;
-        let unit = ' m²';
-        
-        if (feature.properties.surface) {
-           if (feature.properties.surface > 1000 && oms!==false) {
-            valid = "✓";
-           }
-
-          if (feature.properties.surface > 10000) {
-            const surfaceInHa = feature.properties.surface / 10000;
-            formattedSurface = new Intl.NumberFormat('fr-FR', { 
-              minimumFractionDigits: 2, 
-              maximumFractionDigits: 2 
-            }).format(surfaceInHa);
-            unit = ' ha';
-          } else {
-            formattedSurface = new Intl.NumberFormat('fr-FR').format(Math.round(feature.properties.surface));
-          }
-        }
-        
-        layer.bindTooltip(
-          "<div>Nom: " + valid +" "+ feature.properties.name +
-          "</div><div>Surface: " + formattedSurface + unit + 
-          "</div><div>Ville: " + feature.properties.city +"</div>",
-          { permanent: false, sticky: true }
-        );
-      };
-    },
   },
   beforeMount() {
     
@@ -975,6 +1038,30 @@ export default {
       //    but this is not reachable
       self.loading = false;
     });
+    },
+    updateShareableUrl() {
+      // Mettre à jour le lien shareable en fonction de la localisation actuelle
+      const savedLocation = localStorage.getItem('location-selected');
+      if (savedLocation) {
+        try {
+          const locationData = JSON.parse(savedLocation);
+          this.shareableUrl = buildShareableUrl(locationData);
+        } catch (e) {
+          console.error('Erreur lors de la création du lien shareable:', e);
+          this.shareableUrl = null;
+        }
+      }
+    },
+    copyShareableUrl() {
+      if (!this.shareableUrl) return;
+      
+      // Copier le lien dans le presse-papiers
+      navigator.clipboard.writeText(this.shareableUrl).then(() => {
+        // Confirmation discrète via la console
+        console.log('Lien copié dans le presse-papiers:', this.shareableUrl);
+      }).catch(err => {
+        console.error('Erreur lors de la copie:', err);
+      });
   },
 };
 </script>

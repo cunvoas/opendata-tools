@@ -35,11 +35,6 @@ public class InseeCarre200mComputedV2 {
 	@Id
 	@Column(name="idInspire",length=30)
 	private String idInspire;
-
-	@Column(name="id",length=21)
-	@Deprecated
-	private String idCarre200;
-	
 	
 	/**
 	 * population in the square.
@@ -112,6 +107,19 @@ public class InseeCarre200mComputedV2 {
 	private BigDecimal surfaceParkPerCapitaOms = BigDecimal.ZERO;
 	
 
+	/**
+	 * mising surface of the parks OMS to reach minumuen of 10m² per inhabitant.
+	 */
+	@Column(name="miss_surface_mini", precision = 12, scale = 2)
+	private BigDecimal missingSurfaceMini = BigDecimal.ZERO;
+	
+
+	/**
+	 * mising surface of the parks OMS to reach advised  of 12m² per inhabitant.
+	 */
+	@Column(name="miss_surface_adv", precision = 12, scale = 2)
+	private BigDecimal missingSurfaceAdvised = BigDecimal.ZERO;
+	
 	@Column(name="is_dense")
 	private Boolean isDense =Boolean.TRUE;
 
