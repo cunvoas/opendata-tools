@@ -23,7 +23,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		
 		<postgresql.version>42.7.8</postgresql.version>
-		<hibernate.version>6.6.37.Final</hibernate.version>
+		<hibernate.version>6.6.38.Final</hibernate.version>
     </properties>
 	
 
