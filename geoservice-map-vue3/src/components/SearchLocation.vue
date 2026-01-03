@@ -127,8 +127,20 @@ export default {
         await this.fetchCities(com2coEvent);
 
         // Emit the loaded location if we have complete data
-        if (locationData) {
-            this.$emit('update-location', locationData);
+        if (locationData && this.selectedCity) {
+            // Make sure we have all required data before emitting
+            const completeLocation = {
+                "locType": locationData.locType || "city",
+                "regionId": this.selectedRegion,
+                "com2coId": this.selectedCom2co,
+                "com2coName": this.selectedCom2coName,
+                "cityId": this.selectedCity,
+                "cityName": this.selectedCityName,
+                "cityInsee": this.selectedCityInseeCode,
+                "lonX": this.locX,
+                "latY": this.locY
+            };
+            this.$emit('update-location', completeLocation);
         }
 
     },
