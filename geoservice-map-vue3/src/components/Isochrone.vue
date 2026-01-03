@@ -59,7 +59,7 @@
 
       <l-control position="bottomleft" >
         <div id="customControl" class="dataDetail">
-          <h4 @dblclick="copyShareableUrl" :title="shareableUrl" style="cursor: pointer;">&nbsp;m²/habitant de parcs&nbsp;</h4>
+          <h4 @dblclick="copyShareableUrl" style="cursor: pointer;">&nbsp;m²/habitant de parcs&nbsp;</h4>
           <div id="legend" class="legend">            
             <div id="legendContent" v-html="htmlLegend" />
           </div>
