@@ -17,7 +17,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(of = {"annee", "idInspire"})
 @Entity(name = "project_simul_work")
-@IdClass(InseeCarre200mComputedId.class)
+@IdClass(ProjectSimulatorWorkId.class)
 public class ProjectSimulatorWork {
 
 	/**
@@ -30,7 +30,8 @@ public class ProjectSimulatorWork {
 	@Id
 	@Column(name="idInspire",length=30)
 	private String idInspire;
-	
+
+	@Id
 	@Column(name="project_simulator_id")
 	private Long idProjectSimulator;
 	

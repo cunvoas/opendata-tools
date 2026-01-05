@@ -3,12 +3,14 @@ package com.github.cunvoas.geoserviceisochrone.service.map;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -689,9 +691,11 @@ public class GeoMapServiceV2 {
 				for (ProjectSimulatorWork simul : simuls) {
 					GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
-					
 					feature.setGeometry(simul.getGeoShape());
+					
 					ProjetSimulWorkView pv = new ProjetSimulWorkView();
+					feature.setProperties(pv);
+					
 					pv.setIdInspire(String.valueOf(simul.getIdInspire()));
 					
 					pv.setAccessingPopulation(formatDec(simul.getAccessingPopulation()));
@@ -980,7 +984,7 @@ public class GeoMapServiceV2 {
 	/**
 	 * format a decimal pattern.
 	 */
-	private static final NumberFormat DF_S = new DecimalFormat("#0.00");
+	private static final NumberFormat DF_S = new DecimalFormat("#0.00", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 	
 	/**
 	 * format an integer .

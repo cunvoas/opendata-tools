@@ -37,7 +37,10 @@ public class ProjectSimulatorHelper {
 					carreShape.getGeoShape().getCentroid().getY(),
 					carreShape.getGeoShape().getCentroid().getX());
 			
-			if (distance<urbanDistance+100) { // +100m pour le périmètre vs le centroïde
+			// +121m pour le périmètre vs le centroïde
+			// la vrai distance est entre 100 et 100 x racine(2) soit environ 141m
+			// on prend la moitiée
+			if (distance<urbanDistance+121) {
 				neighbors.add(carreShape);
 			}
 		}

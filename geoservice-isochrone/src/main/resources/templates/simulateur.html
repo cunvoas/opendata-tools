@@ -243,16 +243,14 @@
             </div>
           </div>
 
-          <!-- Résultats de simulation et projectWorks -->
-          <div class="row mt-3" th:if="${projectWorks != null && !projectWorks.isEmpty()}">
-            <!-- Gauche: Résultats et table projectWork -->
-            <div class="col-12 col-lg-6">
-              <!-- Résultats de simulation -->
-              <div class="card" th:if="${simulationResult != null}">
+          <!-- Résultats de simulation -->
+          <div class="row mt-3" th:if="${simulationResult != null}">
+            <div class="col-12">
+              <div class="card">
                 <div class="card-header">Résultats de simulation</div>
                 <div class="card-body">
                   <div class="row">
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-6 col-lg-3">
                       <div class="card text-center border-primary">
                         <div class="card-body">
                           <h6 class="text-muted">Population estimée</h6>
@@ -261,7 +259,7 @@
                       </div>
                     </div>
                     
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-6 col-lg-3">
                       <div class="card text-center border-success">
                         <div class="card-body">
                           <h6 class="text-muted">Surface zone (m²)</h6>
@@ -270,7 +268,7 @@
                       </div>
                     </div>
                     
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-6 col-lg-3">
                       <div class="card text-center border-info">
                         <div class="card-body">
                           <h6 class="text-muted">Surface parc (m²)</h6>
@@ -279,7 +277,7 @@
                       </div>
                     </div>
                     
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-6 col-lg-3">
                       <div class="card text-center border-warning">
                         <div class="card-body">
                           <h6 class="text-muted">Densité</h6>
@@ -310,11 +308,15 @@
                   </div>
                 </div>
               </div>
-              
-              <!-- Table des ProjectWork -->
-              <div class="card mt-3" th:if="${projectWorks != null && !projectWorks.isEmpty()}">
+            </div>
+          </div>
+
+          <!-- Table des ProjectWork sur toute la largeur -->
+          <div class="row mt-3" th:if="${projectWorks != null && !projectWorks.isEmpty()}">
+            <div class="col-12">
+              <div class="card">
                 <div class="card-header">
-                  <h6 class="mb-0">Éléments du projet <span class="badge bg-info" th:text="${projectWorks.size()}">0</span></h6>
+                  <h6 class="mb-0">Populations impactées par le projet <span class="badge bg-info" th:text="${projectWorks.size()}">0</span></h6>
                 </div>
                 <div class="card-body p-0">
                   <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
@@ -322,35 +324,28 @@
                       <thead class="table-light sticky-top">
                         <tr>
                           <th>Nom</th>
-                          <th>Type</th>
-                          <th class="text-center">Statut</th>
+                          <th class="text-end">Pop. locale</th>
+                          <th class="text-end">Pop. accès</th>
+                          <th class="text-end">Surf. accès</th>
+                          <th class="text-end">Surf. manquante</th>
+                          <th class="text-end">Surf./hab.</th>
+                          <th class="text-end">Nouvelle surf.</th>
+                          <th class="text-end">Nouv. surf./hab.</th>
                         </tr>
                       </thead>
                       <tbody id="projectWorkTableBody">
-                        <tr th:each="work : ${projectWorks}" style="cursor: pointer;" onclick="loadProjectWorkById([[${work.id}]])">
+                        <tr th:each="work : ${projectWorks}" style="cursor: pointer;">
                           <td th:text="${work.idInspire ?: '(sans nom)'}">Nom</td>
-                          <td th:text="${work.isDense != null ? (work.isDense ? 'Zone dense' : 'Zone non dense') : '-'}">Type</td>
-                          <td class="text-center">
-                            <span class="badge bg-secondary">N/A</span>
-                          </td>
+                          <td class="text-end" th:text="${work.localPopulation != null ? #numbers.formatDecimal(work.localPopulation, 0, 0) : '-'}">-</td>
+                          <td class="text-end" th:text="${work.accessingPopulation != null ? #numbers.formatDecimal(work.accessingPopulation, 0, 0) : '-'}">-</td>
+                          <td class="text-end" th:text="${work.accessingSurface != null ? (work.accessingSurface > 10000 ? #numbers.formatDecimal(work.accessingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.accessingSurface, 0, 0) + ' m²') : '-'}">-</td>
+                          <td class="text-end" th:text="${work.missingSurface != null ? (work.missingSurface > 10000 ? #numbers.formatDecimal(work.missingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.missingSurface, 0, 0) + ' m²') : '-'}">-</td>
+                          <td class="text-end" th:text="${work.surfacePerCapita != null ? #numbers.formatDecimal(work.surfacePerCapita, 0, 2) + ' m²' : '-'}">-</td>
+                          <td class="text-end" th:text="${work.newSurface != null ? (work.newSurface > 10000 ? #numbers.formatDecimal(work.newSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.newSurface, 0, 0) + ' m²') : '-'}">-</td>
+                          <td class="text-end" th:text="${work.newSurfacePerCapita != null ? #numbers.formatDecimal(work.newSurfacePerCapita, 0, 2) + ' m²' : '-'}">-</td>
                         </tr>
                       </tbody>
                     </table>
-                  </div>
-                </div>
-              </div>
-              
-            </div>
-            
-            <!-- Droite: Carte pour ProjectWorkById -->
-            <div class="col-12 col-lg-6">
-              <div class="card">
-                <div class="card-header">
-                  <h6 class="mb-0">Visualisation - <span id="projectWorkMapTitle">Sélectionnez un élément</span></h6>
-                </div>
-                <div class="card-body p-0">
-                  <div id="mapProjectWorkById" style="width:100%; height:500px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-                    <span class="text-muted">Cliquez sur un élément du projet pour afficher sa géométrie</span>
                   </div>
                 </div>
               </div>
@@ -461,9 +456,11 @@ setTimeout(function() {
 // ----------- OVERLAYS DYNAMIQUES -----------
 const dataParcs = L.layerGroup().addTo(map);
 const dataProjectZone = L.layerGroup().addTo(map);
+const dataProjectWork = L.layerGroup().addTo(map);
 
 overlays['Parcs existants'] = dataParcs;
 overlays['Projets'] = dataProjectZone;
+overlays['Populations impactées'] = dataProjectWork;
 
 L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
 
@@ -480,6 +477,7 @@ legend.onAdd = function () {
   labels.push(`<i style="background:#3aa637;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc inclus OMS`);
   labels.push(`<i style="background:#e96020;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc exclus OMS`);
   labels.push(`<i style="background:#DC20E9;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc futur ou détruit`);
+  labels.push(`<i style="background:#ff9933;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Carreaux (dense)`);
   div.innerHTML = labels.join('<br>');
   return div;
 };
@@ -615,6 +613,7 @@ document.getElementById('name').addEventListener('input', function() {
 // ----------- CHARGEMENT PARCS -----------
 const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
 const endpointProjects = /*[[@{/mvc/geojson/projectByCorner}]]*/ '';
+const endpointProjectWork = /*[[@{/mvc/geojson/projectWorkById}]]*/ '';
 
 /**
  * Détermine le style dynamique d'un parc en fonction de ses propriétés
@@ -718,6 +717,70 @@ function loadProjects() {
     .catch(err => console.error('[Simulateur] Erreur chargement projets', err));
 }
 
+/**
+ * Charge les éléments du projet (ProjectWork) pour le projet en cours
+ */
+function loadProjectWork() {
+  if (!endpointProjectWork) return;
+  
+  // Récupérer l'ID du projet depuis le formulaire
+  const projectId = document.getElementById('id').value;
+  if (!projectId || projectId.trim() === '') {
+    dataProjectWork.clearLayers();
+    return;
+  }
+  
+  const url = `${endpointProjectWork}?id=${projectId}`;
+  
+  fetch(url)
+    .then(r => r.json())
+    .then(geojson => {
+      dataProjectWork.clearLayers();
+      
+      L.geoJSON(geojson, {
+        style: function(feature) {
+          // Style différent selon si c'est une zone dense ou non
+          const isDense = true;//feature.properties && feature.properties.isDense;
+          return {
+            color: isDense ? '#ff6600' : '#9966ff',
+            fillColor: isDense ? '#ff9933' : '#cc99ff',
+            weight: 2,
+            fillOpacity: 0.4
+          };
+        },
+        onEachFeature: function(feature, layer) {
+          let popupContent = '';
+          if (feature.properties) {
+            popupContent += '<b>Carré INSEE: ' + (feature.properties.idInspire || 'N/A') + '</b><br>';
+            if (feature.properties.localPopulation) {
+              popupContent += 'Population locale: ' + Math.round(feature.properties.localPopulation) + '<br>';
+            }
+            if (feature.properties.accessingPopulation) {
+              popupContent += 'Population accès: ' + Math.round(feature.properties.accessingPopulation) + '<br>';
+            }
+            if (feature.properties.accessingSurface) {
+              popupContent += 'Surface accès: ' + Math.round(feature.properties.accessingSurface) + ' m²<br>';
+            }
+            if (feature.properties.surfacePerCapita) {
+              popupContent += 'Surface/hab: ' + Math.round(feature.properties.surfacePerCapita * 100) / 100 + ' m²<br>';
+            }
+            if (feature.properties.newSurfacePerCapita) {
+              popupContent += 'Nouvelle surf/hab: ' + Math.round(feature.properties.newSurfacePerCapita * 100) / 100 + ' m²';
+            }
+          }
+          layer.bindPopup(popupContent);
+          
+          // Empêcher l'édition des projectWork
+          layer.pm.setOptions({ pmIgnore: true });
+          layer.pm.disable();
+          layer._isProjectWork = true;
+        }
+      }).addTo(dataProjectWork);
+      console.log('[Simulateur] ProjectWork chargés:', geojson.features ? geojson.features.length : 0);
+    })
+    .catch(err => console.error('[Simulateur] Erreur chargement projectWork', err));
+}
+
 // Chargement initial et au déplacement
 map.on('moveend', function() {
   loadParcs();
@@ -725,6 +788,7 @@ map.on('moveend', function() {
 });
 loadParcs();
 loadProjects();
+loadProjectWork();
 
 console.log('[Simulateur] Carte initialisée');
 
@@ -813,6 +877,9 @@ function clearProjectForm() {
     map.removeLayer(projectLabel);
     projectLabel = null;
   }
+  
+  // Effacer les projectWork de la carte
+  dataProjectWork.clearLayers();
   
   console.log('[Simulateur] Formulaire effacé');
 }
@@ -918,199 +985,7 @@ function sortProjectsTable() {
 // Initialiser le tableau au chargement
 initProjectsTable();
 
-// ----------- GESTION DES RÉSULTATS DE SIMULATION -----------
-// Carte pour ProjectWorkById
-let mapProjectWorkById = null;
-let currentProjectWorkId = null;
 
-/**
- * Initialise la carte pour ProjectWorkById
- */
-function initMapProjectWorkById() {
-  if (mapProjectWorkById) return;
-  
-  mapProjectWorkById = L.map('mapProjectWorkById', {
-    center: [targetLat, targetLng],
-    zoom: zoomInit,
-    layers: [layerOSM],
-    keyboard: false
-  });
-  
-  // Ajouter les contrôles de fonds de carte
-  L.control.layers(baseLayers, {}, { collapsed: false }).addTo(mapProjectWorkById);
-  
-  console.log('[Simulateur] Carte ProjectWorkById initialisée');
-  
-  setTimeout(function() {
-    mapProjectWorkById.invalidateSize();
-    mapProjectWorkById.setView([targetLat, targetLng], zoomInit, { animate: false, reset: true });
-  }, 200);
-}
-
-/**
- * Charge et affiche les données du ProjectWork spécifique
- */
-function loadProjectWorkById(projectWorkId) {
-  if (!projectWorkId) {
-    console.warn('[Simulateur] ProjectWorkId vide');
-    return;
-  }
-  
-  currentProjectWorkId = projectWorkId;
-  
-  if (!mapProjectWorkById) {
-    initMapProjectWorkById();
-  }
-  
-  const endpoint = /*[[@{/mvc/geojson/projectWorkById}]]*/ '/mvc/geojson/projectWorkById';
-  const url = `${endpoint}?id=${encodeURIComponent(projectWorkId)}`;
-  
-  console.log('[Simulateur] Chargement ProjectWorkById:', url);
-  
-  fetch(url)
-    .then(r => {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .then(geojson => {
-      console.log('[Simulateur] GeoJSON reçu:', geojson);
-      
-      // Vider les couches précédentes (sauf les TileLayers)
-      const layersToRemove = [];
-      mapProjectWorkById.eachLayer(layer => {
-        if (!(layer instanceof L.TileLayer) && !(layer instanceof L.Control)) {
-          layersToRemove.push(layer);
-        }
-      });
-      layersToRemove.forEach(layer => mapProjectWorkById.removeLayer(layer));
-      
-      // Afficher le GeoJSON
-      if (geojson && geojson.features && geojson.features.length > 0) {
-        L.geoJSON(geojson, {
-          style: function(feature) {
-            return {
-              color: '#0066cc',
-              fillColor: '#3399ff',
-              weight: 2,
-              fillOpacity: 0.5
-            };
-          },
-          pointToLayer: function(feature, latlng) {
-            return L.circleMarker(latlng, {
-              radius: 8,
-              fillColor: '#0066cc',
-              color: '#000',
-              weight: 2,
-              opacity: 1,
-              fillOpacity: 0.7
-            });
-          },
-          onEachFeature: function(feature, layer) {
-            let popupContent = '';
-            if (feature.properties) {
-              if (feature.properties.name) {
-                popupContent += '<b>' + feature.properties.name + '</b><br>';
-              }
-              Object.keys(feature.properties).forEach(key => {
-                if (key !== 'name') {
-                  popupContent += key + ': ' + feature.properties[key] + '<br>';
-                }
-              });
-            }
-            if (popupContent) {
-              layer.bindPopup(popupContent);
-            }
-          }
-        }).addTo(mapProjectWorkById);
-        
-        // Ajuster les limites
-        const allCoords = [];
-        geojson.features.forEach(feature => {
-          if (feature.geometry && feature.geometry.coordinates) {
-            if (feature.geometry.type === 'Point') {
-              allCoords.push([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]);
-            } else if (feature.geometry.type === 'Polygon') {
-              feature.geometry.coordinates[0].forEach(c => allCoords.push([c[1], c[0]]));
-            } else if (feature.geometry.type === 'MultiPolygon') {
-              feature.geometry.coordinates.forEach(polygon => {
-                polygon[0].forEach(c => allCoords.push([c[1], c[0]]));
-              });
-            } else if (feature.geometry.type === 'LineString') {
-              feature.geometry.coordinates.forEach(c => allCoords.push([c[1], c[0]]));
-            } else if (feature.geometry.type === 'MultiLineString') {
-              feature.geometry.coordinates.forEach(line => {
-                line.forEach(c => allCoords.push([c[1], c[0]]));
-              });
-            }
-          }
-        });
-        
-        if (allCoords.length > 0) {
-          const bounds = L.latLngBounds(allCoords);
-          if (bounds.isValid()) {
-            mapProjectWorkById.fitBounds(bounds, { padding: [50, 50] });
-          }
-        }
-      }
-      
-      // Mettre à jour le titre
-      const projectWorkName = geojson.features && geojson.features[0] && geojson.features[0].properties && geojson.features[0].properties.name 
-        ? geojson.features[0].properties.name 
-        : 'Projet #' + projectWorkId;
-      document.getElementById('projectWorkMapTitle').textContent = projectWorkName;
-    })
-    .catch(err => {
-      console.error('[Simulateur] Erreur chargement ProjectWorkById', err);
-      const mapDiv = document.getElementById('mapProjectWorkById');
-      mapDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #dc3545;"><i class="fas fa-exclamation-circle"></i> Erreur lors du chargement de la géométrie.</div>';
-    });
-}
-
-/**
- * Affiche le tableau des ProjectSimulatorWork
- */
-function displayProjectWorksTable(projectWorks) {
-  console.log('[Simulateur] Affichage du tableau de', projectWorks.length, 'ProjectSimulatorWork');
-  
-  const tableBody = document.getElementById('projectWorkTableBody');
-  const countBadge = document.getElementById('projectWorkCount');
-  
-  tableBody.innerHTML = '';
-  countBadge.textContent = projectWorks.length;
-  
-  projectWorks.forEach(work => {
-    const row = document.createElement('tr');
-    row.style.cursor = 'pointer';
-    row.onclick = function() {
-      loadProjectWorkById(work.id);
-    };
-    
-    // Déterminer la couleur du statut
-    let statusBadgeClass = 'bg-secondary';
-    let statusText = work.status || 'inconnu';
-    
-    if (work.status === 'completed') {
-      statusBadgeClass = 'bg-success';
-      statusText = 'Complété';
-    } else if (work.status === 'in_progress') {
-      statusBadgeClass = 'bg-warning text-dark';
-      statusText = 'En cours';
-    } else if (work.status === 'pending') {
-      statusBadgeClass = 'bg-info';
-      statusText = 'En attente';
-    }
-    
-    row.innerHTML = `
-      <td>${work.name || '(sans nom)'}</td>
-      <td>${work.type || '-'}</td>
-      <td class="text-center">
-        <span class="badge ${statusBadgeClass}">${statusText}</span>
-      </td>
-    `;
-    
-    tableBody.appendChild(row);
-  });
-}
 
 </script>
 
