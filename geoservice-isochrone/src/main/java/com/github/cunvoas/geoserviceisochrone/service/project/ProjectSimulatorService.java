@@ -197,8 +197,8 @@ public class ProjectSimulatorService {
 
 			// Nouvelle surface par habitant
 			BigDecimal newSurfacePerCapita = popAccessing.compareTo(BigDecimal.ZERO) > 0 ?
-					newSurfacePark.divide(popAccessing, 2, BigDecimal.ROUND_HALF_UP) : BigDecimal.ZERO;
-
+					newSurfacePark.divide(popAccessing) : BigDecimal.ZERO;
+			
 			// Surface manquante après le projet
 			Double densiteMissingAfter = Math.max(recoSquareMeterPerCapita - newSurfacePerCapita.doubleValue(), 0);
 			BigDecimal missingAfter = BigDecimal.valueOf(densiteMissingAfter * popAccessing.doubleValue());
