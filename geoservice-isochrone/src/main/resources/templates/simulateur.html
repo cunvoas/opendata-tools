@@ -11,8 +11,14 @@
         <h4 class="mt-3">Simulateur de Projet</h4>
         <p class="text-muted">Simulez un projet d'aménagement avec paramètres de population, surface et densité. La carte permet de visualiser et définir les zones du projet.</p>
 
+        <div class="d-flex justify-content-end mb-2" th:if="${formSimulateur != null && formSimulateur.id != null}">
+          <button type="button" class="btn btn-sm btn-outline-secondary print-button-fixed" onclick="window.print()">
+            <i class="fas fa-print"></i> Imprimer
+          </button>
+        </div>
+
         <!-- Sélecteurs de territoire -->
-        <div class="row input-group border border-dark rounded-3 mb-3">
+        <div class="row input-group border border-dark rounded-3 mb-3 territory-select">
           <h6 class="col-12 mt-2">Sélection du territoire</h6>
           <div class="col-3">
             <div class="card" style="text-align: center">
@@ -71,7 +77,7 @@
         </div>
 
         <!-- Liste des projets existants -->
-        <div class="row mb-3">
+        <div class="row mb-3 projects-existing">
           <div class="col-12">
             <div class="card">
               <div class="card-header">
@@ -220,7 +226,7 @@
 
 
             <!-- Colonne droite : carte -->
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-lg-6 map-block">
               <div class="card">
                 <div class="card-header">Localisation du projet</div>
                 <div class="card-body p-0">
@@ -312,7 +318,7 @@
           </div>
 
           <!-- Table des ProjectWork sur toute la largeur -->
-          <div class="row mt-3" th:if="${projectWorks != null && !projectWorks.isEmpty()}">
+          <div class="row mt-3 results-block" th:if="${projectWorks != null && !projectWorks.isEmpty()}">
             <div class="col-12">
               <div class="card">
                 <div class="card-header">
@@ -323,26 +329,50 @@
                     <table class="table table-hover table-sm mb-0" id="projectWorkTable">
                       <thead class="table-light sticky-top">
                         <tr>
-                          <th>Nom</th>
-                          <th class="text-end">Pop. locale</th>
-                          <th class="text-end">Pop. accès</th>
-                          <th class="text-end">Surf. accès</th>
-                          <th class="text-end">Surf. manquante</th>
-                          <th class="text-end">Surf./hab.</th>
-                          <th class="text-end">Nouvelle surf.</th>
-                          <th class="text-end">Nouv. surf./hab.</th>
+                          <th style="cursor: pointer;" onclick="sortProjectWorkTable('name')">
+                            Nom <i class="fas fa-sort" id="sortIcon-name"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('localPopulation')">
+                            Pop. locale <i class="fas fa-sort" id="sortIcon-localPopulation"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('accessingPopulation')">
+                            Pop. accès <i class="fas fa-sort" id="sortIcon-accessingPopulation"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('accessingSurface')">
+                            Surf. accès <i class="fas fa-sort" id="sortIcon-accessingSurface"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('missingSurface')">
+                            Surf. manquante <i class="fas fa-sort" id="sortIcon-missingSurface"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('surfacePerCapita')">
+                            Surf./hab. <i class="fas fa-sort" id="sortIcon-surfacePerCapita"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('newSurface')">
+                            Nouvelle surf. <i class="fas fa-sort" id="sortIcon-newSurface"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('newSurfacePerCapita')">
+                            Nouv. surf./hab. <i class="fas fa-sort" id="sortIcon-newSurfacePerCapita"></i>
+                          </th>
                         </tr>
                       </thead>
                       <tbody id="projectWorkTableBody">
-                        <tr th:each="work : ${projectWorks}" style="cursor: pointer;">
+                        <tr th:each="work : ${projectWorks}" style="cursor: pointer;"
+                            th:attr="data-name=${work.idInspire ?: '(sans nom)'},
+                                     data-local-population=${work.localPopulation ?: 0},
+                                     data-accessing-population=${work.accessingPopulation ?: 0},
+                                     data-accessing-surface=${work.accessingSurface ?: 0},
+                                     data-missing-surface=${work.missingSurface ?: 0},
+                                     data-surface-per-capita=${work.surfacePerCapita ?: 0},
+                                     data-new-surface=${work.newSurface ?: 0},
+                                     data-new-surface-per-capita=${work.newSurfacePerCapita ?: 0}">
                           <td th:text="${work.idInspire ?: '(sans nom)'}">Nom</td>
                           <td class="text-end" th:text="${work.localPopulation != null ? #numbers.formatDecimal(work.localPopulation, 0, 0) : '-'}">-</td>
                           <td class="text-end" th:text="${work.accessingPopulation != null ? #numbers.formatDecimal(work.accessingPopulation, 0, 0) : '-'}">-</td>
                           <td class="text-end" th:text="${work.accessingSurface != null ? (work.accessingSurface > 10000 ? #numbers.formatDecimal(work.accessingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.accessingSurface, 0, 0) + ' m²') : '-'}">-</td>
                           <td class="text-end" th:text="${work.missingSurface != null ? (work.missingSurface > 10000 ? #numbers.formatDecimal(work.missingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.missingSurface, 0, 0) + ' m²') : '-'}">-</td>
-                          <td class="text-end" th:text="${work.surfacePerCapita != null ? #numbers.formatDecimal(work.surfacePerCapita, 0, 2) + ' m²' : '-'}">-</td>
+                          <td class="text-end" th:text="${work.surfacePerCapita != null ? #numbers.formatDecimal(work.surfacePerCapita, 0, 2) + ' m²' : '-'}" th:classappend="${work.surfacePerCapita != null ? (work.surfacePerCapita < 10 ? 'below-oms-threshold' : 'above-oms-threshold') : ''}">-</td>
                           <td class="text-end" th:text="${work.newSurface != null ? (work.newSurface > 10000 ? #numbers.formatDecimal(work.newSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.newSurface, 0, 0) + ' m²') : '-'}">-</td>
-                          <td class="text-end" th:text="${work.newSurfacePerCapita != null ? #numbers.formatDecimal(work.newSurfacePerCapita, 0, 2) + ' m²' : '-'}">-</td>
+                          <td class="text-end" th:text="${work.newSurfacePerCapita != null ? #numbers.formatDecimal(work.newSurfacePerCapita, 0, 2) + ' m²' : '-'}" th:classappend="${work.newSurfacePerCapita != null ? (work.newSurfacePerCapita < 10 ? 'below-oms-threshold' : 'above-oms-threshold') : ''}">-</td>
                         </tr>
                       </tbody>
                     </table>
@@ -359,6 +389,134 @@
 <div th:insert="~{fragments/fragment-footer :: footer}"></div>
 <div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
 <script th:src="@{/mvc/static/js/scripts.js}"></script>
+
+<style>
+  .below-oms-threshold {
+    background-color: #ffcccc !important;
+  }
+  .above-oms-threshold {
+    background-color: #ccffcc !important;
+  }
+
+  .print-button-fixed {
+    position: fixed;
+    top: 70px;
+    right: 24px;
+    z-index: 1100;
+  }
+
+  @media print {
+    @page {
+      margin: 0;
+    }
+
+    /* Masquer navigation, boutons, pagination et formulaires de sélection */
+    .sb-nav-fixed nav,
+    #layoutSidenav > div:first-child,
+    #layoutSidenav #layoutSidenav_nav,
+    .sb-sidenav,
+    .card-header .btn,
+    #paginationContainer,
+    .pagination,
+    button,
+    .btn,
+    form#formSelectRegion,
+    form#formSelectComm2co,
+    form#formSelectCity,
+    #formCompute button {
+      display: none !important;
+    }
+
+    /* Masquer le bloc des projets existants de la commune */
+    .projects-existing {
+      display: none !important;
+    }
+
+    /* Masquer les sélecteurs Région / EPCI / Commune */
+    .territory-select {
+      display: none !important;
+    }
+
+    /* Saut de page avant la carte */
+    .map-block {
+      page-break-before: always;
+    }
+
+    /* Saut de page avant le tableau de résultats */
+    .results-block {
+      page-break-before: always;
+    }
+
+    /* Afficher toutes les lignes de tableaux (pas de pagination) */
+    #projectsTableBody .project-row,
+    #projectWorkTableBody tr {
+      display: table-row !important;
+    }
+
+    /* Désactiver le scroll pour imprimer tout le contenu */
+    .table-responsive {
+      overflow: visible !important;
+      max-height: none !important;
+    }
+
+    /* Carte imprimable avec taille fixe et sans contrôles Leaflet */
+    #mapSimulator {
+      height: 400px !important;
+    }
+    .leaflet-control-container,
+    .leaflet-top,
+    .leaflet-bottom {
+      display: none !important;
+    }
+
+    /* Masquer la ligne licence / conditions du footer */
+    footer {
+      display: none !important;
+    }
+
+    /* Supprimer les marges/gouttières pour éviter la bande blanche gauche */
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      padding-left: 10mm !important;
+      padding-right: 10mm !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      min-width: 100% !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      font-size: 12px;
+    }
+    #layoutSidenav {
+      display: block !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    #layoutSidenav_content {
+      margin-left: 0 !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      padding-top: 0 !important;
+      width: 100% !important;
+    }
+    main,
+    .container-fluid {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      margin: 0 !important;
+      width: 100% !important;
+    }
+    /* Forcer le body et les wrappers à ne pas réserver d'espace caché */
+    #layoutSidenav_content > main {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+    }
+
+    /* Conserver les couleurs d'arrière-plan à l'impression */
+  }
+</style>
 
 <script th:inline="javascript">
 
@@ -477,7 +635,8 @@ legend.onAdd = function () {
   labels.push(`<i style="background:#3aa637;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc inclus OMS`);
   labels.push(`<i style="background:#e96020;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc exclus OMS`);
   labels.push(`<i style="background:#DC20E9;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc futur ou détruit`);
-  labels.push(`<i style="background:#ff9933;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Carreaux (dense)`);
+  labels.push(`<i style="background:#66ff66;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Carreaux ≥ 10 m²/hab`);
+  labels.push(`<i style="background:#ff6666;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Carreaux < 10 m²/hab`);
   div.innerHTML = labels.join('<br>');
   return div;
 };
@@ -739,13 +898,27 @@ function loadProjectWork() {
       
       L.geoJSON(geojson, {
         style: function(feature) {
-          // Style différent selon si c'est une zone dense ou non
-          const isDense = true;//feature.properties && feature.properties.isDense;
+          // Couleur basée sur newSurfacePerCapita par rapport au seuil OMS (10 m²/hab)
+          let fillColor = '#cccccc'; // Gris par défaut si pas de valeur
+          let borderColor = '#666666';
+          
+          if (feature.properties && feature.properties.newSurfacePerCapita !== null && feature.properties.newSurfacePerCapita !== undefined) {
+            if (feature.properties.newSurfacePerCapita < 10) {
+              // Rouge si sous le seuil OMS
+              fillColor = '#ff6666';
+              borderColor = '#cc0000';
+            } else {
+              // Vert si au-dessus du seuil OMS
+              fillColor = '#66ff66';
+              borderColor = '#00cc00';
+            }
+          }
+          
           return {
-            color: isDense ? '#ff6600' : '#9966ff',
-            fillColor: isDense ? '#ff9933' : '#cc99ff',
+            color: borderColor,
+            fillColor: fillColor,
             weight: 2,
-            fillOpacity: 0.4
+            fillOpacity: 0.5
           };
         },
         onEachFeature: function(feature, layer) {
@@ -985,6 +1158,57 @@ function sortProjectsTable() {
 // Initialiser le tableau au chargement
 initProjectsTable();
 
+// ----------- TRI DU TABLEAU DE RÉSULTATS -----------
+let projectWorkSortColumn = null;
+let projectWorkSortAscending = true;
+
+function sortProjectWorkTable(column) {
+  const tbody = document.getElementById('projectWorkTableBody');
+  if (!tbody) return;
+  
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  if (rows.length === 0) return;
+  
+  // Si on clique sur la même colonne, inverser l'ordre
+  if (projectWorkSortColumn === column) {
+    projectWorkSortAscending = !projectWorkSortAscending;
+  } else {
+    projectWorkSortColumn = column;
+    projectWorkSortAscending = true;
+  }
+  
+  // Trier les lignes
+  rows.sort((a, b) => {
+    let valueA, valueB;
+    
+    if (column === 'name') {
+      valueA = (a.dataset.name || '').toLowerCase();
+      valueB = (b.dataset.name || '').toLowerCase();
+      return projectWorkSortAscending ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+    } else {
+      // Pour les colonnes numériques
+      const dataKey = column.replace(/([A-Z])/g, '-$1').toLowerCase();
+      valueA = parseFloat(a.dataset[column.replace(/([A-Z])/g, (m) => '-' + m.toLowerCase()).substring(column.startsWith('data-') ? 0 : 5)] || a.getAttribute('data-' + dataKey.replace('data-', '')) || 0);
+      valueB = parseFloat(b.dataset[column.replace(/([A-Z])/g, (m) => '-' + m.toLowerCase()).substring(column.startsWith('data-') ? 0 : 5)] || b.getAttribute('data-' + dataKey.replace('data-', '')) || 0);
+      return projectWorkSortAscending ? valueA - valueB : valueB - valueA;
+    }
+  });
+  
+  // Réorganiser les lignes dans le tbody
+  rows.forEach(row => tbody.appendChild(row));
+  
+  // Mettre à jour les icônes de tri
+  document.querySelectorAll('[id^="sortIcon-"]').forEach(icon => {
+    icon.className = 'fas fa-sort';
+  });
+  
+  const sortIcon = document.getElementById('sortIcon-' + column);
+  if (sortIcon) {
+    sortIcon.className = projectWorkSortAscending ? 'fas fa-sort-up' : 'fas fa-sort-down';
+  }
+  
+  console.log('[Simulateur] Tableau trié par', column, projectWorkSortAscending ? 'ASC' : 'DESC');
+}
 
 
 </script>

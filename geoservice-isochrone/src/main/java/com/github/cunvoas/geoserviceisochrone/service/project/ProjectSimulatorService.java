@@ -1,6 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.service.project;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -197,7 +198,7 @@ public class ProjectSimulatorService {
 
 			// Nouvelle surface par habitant
 			BigDecimal newSurfacePerCapita = popAccessing.compareTo(BigDecimal.ZERO) > 0 ?
-					newSurfacePark.divide(popAccessing) : BigDecimal.ZERO;
+					newSurfacePark.divide(popAccessing, RoundingMode.HALF_UP) : BigDecimal.ZERO;
 			
 			// Surface manquante après le projet
 			Double densiteMissingAfter = Math.max(recoSquareMeterPerCapita - newSurfacePerCapita.doubleValue(), 0);
