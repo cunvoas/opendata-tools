@@ -136,8 +136,26 @@
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
 			<version>1.83</version>
-		</dependency>
-		<!-- basics DTOs & Fast calls to get external data -->
+		</dependency>	
+	<!-- JWT Authentication -->
+	<dependency>
+		<groupId>io.jsonwebtoken</groupId>
+		<artifactId>jjwt-api</artifactId>
+		<version>0.12.6</version>
+	</dependency>
+	<dependency>
+		<groupId>io.jsonwebtoken</groupId>
+		<artifactId>jjwt-impl</artifactId>
+		<version>0.12.6</version>
+		<scope>runtime</scope>
+	</dependency>
+	<dependency>
+		<groupId>io.jsonwebtoken</groupId>
+		<artifactId>jjwt-jackson</artifactId>
+		<version>0.12.6</version>
+		<scope>runtime</scope>
+	</dependency>
+			<!-- basics DTOs & Fast calls to get external data -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
