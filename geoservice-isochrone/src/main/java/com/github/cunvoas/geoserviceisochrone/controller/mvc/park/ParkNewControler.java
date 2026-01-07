@@ -306,46 +306,7 @@ public class ParkNewControler {
 		
 		return getForm(form, model, pj);
 	}
-	
-//	protected void addPark( FormParkNew form, Model model) {
-//		//TODO
-//		
-//		 if("pref".equals(form.getEtat())) {
-//			 
-//			 
-//		 } else if ("p&j".equals(form.getEtat())) {
-//			 
-//		 }
-//		
-//	}
-//	
-//	protected void updPark( FormParkNew form, Model model) {
-//		//TODO
-//		
-//	}
-//	
-//	protected void delPark( FormParkNew form, Model model) {
-//		//TODO
-//		
-//		 if("pref".equals(form.getEtat())) {
-//			 Optional<ParcPrefecture> opt = serviceReadReferences.getParcPrefectureById( form.getId());
-//			 if (opt.isPresent()) {
-//				 ParcPrefecture pp = opt.get();
-//				 // logical delete
-//				 pp.setStatus(ParcStatusPrefEnum.CANCEL);
-//				 serviceParcPrefecture.update(pp);
-//			 }
-//			 form.setId(null);
-//			 form.setEtat(null);
-//			 form.setEtatAction(null);
-//			 
-//			 
-//		 } else if ("p&j".equals(form.getEtat())) {
-//			 
-//		 }
-//		
-//	}
-	
+		
 	
 	
 	/**

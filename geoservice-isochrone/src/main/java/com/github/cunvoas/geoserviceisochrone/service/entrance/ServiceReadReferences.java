@@ -143,6 +143,16 @@ public class ServiceReadReferences {
 		return null;
 	}
 	
+
+	/**
+	 * Retourne une entité CommunauteCommune à partir de l'identifiant.
+	 * @param id
+	 * @return
+	 */
+	public List<CommunauteCommune> getCommunauteCommuneByRegionId(Long id) {
+		return communauteCommuneRepository.findByRegionId(id);
+	}
+	
 	
 	/**
 	 * Retourne la liste des communautés de communes triées par nom.
