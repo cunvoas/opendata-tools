@@ -168,7 +168,7 @@ export function hasGeographicalParams() {
  * // Returns: "http://example.com/?city=9,1,2878,50.6349747,3.046428,Lille,city"
  */
 export function buildShareableUrl(locationData) {
-  if (!locationData) return null;
+  if (!locationData) return defaultLoc;
   
   const city = {
     regionId: locationData.regionId || null,
@@ -209,3 +209,15 @@ export function removeGeographicalParams() {
   
   return queryString ? `${baseUrl}?${queryString}` : baseUrl;
 }
+
+const defaultLoc = {
+      "locType": "city",
+      "regionId": "9",
+      "com2coId": "1",
+      "com2coName": "Haut-de-France",
+      "cityId": "2878",
+      "cityName": "LILLE",
+      "cityInsee": "59350",
+      "lonX": "3.046986424",
+      "latY": "50.631855028"
+  };
