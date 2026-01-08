@@ -1,5 +1,4 @@
 //import Vue from 'vue'
-/* eslint-disable no-undef */
 import { createApp } from 'vue'
 import VueMatomo from 'vue-matomo'
 import HeaderAsso from './components/HeaderAsso.vue'
@@ -67,7 +66,7 @@ app.use(VueMatomo, {
 app.use(router);
 app.mount('#app');
 
-router.afterEach((to) => {
+router.afterEach((to, from) => {
   // Log the page view to Matomo
   window._paq.push(['setCustomUrl', to.fullPath]);
   window._paq.push(['trackPageView']);
