@@ -296,7 +296,7 @@ function getColorLegend(legendeDense, colorblindMode = false) {
     let grades = [];
 
     if (legendeDense) {
-      labels.push(`&nbsp; accessibles à 330 m maxi`);
+      labels.push(`&nbsp; accessibles à 300 m maxi`);
       labels.push(`&nbsp;<b>Zone dense</b>`);
       grades =  gradesDense;
     } else {
