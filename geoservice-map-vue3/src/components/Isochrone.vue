@@ -85,6 +85,7 @@
         v-model:visible="showParcs"
         layer-type="overlay"
         name="Parcs"
+        ref="parcsLayer"
         :geojson="geojsonParcs"
         :options="detailParcs"
         :options-style="styleParcFunction"
@@ -101,7 +102,7 @@
         v-model:visible="showCarre"
         layer-type="overlay"
         name="Données carroyées"
-        :key="'carre-' + refreshKey"
+        ref="carreLayer"
         :geojson="geojsonCarre"
         :options="detailCarre"
         :options-style="styleCarreFunction"
@@ -525,12 +526,55 @@ export default {
       
       // Mettre à jour la légende avec le nouveau mode de couleur
       this.htmlLegend = getColorLegend(this.legendeDense, this.colorblindMode);
-      
-      // Incrémenter refreshKey pour forcer le re-render
-      this.refreshKey++;
-      
+      // Mettre à jour les styles des calques sans recréer les couches
+      this.updateLayerStylesForColorMode();
+
       // Émettre l'événement pour informer le composant parent du changement de mode
       this.$emit('colorblind-mode-changed', this.colorblindMode);
+    },
+    computeParcStyle(feature) {
+      const fillColor = getParkColor(
+        feature?.properties?.oms,
+        feature?.properties?.actif,
+        this.colorblindMode
+      );
+      return {
+        weight: 1,
+        color: fillColor,
+        fillColor: fillColor,
+        opacity: 0.6,
+        fillOpacity: 0.5,
+      };
+    },
+    computeCarreStyle(feature) {
+      return {
+        weight: 1,
+        color: "#24216a",
+        opacity: 0.20,
+        fillColor: getSquareColor(
+          feature?.properties?.isDense,
+          feature?.properties?.squareMtePerCapitaOms,
+          this.colorblindMode
+        ),
+        fillOpacity: 0.4,
+      };
+    },
+    updateLayerStylesForColorMode() {
+      try {
+        // Parcs: réappliquer le style selon le mode
+        const parcsLayer = this.$refs.parcsLayer?.leafletObject;
+        if (parcsLayer && typeof parcsLayer.setStyle === 'function') {
+          parcsLayer.setStyle((feature) => this.computeParcStyle(feature));
+        }
+
+        // Carroyage: réappliquer le style selon le mode
+        const carreLayer = this.$refs.carreLayer?.leafletObject;
+        if (carreLayer && typeof carreLayer.setStyle === 'function') {
+          carreLayer.setStyle((feature) => this.computeCarreStyle(feature));
+        }
+      } catch (e) {
+        console.warn('updateLayerStylesForColorMode error', e);
+      }
     },
     getRootUrl() {
       const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
@@ -929,32 +973,10 @@ export default {
       };
     },
     styleParcFunction() {
-      const colorblindMode = this.colorblindMode;
-      return (feature) => {
-        let fillColor = getParkColor(
-          feature?.properties?.oms,
-          feature?.properties?.actif,
-          colorblindMode
-        );
-        return {
-          weight: 1,
-          color: fillColor,
-          fillColor: fillColor,
-          opacity: 0.6,
-          fillOpacity: 0.5,
-        };
-      };
+      return (feature) => this.computeParcStyle(feature);
     },
     styleCarreFunction() {
-      return () => {
-        return {
-          weight: 1,
-          color: "#24216a",
-          opacity: 0.20,
-          fillColor: "#060512",
-          fillOpacity: 0.15,
-        };
-      };
+      return (feature) => this.computeCarreStyle(feature);
     },
     styleCadastreFunction() {
       return () => {
