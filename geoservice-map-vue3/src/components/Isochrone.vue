@@ -46,6 +46,19 @@
       />
 
       <l-control-layers position="topright" />
+      <l-control position="topleft">
+        <div class="leaflet-control leaflet-bar">
+          <a 
+            href="#" 
+            class="leaflet-control-fullscreen-button leaflet-bar-part" 
+            title="Afficher en plein écran"
+            @click.prevent="toggleFullscreen"
+            style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 20px;"
+          >
+            🖥️
+          </a>
+        </div>
+      </l-control>
       <l-control position="bottomright">
         <div id="dataDetail" class="dataDetail">
           <h4>&nbsp;Détail des données&nbsp;</h4>
@@ -121,6 +134,24 @@
   font-style: italic bold;
   color: #000000;
 }
+
+.leaflet-control-fullscreen-button {
+  background-color: white;
+  border: 2px solid #ccc;
+  color: #333;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.leaflet-control-fullscreen-button:hover {
+  background-color: #f4f4f4;
+}
+
+.leaflet-control-fullscreen-button:active {
+  background-color: #e8e8e8;
+}
 </style>
 <script>
 import {
@@ -136,6 +167,8 @@ import {
 } from "@vue-leaflet/vue-leaflet";
 import L, { latLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
+import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { buildShareableUrl } from '../utils/urlParams.js';
@@ -444,6 +477,33 @@ export default {
     }
   },
   methods: {
+    toggleFullscreen() {
+      const mapElement = this.$refs.leafletMap.$el;
+      
+      if (!document.fullscreenElement) {
+        // Entrée en plein écran
+        if (mapElement.requestFullscreen) {
+          mapElement.requestFullscreen();
+        } else if (mapElement.webkitRequestFullscreen) {
+          mapElement.webkitRequestFullscreen();
+        } else if (mapElement.mozRequestFullScreen) {
+          mapElement.mozRequestFullScreen();
+        } else if (mapElement.msRequestFullscreen) {
+          mapElement.msRequestFullscreen();
+        }
+      } else {
+        // Sortie du plein écran
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+    },
     onColorModeChange() {
       // Sauvegarder le mode dans le localStorage
       localStorage.setItem('colorblindMode', this.colorblindMode.toString());
