@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.controller.mobile.auth;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,6 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/mobile/location")
 @PreAuthorize("isAuthenticated()")
 @Slf4j
+@ConditionalOnProperty(
+		name="application.feature-flipping.mobile-api", 
+		havingValue="true")
 public class LocationForMobile {
 
 	@Autowired

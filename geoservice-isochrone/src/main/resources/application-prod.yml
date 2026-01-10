@@ -49,6 +49,7 @@ application:
     token: ${GIT_TOKEN}
     defaultBranch: main
   feature-flipping:
+    mobile-api: false
     parkAnalysisEnabled: true
     salaryAnalysisEnabled: false
     pollutionAnalysisEnabled: false
