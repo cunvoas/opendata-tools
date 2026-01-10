@@ -1,0 +1,65 @@
+#
+# Aut'MEL
+# API for GeoJSon
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+#version: '2'
+
+
+services:
+  autmel_isochrone:
+    container_name: isochrone
+    restart: unless-stopped
+    env_file: .env
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "8980:8980"
+#    links:
+#      - pg_autmel
+#    depends_on:
+#      - pg_autmel
+    volumes:
+      - ${VOLUMES_PATH}/log/jvm:/var/log/jvm
+      - ${VOLUMES_PATH}/mail:/var/isochrone/mail
+      - ${VOLUMES_PATH}/photo:/var/isochrone/photo
+      - ${VOLUMES_PATH}/photo_origin:/var/isochrone/photo_origin
+      - ${VOLUMES_PATH}/data:/var/isochrone/data
+
+    networks:
+      - autmel-vlan
+      - zipkin_default
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      test: "curl --fail -I 'http://localhost:8980/isochrone/awake' -H 'User-Agent: Docker Health Tester' || exit 1"
+
+    deploy:
+      resources:
+        limits:
+          cpus: '3'
+          memory: 3G
+        reservations:
+          memory: 2G
+    memswap_limit: 1G
+
+
+networks:
+  autmel-vlan:
+    external: true
+  zipkin_default:
+    external: true

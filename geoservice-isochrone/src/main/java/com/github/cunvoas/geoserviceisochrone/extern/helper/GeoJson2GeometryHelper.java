@@ -48,6 +48,11 @@ public class GeoJson2GeometryHelper {
 		//JSonNode of geometry
 		JsonNode geometryNode = rootNode.findValue("geometry");
 		
+		// Vérifier que le nœud geometry existe et n'est pas null
+		if (geometryNode == null || geometryNode instanceof MissingNode) {
+			throw new JsonProcessingException("Aucune géométrie trouvée dans le GeoJSON fourni") {};
+		}
+		
 		GenericGeometryParser parser = new GenericGeometryParser(factory);
 		ret = parser.geometryFromJson(geometryNode);
 		
@@ -76,8 +81,11 @@ public class GeoJson2GeometryHelper {
 			Polygon[] polys = new Polygon [geometryNodes.size()];
 			
 			for (JsonNode geometryNode : geometryNodes) {
-				Polygon poly = (Polygon)parser.geometryFromJson(geometryNode);
-				polys[i]=poly;
+				// Vérifier que geometryNode n'est pas null
+				if (geometryNode != null && !(geometryNode instanceof MissingNode)) {
+					Polygon poly = (Polygon)parser.geometryFromJson(geometryNode);
+					polys[i]=poly;
+				}
 				i++;
 			}
 			
@@ -110,6 +118,11 @@ public class GeoJson2GeometryHelper {
 
 		//JSonNode of geometry
 		JsonNode geometryNode = rootNode.findValue("geometry");
+		
+		// Vérifier que le nœud geometry existe et n'est pas null
+		if (geometryNode == null || geometryNode instanceof MissingNode) {
+			throw new JsonProcessingException("Aucune géométrie trouvée dans le GeoJSON fourni") {};
+		}
 		
 		GenericGeometryParser parser = new GenericGeometryParser(factory);
 		Geometry geo = parser.geometryFromJson(geometryNode);

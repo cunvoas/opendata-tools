@@ -4,7 +4,7 @@
         
         <div class="border-2 border-transparent mt-4">
             <div class="text-center relative z-10">
-                <Isochrone msg="Cartographie des parcs" :location="location" @colorblind-mode-changed="updateColorblindMode" />
+                <Isochrone msg="Cartographie des parcs" :location="location" @colorblind-mode-changed="updateColorblindMode" @parcs-visibility-changed="updateParcsLegend" />
             </div>
         </div>
     </div>
@@ -32,6 +32,19 @@
                     <tr>
                         <td colspan="4">✖ : non comptabilisé comme un parc</td>
                     </tr>
+
+                    <tr id="legend-parks-1" v-show="showParcsLegend">
+                        <td class="pr-2">Parcs comptabilisé :</td>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getParcComptabiliseColor}`" /></td>
+                   </tr>
+                    <tr id="legend-parks-2" v-show="showParcsLegend">
+                        <td class="pr-2" >Parcs non comptabilisé :</td>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getParcNonComptabiliseColor}`" /></td>
+                    </tr>
+                    <tr id="legend-parks-3" v-show="showParcsLegend">
+                        <td class="pr-2" >Parcs futur ou détruit :</td>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getParcFuturOuDetruitColor}`" /></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -51,7 +64,8 @@ export default {
     data() {
         return {
             location: null,
-            colorblindMode: false
+            colorblindMode: false,
+            showParcsLegend: false
         };
     },
     computed: {
@@ -69,6 +83,15 @@ export default {
         },
         getHighColor2() {
             return this.colorblindMode ? '#4575b4' : '#578817';
+        },
+        getParcComptabiliseColor() {
+            return this.colorblindMode ? '#2CA02C' : '#3aa637';
+        },
+        getParcNonComptabiliseColor() {
+            return this.colorblindMode ? '#FF7F0E' : '#e96020';
+        },
+        getParcFuturOuDetruitColor() {
+            return this.colorblindMode ? '#9467BD' : '#DC20E9';
         }
     },
     methods: {
@@ -79,6 +102,9 @@ export default {
         },
         updateColorblindMode(isColorblindMode) {
             this.colorblindMode = isColorblindMode;
+        },
+        updateParcsLegend(isShowParcs) {
+            this.showParcsLegend = isShowParcs;
         }
     }
 };

@@ -69,7 +69,7 @@ public class StatsSurfaceService {
 	private static String[] colors= {"#0000e8","#6060e8","#b0b0e8","#578817","#57ee17"};
 
 	private static String[] txtSeuilOMS= {
-			"Non respect des minimas OMS",
+			"Non respect des minima OMS",
 			"Minimim conseillé par l'OMS",
 			"Préconisé par l'OMS" };
 	
@@ -308,6 +308,7 @@ public class StatsSurfaceService {
 			Seuil seuil = new Seuil();
 			json.getSeuils().add(seuil);
 			seuil.setSurface(txtSeuilOMS[index]);
+			seuil.setSeuilId(index);
 			seuil.setBarColor(colors[index+2]);
 			seuil.setHabitants(stat.getHabitants());
 			seuil.setRatio(String.valueOf(100*stat.getHabitants().intValue()/populationTotale)+"");

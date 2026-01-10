@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
+import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 
 @SpringBootTest
 @ActiveProfiles({"prod","dev"})
@@ -31,7 +32,8 @@ class TestGeoMapService {
 	
 	@Autowired
 	GeoMapServiceV2 tested=new GeoMapServiceV2();
-
+	@Autowired
+	private GeometryQueryHelper geometryQueryHelper;
 	
 	private ObjectMapper mapper = new ObjectMapper();
 	
@@ -85,7 +87,7 @@ class TestGeoMapService {
 	}
 	
 	@Test
-	void testGetPolygonFromBounds() {
+	void testGetPolygsonFromBounds() {
 		
 
 		Double x1=  3.125267028808594d;
@@ -97,7 +99,8 @@ class TestGeoMapService {
 		String sBound="{ \"_southWest\": { \"lat\": 50.60677419392376, \"lng\": 3.0161762237548833 }, \"_northEast\": { \"lat\": 50.6503312283444, \"lng\": 3.173933029174805 } }}";
 
 		try {
-			assertInstanceOf(Polygon.class, tested.getPolygonFromBounds(sBound));
+			assertInstanceOf(Polygon.class, geometryQueryHelper.getPolygonFromBounds(x1,x2,y1,y2)
+					));
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}	

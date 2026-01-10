@@ -3,16 +3,18 @@ package com.github.cunvoas.geoserviceisochrone.service.map;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -20,9 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.CadastreView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.Carre200AndShapeView;
@@ -30,9 +29,10 @@ import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.IrisView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.IsochroneView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkGardenView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkPrefView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkProposalView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkView;
-import com.github.cunvoas.geoserviceisochrone.extern.helper.DistanceHelper;
-import com.github.cunvoas.geoserviceisochrone.extern.leaflet.Bound;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ProjetSimulView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ProjetSimulWorkView;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
@@ -53,12 +53,18 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.IrisDataComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWorkRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
@@ -130,6 +136,16 @@ public class GeoMapServiceV2 {
     private IrisDataRepository irisDataRepository;
     @Autowired
     private IrisDataComputedRepository irisDataComputedRepository;
+
+
+    @Autowired
+    private ParkProposalRepository parkProposalRepository;
+    
+
+    @Autowired
+    private ProjectSimulatorRepository projectSimulatorRepository;
+	@Autowired
+	private ProjectSimulatorlWorkRepository projectSimulatorlWorkRepository;
     
     @Autowired
     private ParkAreaRepository parkAreaRepository;
@@ -272,6 +288,22 @@ public class GeoMapServiceV2 {
     	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllParkByArea(polygon, annee);
     }
+
+	  
+    /**
+     * findParkProposalByArea.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+     * @return  ParkProposal geojson
+     */
+    
+	public GeoJsonRoot findParkProposalByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	return this.findParkProposalByArea(polygon, annee);
+    }
+	
 	
 	/**
 	 * findAllParkOutlineByArea.
@@ -297,6 +329,19 @@ public class GeoMapServiceV2 {
 	public GeoJsonRoot findAllParkOutlineByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
     	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findAllParkOutlineByArea(polygon);
+    }
+	
+	/**
+     * getProjectByArea.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+	 * @return Outline geojson
+	 */
+	public GeoJsonRoot findProjetSimulationByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	return this.findProjetSimulationByArea(polygon);
     }
 
     
@@ -426,7 +471,11 @@ public class GeoMapServiceV2 {
 
 					GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
-					feature.setGeometry(park.getContour());
+					if (park.getContour()!=null) {
+						feature.setGeometry(park.getContour());
+					} else if (park.getCoordonnee()!=null) {
+						feature.setGeometry(park.getCoordonnee());
+					}
 					
 					ParkGardenView pv = new ParkGardenView();
 					feature.setProperties(pv);
@@ -445,6 +494,7 @@ public class GeoMapServiceV2 {
 					} else {
 						pv.setOms(park.getOmsCustom());
 					}
+					pv.setActif(getActif(park));
 					
 					
     			}
@@ -480,12 +530,17 @@ public class GeoMapServiceV2 {
 					pv.setId(String.valueOf(park.getId()));
 					pv.setName(park.getName());
 					
-					if (park.getOmsCustom()!=null) {
+
+					pv.setSurface(park.getSurface());
+					if (park.getOmsCustom()==null) {
+						if (park.getTypeId()!=null){
+							ParkType pt = parkTypeService.get(park.getTypeId());
+							pv.setOms(pt.getOms());
+						}
+					} else {
 						pv.setOms(park.getOmsCustom());
-					} else if (park.getTypeId()!=null){
-						ParkType pt = parkTypeService.get(park.getTypeId());
-						pv.setOms(pt.getOms());
 					}
+					pv.setActif(getActif(park));
 					
 					ParkArea pa =parkAreaRepository.findByIdParcEtJardin(park.getId());
 					pv.setEntry(pa!=null && pa.getPolygon()!=null);
@@ -498,6 +553,18 @@ public class GeoMapServiceV2 {
 		return root;
 	}
 	
+	public boolean getActif(ParcEtJardin park) {
+		boolean ret = true;
+		Date now = new Date();
+		if (park.getDateDebut()!=null && now.before(park.getDateDebut())) {
+			ret = false;
+		}
+		if (park.getDateFin()!=null && now.after(park.getDateFin())) {
+			ret = false;
+		}
+		return ret;
+	}
+	
 	/**
 	 * findAllParkByArea.
 	 * @param polygon Polygon
@@ -506,7 +573,6 @@ public class GeoMapServiceV2 {
 	public GeoJsonRoot findAllParkByArea(Polygon polygon, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		
-
     	if (polygon!=null) {
 			List<ParkArea> parkAreas =  parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(polygon));
 			if (!CollectionUtils.isEmpty(parkAreas)) {
@@ -535,7 +601,119 @@ public class GeoMapServiceV2 {
 	}
 	
 	
+
+	/**
+	 * findParkProposalByArea.
+	 * @param polygon Polygon
+	 * @return   park proposal geojson
+	 */
+	public GeoJsonRoot findParkProposalByArea(Polygon polygon, Integer annee) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
+    	if (polygon!=null) {
+			List<ParkProposal> proposals =  parkProposalRepository.findParkProposalInMapArea(annee, GeometryQueryHelper.toText(polygon));
+			if (!CollectionUtils.isEmpty(proposals)) {
+				for (ParkProposal proposal : proposals) {
+					GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					feature.setGeometry(proposal.getCentre());
+					
+					
+					ParkProposalView pv = new ParkProposalView();
+					
+					pv.setId(String.valueOf(proposal.getIdInspire()));
+					pv.setDense(proposal.getIsDense());
+					pv.setRadius(proposal.getRadius());
+					pv.setSurface(Math.round(proposal.getParkSurface().longValue()));
+					
+					feature.setProperties(pv);
+					
+				}
+			}
+    	}
+		return root;
+	}
 	
+
+	/**
+	 * findProjetSimulationByArea.
+	 * @param polygon Polygon
+	 * @return   park proposal geojson
+	 */
+	public GeoJsonRoot findProjetSimulationByArea(Polygon polygon) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
+    	if (polygon!=null) {
+			List<ProjectSimulator> simuls =  projectSimulatorRepository.findInMapArea( GeometryQueryHelper.toText(polygon));
+			if (!CollectionUtils.isEmpty(simuls)) {
+				for (ProjectSimulator proposal : simuls) {
+					GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					feature.setGeometry(proposal.getShapeArea());
+					
+					ProjetSimulView pv = new ProjetSimulView();
+					
+					pv.setId(String.valueOf(proposal.getId()));
+					pv.setDense(proposal.getIsDense());
+					pv.setName(proposal.getName());
+					if (proposal.getSurfaceArea()!=null) {
+						pv.setSurfaceArea(Math.round(proposal.getSurfaceArea().longValue()));
+					}
+					if (proposal.getSurfaceFloor()!=null) {
+						pv.setSurfaceFloor(Math.round(proposal.getSurfaceFloor().longValue()));
+					}
+					if (proposal.getSurfacePark()!=null) {
+						pv.setSurfacePark(Math.round(proposal.getSurfacePark().longValue()));
+					}
+					if (proposal.getPopulation()!=null) {
+						pv.setPopulation(Math.round(proposal.getPopulation().longValue()));
+					}
+					feature.setProperties(pv);
+					
+				}
+			}
+    	}
+		return root;
+	}
+	
+
+	/**
+	 * findProjetSimulationWorkByArea.
+	 * @param polygon Polygon
+	 * @return   park proposal geojson
+	 */
+	public GeoJsonRoot findProjetSimulationWorkById(Long idSimulation) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		
+    	if (idSimulation!=null) {
+    		List<ProjectSimulatorWork> simuls =  projectSimulatorlWorkRepository.findByIdProjectSimulator(idSimulation);
+			if (!CollectionUtils.isEmpty(simuls)) {
+				for (ProjectSimulatorWork simul : simuls) {
+					GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					feature.setGeometry(simul.getGeoShape());
+					
+					ProjetSimulWorkView pv = new ProjetSimulWorkView();
+					feature.setProperties(pv);
+					
+					pv.setIdInspire(String.valueOf(simul.getIdInspire()));
+					
+					pv.setAccessingPopulation(formatDec(simul.getAccessingPopulation()));
+					pv.setLocalPopulation(formatDec(simul.getLocalPopulation()));
+					
+					pv.setAccessingSurface(formatDec(simul.getAccessingSurface()));
+					pv.setMissingSurface(formatDec(simul.getMissingSurface()));
+					pv.setSurfacePerCapita(formatDec(simul.getSurfacePerCapita()));
+					
+					pv.setNewSurface(formatDec(simul.getNewSurface()));
+					pv.setNewMissingSurface(formatDec(simul.getNewMissingSurface()));
+					pv.setNewSurfacePerCapita(formatDec(simul.getNewSurfacePerCapita()));
+					
+				}
+			}
+    	}
+    	return root;
+    }
 	
 	/**
 	 * findParcEtJardinByArea.
@@ -551,22 +729,31 @@ public class GeoMapServiceV2 {
     		List<ParcEtJardin> parkPrefs =  parkJardinRepository.findByArea(polygon);
 			
     		if (!CollectionUtils.isEmpty(parkPrefs)) {
-				for (ParcEtJardin parcJardin : parkPrefs) {
+				for (ParcEtJardin park : parkPrefs) {
 					
 					GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
-					feature.setGeometry(parcJardin.getCoordonnee());
+					if (park.getContour()!=null) {
+						feature.setGeometry(park.getContour());
+					} else if (park.getCoordonnee()!=null) {
+						feature.setGeometry(park.getCoordonnee());
+					}
 					
 					ParkGardenView pv = new ParkGardenView();
-					pv.setId(String.valueOf(parcJardin.getId()));
-					pv.setName(parcJardin.getName());
-					pv.setSurface(parcJardin.getSurface());
+					pv.setId(String.valueOf(park.getId()));
+					pv.setName(park.getName());
+
+					pv.setSurface(park.getSurface());
 					
-					if (parcJardin.getSource()!=null) {
-						pv.setSource(parcJardin.getSource().toString());
+					if (park.getOmsCustom()==null) {
+						if (park.getTypeId()!=null){
+							ParkType pt = parkTypeService.get(park.getTypeId());
+							pv.setOms(pt.getOms());
+						}
 					} else {
-						pv.setSource(ParcSourceEnum.OPENDATA.toString());
+						pv.setOms(park.getOmsCustom());
 					}
+					pv.setActif(getActif(park));
 					
 					feature.setProperties(pv);
 				}
@@ -754,9 +941,6 @@ public class GeoMapServiceV2 {
 			
 			Boolean allInhabitant = pacEd.getPopAll()!=null?pacEd.getPopAll().equals(pacEd.getPopIncludedOms()):Boolean.FALSE;
 			
-			if ("LAEA200M_N15407E19138".equals(pacEd.getIdCarre200())) {
-				int debug=0;
-			}
 			if (sph>thresholdReco && allInhabitant) {
 				color = THRESHOLD_PERFECT;
 			} else if (sph>thresholdReco && !allInhabitant) {
@@ -800,7 +984,7 @@ public class GeoMapServiceV2 {
 	/**
 	 * format a decimal pattern.
 	 */
-	private static final NumberFormat DF_S = new DecimalFormat("#0.00");
+	private static final NumberFormat DF_S = new DecimalFormat("#0.00", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 	
 	/**
 	 * format an integer .
