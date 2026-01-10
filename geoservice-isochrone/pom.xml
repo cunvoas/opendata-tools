@@ -23,7 +23,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		
 		<postgresql.version>42.7.8</postgresql.version>
-		<hibernate.version>6.6.38.Final</hibernate.version>
+		<hibernate.version>6.6.39.Final</hibernate.version>
     </properties>
 	
 
@@ -322,7 +322,7 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
-            <version>2.2.21</version>
+            <version>2.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
