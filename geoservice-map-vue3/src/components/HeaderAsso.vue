@@ -2,7 +2,7 @@
     <div class="container mx-auto px-4 py-6">
         <!-- Header Title -->
         <div class="text-center mb-6">
-            <h3 class="text-2xl font-bold text-gray-800" @dblclick="generateShareLink" style="cursor: pointer;">Parcs accessibles en m² par habitant</h3>
+            <h3 class="text-2xl font-bold text-gray-800" @dblclick="generateShareLink" style="cursor: pointer;" :title="'Version: ' + appVersion">Parcs accessibles en m² par habitant</h3>
         </div>
         
         <!-- Logos Row -->
@@ -93,6 +93,18 @@ import { buildShareableUrl } from '../utils/urlParams.js';
 
 export default {
   name: 'HeaderAsso',
+  data() {
+    return {
+      appVersion: '1.0.25'
+    };
+  },
+  mounted() {
+    // Fetch the version from localStorage or the version.json file
+    const storedVersion = localStorage.getItem('app-version');
+    if (storedVersion) {
+      this.appVersion = storedVersion;
+    }
+  },
   methods: {
     generateShareLink() {
       // Get location data from localStorage
