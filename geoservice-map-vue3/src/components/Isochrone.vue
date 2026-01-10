@@ -81,27 +81,35 @@
 
 
 
-    <l-geo-json
-        v-if="showCarre"
+      <l-geo-json
+        v-model:visible="showParcs"
+        layer-type="overlay"
+        name="Parcs"
+        :geojson="geojsonParcs"
+        :options="detailParcs"
+        :options-style="styleParcFunction"
+      />
+      <l-geo-json
+        v-model:visible="showIsochrones"
+        layer-type="overlay"
+        name="Isochrones"
+        :geojson="geojsonIsochrone"
+        :options="detailIsochrone"
+        :options-style="styleIsochroneFunction"
+      />
+      <l-geo-json
+        v-model:visible="showCarre"
+        layer-type="overlay"
+        name="Données carroyées"
         :key="'carre-' + refreshKey"
         :geojson="geojsonCarre"
         :options="detailCarre"
         :options-style="styleCarreFunction"
       />
       <l-geo-json
-        v-if="showIsochrones"
-        :geojson="geojsonIsochrone"
-        :options="detailIsochrone"
-        :options-style="styleIsochroneFunction"
-      />
-      <l-geo-json
-        v-if="showParcs"
-        :geojson="geojsonParcs"
-        :options="detailParcs"
-        :options-style="styleParcFunction"
-      />
-      <l-geo-json
-        v-if="showCadastre"
+        v-model:visible="showCadastre"
+        layer-type="overlay"
+        name="Cadastre"
         :geojson="geojsonCadastre"
         :options="detailCadastre"
         :options-style="styleCadastreFunction"
@@ -151,6 +159,13 @@
 
 .leaflet-control-fullscreen-button:active {
   background-color: #e8e8e8;
+}
+
+/* Align layer names to the left inside the layer selector */
+.leaflet-control-layers,
+.leaflet-control-layers-list,
+.leaflet-control-layers label {
+  text-align: left;
 }
 </style>
 <script>
@@ -944,11 +959,11 @@ export default {
     styleCadastreFunction() {
       return () => {
         return {
-          weight: 2,
-          color: "#AB7800",
+          weight: 3,
+          color: "#9B6800",
           opacity: 0.95,
           fillColor: "#FFFFBB",
-          fillOpacity: 0.2,
+          fillOpacity: 0.07,
         };
       };
     },
