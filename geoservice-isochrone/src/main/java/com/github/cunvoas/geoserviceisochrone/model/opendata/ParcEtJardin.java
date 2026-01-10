@@ -93,6 +93,9 @@ public class ParcEtJardin {
 	@Column(name="date_fin")
 	private Date dateFin;
 	
+	@Column(name="date_suppr")
+	private Date dateSuppression;
+	
 	@Column( name="type_id", nullable = true )
 	private Long typeId;
 

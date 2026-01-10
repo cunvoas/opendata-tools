@@ -17,6 +17,9 @@ public class Seuil {
 
     @JsonProperty("surface")
     private String surface;
+    @JsonProperty("seuilId")
+    private Integer seuilId;
+    
     @JsonProperty("habitants")
     private Integer habitants=0;
     @JsonProperty("ratio")
@@ -63,6 +66,16 @@ public class Seuil {
     public void setBarColor(String barColor) {
         this.barColor = barColor;
     }
+
+    @JsonProperty("seuilId")
+	public Integer getSeuilId() {
+		return seuilId;
+	}
+
+    @JsonProperty("seuilId")
+	public void setSeuilId(Integer seuilId) {
+		this.seuilId = seuilId;
+	}
 
 
 }

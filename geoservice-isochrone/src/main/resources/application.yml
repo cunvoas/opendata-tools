@@ -136,4 +136,12 @@ application:
     photo-path-origin: /work/PERSO/ASSO/isochrone/photo_origin
     export-data-path: /work/PERSO/github/gh_pages/geoservice-data
 
+# JWT Configuration
+# gen a new key with: openssl base64 -A
+jwt:
+  secret: ${JWT_SECRET:YourSecretKeyMustBeAtLeast256BitsLongForHS256AlgorithmToWorkProperlyWithJWTTokenGenerationAndValidation}
+  expiration: ${JWT_EXPIRATION:3600000}  # 1 heure en millisecondes
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:86400000}  # 24 heures en millisecondes
+
+
 

@@ -7,7 +7,7 @@
     <div class="w-full max-w-xs mt-6">
       <Pie :data="dataPie" :options="myOptions" class="w-full h-[300px]" />
       <div class="text-center text-sm mt-2 mb-5">
-        <span>Répartition des habitants par seuil de surface de parc accessible</span>
+        <span>Répartition des habitants par seuil de surface de parc et jardin public accessible</span>
       </div>
     </div>
   </div>
@@ -106,7 +106,7 @@ export default {
           x: {
             title: {
               display: true,
-              text: 'Surfaces de parcs accessibles par habitant en m²'
+              text: 'Surfaces de parcs et jardins publics accessibles par habitant en m²'
             }
           },
           y: {

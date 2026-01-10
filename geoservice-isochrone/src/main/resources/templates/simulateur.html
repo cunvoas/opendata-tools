@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="²http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:insert="~{fragments/fragment-head :: head}"></head>
+<body class="sb-nav-fixed">
+<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+<div id="layoutSidenav">
+  <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+  <div id="layoutSidenav_content">
+    <main>
+      <div class="container-fluid">
+        <h4 class="mt-3">Simulateur de Projet</h4>
+        <p class="text-muted">Simulez un projet d'aménagement avec paramètres de population, surface et densité. La carte permet de visualiser et définir les zones du projet.</p>
+
+        <div class="d-flex justify-content-end mb-2" th:if="${formSimulateur != null && formSimulateur.id != null}">
+          <button type="button" class="btn btn-sm btn-outline-secondary print-button-fixed" onclick="window.print()">
+            <i class="fas fa-print"></i> Imprimer
+          </button>
+        </div>
+
+        <!-- Sélecteurs de territoire -->
+        <div class="row input-group border border-dark rounded-3 mb-3 territory-select">
+          <h6 class="col-12 mt-2">Sélection du territoire</h6>
+          <div class="col-3">
+            <div class="card" style="text-align: center">
+              <form id="formSelectRegion" th:action="@{/mvc/simulation/region}" th:object="${formSimulateur}" method="post" onchange="submit();">
+                <div class="form-floating">
+                  <select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+                    <option value="" selected disabled>Choisir une région...</option>
+                    <option th:each="region : ${regions}" 
+                      th:value="${region.id}" 
+                      th:text="${region.name}"></option>
+                  </select>
+                  <label for="idRegion">Région</label>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="card" style="text-align: center">
+              <form id="formSelectComm2co" th:action="@{/mvc/simulation/commDeCo}" th:object="${formSimulateur}" method="post" onchange="submit();">
+                <fieldset id="fsComm2co" th:disabled="${formSimulateur.idRegion == null}">
+                  <div class="form-floating">
+                    <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+                      <option value="">EPCI...</option>
+                      <option th:each="commDeCo : ${communautesDeCommunes}" 
+                        th:value="${commDeCo.id}" 
+                        th:text="${commDeCo.name}"></option>
+                    </select>
+                    <label for="idCommunauteDeCommunes">Communauté de communes</label>
+                    <input type="hidden" id="idRegionComm" name="idRegion" th:field="*{idRegion}" />
+                  </div>
+                </fieldset>
+              </form>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card" style="text-align: center">
+              <form id="formSelectCity" th:action="@{/mvc/simulation/city}" method="POST" th:object="${formSimulateur}">
+                <fieldset id="fsCity" th:disabled="${formSimulateur.idCommunauteDeCommunes == null}">
+                  <div class="form-floating">
+                    <input class="form-control" list="communes" id="idCommune-filter" name="idCommune-filter" 
+                           th:value="${formSimulateur.nameCommune}" placeholder="Commune..." />
+                    <label for="idCommune-filter">Commune</label>
+                    <datalist id="communes">
+                      <option th:each="commune : ${communes}" 
+                        th:value="${commune.name}" 
+                        th:attr="data-value=${commune.id}"></option>
+                    </datalist>
+                    <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+                    <input type="hidden" id="idRegionCity" name="idRegion" th:field="*{idRegion}" />
+                    <input type="hidden" id="idCommunauteDeCommunesCity" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+                  </div>
+                </fieldset>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Liste des projets existants -->
+        <div class="row mb-3 projects-existing">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h6 class="mb-0">Projets existants sur cette commune <span class="badge bg-info" th:text="${projects != null ? projects.size() : 0}">0</span></h6>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover table-sm mb-0" id="projectsTable">
+                    <thead class="table-light sticky-top">
+                      <tr>
+                        <th style="cursor: pointer;" onclick="sortProjectsTable()">
+                          Nom <i class="fas fa-sort" id="sortIcon"></i>
+                        </th>
+                        <th class="text-end">Surface zone</th>
+                        <th class="text-end">Population</th>
+                        <th class="text-end">Surface parc</th>
+                        <th class="text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="projectsTableBody">
+                      <tr th:if="${projects == null || #lists.isEmpty(projects)}" class="empty-row">
+                        <td colspan="5" class="text-center text-muted py-3">
+                          <i class="fas fa-info-circle"></i> Aucun projet pour cette commune. Sélectionnez une commune ou créez un nouveau projet.
+                        </td>
+                      </tr>
+                      <tr th:each="project, iterStat : ${projects}" class="project-row" th:data-name="${project.name}">
+                        <td th:text="${project.name}">nom</td>
+                        <td class="text-end" th:text="${project.surfaceArea != null ? (project.surfaceArea > 10000 ? #numbers.formatDecimal(project.surfaceArea / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(project.surfaceArea, 0, 0) + ' m²') : '-'}">-</td>
+                        <td class="text-end" th:text="${project.population != null ? #numbers.formatDecimal(project.population, 0, 0) : '-'}">-</td>
+                        <td class="text-end" th:text="${project.surfacePark != null ? (project.surfacePark > 10000 ? #numbers.formatDecimal(project.surfacePark / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(project.surfacePark, 0, 0) + ' m²') : '-'}">-</td>
+                        <td class="text-center">
+                          <form th:action="@{/mvc/simulation/load}" method="get" style="display: inline;">
+                            <input type="hidden" name="projectId" th:value="${project.id}" />
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                              <i class="fas fa-edit"></i> Éditer
+                            </button>
+                          </form>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top" id="paginationContainer" th:if="${projects != null && projects.size() > 0}">
+                  <small class="text-muted" id="paginationInfo">Page 1</small>
+                  <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                      <li class="page-item" id="prevPage">
+                        <a class="page-link" href="#" onclick="changePage(-1); return false;">«</a>
+                      </li>
+                      <li class="page-item" id="nextPage">
+                        <a class="page-link" href="#" onclick="changePage(1); return false;">»</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulaire de simulation -->
+        <form id="formCompute" th:action="@{/mvc/simulation/compute}" method="post" th:object="${formSimulateur}">
+          <input type="hidden" name="id" th:field="*{id}" />
+          <input type="hidden" name="idRegion" th:field="*{idRegion}" />
+          <input type="hidden" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+          <input type="hidden" name="idCommune" th:field="*{idCommune}" />
+          <input type="hidden" id="sGeometry" name="sGeometry" th:value="${formSimulateur.sGeometry}" />
+          <input type="hidden" id="mapLat" name="mapLat" th:field="*{mapLat}"/>
+          <input type="hidden" id="mapLng" name="mapLng" th:field="*{mapLng}"/>
+          <div class="row g-3 mb-3">
+            <!-- Colonne gauche : paramètres -->
+            <div class="col-12 col-lg-6">
+              <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <span>Paramètres du projet</span>
+                  <button type="button" class="btn btn-sm btn-outline-primary" onclick="clearProjectForm()">
+                    <i class="fas fa-plus"></i> Nouveau
+                  </button>
+                </div>
+                <div class="card-body">
+                  <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-6 col-lg-6">
+                      <label for="name" class="form-label">Nom du projet</label>
+                      <input type="text" class="form-control" id="name" th:field="*{name}" placeholder="Nom du projet">
+                    </div>
+                    <div class="col-12 col-md-3 col-lg-3">
+                      <label for="annee" class="form-label">Année</label>
+                      <input type="number" class="form-control" id="annee" th:field="*{annee}" placeholder="2024">
+                    </div>
+                    <div class="col-12 col-md-3 col-lg-3">
+                      <label for="isDense" class="form-label">Type de zone</label>
+                      <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="isDense" th:field="*{isDense}">
+                        <label class="form-check-label" for="isDense">
+                          Zone dense
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="row g-2 mt-3">
+                    <div class="col-12 col-md-6">
+                      <label for="densityPerAccommodation" class="form-label">Densité par logement</label>
+                      <input type="number" step="0.01" class="form-control" id="densityPerAccommodation" th:field="*{densityPerAccommodation}" placeholder="2.16">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="avgAreaAccommodation" class="form-label">Surface moy. logement (m²)</label>
+                      <input type="number" step="0.01" class="form-control" id="avgAreaAccommodation" th:field="*{avgAreaAccommodation}" placeholder="68">
+                    </div>
+                  </div>
+                  
+                  <div class="row g-2 mt-3">
+                    <div class="col-12 col-md-6">
+                      <label for="surfaceFloor" class="form-label">Surface plancher (m²)</label>
+                      <input type="number" step="0.01" class="form-control" id="surfaceFloor" th:field="*{floorSurface}" placeholder="5000">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="population" class="form-label">Population estimée</label>
+                      <input type="number" step="0.01" class="form-control" id="population" th:field="*{population}" placeholder="1000">
+                    </div>
+                  </div>
+                  
+                  <div class="row g-2 mt-3">
+                    <div class="col-12 col-md-6">
+                      <label for="surfaceArea" class="form-label">Surface de la zone (m²)</label>
+                      <input type="number" step="0.01" class="form-control" id="surfaceArea" th:field="*{surfaceArea}" placeholder="10000">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="surfacePark" class="form-label">Surface parc prévue (m²)</label>
+                      <input type="number" step="0.01" class="form-control" id="surfacePark" th:field="*{surfacePark}" placeholder="2000">
+                    </div>
+                  </div>
+                  
+                  <div class="row mt-3">
+                    <div class="col-12">
+                      <button type="button" onclick="computeSimulation()" class="btn btn-primary w-100">
+                        <i class="fas fa-calculator"></i> Calculer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+
+
+            <!-- Colonne droite : carte -->
+            <div class="col-12 col-lg-6 map-block">
+              <div class="card">
+                <div class="card-header">Localisation du projet</div>
+                <div class="card-body p-0">
+                  <div id="mapSimulator" style="width:100%; height:400px;"></div>
+                </div>
+                <div class="card-footer text-muted small">
+                  Utilisez les outils de dessin pour définir la zone du projet
+                </div>
+              </div>
+            </div>
+          </div>
+          
+
+          <!-- Message si pas de résultats -->
+          <div class="row mt-3" th:if="${projectWorks == null || projectWorks.isEmpty()}">
+            <div class="col-12">
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Aucun résultat de simulation disponible. Calculez une simulation pour voir les résultats.
+              </div>
+            </div>
+          </div>
+
+          <!-- Résultats de simulation -->
+          <div class="row mt-3" th:if="${simulationResult != null}">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">Résultats de simulation</div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-12 col-md-6 col-lg-3">
+                      <div class="card text-center border-primary">
+                        <div class="card-body">
+                          <h6 class="text-muted">Population estimée</h6>
+                          <h3 class="text-primary" th:text="${simulationResult.population != null ? #numbers.formatDecimal(simulationResult.population, 0, 0) : '-'}">-</h3>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="col-12 col-md-6 col-lg-3">
+                      <div class="card text-center border-success">
+                        <div class="card-body">
+                          <h6 class="text-muted">Surface zone (m²)</h6>
+                          <h3 class="text-success" th:text="${simulationResult.surfaceArea != null ? (simulationResult.surfaceArea > 10000 ? #numbers.formatDecimal(simulationResult.surfaceArea / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(simulationResult.surfaceArea, 0, 0) + ' m²') : '-'}">-</h3>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="col-12 col-md-6 col-lg-3">
+                      <div class="card text-center border-info">
+                        <div class="card-body">
+                          <h6 class="text-muted">Surface parc (m²)</h6>
+                          <h3 class="text-info" th:text="${simulationResult.surfacePark != null ? (simulationResult.surfacePark > 10000 ? #numbers.formatDecimal(simulationResult.surfacePark / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(simulationResult.surfacePark, 0, 0) + ' m²') : '-'}">-</h3>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="col-12 col-md-6 col-lg-3">
+                      <div class="card text-center border-warning">
+                        <div class="card-body">
+                          <h6 class="text-muted">Densité</h6>
+                          <h3 class="text-warning" th:text="${simulationResult.densityPerAccommodation != null ? #numbers.formatDecimal(simulationResult.densityPerAccommodation, 0, 2) : '-'}">-</h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Détails supplémentaires -->
+                  <div class="row mt-3" th:if="${simulationResult.isDense != null || simulationResult.annee != null || simulationResult.floorSurface != null}">
+                    <div class="col-12">
+                      <h6>Paramètres du projet</h6>
+                      <dl class="row small">
+                        <dt class="col-sm-3" th:if="${simulationResult.annee != null}">Année:</dt>
+                        <dd class="col-sm-9" th:if="${simulationResult.annee != null}" th:text="${simulationResult.annee}">-</dd>
+                        
+                        <dt class="col-sm-3" th:if="${simulationResult.isDense != null}">Type de zone:</dt>
+                        <dd class="col-sm-9" th:if="${simulationResult.isDense != null}" th:text="${simulationResult.isDense ? 'Zone dense' : 'Zone non dense'}">-</dd>
+                        
+                        <dt class="col-sm-3" th:if="${simulationResult.floorSurface != null}">Surface plancher:</dt>
+                        <dd class="col-sm-9" th:if="${simulationResult.floorSurface != null}" th:text="${simulationResult.floorSurface > 10000 ? #numbers.formatDecimal(simulationResult.floorSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(simulationResult.floorSurface, 0, 0) + ' m²'}">-</dd>
+                        
+                        <dt class="col-sm-3" th:if="${simulationResult.avgAreaAccommodation != null}">Surface moy. logement:</dt>
+                        <dd class="col-sm-9" th:if="${simulationResult.avgAreaAccommodation != null}" th:text="${#numbers.formatDecimal(simulationResult.avgAreaAccommodation, 0, 2) + ' m²'}">-</dd>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table des ProjectWork sur toute la largeur -->
+          <div class="row mt-3 results-block" th:if="${projectWorks != null && !projectWorks.isEmpty()}">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="mb-0">Populations impactées par le projet <span class="badge bg-info" th:text="${projectWorks.size()}">0</span></h6>
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover table-sm mb-0" id="projectWorkTable">
+                      <thead class="table-light sticky-top">
+                        <tr>
+                          <th style="cursor: pointer;" onclick="sortProjectWorkTable('name')">
+                            Nom <i class="fas fa-sort" id="sortIcon-name"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('localPopulation')">
+                            Pop. locale <i class="fas fa-sort" id="sortIcon-localPopulation"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('accessingPopulation')">
+                            Pop. accès <i class="fas fa-sort" id="sortIcon-accessingPopulation"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('accessingSurface')">
+                            Surf. accès <i class="fas fa-sort" id="sortIcon-accessingSurface"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('missingSurface')">
+                            Surf. manquante <i class="fas fa-sort" id="sortIcon-missingSurface"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('surfacePerCapita')">
+                            Surf./hab. <i class="fas fa-sort" id="sortIcon-surfacePerCapita"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('newSurface')">
+                            Nouvelle surf. <i class="fas fa-sort" id="sortIcon-newSurface"></i>
+                          </th>
+                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('newSurfacePerCapita')">
+                            Nouv. surf./hab. <i class="fas fa-sort" id="sortIcon-newSurfacePerCapita"></i>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody id="projectWorkTableBody">
+                        <tr th:each="work : ${projectWorks}" style="cursor: pointer;"
+                            th:attr="data-name=${work.idInspire ?: '(sans nom)'},
+                                     data-local-population=${work.localPopulation ?: 0},
+                                     data-accessing-population=${work.accessingPopulation ?: 0},
+                                     data-accessing-surface=${work.accessingSurface ?: 0},
+                                     data-missing-surface=${work.missingSurface ?: 0},
+                                     data-surface-per-capita=${work.surfacePerCapita ?: 0},
+                                     data-new-surface=${work.newSurface ?: 0},
+                                     data-new-surface-per-capita=${work.newSurfacePerCapita ?: 0}">
+                          <td th:text="${work.idInspire ?: '(sans nom)'}">Nom</td>
+                          <td class="text-end" th:text="${work.localPopulation != null ? #numbers.formatDecimal(work.localPopulation, 0, 0) : '-'}">-</td>
+                          <td class="text-end" th:text="${work.accessingPopulation != null ? #numbers.formatDecimal(work.accessingPopulation, 0, 0) : '-'}">-</td>
+                          <td class="text-end" th:text="${work.accessingSurface != null ? (work.accessingSurface > 10000 ? #numbers.formatDecimal(work.accessingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.accessingSurface, 0, 0) + ' m²') : '-'}">-</td>
+                          <td class="text-end" th:text="${work.missingSurface != null ? (work.missingSurface > 10000 ? #numbers.formatDecimal(work.missingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.missingSurface, 0, 0) + ' m²') : '-'}">-</td>
+                          <td class="text-end" th:text="${work.surfacePerCapita != null ? #numbers.formatDecimal(work.surfacePerCapita, 0, 2) + ' m²' : '-'}" th:classappend="${work.surfacePerCapita != null ? (work.surfacePerCapita < 10 ? 'below-oms-threshold' : 'above-oms-threshold') : ''}">-</td>
+                          <td class="text-end" th:text="${work.newSurface != null ? (work.newSurface > 10000 ? #numbers.formatDecimal(work.newSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.newSurface, 0, 0) + ' m²') : '-'}">-</td>
+                          <td class="text-end" th:text="${work.newSurfacePerCapita != null ? #numbers.formatDecimal(work.newSurfacePerCapita, 0, 2) + ' m²' : '-'}" th:classappend="${work.newSurfacePerCapita != null ? (work.newSurfacePerCapita < 10 ? 'below-oms-threshold' : 'above-oms-threshold') : ''}">-</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+<div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
+<script th:src="@{/mvc/static/js/scripts.js}"></script>
+
+<style>
+  .below-oms-threshold {
+    background-color: #ffcccc !important;
+  }
+  .above-oms-threshold {
+    background-color: #ccffcc !important;
+  }
+
+  .print-button-fixed {
+    position: fixed;
+    top: 70px;
+    right: 24px;
+    z-index: 1100;
+  }
+
+  @media print {
+    @page {
+      margin: 0;
+    }
+
+    /* Masquer navigation, boutons, pagination et formulaires de sélection */
+    .sb-nav-fixed nav,
+    #layoutSidenav > div:first-child,
+    #layoutSidenav #layoutSidenav_nav,
+    .sb-sidenav,
+    .card-header .btn,
+    #paginationContainer,
+    .pagination,
+    button,
+    .btn,
+    form#formSelectRegion,
+    form#formSelectComm2co,
+    form#formSelectCity,
+    #formCompute button {
+      display: none !important;
+    }
+
+    /* Masquer le bloc des projets existants de la commune */
+    .projects-existing {
+      display: none !important;
+    }
+
+    /* Masquer les sélecteurs Région / EPCI / Commune */
+    .territory-select {
+      display: none !important;
+    }
+
+    /* Saut de page avant la carte */
+    .map-block {
+      page-break-before: always;
+    }
+
+    /* Saut de page avant le tableau de résultats */
+    .results-block {
+      page-break-before: always;
+    }
+
+    /* Afficher toutes les lignes de tableaux (pas de pagination) */
+    #projectsTableBody .project-row,
+    #projectWorkTableBody tr {
+      display: table-row !important;
+    }
+
+    /* Désactiver le scroll pour imprimer tout le contenu */
+    .table-responsive {
+      overflow: visible !important;
+      max-height: none !important;
+    }
+
+    /* Carte imprimable avec taille fixe et sans contrôles Leaflet */
+    #mapSimulator {
+      height: 400px !important;
+    }
+    .leaflet-control-container,
+    .leaflet-top,
+    .leaflet-bottom {
+      display: none !important;
+    }
+
+    /* Masquer la ligne licence / conditions du footer */
+    footer {
+      display: none !important;
+    }
+
+    /* Supprimer les marges/gouttières pour éviter la bande blanche gauche */
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      padding-left: 10mm !important;
+      padding-right: 10mm !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      min-width: 100% !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      font-size: 12px;
+    }
+    #layoutSidenav {
+      display: block !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    #layoutSidenav_content {
+      margin-left: 0 !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      padding-top: 0 !important;
+      width: 100% !important;
+    }
+    main,
+    .container-fluid {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      margin: 0 !important;
+      width: 100% !important;
+    }
+    /* Forcer le body et les wrappers à ne pas réserver d'espace caché */
+    #layoutSidenav_content > main {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+    }
+
+    /* Conserver les couleurs d'arrière-plan à l'impression */
+  }
+</style>
+
+<script th:inline="javascript">
+
+// ----------- CONFIGURATION CARTE -----------
+const mapMinZoom = 10;
+const mapMaxZoom = 18;
+const zoomInit = 15;
+
+// Coordonnées par défaut
+const latInit = 50.626419;
+const lonInit = 3.0719121;
+
+// ----------- FONDS DE CARTE -----------
+const layerOSM = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a target="_blank" rel="noopener" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: mapMaxZoom,
+  minZoom: mapMinZoom
+});
+
+const layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Esri Satellite',
+  maxZoom: mapMaxZoom,
+  minZoom: mapMinZoom
+});
+
+const layerAeroIgn = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
+  attribution: 'IGN GeoPortail',
+  maxZoom: Math.min(18, mapMaxZoom),
+  minZoom: mapMinZoom
+});
+
+const baseLayers = {
+  'IGN Aérien': layerAeroIgn,
+  'Satellite': layerSatellite,
+  'OpenStreetMap': layerOSM
+};
+
+const overlays = {};
+
+
+// custom location on load
+function locatePlace(lat, lon) {
+  return L.latLng(parseFloat(lat), parseFloat(lon));
+}
+
+// Déterminer la position de la carte
+function getMapLocation() {
+  const mLat = document.getElementById("mapLat").value;
+  const mLng = document.getElementById("mapLng").value;
+  console.log('[Simulateur] Coordonnées du formulaire - lat:', mLat, 'lng:', mLng);
+
+  let locateWorkPlace;
+
+  // Utiliser les coordonnées du formulaire si disponibles
+  if (mLat && mLng && mLat.trim() !== "" && mLng.trim() !== "" && !isNaN(parseFloat(mLat)) && !isNaN(parseFloat(mLng))) {
+    locateWorkPlace = locatePlace(mLat, mLng);
+    console.log('[Simulateur] Position personnalisée:', locateWorkPlace);
+  }
+  // Position par défaut
+  else {
+    locateWorkPlace = L.latLng(latInit, lonInit);
+    console.log('[Simulateur] Position par défaut:', locateWorkPlace);
+  }
+  
+  return locateWorkPlace;
+}
+
+let locateWorkPlace = getMapLocation();
+
+
+// ----------- INITIALISATION CARTE -----------
+// Stocker les coordonnées cibles
+const targetLat = locateWorkPlace.lat;
+const targetLng = locateWorkPlace.lng;
+console.log('[Simulateur] Initialisation carte, position:', targetLat, targetLng);
+
+const map = L.map('mapSimulator', {
+    center: [targetLat, targetLng],
+    zoom: zoomInit,
+    layers: [layerOSM],
+    keyboard: false
+});
+
+console.log('[Simulateur] Centre de la carte après init:', map.getCenter());
+
+// Forcer le recentrage après que le DOM soit stable
+setTimeout(function() {
+  window.scrollTo(0, 0);
+  map.invalidateSize();
+  map.setView([targetLat, targetLng], zoomInit, { animate: false, reset: true });
+  console.log('[Simulateur] Recentrage forcé sur:', targetLat, targetLng, '- Centre actuel:', map.getCenter());
+}, 200);
+
+
+// ----------- OVERLAYS DYNAMIQUES -----------
+const dataParcs = L.layerGroup().addTo(map);
+const dataProjectZone = L.layerGroup().addTo(map);
+const dataProjectWork = L.layerGroup().addTo(map);
+
+overlays['Parcs existants'] = dataParcs;
+overlays['Projets'] = dataProjectZone;
+overlays['Populations impactées'] = dataProjectWork;
+
+L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
+
+
+// Légende des états de parcs (couleurs alignées avec consultMap)
+const legend = L.control({ position: 'bottomright' });
+legend.onAdd = function () {
+  const div = L.DomUtil.create('div', 'info legend');
+  div.style.background = 'white';
+  div.style.padding = '8px';
+  div.style.borderRadius = '4px';
+  div.style.boxShadow = '0 0 8px rgba(0,0,0,0.2)';
+  const labels = [];
+  labels.push(`<i style="background:#3aa637;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc inclus OMS`);
+  labels.push(`<i style="background:#e96020;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc exclus OMS`);
+  labels.push(`<i style="background:#DC20E9;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc futur ou détruit`);
+  labels.push(`<i style="background:#66ff66;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Carreaux ≥ 10 m²/hab`);
+  labels.push(`<i style="background:#ff6666;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Carreaux < 10 m²/hab`);
+  div.innerHTML = labels.join('<br>');
+  return div;
+};
+legend.addTo(map);
+
+// ----------- LEAFLET-GEOMAN DRAWING -----------
+// Configuration de leaflet-geoman pour le dessin
+map.pm.setLang('fr');
+map.pm.setGlobalOptions({
+  allowSelfIntersection: false,
+  pmIgnore: false
+});
+
+// Ajout des contrôles de dessin
+map.pm.addControls({
+	  position: 'topleft',  
+	  drawControls: true,
+	  editControls: true,
+	  optionsControls: true,
+	  customControls: true,
+	  oneBlock: true,
+	  
+	  drawMarker: false,
+	  drawPolyline: false,
+	  drawRectangle: false,
+	  drawPolygon: true,
+	  drawCircle: false,
+	  drawCircleMarker: false,
+	  drawText: false,
+	  editMode: true,
+	  dragMode: false,
+	  cutPolygon: false,
+	  removalMode: true,
+	  rotateMode: false,
+});
+
+
+// ----------- CHARGEMENT GÉOMÉTRIE EXISTANTE -----------
+// Variable pour stocker la couche actuelle
+let currentLayer = null;
+
+/**
+ * Met à jour le popup avec le nom du projet sur la forme (clic pour afficher)
+ */
+function updateProjectLabel() {
+  if (!currentLayer) return;
+  
+  const projectName = document.getElementById('name').value;
+  
+  // Supprimer l'ancien popup s'il existe
+  currentLayer.unbindPopup();
+  
+  if (!projectName || projectName.trim() === '') return;
+  
+  // Ajouter un popup au clic sur la forme (comme les parcs)
+  currentLayer.bindPopup('<b>' + projectName + '</b>');
+  
+  console.log('[Simulateur] Label du projet mis à jour:', projectName);
+}
+
+// Événement de création d'une forme
+map.on('pm:create', ({ layer }) => {
+  console.log('[Geoman] Forme créée:', layer);
+  
+  // Suppression de la couche précédente si elle existe
+  if (currentLayer) {
+    map.removeLayer(currentLayer);
+  }
+  
+  currentLayer = layer;
+  currentLayer.addTo(dataProjectZone);
+  
+  // Mettre à jour le label du projet
+  updateProjectLabel();
+  
+  // Ajouter listener d'édition sur cette couche
+  layer.on('pm:edit', e => {
+    console.log('[Geoman] Forme modifiée:', e);
+    
+    const self_drawn = map.pm.getGeomanDrawLayers(true);
+    const strPoly = JSON.stringify(self_drawn.toGeoJSON());
+    document.getElementById('sGeometry').value = strPoly;
+    console.log('[Geoman] GeoJSON mis à jour:', strPoly);
+    
+    // Mettre à jour la position du label
+    updateProjectLabel();
+  });
+});
+
+// Événement après avoir terminé le dessin
+map.on('pm:drawend', function (e) {
+  console.log('[Geoman] Dessin terminé');
+  
+  const self_drawn = map.pm.getGeomanDrawLayers(true);
+  const strPoly = JSON.stringify(self_drawn.toGeoJSON());
+  document.getElementById('sGeometry').value = strPoly;
+  console.log('[Geoman] GeoJSON capturé:', strPoly);
+});
+
+// Événement après modification d'une forme
+map.on('pm:change', function (e) {
+  console.log('[Geoman] Modification détectée');
+  
+  const layerToDraw = e.layer;
+  const strPoly = JSON.stringify(layerToDraw.toGeoJSON());
+  document.getElementById('sGeometry').value = strPoly;
+  console.log('[Geoman] GeoJSON mis à jour:', strPoly);
+});
+
+// Événement de suppression d'une forme
+map.on('pm:remove', ({ layer }) => {
+  console.log('[Geoman] Forme supprimée:', layer);
+  
+  // Vérifier que ce n'est pas un parc
+  if (layer && layer._isParc) {
+    console.warn('[Geoman] Tentative de suppression sur un parc bloquée');
+    return;
+  }
+  
+  if (layer === currentLayer) {
+    currentLayer = null;
+    dataProjectZone.clearLayers();
+    document.getElementById('sGeometry').value = '';
+    console.log('[Geoman] GeoJSON effacé');
+  }
+});
+
+// Écouteur sur le champ nom du projet pour mettre à jour le label
+document.getElementById('name').addEventListener('input', function() {
+  updateProjectLabel();
+});
+
+// ----------- CHARGEMENT PARCS -----------
+const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
+const endpointProjects = /*[[@{/mvc/geojson/projectByCorner}]]*/ '';
+const endpointProjectWork = /*[[@{/mvc/geojson/projectWorkById}]]*/ '';
+
+/**
+ * Détermine le style dynamique d'un parc en fonction de ses propriétés
+ */
+function getParkStyle(feature) {
+  let fillColor = '#3aa637'; // Couleur par défaut (parc inclus OMS)
+  
+  if (feature && feature.properties) {
+    // Vérifier d'abord si le parc est actif
+    if (feature.properties.actif === false) {
+      fillColor = '#DC20E9'; // Futur parc ou détruit
+    } else if (feature.properties.oms === false) {
+      fillColor = '#e96020'; // Parc exclus OMS
+    } else if (feature.properties.oms === true) {
+      fillColor = '#3aa637'; // Parc inclus OMS
+    }
+  }
+  
+  return { color: '#1e4d1c', fillColor, weight: 1, fillOpacity: 0.35 };
+}
+
+/**
+ * Charge les parcs dans la zone visible
+ */
+function loadParcs() {
+  if (!endpointParcs) return;
+  
+  const b = map.getBounds();
+  const url = `${endpointParcs}?swLat=${b.getSouthWest().lat}&swLng=${b.getSouthWest().lng}&neLat=${b.getNorthEast().lat}&neLng=${b.getNorthEast().lng}`;
+  
+  fetch(url)
+    .then(r => r.json())
+    .then(geojson => {
+      dataParcs.clearLayers();
+      L.geoJSON(geojson, {
+        style: function(feature) { return getParkStyle(feature); },
+        onEachFeature: function(feature, layer) {
+          if (feature.properties && feature.properties.name) {
+            layer.bindPopup('<b>' + feature.properties.name + '</b>');
+          }
+          // Empêcher toute édition Geoman sur les parcs existants
+          layer.pm.setOptions({ pmIgnore: true });
+          layer.pm.disable();
+          // Ajouter une classe CSS pour identifier les parcs
+          layer._isParc = true;
+        }
+      }).addTo(dataParcs);
+      console.log('[Simulateur] Parcs chargés:', geojson.features ? geojson.features.length : 0);
+    })
+    .catch(err => console.error('[Simulateur] Erreur chargement parcs', err));
+}
+
+/**
+ * Charge les projets de simulation dans la zone visible
+ */
+function loadProjects() {
+  if (!endpointProjects) return;
+  
+  const b = map.getBounds();
+  const url = `${endpointProjects}?swLat=${b.getSouthWest().lat}&swLng=${b.getSouthWest().lng}&neLat=${b.getNorthEast().lat}&neLng=${b.getNorthEast().lng}`;
+  
+  fetch(url)
+    .then(r => r.json())
+    .then(geojson => {
+      dataProjectZone.clearLayers();
+      
+      // Re-add current layer if it exists
+      if (currentLayer) {
+        currentLayer.addTo(dataProjectZone);
+      }
+      
+      L.geoJSON(geojson, {
+        style: function(feature) {
+          return {
+            color: '#0066cc',
+            fillColor: '#3399ff',
+            weight: 2,
+            fillOpacity: 0.25
+          };
+        },
+        onEachFeature: function(feature, layer) {
+          let popupContent = '';
+          let projectName = '';
+          if (feature.properties && feature.properties.name) {
+            projectName = feature.properties.name;
+            popupContent = '<b>' + feature.properties.name + '</b><br>';
+          } else {
+            popupContent = '<b>Projet de simulation</b><br>';
+          }
+          if (feature.properties) {
+            if (feature.properties.annee) popupContent += 'Année: ' + feature.properties.annee + '<br>';
+            if (feature.properties.population) popupContent += 'Population: ' + feature.properties.population + '<br>';
+            if (feature.properties.surfaceArea) popupContent += 'Surface: ' + Math.round(feature.properties.surfaceArea) + ' m²<br>';
+          }
+          // Afficher les infos du projet au clic sur la forme (comme les parcs)
+          layer.bindPopup(popupContent);
+        }
+      }).addTo(dataProjectZone);
+      console.log('[Simulateur] Projets chargés:', geojson.features ? geojson.features.length : 0);
+    })
+    .catch(err => console.error('[Simulateur] Erreur chargement projets', err));
+}
+
+/**
+ * Charge les éléments du projet (ProjectWork) pour le projet en cours
+ */
+function loadProjectWork() {
+  if (!endpointProjectWork) return;
+  
+  // Récupérer l'ID du projet depuis le formulaire
+  const projectId = document.getElementById('id').value;
+  if (!projectId || projectId.trim() === '') {
+    dataProjectWork.clearLayers();
+    return;
+  }
+  
+  const url = `${endpointProjectWork}?id=${projectId}`;
+  
+  fetch(url)
+    .then(r => r.json())
+    .then(geojson => {
+      dataProjectWork.clearLayers();
+      
+      L.geoJSON(geojson, {
+        style: function(feature) {
+          // Couleur basée sur newSurfacePerCapita par rapport au seuil OMS (10 m²/hab)
+          let fillColor = '#cccccc'; // Gris par défaut si pas de valeur
+          let borderColor = '#666666';
+          
+          if (feature.properties && feature.properties.newSurfacePerCapita !== null && feature.properties.newSurfacePerCapita !== undefined) {
+            if (feature.properties.newSurfacePerCapita < 10) {
+              // Rouge si sous le seuil OMS
+              fillColor = '#ff6666';
+              borderColor = '#cc0000';
+            } else {
+              // Vert si au-dessus du seuil OMS
+              fillColor = '#66ff66';
+              borderColor = '#00cc00';
+            }
+          }
+          
+          return {
+            color: borderColor,
+            fillColor: fillColor,
+            weight: 2,
+            fillOpacity: 0.5
+          };
+        },
+        onEachFeature: function(feature, layer) {
+          let popupContent = '';
+          if (feature.properties) {
+            popupContent += '<b>Carré INSEE: ' + (feature.properties.idInspire || 'N/A') + '</b><br>';
+            if (feature.properties.localPopulation) {
+              popupContent += 'Population locale: ' + Math.round(feature.properties.localPopulation) + '<br>';
+            }
+            if (feature.properties.accessingPopulation) {
+              popupContent += 'Population accès: ' + Math.round(feature.properties.accessingPopulation) + '<br>';
+            }
+            if (feature.properties.accessingSurface) {
+              popupContent += 'Surface accès: ' + Math.round(feature.properties.accessingSurface) + ' m²<br>';
+            }
+            if (feature.properties.surfacePerCapita) {
+              popupContent += 'Surface/hab: ' + Math.round(feature.properties.surfacePerCapita * 100) / 100 + ' m²<br>';
+            }
+            if (feature.properties.newSurfacePerCapita) {
+              popupContent += 'Nouvelle surf/hab: ' + Math.round(feature.properties.newSurfacePerCapita * 100) / 100 + ' m²';
+            }
+          }
+          layer.bindPopup(popupContent);
+          
+          // Empêcher l'édition des projectWork
+          layer.pm.setOptions({ pmIgnore: true });
+          layer.pm.disable();
+          layer._isProjectWork = true;
+        }
+      }).addTo(dataProjectWork);
+      console.log('[Simulateur] ProjectWork chargés:', geojson.features ? geojson.features.length : 0);
+    })
+    .catch(err => console.error('[Simulateur] Erreur chargement projectWork', err));
+}
+
+// Chargement initial et au déplacement
+map.on('moveend', function() {
+  loadParcs();
+  loadProjects();
+});
+loadParcs();
+loadProjects();
+loadProjectWork();
+
+console.log('[Simulateur] Carte initialisée');
+
+// ----------- GESTION DATALIST COMMUNES -----------
+(function initCommuneDatalist(){
+  const input = document.getElementById('idCommune-filter');
+  if (!input) return;
+  
+  console.log('[Simulateur] Init datalist commune');
+  
+  input.addEventListener('input', function(e){
+    const options = document.querySelectorAll('#communes option');
+    const hiddenInput = document.getElementById('idCommune');
+    const inputValue = e.target.value;
+    
+    console.log('[Simulateur] Input commune changed:', inputValue);
+    
+    hiddenInput.value = '';
+    
+    for (const o of options){
+      if (o.value === inputValue) {
+        const dataValue = o.getAttribute('data-value');
+        hiddenInput.value = dataValue;
+        console.log('[Simulateur] Commune trouvée, id:', dataValue);
+        document.getElementById('formSelectCity').submit();
+        break;
+      }
+    }
+  });
+})();
+
+// ----------- CALCUL AUTOMATIQUE POPULATION -----------
+(function initAutoPopulation(){
+  const floorEl = document.getElementById('surfaceFloor');
+  const avgEl = document.getElementById('avgAreaAccommodation');
+  const densityEl = document.getElementById('densityPerAccommodation');
+  const populationEl = document.getElementById('population');
+
+  if (!floorEl || !avgEl || !densityEl || !populationEl) return;
+
+  const computePopulation = () => {
+    const floor = parseFloat(floorEl.value);
+    const avg = parseFloat(avgEl.value);
+    const density = parseFloat(densityEl.value);
+    if (isNaN(floor) || isNaN(avg) || isNaN(density) || avg === 0) {
+      return;
+    }
+    const pop = (floor / avg) * density;
+    populationEl.value = Math.round(pop);
+  };
+
+  ['input', 'change'].forEach(evt => {
+    floorEl.addEventListener(evt, computePopulation);
+    avgEl.addEventListener(evt, computePopulation);
+    densityEl.addEventListener(evt, computePopulation);
+  });
+
+  computePopulation();
+})();
+
+// Fonction pour effacer le formulaire et créer un nouveau projet
+function clearProjectForm() {
+  console.log('[Simulateur] clearProjectForm() appelée');
+  
+  // Effacer les champs du formulaire
+  document.getElementById('id').value = '';
+  document.getElementById('name').value = '';
+  document.getElementById('annee').value = '';
+  document.getElementById('isDense').checked = false;
+  document.getElementById('densityPerAccommodation').value = '';
+  document.getElementById('avgAreaAccommodation').value = '';
+  document.getElementById('surfaceFloor').value = '';
+  document.getElementById('population').value = '';
+  document.getElementById('surfaceArea').value = '';
+  document.getElementById('surfacePark').value = '';
+  document.getElementById('sGeometry').value = '';
+  
+  // Effacer la géométrie de la carte
+  if (currentLayer) {
+    dataProjectZone.removeLayer(currentLayer);
+    currentLayer = null;
+  }
+  
+  // Supprimer le label du projet
+  if (projectLabel) {
+    map.removeLayer(projectLabel);
+    projectLabel = null;
+  }
+  
+  // Effacer les projectWork de la carte
+  dataProjectWork.clearLayers();
+  
+  console.log('[Simulateur] Formulaire effacé');
+}
+
+// Fonction pour calculer la simulation (comme savePark dans newPark.html)
+function computeSimulation() {
+  console.log('[Simulateur] computeSimulation() appelée');
+  
+  // Récupérer les couches dessinées pour s'assurer que sGeometry est à jour
+  const self_drawn = map.pm.getGeomanDrawLayers(true);
+  const strPoly = JSON.stringify(self_drawn.toGeoJSON());
+  document.getElementById('sGeometry').value = strPoly;
+  
+  // Récupérer le formulaire et le soumettre normalement
+  const form = document.getElementById('formCompute');
+  form.submit();
+}
+
+
+// ----------- PAGINATION ET TRI DU TABLEAU PROJETS -----------
+let currentPage = 1;
+const itemsPerPage = 4;
+let sortAscending = true;
+
+function initProjectsTable() {
+  const rows = document.querySelectorAll('#projectsTableBody .project-row');
+  if (rows.length === 0) return;
+  
+  updatePagination();
+}
+
+function updatePagination() {
+  const rows = Array.from(document.querySelectorAll('#projectsTableBody .project-row'));
+  const totalRows = rows.length;
+  const totalPages = Math.ceil(totalRows / itemsPerPage);
+  
+  if (totalRows === 0) {
+    document.getElementById('paginationContainer')?.classList.add('d-none');
+    return;
+  }
+  
+  // Afficher/masquer les lignes selon la page courante
+  rows.forEach((row, index) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    row.style.display = (index >= startIndex && index < endIndex) ? '' : 'none';
+  });
+  
+  // Mettre à jour l'info de pagination
+  const paginationInfo = document.getElementById('paginationInfo');
+  if (paginationInfo) {
+    paginationInfo.textContent = `Page ${currentPage} / ${totalPages}`;
+  }
+  
+  // Gérer l'état des boutons précédent/suivant
+  const prevPage = document.getElementById('prevPage');
+  const nextPage = document.getElementById('nextPage');
+  if (prevPage) prevPage.classList.toggle('disabled', currentPage === 1);
+  if (nextPage) nextPage.classList.toggle('disabled', currentPage === totalPages);
+}
+
+function changePage(delta) {
+  const rows = document.querySelectorAll('#projectsTableBody .project-row');
+  const totalPages = Math.ceil(rows.length / itemsPerPage);
+  
+  const newPage = currentPage + delta;
+  if (newPage >= 1 && newPage <= totalPages) {
+    currentPage = newPage;
+    updatePagination();
+  }
+}
+
+function sortProjectsTable() {
+  const tbody = document.getElementById('projectsTableBody');
+  const rows = Array.from(tbody.querySelectorAll('.project-row'));
+  const sortIcon = document.getElementById('sortIcon');
+  
+  if (rows.length === 0) return;
+  
+  // Trier les lignes par nom
+  rows.sort((a, b) => {
+    const nameA = (a.dataset.name || '').toLowerCase();
+    const nameB = (b.dataset.name || '').toLowerCase();
+    return sortAscending ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+  });
+  
+  // Réorganiser les lignes dans le tbody
+  rows.forEach(row => tbody.appendChild(row));
+  
+  // Inverser le sens du tri pour le prochain clic
+  sortAscending = !sortAscending;
+  
+  // Mettre à jour l'icône
+  if (sortIcon) {
+    sortIcon.className = sortAscending ? 'fas fa-sort-down' : 'fas fa-sort-up';
+  }
+  
+  // Revenir à la première page après tri
+  currentPage = 1;
+  updatePagination();
+}
+
+// Initialiser le tableau au chargement
+initProjectsTable();
+
+// ----------- TRI DU TABLEAU DE RÉSULTATS -----------
+let projectWorkSortColumn = null;
+let projectWorkSortAscending = true;
+
+function sortProjectWorkTable(column) {
+  const tbody = document.getElementById('projectWorkTableBody');
+  if (!tbody) return;
+  
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  if (rows.length === 0) return;
+  
+  // Si on clique sur la même colonne, inverser l'ordre
+  if (projectWorkSortColumn === column) {
+    projectWorkSortAscending = !projectWorkSortAscending;
+  } else {
+    projectWorkSortColumn = column;
+    projectWorkSortAscending = true;
+  }
+  
+  // Trier les lignes
+  rows.sort((a, b) => {
+    let valueA, valueB;
+    
+    if (column === 'name') {
+      valueA = (a.dataset.name || '').toLowerCase();
+      valueB = (b.dataset.name || '').toLowerCase();
+      return projectWorkSortAscending ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+    } else {
+      // Pour les colonnes numériques
+      const dataKey = column.replace(/([A-Z])/g, '-$1').toLowerCase();
+      valueA = parseFloat(a.dataset[column.replace(/([A-Z])/g, (m) => '-' + m.toLowerCase()).substring(column.startsWith('data-') ? 0 : 5)] || a.getAttribute('data-' + dataKey.replace('data-', '')) || 0);
+      valueB = parseFloat(b.dataset[column.replace(/([A-Z])/g, (m) => '-' + m.toLowerCase()).substring(column.startsWith('data-') ? 0 : 5)] || b.getAttribute('data-' + dataKey.replace('data-', '')) || 0);
+      return projectWorkSortAscending ? valueA - valueB : valueB - valueA;
+    }
+  });
+  
+  // Réorganiser les lignes dans le tbody
+  rows.forEach(row => tbody.appendChild(row));
+  
+  // Mettre à jour les icônes de tri
+  document.querySelectorAll('[id^="sortIcon-"]').forEach(icon => {
+    icon.className = 'fas fa-sort';
+  });
+  
+  const sortIcon = document.getElementById('sortIcon-' + column);
+  if (sortIcon) {
+    sortIcon.className = projectWorkSortAscending ? 'fas fa-sort-up' : 'fas fa-sort-down';
+  }
+  
+  console.log('[Simulateur] Tableau trié par', column, projectWorkSortAscending ? 'ASC' : 'DESC');
+}
+
+
+</script>
+
+</body>
+</html>
+
+

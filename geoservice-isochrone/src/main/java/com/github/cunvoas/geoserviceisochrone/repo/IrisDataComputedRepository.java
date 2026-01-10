@@ -4,7 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.IrisDataComputed;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisData;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisId;
 
 /**

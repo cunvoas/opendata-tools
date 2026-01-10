@@ -98,6 +98,36 @@ public class GeoJsonForMvcController {
         return geoMapService.findAllParkOutlineByArea(swLat, swLng, neLat, neLng);
     }
 	
+
+	/**
+	 * Récupère les contours des parcs et jardins dans une zone géographique donnée.
+	 * @param swLat Latitude sud-ouest
+	 * @param swLng Longitude sud-ouest
+	 * @param neLat Latitude nord-est
+	 * @param neLng Longitude nord-est
+	 * @return Objet GeoJson des contours des parcs et jardins
+	 */
+	@GetMapping("/projectByCorner")
+	public GeoJsonRoot findProjetSimulationByArea(
+			@RequestParam("swLat") Double swLat,
+			@RequestParam("swLng") Double swLng,
+			@RequestParam("neLat") Double neLat,
+			@RequestParam("neLng") Double neLng
+		) {
+        return geoMapService.findProjetSimulationByArea(swLat, swLng, neLat, neLng);
+    }
+	
+	/**
+	 * récupère les données d'un projet de simulation par son identifiant.
+	 * @param idProject
+	 * @return Objet GeoJson du projet de simulation
+	 */
+	@GetMapping("/projectWorkById")
+	public GeoJsonRoot findProjetSimulationByArea(
+			@RequestParam("id") Long idProject
+		) {
+        return geoMapService.findProjetSimulationWorkById(idProject);
+    }
 	
 	/**
 	 * Récupère les données cadastrales dans une zone géographique donnée.

@@ -2,7 +2,7 @@
     <div class="container mx-auto px-4 py-6">
         <!-- Header Title -->
         <div class="text-center mb-6">
-            <h3 class="text-2xl font-bold text-gray-800">Parcs accessibles en m² par habitant</h3>
+            <h3 class="text-2xl font-bold text-gray-800" @dblclick="generateShareLink" style="cursor: pointer;">Parcs accessibles en m² par habitant</h3>
         </div>
         
         <!-- Logos Row -->
@@ -87,6 +87,38 @@
         </div>
     </div>
 </template>
+
+<script>
+import { buildShareableUrl } from '../utils/urlParams.js';
+
+export default {
+  name: 'HeaderAsso',
+  methods: {
+    generateShareLink() {
+      // Get location data from localStorage
+      const savedLocation = localStorage.getItem('location-selected');
+      if (!savedLocation) {
+        console.log('Aucune localisation sélectionnée');
+        return;
+      }
+      
+      try {
+        const locationData = JSON.parse(savedLocation);
+        const shareableUrl = buildShareableUrl(locationData);
+        
+        // Copy the URL to clipboard
+        navigator.clipboard.writeText(shareableUrl).then(() => {
+          console.log('Lien copié dans le presse-papiers:', shareableUrl);
+        }).catch(err => {
+          console.error('Erreur lors de la copie:', err);
+        });
+      } catch (e) {
+        console.error('Erreur lors de la génération du lien:', e);
+      }
+    }
+  }
+};
+</script>
 
 <style scoped>
 .no-underline {
