@@ -220,71 +220,54 @@ function getParkColor(oms, actif, colorblindMode = false) {
   return fillColor;
 }
 
+// Helpers palettes/paramètres pour réduire la complexité
+function selectSquarePalette(colorblindMode = false) {
+  if (colorblindMode) {
+    return {
+      level1: '#d73027', // très faible
+      level2: '#fc8d59', // faible
+      level3: '#fee090', // moyen
+      level4: '#4575b4', // bon
+      level5: '#91bfdb', // très bon
+    };
+  }
+  return {
+    level1: '#0000e8',
+    level2: '#6060e8',
+    level3: '#b0b0e8',
+    level4: '#578817',
+    level5: '#57ee17',
+  };
+}
+
+function densityParams(zoneDense) {
+  // valeurs par défaut (dense)
+  const paramsDense = { densiteMin: 10, densiteMax: 12, p25: 3, p50: 6 };
+  const paramsNoDense = { densiteMin: 25, densiteMax: 45, p25: 8, p50: 17 };
+  return zoneDense === false ? paramsNoDense : paramsDense;
+}
+
 // Fonction pour obtenir les couleurs selon le mode (normal ou daltonien)
-function  getSquareColor(zoneDense, densite, colorblindMode = false) {
+function getSquareColor(zoneDense, densite, colorblindMode = false) {
   // Gris neutre pour valeurs non calculées
   let color = '#959595';
 
-  if (densite===null || densite==='N/A' || densite==='' ) {
+  if (densite === null || densite === 'N/A' || densite === '') {
     return color;
   }
-  densite = (""+densite).replace(",", ".");
 
-  // Définition des deux palettes de couleurs
-  let level1, level2, level3, level4, level5;
+  const value = parseFloat(("" + densite).replace(",", "."));
+  const { level1, level2, level3, level4, level5 } = selectSquarePalette(colorblindMode);
+  const { densiteMin, densiteMax, p25, p50 } = densityParams(zoneDense);
 
-  if (colorblindMode) {
-    // Palette adaptée aux daltoniens (évite confusion rouge/vert et bleu/jaune)
-    // Utilise une progression du orange (mauvais) au bleu foncé (bon)
-    // ColorBrewer2 compatible avec tous types de daltonisme
-    level1 = '#d73027';  // Rouge-orangé foncé (très faible)
-    level2 = '#fc8d59';  // Orange clair (faible)
-    level3 = '#fee090';  // Jaune-orangé pâle (moyen-faible)
-    level4 = '#4575b4';  // Bleu foncé (bon)
-    level5 = '#91bfdb';  // Bleu clair (très bon)
-  } else {
-    // Palette classique (bleu → vert)
-    level1 = '#0000e8';  // Bleu foncé (très faible)
-    level2 = '#6060e8';  // Bleu moyen (faible)
-    level3 = '#b0b0e8';  // Bleu clair (moyen-faible)
-    level4 = '#578817';  // Vert foncé (bon)
-    level5 = '#57ee17';  // Vert clair (très bon)
+  if (zoneDense === false || zoneDense === true) {
+    if (value >= densiteMax) return level5; // Excellent
+    if (value >= densiteMin) return level4; // Bon
+    if (value < p25) return level1;         // Très faible
+    if (value < p50) return level2;         // Faible
+    return level3;                          // Moyen
   }
 
-  const densiteMinDense=10;
-  const densiteMaxDense=12;
-  const densiteMinNoDense=25;
-  const densiteMaxNoDense=45;
-
-  // default == dense
-  let p25 = 3;
-  let p50 = 6;
-  let densiteMin = densiteMinDense;
-  let densiteMax = densiteMaxDense;
-  if (zoneDense===false) {
-      densiteMin = densiteMinNoDense;
-      densiteMax = densiteMaxNoDense;
-      
-      p25 = 8;
-      p50 = 17;
-  }
-
-
-  if (zoneDense===false || zoneDense===true) {
-      if (densite>=densiteMax) {
-          color=level5;  // Excellent
-      } else if (densite>=densiteMin) {
-          color=level4;  // Bon
-      } else {
-        
-        color = level3;  // Moyen
-        if (densite < p25) {
-          color = level1;  // Très faible
-        } else if (densite < p50) {
-          color = level2;  // Faible
-        }
-      }
-  }
   return color;
 }
 
@@ -448,42 +431,10 @@ export default {
        * @param {Object} newLocation - The updated location object.
        */
       handler(newLocation) {
-        //console.log("location handler= "+JSON.stringify(newLocation));
-        if (newLocation) {
-
-         if (newLocation.lonX && newLocation.latY) {
-            
-            this.center = [newLocation.latY, newLocation.lonX];
-            //this.addTemporaryMarker(newLocation.latY, newLocation.lonX);
-            if (newLocation.locType==='city') {
-              this.zoom= 14;
-            } else if (newLocation.locType==='address') {
-              this.zoom= 17;
-            }
-
-            //this.fetchCommune(newLocation.latY, newLocation.lonX);
-            this.debouncedFetchCommune(newLocation.latY, newLocation.lonX);
-          }
-
-          if (newLocation.regionId && this.region!==newLocation.regionId) {
-            this.region=newLocation.regionId;
-            
-          }
-
-          if (newLocation.com2coId && this.com2co!==newLocation.com2coId) {
-            this.com2co = newLocation.com2coId;
-            
-            this.callGeoJsonParcs();
-            this.callGeoJsonIsochrones();
-            this.callGeoJsonCarres();
-            this.callGeoJsonCadastre();
-            
-            // Mettre à jour le lien shareable
-            this.updateShareableUrl();
-          }
-
-
-        }
+        if (!newLocation) return;
+        this.updateCenterAndZoom(newLocation);
+        this.updateRegionIfChanged(newLocation);
+        this.updateCom2coIfChanged(newLocation);
       },
       immediate: true,
       deep: true
@@ -493,32 +444,59 @@ export default {
     }
   },
   methods: {
+    updateCenterAndZoom(newLocation) {
+      if (!(newLocation.lonX && newLocation.latY)) return;
+      this.center = [newLocation.latY, newLocation.lonX];
+      if (newLocation.locType === 'city') {
+        this.zoom = 14;
+      } else if (newLocation.locType === 'address') {
+        this.zoom = 17;
+      }
+      this.debouncedFetchCommune(newLocation.latY, newLocation.lonX);
+    },
+    updateRegionIfChanged(newLocation) {
+      if (newLocation.regionId && this.region !== newLocation.regionId) {
+        this.region = newLocation.regionId;
+      }
+    },
+    updateCom2coIfChanged(newLocation) {
+      if (!(newLocation.com2coId && this.com2co !== newLocation.com2coId)) return;
+      this.com2co = newLocation.com2coId;
+      this.callGeoJsonParcs();
+      this.callGeoJsonIsochrones();
+      this.callGeoJsonCarres();
+      this.callGeoJsonCadastre();
+      this.updateShareableUrl();
+    },
+    isFullscreen() {
+      return (
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+    },
+    requestFullscreen(element) {
+      const fn =
+        element.requestFullscreen ||
+        element.webkitRequestFullscreen ||
+        element.mozRequestFullScreen ||
+        element.msRequestFullscreen;
+      if (fn) fn.call(element);
+    },
+    exitFullscreen() {
+      const d = document;
+      const fn =
+        d.exitFullscreen ||
+        d.webkitExitFullscreen ||
+        d.mozCancelFullScreen ||
+        d.msExitFullscreen;
+      if (fn) fn.call(d);
+    },
     toggleFullscreen() {
       const mapElement = this.$refs.leafletMap.$el;
-      
-      if (!document.fullscreenElement) {
-        // Entrée en plein écran
-        if (mapElement.requestFullscreen) {
-          mapElement.requestFullscreen();
-        } else if (mapElement.webkitRequestFullscreen) {
-          mapElement.webkitRequestFullscreen();
-        } else if (mapElement.mozRequestFullScreen) {
-          mapElement.mozRequestFullScreen();
-        } else if (mapElement.msRequestFullscreen) {
-          mapElement.msRequestFullscreen();
-        }
-      } else {
-        // Sortie du plein écran
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-          document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-          document.msExitFullscreen();
-        }
-      }
+      if (!this.isFullscreen()) this.requestFullscreen(mapElement);
+      else this.exitFullscreen();
     },
     onColorModeChange() {
       // Sauvegarder le mode dans le localStorage
