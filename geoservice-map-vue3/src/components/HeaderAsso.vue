@@ -104,7 +104,21 @@ export default {
       
       try {
         const locationData = JSON.parse(savedLocation);
-        const shareableUrl = buildShareableUrl(locationData);
+        const relativeUrl = buildShareableUrl(locationData);
+        
+        // Build full URL with FQDN and force /carte route
+        const fqdn = `${window.location.protocol}//${window.location.host}`;
+        
+        // Extract base path (e.g., /parcs-et-jardins/) from current URL
+        const pathname = window.location.pathname;
+        const pathSegments = pathname.split('/').filter(Boolean);
+        
+        // If path has segments, keep the base (first segment) and append /carte
+        const basePath = pathSegments.length > 0 ? `/${pathSegments[0]}/carte` : '/carte';
+        
+        // Extract query string from relativeUrl
+        const queryString = relativeUrl.includes('?') ? relativeUrl.split('?')[1] : '';
+        const shareableUrl = `${fqdn}${basePath}${queryString ? '?' + queryString : ''}`;
         
         // Copy the URL to clipboard
         navigator.clipboard.writeText(shareableUrl).then(() => {
