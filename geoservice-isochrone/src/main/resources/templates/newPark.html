@@ -105,6 +105,8 @@
      
 
 <form id="formNewPark" th:action="@{/mvc/park/new/save}" th:object="${newPark}" method="post" enctype="multipart/form-data">
+    <!-- Anti double soumission: token serveur -->
+    <input type="hidden" name="token" th:value="${token}" />
       <div class="row input-group border border-dark rounded-3">
       		<h6 class="col-12" th:text="#{parc.edit.locateOnMap}">locate on map</h6>
             <div class="col-5">

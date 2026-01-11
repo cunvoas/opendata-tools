@@ -260,9 +260,26 @@ public class ParkNewControler {
 	 */
 	@PostMapping("/save")
 	@Transactional //(isolation = Isolation.READ_COMMITTED) //(noRollbackFor = ExceptionGeo.class)
-	public String save(@ModelAttribute FormParkNew form, Model model, BindingResult bindingResult) {
+	public String save(@ModelAttribute FormParkNew form, @RequestParam("token") String token, Model model, BindingResult bindingResult) {
 		log.warn("Generic save: {}", form);
 		
+		// Anti double-soumission côté serveur: validation du token temporel
+		Boolean isValid = tokenManagement.isTokenValid(token);
+		if (Boolean.FALSE.equals(isValid)) {
+			log.warn("Token invalide ou expiré lors du POST /save");
+			model.addAttribute("tokenInvalid", true);
+			// réinjecter un token valide pour permettre une nouvelle soumission
+			model.addAttribute("token", tokenManagement.getValidToken());
+			form = populateListInForm(form);
+			model.addAttribute(formName, form);
+			model.addAttribute("regions", form.getRegions());
+			model.addAttribute("communautesDeCommunes", form.getCommunautesDeCommunes());
+			model.addAttribute("communes", form.getCommunes());
+			model.addAttribute("parkTypes", parkTypeService.findAll());
+			model.addAttribute("parkSources", serviceReadReferences.getParcSource());
+			return formName;
+		}
+
 		validatorUpload.validate(form, bindingResult);
 		
 		ParcEtJardin pj = this.map(form);
@@ -301,10 +318,8 @@ public class ParkNewControler {
 			log.warn("Nothing to DO: {}", form);
 		}
 		
-		
-		
-		
-		return getForm(form, model, pj);
+		// PRG: évite la double soumission en redirigeant vers la page d'édition
+		return "redirect:/mvc/park/new/check?idPark=" + pj.getId();
 	}
 		
 	

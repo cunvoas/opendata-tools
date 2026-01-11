@@ -95,7 +95,7 @@ export default {
   name: 'HeaderAsso',
   data() {
     return {
-      appVersion: '1.0.25'
+      appVersion: '1.0.28'
     };
   },
   mounted() {
