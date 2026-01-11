@@ -12,55 +12,75 @@
         <p class="text-muted">Vue lecture seule pour explorer les différentes couches géographiques (fonds de carte et données GeoJSON). Sélectionnez la région, la communauté de communes puis la commune pour centrer automatiquement la carte. Les couches se rechargent automatiquement selon le cadre visible.</p>
 
         <!-- Sélecteurs territoriaux -->
-        <div class="row g-2 mb-2">
-          <div class="col-12 col-md-3">
-            <form id="formSelectRegion" th:action="@{/mvc/consult/region}" method="post" onchange="submit();">
-              <div class="form-floating">
-                <select class="form-select" id="idRegion" name="idRegion">
-                  <option value="" selected disabled>Région...</option>
-                  <option th:each="r : ${regions}" th:value="${r.id}" th:text="${r.name}" th:selected="${territoire != null && r.id == territoire.idRegion}"></option>
-                </select>
-                <label for="idRegion">Région</label>
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body">
+                <div class="row g-3">
+                  <!-- Région Filter -->
+                  <div class="col-md-3">
+                    <div class="d-flex align-items-center h-100">
+                      <form id="formSelectRegion" th:action="@{/mvc/consult/region}" method="post" onchange="submit();" class="w-100">
+                        <div class="form-floating">
+                          <select class="form-select" id="idRegion" name="idRegion">
+                            <option value="" selected disabled>Région...</option>
+                            <option th:each="r : ${regions}" th:value="${r.id}" th:text="${r.name}" th:selected="${territoire != null && r.id == territoire.idRegion}"></option>
+                          </select>
+                          <label for="idRegion"><i class="fas fa-map me-2"></i>Région</label>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                  <!-- EPCI Filter -->
+                  <div class="col-md-3">
+                    <div class="d-flex align-items-center h-100">
+                      <form id="formSelectComm2co" th:action="@{/mvc/consult/epci}" method="post" onchange="submit();" class="w-100">
+                        <fieldset id="fsComm2co" th:disabled="${territoire == null || territoire.idRegion == null}">
+                          <div class="form-floating">
+                            <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes">
+                              <option value="">EPCI...</option>
+                              <option th:each="c : ${communautesDeCommunes}" th:value="${c.id}" th:text="${c.name}" th:selected="${territoire != null && c.id == territoire.idCommunauteDeCommunes}"></option>
+                            </select>
+                            <label for="idCommunauteDeCommunes"><i class="fas fa-building me-2"></i>Communauté de communes</label>
+                            <input type="hidden" id="idRegion" name="idRegion" th:value="${territoire != null ? territoire.idRegion : ''}" />
+                          </div>
+                        </fieldset>
+                      </form>
+                    </div>
+                  </div>
+                  <!-- Commune Filter -->
+                  <div class="col-md-3">
+                    <div class="d-flex align-items-center h-100">
+                      <form id="formSelectCity" th:action="@{/mvc/consult/city}" method="post" class="w-100">
+                        <fieldset id="fsCity" th:disabled="${territoire == null || territoire.idCommunauteDeCommunes == null}">
+                          <div class="form-floating">
+                            <input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" placeholder="Commune..." 
+                                   th:value="${territoire != null && territoire.nameCommune != null ? territoire.nameCommune : ''}" />
+                            <label for="idCommune-filter"><i class="fas fa-city me-2"></i>Commune</label>
+                            <datalist id="communes">
+                              <option th:each="v : ${communes}" th:value="${v.name}" th:attr="data-value=${v.id}"></option>
+                            </datalist>
+                            <input type="hidden" id="idCommune" name="idCommune" th:value="${territoire != null && territoire.idCommune != null ? territoire.idCommune : ''}" />
+                            <input type="hidden" id="idRegionCity" name="idRegion" th:value="${territoire != null && territoire.idRegion != null ? territoire.idRegion : ''}" />
+                            <input type="hidden" id="idCommunauteDeCommunesCity" name="idCommunauteDeCommunes" th:value="${territoire != null && territoire.idCommunauteDeCommunes != null ? territoire.idCommunauteDeCommunes : ''}" />
+                          </div>
+                        </fieldset>
+                      </form>
+                    </div>
+                  </div>
+                  <!-- Year Filter -->
+                  <div class="col-md-3">
+                    <div class="d-flex align-items-center h-100">
+                      <div class="form-floating w-100">
+                        <select class="form-select" id="selectYear" name="selectYear" onchange="onYearChange()">
+                          <option value="" selected>Année...</option>
+                        </select>
+                        <label for="selectYear"><i class="fas fa-calendar me-2"></i>Année</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </form>
-          </div>
-          <div class="col-12 col-md-3">
-            <form id="formSelectComm2co" th:action="@{/mvc/consult/epci}" method="post" onchange="submit();">
-              <fieldset id="fsComm2co" th:disabled="${territoire == null || territoire.idRegion == null}">
-                <div class="form-floating">
-                  <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes">
-                    <option value="">EPCI...</option>
-                    <option th:each="c : ${communautesDeCommunes}" th:value="${c.id}" th:text="${c.name}" th:selected="${territoire != null && c.id == territoire.idCommunauteDeCommunes}"></option>
-                  </select>
-                  <label for="idCommunauteDeCommunes">Communauté de communes</label>
-                  <input type="hidden" id="idRegion" name="idRegion" th:value="${territoire != null ? territoire.idRegion : ''}" />
-                </div>
-              </fieldset>
-            </form>
-          </div>
-          <div class="col-12 col-md-3">
-            <form id="formSelectCity" th:action="@{/mvc/consult/city}" method="post">
-              <fieldset id="fsCity" th:disabled="${territoire == null || territoire.idCommunauteDeCommunes == null}">
-                <div class="form-floating">
-                  <input class="form-control" list="communes" id="idCommune-filter" name="idCommune-filter" placeholder="Commune..." 
-                         th:value="${territoire != null && territoire.nameCommune != null ? territoire.nameCommune : ''}" />
-                  <label for="idCommune-filter">Commune</label>
-                  <datalist id="communes">
-                    <option th:each="v : ${communes}" th:value="${v.name}" th:attr="data-value=${v.id}"></option>
-                  </datalist>
-                  <input type="hidden" id="idCommune" name="idCommune" th:value="${territoire != null && territoire.idCommune != null ? territoire.idCommune : ''}" />
-                  <input type="hidden" id="idRegionCity" name="idRegion" th:value="${territoire != null && territoire.idRegion != null ? territoire.idRegion : ''}" />
-                  <input type="hidden" id="idCommunauteDeCommunesCity" name="idCommunauteDeCommunes" th:value="${territoire != null && territoire.idCommunauteDeCommunes != null ? territoire.idCommunauteDeCommunes : ''}" />
-                </div>
-              </fieldset>
-            </form>
-          </div>
-          <div class="col-12 col-md-3">
-            <div class="form-floating">
-              <select class="form-select" id="selectYear" name="selectYear" onchange="onYearChange()">
-                <option value="" selected>Année...</option>
-              </select>
-              <label for="selectYear">Année</label>
             </div>
           </div>
         </div>
