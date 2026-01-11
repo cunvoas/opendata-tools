@@ -18,60 +18,73 @@
         </div>
 
         <!-- Sélecteurs de territoire -->
-        <div class="row input-group border border-dark rounded-3 mb-3 territory-select">
-          <h6 class="col-12 mt-2">Sélection du territoire</h6>
-          <div class="col-3">
-            <div class="card" style="text-align: center">
-              <form id="formSelectRegion" th:action="@{/mvc/simulation/region}" th:object="${formSimulateur}" method="post" onchange="submit();">
-                <div class="form-floating">
-                  <select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
-                    <option value="" selected disabled>Choisir une région...</option>
-                    <option th:each="region : ${regions}" 
-                      th:value="${region.id}" 
-                      th:text="${region.name}"></option>
-                  </select>
-                  <label for="idRegion">Région</label>
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white border-bottom">
+                <h6 class="mb-0">Sélection du territoire</h6>
+              </div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <!-- Région Filter -->
+                  <div class="col-md-3">
+                    <div class="d-flex align-items-center h-100">
+                      <form id="formSelectRegion" th:action="@{/mvc/simulation/region}" th:object="${formSimulateur}" method="post" onchange="submit();" class="w-100">
+                        <div class="form-floating">
+                          <select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+                            <option value="" selected disabled>Choisir une région...</option>
+                            <option th:each="region : ${regions}" 
+                              th:value="${region.id}" 
+                              th:text="${region.name}"></option>
+                          </select>
+                          <label for="idRegion"><i class="fas fa-map me-2"></i>Région</label>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                  <!-- EPCI Filter -->
+                  <div class="col-md-3">
+                    <div class="d-flex align-items-center h-100">
+                      <form id="formSelectComm2co" th:action="@{/mvc/simulation/commDeCo}" th:object="${formSimulateur}" method="post" onchange="submit();" class="w-100">
+                        <fieldset id="fsComm2co" th:disabled="${formSimulateur.idRegion == null}">
+                          <div class="form-floating">
+                            <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+                              <option value="">EPCI...</option>
+                              <option th:each="commDeCo : ${communautesDeCommunes}" 
+                                th:value="${commDeCo.id}" 
+                                th:text="${commDeCo.name}"></option>
+                            </select>
+                            <label for="idCommunauteDeCommunes"><i class="fas fa-building me-2"></i>Communauté de communes</label>
+                            <input type="hidden" id="idRegionComm" name="idRegion" th:field="*{idRegion}" />
+                          </div>
+                        </fieldset>
+                      </form>
+                    </div>
+                  </div>
+                  <!-- Commune Filter -->
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center h-100">
+                      <form id="formSelectCity" th:action="@{/mvc/simulation/city}" method="POST" th:object="${formSimulateur}" class="w-100">
+                        <fieldset id="fsCity" th:disabled="${formSimulateur.idCommunauteDeCommunes == null}">
+                          <div class="form-floating">
+                            <input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" 
+                                   th:value="${formSimulateur.nameCommune}" placeholder="Commune..." />
+                            <label for="idCommune-filter"><i class="fas fa-city me-2"></i>Commune</label>
+                            <datalist id="communes">
+                              <option th:each="commune : ${communes}" 
+                                th:value="${commune.name}" 
+                                th:attr="data-value=${commune.id}"></option>
+                            </datalist>
+                            <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+                            <input type="hidden" id="idRegionCity" name="idRegion" th:field="*{idRegion}" />
+                            <input type="hidden" id="idCommunauteDeCommunesCity" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+                          </div>
+                        </fieldset>
+                      </form>
+                    </div>
+                  </div>
                 </div>
-              </form>
-            </div>
-          </div>
-          <div class="col-3">
-            <div class="card" style="text-align: center">
-              <form id="formSelectComm2co" th:action="@{/mvc/simulation/commDeCo}" th:object="${formSimulateur}" method="post" onchange="submit();">
-                <fieldset id="fsComm2co" th:disabled="${formSimulateur.idRegion == null}">
-                  <div class="form-floating">
-                    <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
-                      <option value="">EPCI...</option>
-                      <option th:each="commDeCo : ${communautesDeCommunes}" 
-                        th:value="${commDeCo.id}" 
-                        th:text="${commDeCo.name}"></option>
-                    </select>
-                    <label for="idCommunauteDeCommunes">Communauté de communes</label>
-                    <input type="hidden" id="idRegionComm" name="idRegion" th:field="*{idRegion}" />
-                  </div>
-                </fieldset>
-              </form>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="card" style="text-align: center">
-              <form id="formSelectCity" th:action="@{/mvc/simulation/city}" method="POST" th:object="${formSimulateur}">
-                <fieldset id="fsCity" th:disabled="${formSimulateur.idCommunauteDeCommunes == null}">
-                  <div class="form-floating">
-                    <input class="form-control" list="communes" id="idCommune-filter" name="idCommune-filter" 
-                           th:value="${formSimulateur.nameCommune}" placeholder="Commune..." />
-                    <label for="idCommune-filter">Commune</label>
-                    <datalist id="communes">
-                      <option th:each="commune : ${communes}" 
-                        th:value="${commune.name}" 
-                        th:attr="data-value=${commune.id}"></option>
-                    </datalist>
-                    <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
-                    <input type="hidden" id="idRegionCity" name="idRegion" th:field="*{idRegion}" />
-                    <input type="hidden" id="idCommunauteDeCommunesCity" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
-                  </div>
-                </fieldset>
-              </form>
+              </div>
             </div>
           </div>
         </div>

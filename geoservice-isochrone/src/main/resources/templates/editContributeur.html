@@ -89,36 +89,39 @@
 									<!-- row commune -->
 
 									<div class="col-3">
-										<div class="card" style="text-align: center">
+										<div class="card border-0 shadow-sm" style="text-align: center">
 											<!-- region -->
 											<div class="form-floating">
 												<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
 													<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
 													<option th:each="region : ${regions}" th:value="${region.id}" th:text="${region.name}" th:selected="${region.id==idRegion}"></option>
-												</select> <label for="idRegion" th:text="#{entrance.region}">region</label>
+												</select>
+												<label for="idRegion"><i class="fas fa-map me-2"></i><span th:text="#{entrance.region}">region</span></label>
 											</div>
 										</div>
 									</div>
 									<div class="col-3">
-										<div class="card" style="text-align: center">
+										<div class="card border-0 shadow-sm" style="text-align: center">
 											<!-- comm2co -->
-											<div class="form-floating">
-												<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
-													<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
-													<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
-												</select> <label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
-											</div>
-
+											<fieldset id="fsComm2co" disabled="disabled">
+												<div class="form-floating">
+													<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+														<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
+														<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+													</select>
+													<label for="idCommunauteDeCommunes"><i class="fas fa-building me-2"></i><span th:text="#{entrance.communateDeCommunes}">Comm de Co</span></label>
+												</div>
+											</fieldset>
 										</div>
 									</div>
 									<div class="col-6">
-										<div class="card" style="text-align: center">
-											<label for="idCommune" th:text="#{entrance.commune}">ville</label>
-											<select class="form-select" id="idCommune" name="idCommune" th:field="*{idCommune}">
-												<!-- 
-												<option th:each="commune : ${communes}" th:value="${commune.id}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
-												 -->
-											</select>
+										<div class="card border-0 shadow-sm" style="text-align: center">
+											<fieldset id="fsCity" disabled="disabled">
+												<div class="mb-3 text-start px-3">
+													<label for="idCommune" class="form-label"><i class="fas fa-city me-2"></i><span th:text="#{entrance.commune}">ville</span></label>
+													<select class="form-select" id="idCommune" name="idCommune" th:field="*{idCommune}"></select>
+												</div>
+											</fieldset>
 										</div>
 									</div>
 								</div>
@@ -246,6 +249,22 @@
 	           // $('#idCommune').html('<option value="">Sélectionner la communauté de communes en premier.</option>'); 
 	        }
 
+	    });
+
+	    // Enable/disable fieldsets based on selection
+	    manageDisabled();
+	    function manageDisabled() {
+	    	const rVal = document.getElementById("idRegion").value;
+	    	const cVal = document.getElementById("idCommunauteDeCommunes").value;
+	    	document.getElementById("fsComm2co").disabled = (rVal === null || rVal === "");
+	    	document.getElementById("fsCity").disabled = (cVal === null || cVal === "");
+	    }
+
+	    $('#idRegion').on('change', function(){
+	    	manageDisabled();
+	    });
+	    $('#idCommunauteDeCommunes').on('change', function(){
+	    	manageDisabled();
 	    });
 	    
  // https://select2.org/data-sources/ajax
