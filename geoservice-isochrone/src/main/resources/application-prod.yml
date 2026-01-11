@@ -30,7 +30,6 @@ application:
     export-credential-key: ${EXPORT_KEY}
     export-ip-address:  ${EXPORT_IP}
     timehack: ${THE_LOGIN_TIME_IN_PROD}
-    jwt-sign-key: FAKE_KEY
     salt-len: ${PASSWORD_SALT}
     hash-len: ${PASSWORD_LENGTH}
     nb-iters: ${PASSWORD_INTERATIONS}

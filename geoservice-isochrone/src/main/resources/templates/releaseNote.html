@@ -13,297 +13,407 @@
 			<main>
 
 				<div class="container-fluid px-4">
-					<h3 class="mt-12" th:text="#{menu.abstract.history}">History</h3>
+					<div class="d-flex align-items-center justify-content-between mb-4">
+						<h3 class="mt-4 mb-0" th:text="#{menu.abstract.history}">History</h3>
+						<small class="text-muted">Historique des versions et fonctionnalités</small>
+					</div>
                         
-                    <div class="card mt-12">
-                        <div class="card-body col-md-12">
-                            <p>
-                                <code>En cours de développement</code>
-                                <br /> 
-                                <ul>
-                                    <li>Publication des cartes depuis l'interface de gestion.</li>
-                                    <li>Proposition de parc par Algo PPC (Choco Solver).</li>
-                                    
-                                    <li>...</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>Futures fonctionnalités (à prioriser)</code>
-                                <br /> 
-                                <ul>
-                                    <li>Ajout des photos sur le site publique.</li>
-                                    <li>Publication des cartes depuis l'interface de gestion.</li>
-                                    <li>Publication des cartes depuis l'interface de gestion.</li>
-                                    <li>Présentation de la richesse des foyers.</li>
-                                    <li>...</li>
-                                    <li>Une nouvelle idée? Proposer <a href="https://github.com/cunvoas/opendata-tools/issues" target="_blank" rel="noopener noreferrer">ici</a>.</li>
-                                </ul>
-                            </p> 
-                          
-                          
-                                    
-                            <p>
-                                <code>V1.0.27-20251215</code> 
-                                <br />
-                                <ul>
-                                    <li>Simulation de projet.</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.27-20251215</code> 
-                                <br />
-                                <ul>
-                                    <li>Ajout de couleur de status de parcs sur la page de consultation.</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.26-20251211</code> 
-                                <br />
-                                <ul>
-                                    <li>Première proposition de parcs (algo par priorisation des déficits).</li>
-                                    <li>Refonte graphique du site publique (tailwind).</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.25-20251122</code> 
-                                <br />
-                                <ul>
-                                   <li>Gestion des groupements de communes.</li>
-                                   <li>Lancements des calculs pour une communauté de communes.</li>
-                                   <li>Page de consultation des données non publiées au public.</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.24-20251119</code> 
-                                <br />
-                                <ul>
-                                    <li>Site publique v2</li>
-                                    <li>Sélection des résultats pour les stats/ville.</li>
-                                    <li>Demande de calculs depuis l'interface de gestion.</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.23-20251019</code> 
-                                <br />
-                                <ul>
-                                    <li>génération des statistiques</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.22-20251026</code> 
-                                <br />
-                                <ul>
-                                    <li>fix anomalies de saisies de parcs</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.21-20251019</code> 
-                                <br />
-                                <ul>
-                                    <li>protection anti-rejeux</li>
-                                    <li>fix sécurité: diverses librairies</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.20-20250416</code> 
-                                <br />
-                                <ul>
-                                    <li>videos d'aide à la saisie</li>
-                                    <li>service de calcul v3</li>
-                                    <li>methodes d'export des GeoJsons publique</li>
-                                    <li>préparation des travaux pour les IRIS</li>
-                                    <li>fix sécurité: diverses librairies</li>
-                                    <li>documentation</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.19-20250311</code> 
-                                <br />
-                                <ul>
-                                    <li>fix: security advices after audit</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.18-20250307</code> 
-                                <br />
-                                <ul>
-                                    <li>Monitoring APM</li>
-                                    <li>Ajout d'une liste de calcul des carreaux</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.17-20250219</code> 
-                                <br />
-                                <ul>
-                                    <li>fix: après création de parc, on va en mode modification sur le nouveau parc</li>
-                                    <li>fix: création d'un contour adjacent à un contour existant</li>
-                                    <li>Ajout de code couleur sur les parcs avec la légende</li>
-                                    <li>Ajout de liens pour accès rapide parc ↔ entrées</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.16-20250206</code> 
-                                <br />
-                                <ul>
-                                    <li>ajout du monitoring de l'application</li>
-                                    <li>amélioration de l'algorithme de fusion des isochrones</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.15-20250129</code> 
-                                <br />
-                                <ul>
-                                    <li>fix: optimisation, relocalisation automatique des parcs sur la ville</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.14-20250114</code> 
-                                <br />
-                                <ul>
-                                    <li>fix: edition de contours de parc de la couche autmel</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.13-20250106</code> 
-                                <br />
-                                <ul>
-                                    <li>fix: revue du pool du SGBDR</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.12-20250106</code> 
-                                <br />
-                                <ul>
-                                    <li>correctif: les parcs sans contours apparaissent avec un marqueur si les coordonnées existent.</li>
-                                    <li>montée de version des librairies dépendantes</li>
-                                 </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.11-20241231</code> 
-                                <br />
-                                <ul>
-                                    <li>Sélecteur de région, ville et d'adresse sur la carte publique</li>
-                                    <li>Refonte du moteur des couleurs sur la carte publique (optimisation et réduction des tailles)</li>
-                                    <li>Publication des cartes pour l'administateur.</li>
-                                    <li>Intégration du critère 0,5 ha à proximité.</li>
-                                    <li>Corrections: timehack, rafraichissement des parcs dans les formulaires de saisie</li>
-                                    <li>Ajouter les parcs de l'OpenData Lyon, Nantes & Toulouse</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.10-20241205</code> 
-                                <br /> 
-                                <ul>
-                                    <li>Création de parc</li>
-                                    <li>Modification du sélecteur de ville</li>
-                                    <li>Page de login custom</li>
-                                    <li>Homogénéisation des boutons.</li>
-                                    <li>Migration technique de la carte publique de vue2 à vue3</li>
-                                    <li>Démo de statistiques d'accès aux parcs</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.9-20240717</code> 
-                                <br /> 
-                                <ul>
-                                    <li>Carreaux de 200m au national</li>
-                                    <li>Donnée carroyées de 2015, 2017, 2019</li>
-                                    <li>Données de villes et des références de densité</li>
-                                    <li>Intégration des nouvelles API de l'IGN</li>
-                                    <li>Refonte du moteur de calcul et optimisations</li>
-                                    <li>nouveau rendu de la carte publique</li>
-                                    <li>publication de la carte publique pré-calculée (publication depuis l'app de gestion faisable manuellement en attendant))</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.8-20240310</code> 
-                                <br /> 
-                                <ul>
-                                    <li>Info parc, surface, m²/hab, type, status</li>
-                                    <li>Ajouter un typage pour les parcs (parc, bosquet, cimetière).</li>
-                                    <li>Ajouter un status pour les parcs (fait, a faire, a recalculer).</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.7-20240229</code> 
-                                <br /> 
-                                <ul>
-                                    <li>FIX Sécurité CVE-2024-25710, CVE-2024-1597</li>
-                                    <li>Correction des stats sur les isochrones</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.6-20240216</code> 
-                                <br /> 
-                                <ul>
-                                    <li>Rendre disponible depuis l'interface la fusion des isochrones des entrées</li>
-                                    <li>lancer depuis l'ihm la fusion des isochrones des entrées de parc.</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.5-20240205</code> 
-                                <br /> 
-                                <ul>
-                                    <li>Réactivation de l'envoi de mail.</li>
-                                    <li>Possibilité de régénérer un mot de passe.</li>
-                                    <li>Page d'information CNIL et sécurité.</li>
-                                    <li>Affichage des isochrones de chaque entrée sur le formulaire de gestion des entrées</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.4-20240202</code> 
-                                <br /> 
-                                <ul>
-                                    <li>Désactivation de l'envoi de mail.</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.3-20240130</code> 
-                                <br /> 
-                                <ul>
-                                    <li>Ajouter les parcs de l'OpenData Roubaix & Tourcoing</li>
-                                    <li>Automatiser l'envoi de mail en cas de création ou de réinitialisation de mot de passe.</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.2-20240125</code> 
-                                <br /> 
-                                <ul>
-                                    <li>Liste et édition des associations</li>
-                                    <li>Liste et édition des utilisateurs</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.1-20240119</code>
-                                <br /> 
-                                <ul>
-                                    <li>Edition des entrées</li>
-                                    <li>Liste des parcs</li>
-                                </ul>
-                            </p>
-                            <p>
-                                <code>V1.0.0-20231010</code>
-                                <br />
-                                <ul>
-                                    <li>Première version</li>
-                                </ul> 
-                            </p>
-                            <p>
-                                <code>V0.1.0-20230615</code>
-                                <br />
-                                <ul>
-                                    <li>MVP Lille-Hellemmes-Lomme publique</li>
-                                </ul> 
-                            </p>
-                            <p>
-                                <code>V0.0.1-20230328</code>
-                                <br />
-                                <ul>
-                                    <li>MVP privé Lille-Hellemmes-Lomme</li>
-                                    <li>Moteur geojson</li>
-                                    <li>Saisie GSheet</li>
-                                </ul> 
-                            </p>
+                    <div class="timeline-container mt-5">
+                        <div class="release-section">
+                            <div class="release-card bg-light border-0 shadow-sm mb-4">
+                                <div class="release-header badge bg-danger mb-3">
+                                    <i class="fas fa-code-branch me-2"></i>En cours de développement
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Publication des cartes depuis l'interface de gestion.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Proposition de parc par Algo PPC (Choco Solver).</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>...</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card bg-light border-0 shadow-sm mb-4">
+                                <div class="release-header badge bg-warning mb-3">
+                                    <i class="fas fa-star me-2"></i>Futures fonctionnalités (à prioriser)
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajout des photos sur le site publique.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Publication des cartes depuis l'interface de gestion.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Présentation de la richesse des foyers.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>...</li>
+                                        <li><i class="fas fa-lightbulb text-warning me-2"></i>Une nouvelle idée? Proposer <a href="https://github.com/cunvoas/opendata-tools/issues" target="_blank" rel="noopener noreferrer" class="link-primary">ici</a>.</li>
+                                    </ul>
+                                </div>
+                            </div> 
+                                  
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.1.0-20260111
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Amélioration de l'UX des pages simples.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Export PDF des Simulations.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Moteur de proposition en brute force.</li>
+                                    </ul>
+                                </div>
+                            </div> 
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.28-20251215
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Simulation de projet.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.27-20251215
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajout de couleur de status de parcs sur la page de consultation.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.26-20251211
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Première proposition de parcs (algo par priorisation des déficits).</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Refonte graphique du site publique (tailwind).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.25-20251122
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Gestion des groupements de communes.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Lancements des calculs pour une communauté de communes.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Page de consultation des données non publiées au public.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.24-20251119
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Site publique v2</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Sélection des résultats pour les stats/ville.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Demande de calculs depuis l'interface de gestion.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.23-20251019
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Génération des statistiques</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.22-20251026
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Fix anomalies de saisies de parcs</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.21-20251019
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Protection anti-rejeux</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Fix sécurité: diverses librairies</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.20-20250416
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Videos d'aide à la saisie</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Service de calcul v3</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Methodes d'export des GeoJsons publique</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Préparation des travaux pour les IRIS</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Fix sécurité: diverses librairies</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Documentation</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.19-20250311
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Fix: security advices after audit</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.18-20250307
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Monitoring APM</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajout d'une liste de calcul des carreaux</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.17-20250219
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Fix: après création de parc, on va en mode modification sur le nouveau parc</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Fix: création d'un contour adjacent à un contour existant</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajout de code couleur sur les parcs avec la légende</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajout de liens pour accès rapide parc ↔ entrées</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.16-20250206
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajout du monitoring de l'application</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Amélioration de l'algorithme de fusion des isochrones</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.15-20250129
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Fix: optimisation, relocalisation automatique des parcs sur la ville</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.14-20250114
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Fix: edition de contours de parc de la couche autmel</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.13-20250106
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Fix: revue du pool du SGBDR</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.12-20250106
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Correctif: les parcs sans contours apparaissent avec un marqueur si les coordonnées existent.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Montée de version des librairies dépendantes</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.11-20241231
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Sélecteur de région, ville et d'adresse sur la carte publique</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Refonte du moteur des couleurs sur la carte publique (optimisation et réduction des tailles)</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Publication des cartes pour l'administateur.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Intégration du critère 0,5 ha à proximité.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Corrections: timehack, rafraichissement des parcs dans les formulaires de saisie</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajouter les parcs de l'OpenData Lyon, Nantes & Toulouse</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.10-20241205
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Création de parc</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Modification du sélecteur de ville</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Page de login custom</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Homogénéisation des boutons.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Migration technique de la carte publique de vue2 à vue3</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Démo de statistiques d'accès aux parcs</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.9-20240717
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Carreaux de 200m au national</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Donnée carroyées de 2015, 2017, 2019</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Données de villes et des références de densité</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Intégration des nouvelles API de l'IGN</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Refonte du moteur de calcul et optimisations</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Nouveau rendu de la carte publique</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Publication de la carte publique pré-calculée</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.8-20240310
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Info parc, surface, m²/hab, type, status</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajouter un typage pour les parcs (parc, bosquet, cimetière).</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajouter un status pour les parcs (fait, a faire, a recalculer).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.7-20240229
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>FIX Sécurité CVE-2024-25710, CVE-2024-1597</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Correction des stats sur les isochrones</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.6-20240216
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Rendre disponible depuis l'interface la fusion des isochrones des entrées</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Lancer depuis l'ihm la fusion des isochrones des entrées de parc.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.5-20240205
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Réactivation de l'envoi de mail.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Possibilité de régénérer un mot de passe.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Page d'information CNIL et sécurité.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Affichage des isochrones de chaque entrée sur le formulaire de gestion des entrées</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.4-20240202
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Désactivation de l'envoi de mail.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.3-20240130
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajouter les parcs de l'OpenData Roubaix & Tourcoing</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Automatiser l'envoi de mail en cas de création ou de réinitialisation de mot de passe.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.2-20240125
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Liste et édition des associations</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Liste et édition des utilisateurs</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V1.0.1-20240119
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Edition des entrées</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Liste des parcs</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left milestone">
+                                <div class="release-version badge bg-success mb-3">
+                                    <i class="fas fa-trophy me-2"></i>V1.0.0-20231010
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Première version</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left milestone">
+                                <div class="release-version badge bg-info mb-3">
+                                    <i class="fas fa-rocket me-2"></i>V0.1.0-20230615
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>MVP Lille-Hellemmes-Lomme publique</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left milestone">
+                                <div class="release-version badge bg-secondary mb-3">
+                                    <i class="fas fa-flask me-2"></i>V0.0.1-20230328
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>MVP privé Lille-Hellemmes-Lomme</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Moteur geojson</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Saisie GSheet</li>
+                                    </ul>
+                                </div>
+                            </div>
 
                         </div>
                     </div>
@@ -321,5 +431,100 @@
 	<div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
 
 	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+	
+	<style>
+		.timeline-container {
+			position: relative;
+			max-width: 1200px;
+			margin: 0 auto;
+		}
+		
+		.release-section {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+		}
+		
+		.release-card {
+			background: white;
+			border-radius: 0.5rem;
+			padding: 1.5rem;
+			transition: all 0.3s ease;
+		}
+		
+		.release-card:hover {
+			transform: translateX(8px);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+		}
+		
+		.timeline-item {
+			position: relative;
+			padding-left: 2rem;
+			border-left: 3px solid #0d6efd;
+			margin-left: 1rem;
+		}
+		
+		.timeline-item::before {
+			content: '';
+			position: absolute;
+			left: -0.6rem;
+			top: 0.5rem;
+			width: 1rem;
+			height: 1rem;
+			background: #0d6efd;
+			border-radius: 50%;
+			border: 3px solid white;
+			box-shadow: 0 0 0 2px #0d6efd;
+		}
+		
+		.timeline-item.milestone {
+			border-left-color: #198754;
+		}
+		
+		.timeline-item.milestone::before {
+			background: #198754;
+			box-shadow: 0 0 0 2px #198754;
+			width: 1.2rem;
+			height: 1.2rem;
+			left: -0.7rem;
+		}
+		
+		.release-header,
+		.release-version {
+			font-size: 1rem;
+			font-weight: 600;
+			padding: 0.5rem 1rem;
+			display: inline-block;
+		}
+		
+		.release-body ul {
+			margin: 0;
+			padding-left: 0;
+		}
+		
+		.release-body ul li {
+			padding: 0.5rem 0;
+			border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+		}
+		
+		.release-body ul li:last-child {
+			border-bottom: none;
+		}
+		
+		.release-body ul li i {
+			width: 1.5rem;
+		}
+		
+		@media (max-width: 768px) {
+			.timeline-item {
+				padding-left: 1.5rem;
+				margin-left: 0.5rem;
+			}
+			
+			.release-card:hover {
+				transform: translateX(4px);
+			}
+		}
+	</style>
 </body>
 </html>

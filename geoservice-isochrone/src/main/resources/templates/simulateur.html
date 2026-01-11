@@ -139,8 +139,15 @@
           </div>
         </div>
 
+        <!-- Message d'erreur token invalide -->
+        <div class="alert alert-danger" th:if="${tokenInvalid}">
+          <i class="fas fa-exclamation-triangle"></i> La soumission a échoué : le formulaire a déjà été soumis ou a expiré. Veuillez réessayer.
+        </div>
+
         <!-- Formulaire de simulation -->
         <form id="formCompute" th:action="@{/mvc/simulation/compute}" method="post" th:object="${formSimulateur}">
+          <!-- Anti double soumission: token serveur -->
+          <input type="hidden" name="token" th:value="${token}" />
           <input type="hidden" name="id" th:field="*{id}" />
           <input type="hidden" name="idRegion" th:field="*{idRegion}" />
           <input type="hidden" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
