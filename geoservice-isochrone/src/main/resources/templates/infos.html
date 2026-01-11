@@ -13,56 +13,164 @@
 			<main>
 
 				<div class="container-fluid px-4">
-					<h3 class="mt-4" th:text="#{menu.abstract.info}">Info</h3>
+					<h1 class="mt-4 mb-4" th:text="#{menu.abstract.info}">Informations</h1>
 
-                    <div class="card mt-12">
-                        <div class="card-body col-md-12">
-                            <p>
-                                <code>Aide et tutoriels</code>
-                                <p>
-                                    <i>Saisie des parcs</i>
-                                     <br /> <br /> La saisie est possible directement via le menu gauche Carte/Parcs.
-                                </p>
-                                <p>
-                                    <i>Saisie des entrées</i>
-                                     <br /> <br />
-                                     La saisie est possible directement via le menu gauche Carte/Entrées ou carte/Parcs puis via le lien éditer à droite du tableau.
-                                </p>
-                            </p>
-                            <p>
-                                <code>Info CNIL</code>
-                                <br /> 
-                                <p>
-                                    Cette application n'utilise aucun cookie tier. Il y a un cookie de session pour assurer votre authentification.
-                                    <br /> <br />
-                                    La solution motomo (validée par la CNIL) sera utilisée à terme afin de mesurer l'usage.  <br />
-                                    Le serveur matomo sera auto-hébergé pour maitriser vos données.
-                                    
-                                </p>
-                            </p>
-                            <p>
-                                <code>Info Sécurité</code>
-                                <br />
-                                <p>
-                                  Les mots de passe doivent avoir des majuscules, minuscules, chiffres et caratères spéciaux.<br />
-                                  Vos mots de passe ne peuvent pas être récupérés, en cas de perte votre administrateur peut en générer un nouveau et il sera envoyé par email.<br />
-                                  Le choix du chiffrement a été fait de façon a être difficilement cassable, de par l'algorithme et de son paramétrage, de sa taille et complexité.<br />
-                                  Par ailleurs, un mécanisme de contrôle des tentatives existe et en cas de <u>5 échecs</u>, l'<b><u>accès sera bloqué 4h</u></b>.<br />
-                                  Suite aux nombreuses tentatives malveillantes certains pays sont bloqués. Les tentatives d'exploitation de vulnérabilités sont bloquées indéfiniment.<br />
-                                  
-                                  <br />
-                                  Enfin, une évolution est prévue pour exclure le top 20 millions des mots de passes les plus piratés.
-                                
-                                  <br />
-                                  Il est conseillé de sauver ses mots de passe dans un coffre fort sécurisé.<br /> 
-                                  <a href="https://keepass.info/" target="_blank" rel="noopener noreferrer">Keepass</a> est une solution opensource et gratuite certifiée par l'<b>ANSSI</b>.
-                                
-                                </p>
-                            </p>
+					<!-- Aide et tutoriels -->
+					<div class="card shadow-sm mb-4">
+						<div class="card-header bg-primary text-white">
+							<h5 class="mb-0">
+								<i class="fas fa-graduation-cap me-2"></i>Aide et tutoriels
+							</h5>
+						</div>
+						<div class="card-body">
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<div class="border-start border-primary border-4 ps-3 py-2">
+										<h6 class="fw-bold text-primary mb-2">
+											<i class="fas fa-map-marked-alt me-2"></i>Saisie des parcs
+										</h6>
+										<p class="mb-0 text-muted">
+											La saisie est possible directement via le menu gauche 
+											<span class="badge bg-light text-dark">Carte → Parcs</span>
+										</p>
+									</div>
+								</div>
+								<div class="col-md-6 mb-3">
+									<div class="border-start border-primary border-4 ps-3 py-2">
+										<h6 class="fw-bold text-primary mb-2">
+											<i class="fas fa-door-open me-2"></i>Saisie des entrées
+										</h6>
+										<p class="mb-0 text-muted">
+											La saisie est possible via le menu 
+											<span class="badge bg-light text-dark">Carte → Entrées</span> 
+											ou <span class="badge bg-light text-dark">Carte → Parcs</span> 
+											puis via le lien "Éditer" à droite du tableau.
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 
-                        </div>
-                    </div>
+					<!-- Info CNIL -->
+					<div class="card shadow-sm mb-4">
+						<div class="card-header bg-info text-white">
+							<h5 class="mb-0">
+								<i class="fas fa-shield-alt me-2"></i>Confidentialité et données personnelles (CNIL)
+							</h5>
+						</div>
+						<div class="card-body">
+							<div class="alert alert-info mb-3" role="alert">
+								<i class="fas fa-info-circle me-2"></i>
+								Cette application respecte votre vie privée et est conforme au RGPD.
+							</div>
+							<ul class="list-unstyled">
+								<li class="mb-2">
+									<i class="fas fa-cookie-bite text-info me-2"></i>
+									Aucun cookie tiers n'est utilisé. Seul un cookie de session est présent pour votre authentification.
+								</li>
+								<li class="mb-2">
+									<i class="fas fa-chart-line text-info me-2"></i>
+									La solution <strong>Matomo</strong> (validée par la CNIL) sera utilisée à terme pour mesurer l'usage.
+								</li>
+								<li class="mb-0">
+									<i class="fas fa-server text-info me-2"></i>
+									Le serveur Matomo sera auto-hébergé pour maîtriser vos données.
+								</li>
+							</ul>
+						</div>
+					</div>
 
+					<!-- Info Sécurité -->
+					<div class="card shadow-sm mb-4">
+						<div class="card-header bg-success text-white">
+							<h5 class="mb-0">
+								<i class="fas fa-lock me-2"></i>Sécurité
+							</h5>
+						</div>
+						<div class="card-body">
+							<h6 class="fw-bold text-success mb-3">
+								<i class="fas fa-key me-2"></i>Politique des mots de passe
+							</h6>
+							<div class="alert alert-warning" role="alert">
+								<i class="fas fa-exclamation-triangle me-2"></i>
+								Les mots de passe doivent contenir : 
+								<strong>majuscules</strong>, <strong>minuscules</strong>, 
+								<strong>chiffres</strong> et <strong>caractères spéciaux</strong>.
+							</div>
+							
+							<div class="row mb-3">
+								<div class="col-md-6 mb-3">
+									<div class="d-flex align-items-start">
+										<i class="fas fa-times-circle text-danger me-2 mt-1"></i>
+										<div>
+											<strong>Récupération impossible</strong>
+											<p class="mb-0 small text-muted">
+												En cas de perte, votre administrateur peut générer un nouveau mot de passe qui sera envoyé par email.
+											</p>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 mb-3">
+									<div class="d-flex align-items-start">
+										<i class="fas fa-shield-alt text-success me-2 mt-1"></i>
+										<div>
+											<strong>Chiffrement robuste</strong>
+											<p class="mb-0 small text-muted">
+												Algorithme et paramétrage rendant le cassage très difficile.
+											</p>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="alert alert-danger mb-3" role="alert">
+								<h6 class="alert-heading">
+									<i class="fas fa-ban me-2"></i>Protection contre les attaques
+								</h6>
+								<p class="mb-2">
+									<i class="fas fa-clock me-2"></i>
+									En cas de <strong>5 échecs</strong> de connexion, 
+									l'accès sera <strong class="text-decoration-underline">bloqué pendant 4 heures</strong>.
+								</p>
+								<hr>
+								<p class="mb-0 small">
+									<i class="fas fa-globe me-2"></i>
+									Certains pays sont bloqués suite aux nombreuses tentatives malveillantes. 
+									Les tentatives d'exploitation de vulnérabilités sont bloquées indéfiniment.
+								</p>
+							</div>
+
+							<div class="card bg-light border-0 mb-3">
+								<div class="card-body">
+									<h6 class="fw-bold mb-2">
+										<i class="fas fa-road me-2"></i>Évolutions prévues
+									</h6>
+									<p class="mb-0 small">
+										Exclusion du top 20 millions des mots de passe les plus piratés.
+									</p>
+								</div>
+							</div>
+
+							<div class="alert alert-success mb-0" role="alert">
+								<h6 class="alert-heading">
+									<i class="fas fa-vault me-2"></i>Recommandation
+								</h6>
+								<p class="mb-2">
+									Il est vivement conseillé de sauvegarder vos mots de passe dans un coffre-fort sécurisé.
+								</p>
+								<a href="https://keepass.info/" target="_blank" rel="noopener noreferrer" 
+								   class="btn btn-sm btn-success">
+									<i class="fas fa-external-link-alt me-1"></i>
+									KeePass - Certifié ANSSI
+								</a>
+								<p class="mt-2 mb-0 small text-muted">
+									<i class="fas fa-check-circle me-1"></i>
+									Solution open source et gratuite certifiée par l'<strong>ANSSI</strong>.
+								</p>
+							</div>
+						</div>
+					</div>
 
 				</div>
 			</main>
