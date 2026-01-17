@@ -61,7 +61,7 @@
 								th:text="${region.name}" 
 								th:selected="${region.id==idRegion}"></option>
 						</select>
-						<label for="idRegion" th:text="#{entrance.region}">region</label>
+						<label for="idRegion"><i class="fas fa-map me-2"></i><span th:text="#{entrance.region}">region></span></label>
 					</div>
 				</form>
              </div>
@@ -76,7 +76,7 @@
 								<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
 								<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
 							</select>
-							<label for="idCommunauteDeCommunes" th:text="#{entrance.communateDeCommunes}">Comm de Co</label>
+							<label for="idCommunauteDeCommunes"><i class="fas fa-building me-2"></i><span th:text="#{entrance.communateDeCommunes}">Comm2co></span></label>
 							<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
 						</div>
 					</fieldset>
@@ -89,7 +89,7 @@
 				<form id="formSelectCity" th:action="@{/mvc/park/new/city}" method="POST" th:object="${newPark}">
 				<fieldset id="fsCity" disabled="disabled">
 					<div class="form-floating">
-						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
+						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter"><i class="fas fa-city me-2"></i><span th:text="#{entrance.commune}">ville</span></label>
 						<datalist id="communes" class="form-label">
 							<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
 						</datalist>

@@ -26,7 +26,7 @@
                             <option value="" selected disabled>Région...</option>
                             <option th:each="r : ${regions}" th:value="${r.id}" th:text="${r.name}" th:selected="${territoire != null && r.id == territoire.idRegion}"></option>
                           </select>
-                          <label for="idRegion"><i class="fas fa-map me-2"></i>Région</label>
+                          <label for="idRegion"><i class="fas fa-map me-2"></i><span th:text="entrance.region"></span></label>
                         </div>
                       </form>
                     </div>
@@ -452,6 +452,26 @@ function getSquareStyle(feature) {
   }
   return baseStyle;
 }
+ 
+function formatedSurface(feature) {
+    let formattedSurface = '';
+    let unit = '';
+    if (feature.properties.surface) {
+      unit = ' m²';
+      formattedSurface = feature.properties.surface;
+      if (feature.properties.surface > 10000) {
+        const surfaceInHa = feature.properties.surface / 10000;
+        formattedSurface = new Intl.NumberFormat('fr-FR', { 
+          minimumFractionDigits: 2, 
+          maximumFractionDigits: 2 
+        }).format(surfaceInHa);
+        unit = ' ha';
+      } else {
+        formattedSurface = new Intl.NumberFormat('fr-FR').format(Math.round(feature.properties.surface));
+      }
+    }
+    return formattedSurface + unit;
+}
 
 /**
  * Élargit les bornes géographiques d'un ratio défini (EXPAND_RATIO)
@@ -524,7 +544,7 @@ function createPopupContent(feat, layerName) {
   // Lien édition parcs
   if (layerName === 'Parcs' && feat.properties.id) {
     const sUrlEditPark = window.location.protocol + "//" + window.location.host + urlEditPark + '?idPark=' + feat.properties.id;
-    popupContent += `<p><a href='${sUrlEditPark}'>Éditer</a></p>`;
+    popupContent += `<p>Surface: `+ formatedSurface(feat) +`<br /><a href='${sUrlEditPark}'>Éditer</a></p>`;
 
     // changer la couleur si feat.properties.oms=true => #3aa637
     // changer la couleur si feat.properties.oms=false => #e96020

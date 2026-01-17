@@ -1,7 +1,5 @@
 package com.github.cunvoas.geoserviceisochrone.config.security;
 
-import com.github.cunvoas.geoserviceisochrone.config.security.jwt.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -9,6 +7,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.github.cunvoas.geoserviceisochrone.config.security.jwt.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Configuration de sécurité pour les API REST avec JWT.
@@ -48,7 +50,7 @@ public class JwtSecurityConfig {
                 )
                 
                 // Désactiver CSRF pour les API REST (utilisation de JWT)
-                .csrf(csrf -> csrf.disable())
+//                .csrf(csrf -> csrf.disable())
                 
                 // Session stateless (pas de session HTTP, uniquement JWT)
                 .sessionManagement(session -> 
