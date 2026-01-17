@@ -1,6 +1,6 @@
 <template>
     <div class="text-left align-top">
-      <h5 class="text-xl font-semibold mb-3">Saisie des parcs et des entrés</h5>
+      <h5 class="text-xl font-semibold mb-3">Saisie des parcs et des entrées</h5>
       <p class="mb-4">
         Les vidéos ci-dessous vous montrent comment saisir les contours des parcs et les entrées de parc.
         <br />

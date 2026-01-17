@@ -8,6 +8,7 @@ async function checkForUpdates() {
     
     if (lastVersion && lastVersion !== data.version) {
       console.log('Nouvelle version détectée, rechargement...');
+      localStorage.setItem('app-version', data.version); // Sauvegarder AVANT le reload
       window.location.reload(true); // true = hard refresh, ignore le cache
     } else {
       localStorage.setItem('app-version', data.version);
