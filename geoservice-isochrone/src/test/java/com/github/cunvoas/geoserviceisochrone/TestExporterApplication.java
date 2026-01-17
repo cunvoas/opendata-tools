@@ -116,6 +116,7 @@ class TestExporterApplication {
 	void writeLiveDataByCom2coAndYear() {
 		
 		Integer[] annees= {2015,2017,2019};
+//		Integer annee=2019;
 		Long com2coId=1l;
 		
 		CommunauteCommune com2co=serviceReadReferences.getCommunauteCommuneById(com2coId);

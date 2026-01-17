@@ -119,6 +119,7 @@ export default {
         // Extract query string from relativeUrl
         const queryString = relativeUrl.includes('?') ? relativeUrl.split('?')[1] : '';
         const shareableUrl = `${fqdn}${basePath}${queryString ? '?' + queryString : ''}`;
+
         
         // Copy the URL to clipboard
         navigator.clipboard.writeText(shareableUrl).then(() => {
