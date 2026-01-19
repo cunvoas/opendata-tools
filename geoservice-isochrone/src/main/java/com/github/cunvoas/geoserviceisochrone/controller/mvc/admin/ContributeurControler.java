@@ -207,7 +207,9 @@ public class ContributeurControler {
 			model.addAttribute("assos", associationService.findAll());
 		} else {
 			Association asso = associationService.findById(contribConnected.getAssociation().getId());
-			model.addAttribute( "assos", (new ArrayList<Association>(1)).add(asso) );
+			List<Association> assos = new ArrayList<>(1);
+			assos.add(asso);
+			model.addAttribute( "assos", assos );
 		}
 		
 		if (bindingResult.hasErrors()) {
