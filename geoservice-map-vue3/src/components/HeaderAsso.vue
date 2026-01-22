@@ -2,7 +2,7 @@
     <div class="container mx-auto px-4 py-6">
         <!-- Header Title -->
         <div class="text-center mb-6">
-            <h3 class="text-2xl font-bold text-gray-800" @dblclick="generateShareLink" style="cursor: pointer;">Parcs accessibles en m² par habitant</h3>
+            <h3 class="text-2xl font-bold text-gray-800" @dblclick="generateShareLink" style="cursor: pointer;" :title="'Version: ' + appVersion">Parcs accessibles en m² par habitant</h3>
         </div>
         
         <!-- Logos Row -->
@@ -93,6 +93,18 @@ import { buildShareableUrl } from '../utils/urlParams.js';
 
 export default {
   name: 'HeaderAsso',
+  data() {
+    return {
+      appVersion: '1.0.28'
+    };
+  },
+  mounted() {
+    // Fetch the version from localStorage or the version.json file
+    const storedVersion = localStorage.getItem('app-version');
+    if (storedVersion) {
+      this.appVersion = storedVersion;
+    }
+  },
   methods: {
     generateShareLink() {
       // Get location data from localStorage
@@ -104,7 +116,22 @@ export default {
       
       try {
         const locationData = JSON.parse(savedLocation);
-        const shareableUrl = buildShareableUrl(locationData);
+        const relativeUrl = buildShareableUrl(locationData);
+        
+        // Build full URL with FQDN and force /carte route
+        const fqdn = `${window.location.protocol}//${window.location.host}`;
+        
+        // Extract base path (e.g., /parcs-et-jardins/) from current URL
+        const pathname = window.location.pathname;
+        const pathSegments = pathname.split('/').filter(Boolean);
+        
+        // If path has segments, keep the base (first segment) and append /carte
+        const basePath = pathSegments.length > 0 ? `/${pathSegments[0]}/carte` : '/carte';
+        
+        // Extract query string from relativeUrl
+        const queryString = relativeUrl.includes('?') ? relativeUrl.split('?')[1] : '';
+        const shareableUrl = `${fqdn}${basePath}${queryString ? '?' + queryString : ''}`;
+
         
         // Copy the URL to clipboard
         navigator.clipboard.writeText(shareableUrl).then(() => {

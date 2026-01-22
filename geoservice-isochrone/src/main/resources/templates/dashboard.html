@@ -290,23 +290,28 @@
 
 					</div>
 
-            <div class="row mt-3">
-            <h3 class="mt-12" th:text="#{menu.abstract.history}">History</h3>
-						
-					<div class="card mt-12">
-						<div class="card-body col-md-6">
-					         <a th:href="@{/mvc/release-note}" th:text="#{menu.abstract.historyDetail}">
-					          History Detail
-					        </a>		        
-
+					<!-- Historique et suggestions -->
+					<div class="row mb-5">
+						<div class="col-12">
+							<h3 class="mt-4 mb-4" th:text="#{menu.abstract.history}">History</h3>
 						</div>
-						
-                        <div class="card-body col-md-6">
-                            <p>Une nouvelle idée? Proposer <a href="https://github.com/cunvoas/opendata-tools/issues" target="_blank" rel="noopener noreferrer">ici</a>.</p>
-                        </div>
+						<div class="col-md-6 mb-3">
+							<div class="card">
+								<div class="card-body">
+									<a th:href="@{/mvc/release-note}" th:text="#{menu.abstract.historyDetail}">
+										History Detail
+									</a>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 mb-3">
+							<div class="card">
+								<div class="card-body">
+									<p>Une nouvelle idée? Proposer <a href="https://github.com/cunvoas/opendata-tools/issues" target="_blank" rel="noopener noreferrer">ici</a>.</p>
+								</div>
+							</div>
+						</div>
 					</div>
-					
-               </div>
 			</main>
 			<!-- fin MAIN -->
 

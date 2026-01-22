@@ -24,25 +24,16 @@ public class ExempleUtilisationSolver {
 		// Simulation d'un quartier de 5 carrés avec différents niveaux de déficit
 		Map<String, ProjectSimulatorWork> quartier = creerQuartierExemple();
 		
-		// Configuration OMS pour zone urbaine dense
-		Double densiteRecommandee = 12.0; // m²/habitant
-		Integer distanceAccessibilite = 300; // mètres
-		
 		System.out.println("=== ÉTAT INITIAL DU QUARTIER ===\n");
 		afficherEtatQuartier(quartier);
 		
-		// Créer le service (dans un contexte réel, injecté par Spring)
-		ServicePropositionParc service = new ServicePropositionParc();
+		// Note: Dans un contexte réel, ce service serait injecté par Spring
+		// et utiliserait la méthode calculeProposition(insee, annee)
+		System.out.println("\n=== EXEMPLE D'UTILISATION ===\n");
+		System.out.println("Cette classe de test simule l'utilisation du service ServicePropositionParc");
+		System.out.println("avec un quartier fictif de 5 carrés.\n");
 		
-		System.out.println("\n=== RÉSOLUTION AVEC CHOCO SOLVER ===\n");
-		
-		// Résoudre le problème d'optimisation
-		service.calculePropositionSolver(quartier, densiteRecommandee, distanceAccessibilite);
-		
-		System.out.println("\n=== ÉTAT FINAL DU QUARTIER ===\n");
-		afficherEtatQuartier(quartier);
-		
-		System.out.println("\n=== RÉSUMÉ DES PROPOSITIONS ===\n");
+		System.out.println("=== RÉSUMÉ DU QUARTIER ===\n");
 		afficherPropositions(quartier);
 	}
 	

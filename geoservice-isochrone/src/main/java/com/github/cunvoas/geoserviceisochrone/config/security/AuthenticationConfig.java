@@ -14,6 +14,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.context.request.RequestContextListener;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationSecurityProperties;
@@ -36,6 +38,10 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthenticationConfig {
 	
 	private final ApplicationSecurityProperties customProps;
+	
+	@Autowired
+	private LimitedUserDetailsService userDetailsService;
+	
 	/**
 	 * Constructeur avec injection des propriétés de sécurité personnalisées.
 	 * @param customProps propriétés de sécurité personnalisées
@@ -44,9 +50,6 @@ public class AuthenticationConfig {
 		super();
 		this.customProps = customProps;
 	}
-	
-	@Autowired
-	private LimitedUserDetailsService userDetailsService;
 	
 	/**
 	 * Fournit un listener de contexte de requête HTTP.
@@ -91,7 +94,15 @@ public class AuthenticationConfig {
 				
 //			   .rememberMe(Customizer.withDefaults())
 				
-				.csrf(csrf->csrf
+				.csrf(csrf -> {
+					// Configuration CSRF renforcée pour la protection anti-rejeu
+					CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+					// Désactiver la validation de l'en-tête X-CSRF-TOKEN pour permettre l'usage du token dans le corps
+//					requestHandler.setCsrfRequestAttributeName(null);
+					
+					csrf
+						.csrfTokenRequestHandler(requestHandler)
+						.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 						.ignoringRequestMatchers(
 								"/actuator/**",
 								"/pub/**",
@@ -99,8 +110,8 @@ public class AuthenticationConfig {
                  			    "/awake",
                         		"/mvc/ajax/**",
                  			    "/favicon.ico"
-						)
-				)
+						);
+				})
 				
 			.build();
 	}
@@ -110,7 +121,9 @@ public class AuthenticationConfig {
 	 * @return le provider d'authentification
 	 */
 	@Bean
+	@SuppressWarnings("deprecation")
 	public AuthenticationProvider authenticationProvider() {
+		// FIXME
 		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 		authProvider.setUserDetailsService(userDetailsService);
 		authProvider.setPasswordEncoder(passwordEncoder());

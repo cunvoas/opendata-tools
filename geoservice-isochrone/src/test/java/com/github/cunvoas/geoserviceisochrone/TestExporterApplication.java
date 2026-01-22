@@ -30,6 +30,7 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceIris;
 cp -Rf /var/isochrone/data/* /work/PERSO/github/gh_pages/geoservice-data
 cd /work/PERSO/github/gh_pages/geoservice-data
 git status
+
  */
 class TestExporterApplication {
 	
@@ -47,6 +48,7 @@ class TestExporterApplication {
 	private ServiceIris serviceIris;
 
 	@Test
+	@Disabled
 	@Order(1)
 	void hostname() {
 		try {
@@ -118,15 +120,15 @@ class TestExporterApplication {
 		Long com2coId=1l;
 		
 		CommunauteCommune com2co=serviceReadReferences.getCommunauteCommuneById(com2coId);
+
+//		Integer annee=2019;
+//		export( com2co, annee);
+		
 		try {
 
-//			export( com2co, annee);
-			
 			for (Integer anneeIter : annees) {
 				export( com2co, anneeIter);
-				
 			}
-			
 			
 
 		} catch (IOException e) {

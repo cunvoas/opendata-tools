@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionExtract;
@@ -136,31 +137,43 @@ public class ParkService {
 		
 		//check area
 		if (parkEntrance.getParkArea()==null || parkEntrance.getParkArea().getId()==null) {
-			
-			Optional<ParcEtJardin> opt = parkJardinRepository.findById(gardenId);
-			if (opt.isPresent()) {
-				ParcEtJardin parcEtJardin = opt.get();
-			
-				ParkArea parkArea = new ParkArea();
-				parkArea.setName(parcEtJardin.getName());
-				parkArea.setIdParcEtJardin(parcEtJardin.getId());
-				parkArea.setBlock(parcEtJardin.getQuartier());
-				
-				// quick fix for manual creation
-				Long idType = 1L;
-				if (parcEtJardin.getTypeId()!=null) {
-					idType = parcEtJardin.getTypeId();
-				}
-				ParkType type = parkTypeRepository.getReferenceById(idType);
-				parkArea.setType(type);
-				parkArea.setOmsCustom(parcEtJardin.getOmsCustom());
-				parkArea.setUpdated(new Date());
-				
-				parkArea = parkAreaRepository.save(parkArea);
-				parkEntrance.setParkArea(parkArea);
-			
+			// First, try to reuse an existing ParkArea for this ParcEtJardin
+			ParkArea existing = parkAreaRepository.findByIdParcEtJardin(gardenId);
+			if (existing != null) {
+				parkEntrance.setParkArea(existing);
 			} else {
-				throw new ExceptionAdmin("ERR_AREA_NOT_EXITS");
+				Optional<ParcEtJardin> opt = parkJardinRepository.findById(gardenId);
+				if (opt.isPresent()) {
+					ParcEtJardin parcEtJardin = opt.get();
+
+					ParkArea parkArea = new ParkArea();
+					parkArea.setName(parcEtJardin.getName());
+					parkArea.setIdParcEtJardin(parcEtJardin.getId());
+					parkArea.setBlock(parcEtJardin.getQuartier());
+
+					Long idType = 1L;
+					if (parcEtJardin.getTypeId()!=null) {
+						idType = parcEtJardin.getTypeId();
+					}
+					ParkType type = parkTypeRepository.getReferenceById(idType);
+					parkArea.setType(type);
+					parkArea.setOmsCustom(parcEtJardin.getOmsCustom());
+					parkArea.setUpdated(new Date());
+
+					try {
+						parkArea = parkAreaRepository.save(parkArea);
+					} catch (DataIntegrityViolationException dive) {
+						// Likely unique constraint race: fetch the existing one and reuse
+						ParkArea concurrent = parkAreaRepository.findByIdParcEtJardin(gardenId);
+						if (concurrent == null) {
+							throw dive;
+						}
+						parkArea = concurrent;
+					}
+					parkEntrance.setParkArea(parkArea);
+				} else {
+					throw new ExceptionAdmin("ERR_AREA_NOT_EXITS");
+				}
 			}
 		} 
 		

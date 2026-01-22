@@ -10,7 +10,8 @@ public final class ProposalComputationStrategyFactory {
     public enum Type {
         ITERATIVE,
         SOLVER_1,
-        SOLVER_2
+        SOLVER_2,
+        SOLVER_3
     }
 
     public static ProposalComputationStrategy create(Type type, double minParkSurface) {
@@ -21,6 +22,8 @@ public final class ProposalComputationStrategyFactory {
                 return new Solver1ComputationStrategy();
             case SOLVER_2:
                 return new Solver2ComputationStrategy();
+            case SOLVER_3:
+                return new Solver3ComputationStrategy();
             default:
                 throw new IllegalArgumentException("Unknown computation strategy type: " + type);
         }

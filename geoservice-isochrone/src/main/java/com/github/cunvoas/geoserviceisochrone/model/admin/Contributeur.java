@@ -102,6 +102,12 @@ public class Contributeur implements UserDetails {
 	 */
 	@Column
 	private Date updateDate;
+	
+	/**
+	 * Date du dernier login.
+	 */
+	@Column
+	private Date lastLoginDate;
 
     /**
      * Association liée au contributeur (optionnelle).

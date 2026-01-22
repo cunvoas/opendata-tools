@@ -14,7 +14,7 @@
             <p>
                Les parcs et jardins publics sont des espaces verts accessibles qui permettent de se détendre, de se promener, de jouer, de se reposer, de pique-niquer, de lire, de se rencontrer, de s’aérer...
                <br />
-                Certaines villes comptabilisent les cimetières, les bosquets, des places minéralisées comme des parcs et jardins. Ici, l'application les exclut des surfaces pour être en cohérence avec les critères retenus par l'OMS, mais les noms sont disposibles dans les détails avec une croix.
+                Certaines villes comptabilisent les cimetières, les bosquets, des places minéralisées comme des parcs et jardins. Ici, l'application les exclut des surfaces pour être en cohérence avec les critères retenus par l'OMS, mais les noms sont disponibles dans les détails avec une croix.
             </p>
             <p>
                 Ils sont intégrés et géolocalisés sur une carte interactive qui permet d'évaluer les populations qui
@@ -34,32 +34,40 @@
             </p>
             <h2 class="font-bold underline my-4">Les données utilisées et l'algorithme</h2>
             <p>
-                Nous utilisons les données disponibles en OpenData lorsque cela est possible auquel s'ajoute un travail
-                collaboratif de plusieurs assocations qui a permis de recenser les entrées de chaque parcs.<br />
-                Pour chaque entrée, nous déterminons la zone d'accessibilité "isochrone" grace au service de calcul
+                Nous utilisons les données disponibles en OpenData lorsque cela est possible auxquelles s'ajoute un travail
+                collaboratif de plusieurs associations qui a permis de recenser les entrées de chaque parc.<br />
+                Pour chaque entrée, nous déterminons la zone d'accessibilité "isochrone" grâce au service de calcul
                 d'isochrone de l'IGN.<br />
                 Les données de densité des communes, des populations, des données carroyées sont fournies par l'INSEE.
             </p>
-            <p>
+            <p class="font-semibold">
                 L'algorithme de calcul de la zone d'accessibilité est le suivant :
             </p>
-            <ul>
-                <li> Déterminer les carreaux d'une commune avec le cadastre</li>
-                <li> Pour chaque carreau:</li>
-                <ul>
-                    <li> recherche des isochones d'accesibilité de parcs qui ont une intersection avec le carré</li>
-                    <li> fusion des polygones des isochrones</li>
-                    <li> déterminations de tous les carrés qui ont une intersection avec ce polygone d'accès</li>
-                    <ol>
-                        <li> Pour les carrés complètement recouvert par le polygone, toute la population est
-                            contabilisée</li>
-                        <li> pour les autres carrés la population est estimée au prorata le la surface en recouvrement
-                        </li>
-                        <li> la surface de tous les parcs accessibles est comptabilisée et la densité est calculée au vu
-                            de la population qui partage les parcs</li>
-                    </ol>
-                </ul>
-            </ul>
+            <ol class="list-decimal list-inside space-y-2 ml-4">
+                <li class="font-medium">Détermination des carreaux de la commune à partir du cadastre</li>
+                
+                <li class="font-medium">Pour chaque carreau, calcul de l'accessibilité :
+                    <ul class="list-disc list-inside ml-6 mt-2 space-y-1">
+                        <li>Recherche des isochrones d'accessibilité des parcs ayant une intersection avec le carreau</li>
+                        <li>Fusion des polygones des isochrones identifiés</li>
+                        <li>Détermination de tous les carreaux ayant une intersection avec ce polygone d'accès</li>
+                    </ul>
+                </li>
+                
+                <li class="font-medium">Calcul de la population couverte :
+                    <ul class="list-disc list-inside ml-6 mt-2 space-y-1">
+                        <li>Pour les carreaux complètement recouverts par le polygone : toute la population est comptabilisée</li>
+                        <li>Pour les carreaux partiellement recouverts : la population est estimée au prorata de la surface de recouvrement</li>
+                    </ul>
+                </li>
+                
+                <li class="font-medium">Calcul de la densité d'espaces verts :
+                    <ul class="list-disc list-inside ml-6 mt-2 space-y-1">
+                        <li>La surface totale de tous les parcs accessibles est comptabilisée</li>
+                        <li>La densité (m²/habitant) est calculée en fonction de la population ayant accès aux parcs</li>
+                    </ul>
+                </li>
+            </ol>
             <br />
             <p>
                 Ce calcul est réalisé avec les dernières données de l'INSEE rendues publiques.
@@ -87,22 +95,22 @@
                 faire la
                 demande via <a href="javascript:void(0);" @click="sendRequest" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold cursor-pointer">email</a>
                 <br />
-                Nous limitons le nombres de contributeur par territoire afin de garantir la qualité des données et la
+                Nous limitons le nombre de contributeurs par territoire afin de garantir la qualité des données et la
                 stabilité de notre application.
                 <br />
-                Les données sont ensuite vérifiées et intégrées dans la base de données avant d'être publiée sur le site
+                Les données sont ensuite vérifiées et intégrées dans la base de données avant d'être publiées sur le site
                 public.
             </p>
 
             <h2 class="font-bold underline my-4">Contributions et remerciements</h2>
             <p>
-                Philippe de Deûl'Air pour le contrôles des calculs.
+                Philippe de Deûl'Air pour le contrôle des calculs.
                 <br />
-                Mathilde d'Entrelianes pour la catégorisation des populations et la déductions des légendes et couleurs.
+                Mathilde d'Entrelianes pour la catégorisation des populations et la déduction des légendes et couleurs.
                 <br />
-                Fabien de Lm-Oxygène pour les convertions Lambert 93 vers WGS 84 (4326).
+                Fabien de LM-Oxygène pour les conversions Lambert 93 vers WGS 84 (4326).
                 <br />
-                Christophe de Lm-Oxygène pour le développement des applications.
+                Christophe de LM-Oxygène pour le développement des applications.
                 <br />
                 Les bénévoles des associations et les utilisateurs de l'application pour la saisie des données.
             </p>
@@ -122,15 +130,15 @@ export default {
         },
         sendRequest() {
             const prefixAsc = [77, 65, 73, 76, 84, 79];
-            const recipentAsc = [111, 120, 121, 103, 101, 110, 101, 46, 108, 109];
+            const recipientAsc = [111, 120, 121, 103, 101, 110, 101, 46, 108, 109];
             const domainAsc = [64, 103, 109, 97, 105, 108, 46, 99, 111, 109];
 
             const prefix = this.toPlain(prefixAsc);
-            const recipent = this.toPlain(recipentAsc)+this.toPlain(domainAsc);
+            const recipient = this.toPlain(recipientAsc)+this.toPlain(domainAsc);
             const subject= "Isochrone: Demande d'accès pour contribution"
 
             
-            window.location.href = `${prefix}:${recipent}?subject=${subject}`;
+            window.location.href = `${prefix}:${recipient}?subject=${subject}`;
         }
     }
 };

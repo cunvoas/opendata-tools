@@ -19,6 +19,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.ToString;
 
@@ -29,10 +30,15 @@ import lombok.ToString;
 @Data
 @ToString(onlyExplicitlyIncluded = true)
 @Entity(name = "park_area")
-@Table(indexes = {
+@Table(
+    indexes = {
     @Index(name = "idx_parkarea_point", columnList = "point"),
     @Index(name = "idx_parkarea_polygon", columnList = "polygon")
-})
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_parkarea_parc", columnNames = {"id_parc_jardin"})
+    }
+)
 public class ParkArea {
     /** Identifiant unique de la zone. */
     @Id

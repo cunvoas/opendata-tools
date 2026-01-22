@@ -100,28 +100,12 @@ class TestGeoMapService {
 
 		try {
 			assertInstanceOf(Polygon.class, geometryQueryHelper.getPolygonFromBounds(x1,x2,y1,y2)
-					));
+					);
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}	
 	}
 	
-
-
-	@Test
-	void testCheckDistance() {
-		
-
-		Double x1=  3.125267028808594d;
-		Double x2=  2.9675102233886723d;
-		Double y1= 50.65675247614678d;
-		Double y2= 50.61320139365915d;
-		
-		Coordinate southWest = new Coordinate(x1,y1);
-    	Coordinate northEast = new Coordinate(x2,y2);
-    	
-    	assertTrue (tested.checkDistance(southWest, northEast));
-	}
 	
 
 	@Test

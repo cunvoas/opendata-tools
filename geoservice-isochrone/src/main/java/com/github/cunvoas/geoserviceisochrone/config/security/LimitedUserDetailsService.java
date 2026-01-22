@@ -1,5 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.config.security;
 
+import java.util.Date;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class LimitedUserDetailsService  implements UserDetailsService {
 	private Long timeHack=1000L;
  
 	@Autowired
-	private final ContributeurRepository userRepository = null;
+	private ContributeurRepository contributeurRepository;
 
     @Autowired
     private LoginAttemptService loginAttemptService;
@@ -64,8 +65,11 @@ public class LimitedUserDetailsService  implements UserDetailsService {
         }
  
         try {
-        	Optional<Contributeur> opUser = userRepository.findByLogin(username);
+        	Optional<Contributeur> opUser = contributeurRepository.findByLogin(username);
         	if (opUser.isPresent()) {
+        		opUser.get().setLastLoginDate(new Date());
+        		contributeurRepository.save(opUser.get());
+        		
         		return opUser.get();
         	} else {
         		// time hack fix
