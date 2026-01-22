@@ -123,6 +123,7 @@ public class AuthenticationConfig {
 	@Bean
 	@SuppressWarnings("deprecation")
 	public AuthenticationProvider authenticationProvider() {
+		// FIXME
 		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 		authProvider.setUserDetailsService(userDetailsService);
 		authProvider.setPasswordEncoder(passwordEncoder());

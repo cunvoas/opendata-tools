@@ -92,12 +92,17 @@ public class ContributeurService {
 	 * @param login Contributeur
 	 * @return Contributeur
 	 */
-	public Contributeur getByLogin(String login) {
+	public Optional<Contributeur>  getByLogin(String login) {
 		Optional<Contributeur> oUser = contributeurRepository.findByLogin(login);
-		if (oUser.isPresent()) {
-			return oUser.get();
-		}
-		return null;
+//		if (oUser.isPresent()) {
+//			return oUser.get();
+//		}
+		return oUser;
+	}
+	
+	public void updateLoginDate(Contributeur contributeur) {
+		contributeur.setLastLoginDate(new Date());
+		contributeurRepository.save(contributeur);
 	}
 	
 	/**
