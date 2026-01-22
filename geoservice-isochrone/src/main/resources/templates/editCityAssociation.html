@@ -17,7 +17,23 @@
      <div class="col-lg-10">
      
             <div class="container-fluid px-4">
-                   <h3 class="mt-4" th:text="#{cityassociation.edit.title}">Gestion des associations Villes - Communauté</h3>
+                <!-- Header Section -->
+                <div class="row mb-4 mt-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h1 class="mb-1" th:text="#{cityassociation.edit.title}">Gestion des associations Villes - Communauté</h1>
+                                <p class="text-muted mb-0">Gérez l'association entre villes et communautés de communes</p>
+                            </div>
+                            <div class="text-end" th:if="${selectedCommunaute != null}">
+                                <small class="text-muted">
+                                    <i class="fas fa-check-circle text-success me-1"></i>
+                                    <span th:text="${'Associées: ' + (associatedCities != null ? associatedCities.size() : 0)}"></span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Messages de succès/erreur -->
@@ -73,78 +89,61 @@
             <!-- Filtre par région -->
             <div class="row mb-4" th:if="${isAdmin}">
                 <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <i class="fas fa-filter me-1"></i>
-                            <txt th:text="#{cityassociation.edit.filter}">Filtrer</txt>
-                        </div>
+                    <div class="card border-0 shadow-sm">
                         <div class="card-body">
-                            <form th:action="@{/mvc/management/cityassoc/edit}" method="get">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-floating mb-3">
-                                            <select class="form-select" id="regionId" name="regionId" 
-                                                    onchange="this.form.submit()">
-                                                <option value="" th:text="#{cityassociation.filter.allregions}">Toutes les régions</option>
-                                                <option th:each="region : ${regions}" 
-                                                        th:value="${region.id}" 
-                                                        th:text="${region.name}"
-                                                        th:selected="${selectedRegionId != null && selectedRegionId == region.id}"></option>
-                                            </select>
-                                            <label for="regionId" th:text="#{cityassociation.edit.region}">Région</label>
-                                        </div>
+                            <div class="row g-3">
+                                <!-- Region Filter -->
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center h-100">
+                                        <form th:action="@{/mvc/management/cityassoc/edit}" method="get" class="w-100">
+                                            <div class="form-floating mb-0">
+                                                <select class="form-select" id="regionId" name="regionId" 
+                                                        onchange="this.form.submit()">
+                                                    <option value="" th:text="#{cityassociation.filter.allregions}">Toutes les régions</option>
+                                                    <option th:each="region : ${regions}" 
+                                                            th:value="${region.id}" 
+                                                            th:text="${region.name}"
+                                                            th:selected="${selectedRegionId != null && selectedRegionId == region.id}"></option>
+                                                </select>
+                                                <label for="regionId"><i class="fas fa-map me-2"></i><span th:text="#{cityassociation.edit.region}">Région</span></label>
+                                            </div>
+                                            <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute != null ? selectedCommunaute.id : ''}" />
+                                        </form>
                                     </div>
-                                    <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute != null ? selectedCommunaute.id : ''}" />
                                 </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row mb-4" th:if="${isAdmin}">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <i class="fas fa-list me-1"></i>
-                            <txt th:text="#{cityassociation.edit.selectcommunity}">Sélectionner une communauté de communes</txt>
-                            <span th:if="${selectedCommunaute != null}" class="float-end">
-                                <a th:href="@{'https://www.google.com/search?q=wiki ' + ${selectedCommunaute.name}}" 
-                                   target="_blank" 
-                                   class="btn btn-sm btn-outline-primary"
-                                   th:title="'Rechercher sur Google : wiki ' + ${selectedCommunaute.name}">
-                                    <i class="fas fa-search me-1"></i>
-                                    Wiki
-                                </a>
-                            </span>
-                        </div>
-                        <div class="card-body">
-                            <form th:action="@{/mvc/management/cityassoc/edit}" method="get">
-                                <div class="form-floating mb-3">
-                                    <select class="form-select" id="communauteCommuneId" name="communauteCommuneId" 
-                                            onchange="this.form.submit()">
-                                        <option value="" th:text="#{cityassociation.edit.choose}">-- Choisir --</option>
-                                        <option th:each="comm2co : ${communautes}" 
-                                                th:value="${comm2co.id}" 
-                                                th:text="${comm2co.name}"
-                                                th:selected="${selectedCommunaute != null && selectedCommunaute.id == comm2co.id}">
-                                            Communauté
-                                        </option>
-                                    </select>
-                                    <label for="communauteCommuneId" th:text="#{cityassociation.edit.community}">Communauté de communes</label>
+                                
+                                <!-- Communauté Filter -->
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center h-100">
+                                        <form th:action="@{/mvc/management/cityassoc/edit}" method="get" class="w-100">
+                                            <fieldset id="fsCommune" disabled="disabled">
+                                                <div class="form-floating mb-0">
+                                                    <select class="form-select" id="communauteCommuneId" name="communauteCommuneId" 
+                                                            onchange="this.form.submit()">
+                                                        <option value="" th:text="#{cityassociation.edit.choose}">-- Choisir --</option>
+                                                        <option th:each="comm2co : ${communautes}" 
+                                                                th:value="${comm2co.id}" 
+                                                                th:text="${comm2co.name}"
+                                                                th:attr="data-region-id=${comm2co.region != null ? comm2co.region.id : ''}"
+                                                                th:selected="${selectedCommunaute != null && selectedCommunaute.id == comm2co.id}">
+                                                            Communauté
+                                                        </option>
+                                                    </select>
+                                                    <label for="communauteCommuneId"><i class="fas fa-building me-2"></i><span th:text="#{cityassociation.edit.community}">Communauté de communes</span></label>
+                                                </div>
+                                                <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
+                                            </fieldset>
+                                        </form>
+                                    </div>
                                 </div>
-                                <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
-                            </form>
-                        </div>
-                    </div>
-                </div>
+                            </div>
             </div>
             
             <!-- Titre pour les non-admin -->
             <div class="row mb-4" th:if="${!isAdmin && selectedCommunaute != null}">
                 <div class="col-12">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-gradient text-white">
                             <i class="fas fa-building me-1"></i>
                             <span th:text="${selectedCommunaute.name}">Communauté</span>
                             <span class="float-end">
@@ -159,7 +158,7 @@
                         </div>
                         <div class="card-body">
                             <p class="mb-0">
-                                <i class="fas fa-info-circle me-1"></i>
+                                <i class="fas fa-info-circle me-1 text-info"></i>
                                 <em>Vous consultez les villes de votre communauté de communes</em>
                             </p>
                         </div>
@@ -169,85 +168,89 @@
             
             <div class="row" th:if="${selectedCommunaute != null}">
                 <!-- Villes déjà associées -->
-                <div class="col-6" th:classappend="${readOnly} ? 'col-12' : 'col-6'">
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
-                            <i class="fas fa-check-circle me-1"></i>
-                            <txt th:text="#{cityassociation.edit.associatedcities}">Villes associées</txt>
-                            <span class="badge bg-light text-dark ms-2" th:text="${associatedCities != null ? associatedCities.size() : 0}">0</span>
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-gradient text-white py-3">
+                            <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i><span th:text="#{cityassociation.edit.associatedcities}">Villes associées</span>
+                                <span class="badge bg-light text-dark ms-2" th:text="${associatedCities != null ? associatedCities.size() : 0}">0</span>
+                            </h5>
                         </div>
-                        <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-                            <div th:if="${associatedCities == null || associatedCities.isEmpty()}" class="text-muted">
+                        <div class="card-body p-0">
+                            <div th:if="${associatedCities == null || associatedCities.isEmpty()}" class="text-muted p-3">
+                                <i class="fas fa-inbox me-2"></i>
                                 <txt th:text="#{cityassociation.edit.nocities}">Aucune ville associée</txt>
                             </div>
-                            <table class="table table-sm table-hover" th:if="${associatedCities != null && !associatedCities.isEmpty()}">
-                                <thead>
-                                    <tr>
-                                        <th th:text="#{cityassociation.edit.cityname}">Ville</th>
-                                        <th th:text="#{cityassociation.edit.postalcode}">Code Postal</th>
-                                        <th th:text="#{cityassociation.edit.action}">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="city : ${associatedCities}">
-                                        <td th:text="${city.name}">Ville</td>
-                                        <td th:text="${city.postalCode}">Code</td>
-                                        <td>
-                                            <form th:if="${!readOnly}" th:action="@{/mvc/management/cityassoc/dissociate}" method="post" style="display: inline;">
-                                                <input type="hidden" name="cityId" th:value="${city.id}" />
-                                                <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
-                                                <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
-                                                <button type="submit" class="btn btn-sm btn-danger" th:text="#{cityassociation.edit.remove}">
-                                                    Retirer
-                                                </button>
-                                            </form>
-                                            <span th:if="${readOnly}" class="text-muted">-</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div th:if="${associatedCities != null && !associatedCities.isEmpty()}" class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th th:text="#{cityassociation.edit.cityname}">Ville</th>
+                                            <th th:text="#{cityassociation.edit.postalcode}">Code Postal</th>
+                                            <th th:text="#{cityassociation.edit.action}">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="city : ${associatedCities}" class="align-middle">
+                                            <td th:text="${city.name}">Ville</td>
+                                            <td><span class="badge bg-light text-dark" th:text="${city.postalCode}">Code</span></td>
+                                            <td>
+                                                <form th:if="${!readOnly}" th:action="@{/mvc/management/cityassoc/dissociate}" method="post" style="display: inline;">
+                                                    <input type="hidden" name="cityId" th:value="${city.id}" />
+                                                    <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
+                                                    <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" th:text="#{cityassociation.edit.remove}">
+                                                        Retirer
+                                                    </button>
+                                                </form>
+                                                <span th:if="${readOnly}" class="text-muted">-</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Villes disponibles -->
-                <div class="col-6" th:if="${!readOnly}">
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <i class="fas fa-plus-circle me-1"></i>
-                            <txt th:text="#{cityassociation.edit.availablecities}">Villes disponibles</txt>
-                        </div>
-                        <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-                            <div class="mb-3">
-                                <input type="text" class="form-control" id="searchCity" th:placeholder="#{cityassociation.edit.search}" placeholder="Rechercher une ville..." onkeyup="filterCities()" />
+                <div class="col-lg-6" th:if="${!readOnly}">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-gradient text-white py-3">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i><span th:text="#{cityassociation.edit.availablecities}">Villes disponibles</span></h5>
+                                <input type="text" class="form-control form-control-sm" id="searchCity" style="max-width: 250px;" th:placeholder="#{cityassociation.edit.search}" placeholder="Rechercher..." onkeyup="filterCities()" />
                             </div>
-                            <table class="table table-sm table-hover" id="availableCitiesTable">
-                                <thead>
-                                    <tr>
-                                        <th th:text="#{cityassociation.edit.cityname}">Ville</th>
-                                        <th th:text="#{cityassociation.edit.postalcode}">Code Postal</th>
-                                        <th th:text="#{cityassociation.edit.action}">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="city : ${allCities}" 
-                                        th:if="${city.communauteCommune == null || city.communauteCommune.id != selectedCommunaute.id}"
-                                        class="city-row">
-                                        <td th:text="${city.name}" class="city-name">Ville</td>
-                                        <td th:text="${city.postalCode}" class="city-postal">Code</td>
-                                        <td>
-                                            <form th:action="@{/mvc/management/cityassoc/associate}" method="post" style="display: inline;">
-                                                <input type="hidden" name="cityId" th:value="${city.id}" />
-                                                <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
-                                                <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
-                                                <button type="submit" class="btn btn-sm btn-success" th:text="#{cityassociation.edit.add}">
-                                                    Ajouter
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                                <table class="table table-sm table-hover mb-0" id="availableCitiesTable">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th th:text="#{cityassociation.edit.cityname}">Ville</th>
+                                            <th th:text="#{cityassociation.edit.postalcode}">Code Postal</th>
+                                            <th th:text="#{cityassociation.edit.action}">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="city : ${allCities}" 
+                                            th:if="${city.communauteCommune == null || city.communauteCommune.id != selectedCommunaute.id}"
+                                            class="city-row align-middle">
+                                            <td class="city-name" th:text="${city.name}">Ville</td>
+                                            <td class="city-postal"><span class="badge bg-light text-dark" th:text="${city.postalCode}">Code</span></td>
+                                            <td>
+                                                <form th:action="@{/mvc/management/cityassoc/associate}" method="post" style="display: inline;">
+                                                    <input type="hidden" name="cityId" th:value="${city.id}" />
+                                                    <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
+                                                    <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" th:text="#{cityassociation.edit.add}">
+                                                        Ajouter
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -256,30 +259,27 @@
             <!-- Section d'upload CSV -->
             <div class="row mb-4" th:if="${selectedCommunaute != null && !readOnly}">
                 <div class="col-12">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <i class="fas fa-file-upload me-1"></i>
-                            <txt th:text="#{cityassociation.edit.csvupload}">Import CSV rapide</txt>
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-gradient text-white py-3">
+                            <h5 class="mb-0"><i class="fas fa-file-upload me-2"></i><span th:text="#{cityassociation.edit.csvupload}">Import CSV rapide</span></h5>
                         </div>
                         <div class="card-body">
                             <form th:action="@{/mvc/management/cityassoc/uploadCsv}" method="post" enctype="multipart/form-data">
-                                <div class="row">
+                                <div class="row g-3 align-items-end">
                                     <div class="col-md-8">
-                                        <div class="mb-3">
-                                            <label for="csvFile" class="form-label" th:text="#{cityassociation.edit.csvfile}">Fichier CSV :</label>
+                                        <div class="form-floating">
                                             <input class="form-control" type="file" id="csvFile" name="file" accept=".csv" required />
-                                            <div class="form-text" th:text="#{cityassociation.edit.csvhelp}">
-                                                Format : un code INSEE (5 chiffres) par ligne. Première ligne ignorée si elle contient "insee" ou "code".
-                                            </div>
+                                            <label for="csvFile"><i class="fas fa-paperclip me-2"></i><span th:text="#{cityassociation.edit.csvfile}">Fichier CSV :</span></label>
+                                        </div>
+                                        <div class="form-text small" th:text="#{cityassociation.edit.csvhelp}">
+                                            Format : un code INSEE (5 chiffres) par ligne. Première ligne ignorée si elle contient "insee" ou "code".
                                         </div>
                                     </div>
-                                    <div class="col-md-4 d-flex align-items-end">
-                                        <div class="mb-3">
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="fas fa-upload me-1"></i>
-                                                <txt th:text="#{cityassociation.edit.csvsubmit}">Importer</txt>
-                                            </button>
-                                        </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-upload me-1"></i>
+                                            <txt th:text="#{cityassociation.edit.csvsubmit}">Importer</txt>
+                                        </button>
                                     </div>
                                 </div>
                                 <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
@@ -293,10 +293,10 @@
                                     <txt th:text="#{cityassociation.edit.csvexample}">Voir exemple</txt>
                                 </button>
                                 <div class="collapse mt-2" id="csvExample">
-                                    <div class="card card-body bg-light">
+                                    <div class="card card-body bg-light border-start border-4 border-info">
                                         <small>
                                             <strong>Exemple de fichier CSV :</strong><br/>
-                                            <code>
+                                            <code class="font-monospace">
                                                 code_insee<br/>
                                                 59001<br/>
                                                 59002<br/>
@@ -360,6 +360,151 @@
                     }
                 }
             }
+            
+            // Manage disabled state for communauté select based on region selection
+            document.addEventListener('DOMContentLoaded', function() {
+                manageDisabled();
+                syncRegionWithCommunaute();
+            });
+            
+            function syncRegionWithCommunaute() {
+                const communauteSelect = document.getElementById("communauteCommuneId");
+                const regionSelect = document.getElementById("regionId");
+                
+                if (communauteSelect && regionSelect && communauteSelect.value !== "") {
+                    // Get the region ID from the selected communauté option
+                    const selectedOption = communauteSelect.options[communauteSelect.selectedIndex];
+                    const regionId = selectedOption.getAttribute('data-region-id');
+                    
+                    if (regionId) {
+                        regionSelect.value = regionId;
+                    }
+                }
+            }
+            
+            function manageDisabled() {
+                const regionSelect = document.getElementById("regionId");
+                const fsCommune = document.getElementById("fsCommune");
+                const communauteSelect = document.getElementById("communauteCommuneId");
+                
+                if (regionSelect && fsCommune) {
+                    if (regionSelect.value !== "" || (communauteSelect && communauteSelect.value !== "")) {
+                        fsCommune.disabled = false;
+                    }
+                }
+            }
+            
+            // Listen for changes to enable/disable based on region
+            const regionSelect = document.getElementById("regionId");
+            if (regionSelect) {
+                regionSelect.addEventListener('change', manageDisabled);
+            }
+            
+            const communauteSelect = document.getElementById("communauteCommuneId");
+            if (communauteSelect) {
+                communauteSelect.addEventListener('change', syncRegionWithCommunaute);
+            }
         </script>
+        
+        <style>
+            /* Custom styles for enhanced design */
+            .bg-gradient {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            
+            .card {
+                transition: all 0.3s ease;
+            }
+            
+            .card:hover {
+                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+            }
+            
+            .table-hover tbody tr:hover {
+                background-color: rgba(102, 126, 234, 0.05);
+            }
+            
+            .form-label {
+                font-weight: 600;
+                color: #495057;
+            }
+            
+            .form-floating > label {
+                color: #6c757d;
+            }
+            
+            .badge {
+                font-weight: 500;
+                padding: 0.4rem 0.6rem;
+            }
+            
+            /* Smooth transitions for form elements */
+            .form-select, .form-control {
+                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            }
+            
+            .form-select:focus, .form-control:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            }
+            
+            /* Header styling */
+            h1 {
+                color: #2c3e50;
+                font-weight: 700;
+            }
+            
+            /* Table styling improvements */
+            .table-light th {
+                border-bottom: 2px solid #dee2e6;
+                font-weight: 600;
+                color: #495057;
+            }
+            
+            .text-muted.small {
+                font-size: 0.85rem;
+            }
+            
+            .font-monospace {
+                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            }
+            
+            .sticky-top {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+            
+            fieldset:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+            
+            fieldset:disabled .form-select {
+                background-color: #e9ecef;
+            }
+            
+            /* Align table columns for both city lists */
+            .table thead th {
+                width: 33.333%;
+            }
+            
+            .table thead th:first-child {
+                width: 45%;
+            }
+            
+            .table thead th:nth-child(2) {
+                width: 30%;
+            }
+            
+            .table thead th:nth-child(3) {
+                width: 25%;
+                text-align: center;
+            }
+            
+            .table tbody td:nth-child(3) {
+                text-align: center;
+            }
+        </style>
     </body>
 </html>

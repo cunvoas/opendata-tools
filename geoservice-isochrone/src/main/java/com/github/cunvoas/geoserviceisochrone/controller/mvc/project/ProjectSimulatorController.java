@@ -1,13 +1,10 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.project;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,13 +12,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bedatadriven.jackson.datatype.jts.serialization.GeometrySerializer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormProjectSimulator;
+import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.TokenManagement;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
@@ -51,6 +48,9 @@ public class ProjectSimulatorController {
 
     @Autowired
     private GeoJson2GeometryHelper geoJson2GeometryHelper;
+    
+    @Autowired
+    private TokenManagement tokenManagement;
 
     private ObjectMapper geometryWriter;
 
@@ -80,6 +80,7 @@ public class ProjectSimulatorController {
         model.addAttribute("communautesDeCommunes", form.getCommunautesDeCommunes());
         model.addAttribute("communes", form.getCommunes());
         model.addAttribute("projects", projects);
+        model.addAttribute("token", tokenManagement.getValidToken());
         
         if (form.getId() != null) {
         	List<ProjectSimulatorWork> works = projectSimulatorService.getProjectWorks(form.getId());
@@ -95,6 +96,7 @@ public class ProjectSimulatorController {
     public String changeRegion(@ModelAttribute FormProjectSimulator form, Model model) {
         form.setIdCommunauteDeCommunes(null);
         form.setIdCommune(null);
+        model.addAttribute("token", tokenManagement.getValidToken());
         return show(form, model);
     }
     
@@ -104,6 +106,7 @@ public class ProjectSimulatorController {
     @PostMapping("/commDeCo")
     public String changeEpci(@ModelAttribute FormProjectSimulator form, Model model) {
         form.setIdCommune(null);
+        model.addAttribute("token", tokenManagement.getValidToken());
         return show(form, model);
     }
     
@@ -123,6 +126,7 @@ public class ProjectSimulatorController {
                 form.setIsDense(dense);
             }
         }
+        model.addAttribute("token", tokenManagement.getValidToken());
         return show(form, model);
     }
     
@@ -161,6 +165,7 @@ public class ProjectSimulatorController {
             
            
         }
+        model.addAttribute("token", tokenManagement.getValidToken());
         return show(form, model);
     }
 
@@ -175,8 +180,26 @@ public class ProjectSimulatorController {
     public String compute(
             @ModelAttribute FormProjectSimulator form,
             @RequestParam(required = false) String sGeometry,
+            @RequestParam("token") String token,
             Model model) {
         log.info("compute() - form={}, sGeometry={}", form, sGeometry != null ? "provided" : "null");
+        
+        // Anti double-soumission côté serveur: validation du token temporel
+        Boolean isValid = tokenManagement.isTokenValid(token);
+        if (Boolean.FALSE.equals(isValid)) {
+            log.warn("Token invalide ou expiré lors du POST /compute");
+            model.addAttribute("tokenInvalid", true);
+            // réinjecter un token valide pour permettre une nouvelle soumission
+            model.addAttribute("token", tokenManagement.getValidToken());
+            populate(form);
+            model.addAttribute(FORM_KEY, form);
+            model.addAttribute("regions", form.getRegions());
+            model.addAttribute("communautesDeCommunes", form.getCommunautesDeCommunes());
+            model.addAttribute("communes", form.getCommunes());
+            List<ProjectSimulator> projects = form.getIdCommune() != null ? projectSimulatorService.findByCity(form.getIdCommune()) : List.of();
+            model.addAttribute("projects", projects);
+            return VIEW;
+        }
         
         
         Geometry geometry = null;

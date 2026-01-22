@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import './assets/tailwind.css'
 import router from './router';
 import { getUrlParams, hasGeographicalParams } from './utils/urlParams.js'
+import { initVersionCheck } from './utils/versionCheck.js'
 
 const app = createApp(HeaderAsso);
 
@@ -64,6 +65,10 @@ app.use(VueMatomo, {
 
 
 app.use(router);
+
+// Initialize version check (refresh cache every 4 hours)
+initVersionCheck();
+
 app.mount('#app');
 
 router.afterEach((to, from) => {

@@ -13,22 +13,19 @@
 			<main>
 
 				<div class="container-fluid px-4">
-					<h3 class="mt-4" th:text="#{menu.abstract.activity}">Activity</h3>
+					<h3 class="mt-4 mb-4" th:text="#{menu.abstract.activity}">Activity</h3>
 
-					<div class="row mt-4">
-
-
-						<div class="col-sm-4 col-md-4 col-lg-4">
-							<div
-								class="card bg-warning text-white  border-left-primary shadow h-100 py-2 ">
+					<!-- Statistiques générales -->
+					<div class="row mb-5">
+						<div class="col-sm-4 col-md-4 col-lg-4 mb-3">
+							<div class="card bg-warning text-white border-left-primary shadow h-100 py-2">
 								<div class="card-body">
 									<div class="row no-gutters align-items-center">
 										<div class="col-auto">
 											<i class="fas fa-user fa-2x text-gray-300"></i>
 										</div>
 										<div class="col mr-2">
-											<div
-												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+											<div class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
 												th:text="#{activity.nbUniqueUser}">nbUniqueUser</div>
 											<div class="h5 mb-0 font-weight-bold text-gray-800"
 												th:text="${#numbers.formatInteger(dLogs.nbUniqueUser, 1, 'POINT')}"></div>
@@ -38,17 +35,15 @@
 							</div>
 						</div>
 						
- 						<div class="col-sm-4 col-md-4 col-lg-4">
-							<div
-								class="card bg-warning text-white  border-left-primary shadow h-100 py-2">
+						<div class="col-sm-4 col-md-4 col-lg-4 mb-3">
+							<div class="card bg-warning text-white border-left-primary shadow h-100 py-2">
 								<div class="card-body">
 									<div class="row no-gutters align-items-center">
 										<div class="col-auto">
 											<i class="fas fa-users-rays fa-2x text-gray-300"></i>
 										</div>
 										<div class="col mr-2">
-											<div
-												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+											<div class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
 												th:text="#{activity.nbAdminActivity}">nbAdminActivity</div>
 											<div class="h5 mb-0 font-weight-bold text-gray-800"
 												th:text="${#numbers.formatInteger(dLogs.nbAdminActivity, 1, 'POINT')}"></div>
@@ -58,18 +53,17 @@
 							</div>
 						</div>
 
-
-
-						<div class="col-sm-4 col-md-4 col-lg-4">
-							<div
-								class="card bg-secondary text-white  border-left-primary shadow h-100 py-2">
+						<div class="col-sm-4 col-md-4 col-lg-4 mb-3">
+							<div class="card bg-info text-white border-left-primary shadow h-100 py-2">
 								<div class="card-body">
 									<div class="row no-gutters align-items-center">
 										<div class="col-auto">
-											<i class="fas fa-book-atlas fa-2x text-gray-300"></i>
+											<i class="fas fa-chart-line fa-2x text-gray-300"></i>
 										</div>
 										<div class="col mr-2">
-											
+											<div class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1">Total Activités</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dLogs.nbParcActivity + dLogs.nbEntranceActivity + dLogs.nbIsochroneActivity, 1, 'POINT')}"></div>
 										</div>
 									</div>
 								</div>
@@ -77,106 +71,98 @@
 						</div>
 					</div>
 
-
-					<div class="row mt-4">
-                        
-                        <div class="col-sm-4 col-md-4 col-lg-4">
-                            <div
-                                class="card bg-success text-white  border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col-auto">
-                                            <i class="fas fa-tree-city fa-2x text-gray-300"></i>
-                                        </div>
-                                        <div class="col mr-2">
-                                            <div
-                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
-                                                th:text="#{activity.nbParcActivity}">nbParcActivity</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                th:text="${#numbers.formatInteger(dLogs.nbParcActivity, 1, 'POINT')}"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-sm-4 col-md-4 col-lg-4">
-                            <div
-                                class="card bg-success text-white  border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col-auto">
-                                            <i class="fas fa-torii-gate fa-2x text-gray-300"></i>
-                                        </div>
-                                        <div class="col mr-2">
-                                            <div
-                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
-                                                th:text="#{activity.nbEntranceActivity}">nbEntranceActivity</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                th:text="${#numbers.formatInteger(dLogs.nbEntranceActivity, 1, 'POINT')}"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-sm-4 col-md-4 col-lg-4">
-                            <div
-                                class="card bg-success text-white  border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col-auto">
-                                            <i class="fas fa-gears fa-2x text-gray-300"></i>
-                                        </div>
-                                        <div class="col mr-2">
-                                            <div
-                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
-                                                th:text="#{activity.nbIsochroneActivity}">nbIsochroneActivity</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                th:text="${#numbers.formatInteger(dLogs.nbIsochroneActivity, 1, 'POINT')}"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+					<!-- Détail par catégorie -->
+					<div class="row mb-5">
+						<div class="col-sm-4 col-md-4 col-lg-4 mb-3">
+							<div class="card bg-success text-white border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-tree-city fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{activity.nbParcActivity}">nbParcActivity</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dLogs.nbParcActivity, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="col-sm-4 col-md-4 col-lg-4 mb-3">
+							<div class="card bg-success text-white border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-torii-gate fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{activity.nbEntranceActivity}">nbEntranceActivity</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dLogs.nbEntranceActivity, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="col-sm-4 col-md-4 col-lg-4 mb-3">
+							<div class="card bg-success text-white border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-gears fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{activity.nbIsochroneActivity}">nbIsochroneActivity</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dLogs.nbIsochroneActivity, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 
-
-
-
-<div class="container-fluid px-4">
-<h3 class="mt-12" th:text="#{activity.table.action}">Activity</h3>
-                        
-         <div class="col-12">
-<!-- table here -->
-
-            <table border="1" id="datatablesSimple">
-                <thead>
-                    <tr>
-                        <th th:text="#{activity.table.user}" />
-                        <th th:text="#{activity.table.userAction}" />
-                        <th th:text="#{activity.table.assoAction}" />
-                        <th th:text="#{activity.table.parkAction}" />
-                        <th th:text="#{activity.table.entranceAction}" />
-                        <th th:text="#{activity.table.isochroneAction}" />
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="uLog : ${uLogs}" >
-                        <td th:text="${uLog.nomContributeur}" />
-                        <td th:text="${uLog.userActions}" />
-                        <td th:text="${uLog.assoActions}" />
-                        <td th:text="${uLog.parkActions}" />
-                        <td th:text="${uLog.entranceActions}" />
-                        <td th:text="${uLog.isochroneActions}" />
-                    </tr>
-                </tbody>
-            </table>
-
-         </div>
-					
-</div>			
+					<!-- Tableau des actions détaillées -->
+					<div class="card shadow mb-4">
+						<div class="card-header bg-primary py-3">
+							<h6 class="m-0 font-weight-bold text-white" th:text="#{activity.table.action}">Actions des utilisateurs</h6>
+						</div>
+						<div class="card-body">
+							<div class="table-responsive">
+								<table class="table table-hover table-striped" id="datatablesSimple">
+									<thead class="table-light">
+										<tr>
+											<th th:text="#{activity.table.user}" />
+											<th th:text="#{activity.table.userAction}" class="text-center" />
+											<th th:text="#{activity.table.assoAction}" class="text-center" />
+											<th th:text="#{activity.table.parkAction}" class="text-center" />
+											<th th:text="#{activity.table.entranceAction}" class="text-center" />
+											<th th:text="#{activity.table.isochroneAction}" class="text-center" />
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="uLog : ${uLogs}">
+											<td class="font-weight-500" th:text="${uLog.nomContributeur}" />
+											<td class="text-center" th:text="${uLog.userActions}" />
+											<td class="text-center" th:text="${uLog.assoActions}" />
+											<td class="text-center" th:text="${uLog.parkActions}" />
+											<td class="text-center" th:text="${uLog.entranceActions}" />
+											<td class="text-center" th:text="${uLog.isochroneActions}" />
+										</tr>
+										<tr th:if="${#lists.isEmpty(uLogs)}">
+											<td colspan="6" class="text-center text-muted py-4">Aucune activité enregistrée</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>			
 					
 				</div>
 			</main>

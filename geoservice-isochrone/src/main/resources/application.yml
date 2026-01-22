@@ -123,6 +123,7 @@ application:
     iris:
         annees: 2020
   feature-flipping:
+    mobile-api: false
     parkAnalysisEnabled: true
     sendEmail: false
     salaryAnalysisEnabled: false
