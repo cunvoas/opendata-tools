@@ -18,4 +18,6 @@ public interface ParkProposalMetaRepository extends JpaRepository<ParkProposalMe
 
 	public List<ParkProposalMeta> findByAnneeAndInsee(Integer annee, String insee);
 
+	public List<ParkProposalMeta> findByInsee(String insee);
+	
 }

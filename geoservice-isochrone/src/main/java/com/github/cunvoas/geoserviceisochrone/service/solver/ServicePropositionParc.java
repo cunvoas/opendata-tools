@@ -187,7 +187,7 @@ public class ServicePropositionParc {
 	}
 	
 	public List<ProposalComputationStrategyFactory.Type> getAvailableAlgorithms() {
-		return ProposalComputationStrategyFactory.availableTypes;
+		return ProposalComputationStrategyFactory.getAvailableTypes();
 	}
 	
 }

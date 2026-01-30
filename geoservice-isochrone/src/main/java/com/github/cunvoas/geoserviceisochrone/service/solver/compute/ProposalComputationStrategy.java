@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategyFactory.Type;
 
 /**
  * Strategy interface to compute park proposals.
@@ -22,4 +23,7 @@ public interface ProposalComputationStrategy {
                                Double minSquareMeterPerCapita,
                                Double recoSquareMeterPerCapita,
                                Integer urbanDistance);
+    
+    
+    
 }
