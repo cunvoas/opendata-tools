@@ -15,8 +15,10 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComp
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalMeta;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalMetaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalWorkRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
@@ -58,6 +60,8 @@ public class ServicePropositionParc {
 	private ParkProposalWorkRepository parkProposalWorkRepository;
 	@Autowired
 	private ParkProposalRepository parkProposalRepository;
+	@Autowired
+	private ParkProposalMetaRepository parkProposalMetaRepository;
 	
 	
 	public void saveProposals(Map<String, ParkProposalWork> proposals) {
@@ -77,7 +81,7 @@ public class ServicePropositionParc {
 	 * @param insee
 	 * @param annee
 	 */
-	public Map<String, ParkProposalWork> calculeProposition(String insee, Integer annee) {
+	public Map<String, ParkProposalWork> calculeProposition(String insee, Integer annee, ProposalComputationStrategyFactory.Type typeAlgo) {
 		log.warn("Calcul des propositions de parc pour la commune {} en {}", insee, annee);
 		
 		Boolean dense = serviceOpenData.isDistanceDense(insee);
@@ -146,25 +150,44 @@ public class ServicePropositionParc {
 					carreMap.size(), insee, annee, dense, recoSquareMeterPerCapita, minSquareMeterPerCapita, urbanDistance);
 		}
 		
+		ParkProposalMeta ppm  = parkProposalMetaRepository.findByAnneeAndInseeAndTypeAlgo(annee, insee, typeAlgo);
+		if (ppm==null) {
+			ppm = new ParkProposalMeta();
+			ppm.setAnnee(annee);
+			ppm.setInsee(insee);
+			ppm.setTypeAlgo(typeAlgo);
+			ppm = parkProposalMetaRepository.save(ppm);
+		}
+
 		List<ParkProposal> proposals = null;
 		
-		// ALGO 1 : approche déléguée via stratégie (itérative par défaut)
-		ProposalComputationStrategy computation = ProposalComputationStrategyFactory.create(ProposalComputationStrategyFactory.Type.ITERATIVE, AbstractComputationtrategy.MIN_PARK_SURFACE);
+		// ALGO chargé via factory
+		ProposalComputationStrategy computation = ProposalComputationStrategyFactory.create(typeAlgo, AbstractComputationtrategy.MIN_PARK_SURFACE);
 		proposals = computation.compute(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
-
 		
-		// ALGO 2 : approche solver global (exemple d'utilisation via stratégie)
-//		ProposalComputationStrategy solver = ProposalComputationStrategyFactory.create(ProposalComputationStrategyFactory.Type.SOLVER_2, AbstractComputationtrategy.MIN_PARK_SURFACE);
-//		proposals = solver.compute(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
 		
 		if (proposals!=null && !proposals.isEmpty()) {
+			// affecte l'Id de la proposition
+			for (ParkProposal pp : proposals) {
+				pp.setIdMeta(ppm.getId());
+			}
+			ppm.setNumberOfParks(proposals.size());
+			ppm.setTotalSurfaceOfParks(
+					proposals.stream()
+					.mapToInt(p -> p.getParkSurface().intValue())
+					.sum()
+				);
+			
 			parkProposalRepository.saveAll(proposals);
+			parkProposalMetaRepository.save(ppm);
 		} else {
 			log.warn("Aucune proposition calculée pour la commune {} en {}", insee, annee);
 		}
 		return carreMap;
 	}
 	
-	
+	public List<ProposalComputationStrategyFactory.Type> getAvailableAlgorithms() {
+		return ProposalComputationStrategyFactory.availableTypes;
+	}
 	
 }

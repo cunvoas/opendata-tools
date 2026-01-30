@@ -8,14 +8,9 @@
   <div id="layoutSidenav_content">
     <main>
       <div class="container-fluid">
-        <h4 class="mt-3">Simulateur de Projet</h4>
-        <p class="text-muted">Simulez un projet d'aménagement avec paramètres de population, surface et densité. La carte permet de visualiser et définir les zones du projet.</p>
+        <h4 class="mt-3">Proposition de parcs et jardin</h4>
+        <p class="text-muted">Calculer des propositions de parcs pour obtenir un rationrface et densité. La carte permet de visualiser les résultats.</p>
 
-        <div class="d-flex justify-content-end mb-2" th:if="${formSimulateur != null && formSimulateur.id != null}">
-          <button type="button" class="btn btn-sm btn-outline-secondary print-button-fixed" onclick="window.print()">
-            <i class="fas fa-print"></i> Imprimer
-          </button>
-        </div>
 
         <!-- Sélecteurs de territoire -->
         <div class="row mb-4">
@@ -29,7 +24,7 @@
                   <!-- Région Filter -->
                   <div class="col-md-3">
                     <div class="d-flex align-items-center h-100">
-                      <form id="formSelectRegion" th:action="@{/mvc/simulation/region}" th:object="${formSimulateur}" method="post" onchange="submit();" class="w-100">
+                      <form id="formSelectRegion" th:action="@{/mvc/proposition/region}" th:object="${formProposal}" method="post" onchange="submit();" class="w-100">
                         <div class="form-floating">
                           <select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
                             <option value="" selected disabled>Choisir une région...</option>
@@ -45,8 +40,8 @@
                   <!-- EPCI Filter -->
                   <div class="col-md-3">
                     <div class="d-flex align-items-center h-100">
-                      <form id="formSelectComm2co" th:action="@{/mvc/simulation/commDeCo}" th:object="${formSimulateur}" method="post" onchange="submit();" class="w-100">
-                        <fieldset id="fsComm2co" th:disabled="${formSimulateur.idRegion == null}">
+                      <form id="formSelectComm2co" th:action="@{/mvc/proposition/commDeCo}" th:object="${formProposal}" method="post" onchange="submit();" class="w-100">
+                        <fieldset id="fsComm2co" th:disabled="${formProposal.idRegion == null}">
                           <div class="form-floating">
                             <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
                               <option value="">EPCI...</option>
@@ -64,11 +59,11 @@
                   <!-- Commune Filter -->
                   <div class="col-md-6">
                     <div class="d-flex align-items-center h-100">
-                      <form id="formSelectCity" th:action="@{/mvc/simulation/city}" method="POST" th:object="${formSimulateur}" class="w-100">
-                        <fieldset id="fsCity" th:disabled="${formSimulateur.idCommunauteDeCommunes == null}">
+                      <form id="formSelectCity" th:action="@{/mvc/proposition/city}" method="POST" th:object="${formProposal}" class="w-100">
+                        <fieldset id="fsCity" th:disabled="${formProposal.idCommunauteDeCommunes == null}">
                           <div class="form-floating">
                             <input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" 
-                                   th:value="${formSimulateur.nameCommune}" placeholder="Commune..." />
+                                   th:value="${formProposal.nameCommune}" placeholder="Commune..." />
                             <label for="idCommune-filter"><i class="fas fa-city me-2"></i>Commune</label>
                             <datalist id="communes">
                               <option th:each="commune : ${communes}" 
@@ -89,318 +84,15 @@
           </div>
         </div>
 
-        <!-- Liste des projets existants -->
-        <div class="row mb-3 projects-existing">
-          <div class="col-12">
-            <div class="card">
-              <div class="card-header">
-                <h6 class="mb-0">Projets existants sur cette commune <span class="badge bg-info" th:text="${projects != null ? projects.size() : 0}">0</span></h6>
-              </div>
-              <div class="card-body p-0">
-                <div class="table-responsive">
-                  <table class="table table-hover table-sm mb-0" id="projectsTable">
-                    <thead class="table-light sticky-top">
-                      <tr>
-                        <th style="cursor: pointer;" onclick="sortProjectsTable()">
-                          Nom <i class="fas fa-sort" id="sortIcon"></i>
-                        </th>
-                        <th class="text-end">Surface zone</th>
-                        <th class="text-end">Population</th>
-                        <th class="text-end">Surface parc</th>
-                        <th class="text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody id="projectsTableBody">
-                      <tr th:if="${projects == null || #lists.isEmpty(projects)}" class="empty-row">
-                        <td colspan="5" class="text-center text-muted py-3">
-                          <i class="fas fa-info-circle"></i> Aucun projet pour cette commune. Sélectionnez une commune ou créez un nouveau projet.
-                        </td>
-                      </tr>
-                      <tr th:each="project, iterStat : ${projects}" class="project-row" th:data-name="${project.name}">
-                        <td th:text="${project.name}">nom</td>
-                        <td class="text-end" th:text="${project.surfaceArea != null ? (project.surfaceArea > 10000 ? #numbers.formatDecimal(project.surfaceArea / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(project.surfaceArea, 0, 0) + ' m²') : '-'}">-</td>
-                        <td class="text-end" th:text="${project.population != null ? #numbers.formatDecimal(project.population, 0, 0) : '-'}">-</td>
-                        <td class="text-end" th:text="${project.surfacePark != null ? (project.surfacePark > 10000 ? #numbers.formatDecimal(project.surfacePark / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(project.surfacePark, 0, 0) + ' m²') : '-'}">-</td>
-                        <td class="text-center">
-                          <form th:action="@{/mvc/simulation/load}" method="get" style="display: inline;">
-                            <input type="hidden" name="projectId" th:value="${project.id}" />
-                            <button type="submit" class="btn btn-sm btn-outline-primary">
-                              <i class="fas fa-edit"></i> Éditer
-                            </button>
-                          </form>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <!-- Pagination -->
-                <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top" id="paginationContainer" th:if="${projects != null && projects.size() > 0}">
-                  <small class="text-muted" id="paginationInfo">Page 1</small>
-                  <nav>
-                    <ul class="pagination pagination-sm mb-0">
-                      <li class="page-item" id="prevPage">
-                        <a class="page-link" href="#" onclick="changePage(-1); return false;">«</a>
-                      </li>
-                      <li class="page-item" id="nextPage">
-                        <a class="page-link" href="#" onclick="changePage(1); return false;">»</a>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Message d'erreur token invalide -->
         <div class="alert alert-danger" th:if="${tokenInvalid}">
           <i class="fas fa-exclamation-triangle"></i> La soumission a échoué : le formulaire a déjà été soumis ou a expiré. Veuillez réessayer.
         </div>
 
-        <!-- Formulaire de simulation -->
-        <form id="formCompute" th:action="@{/mvc/simulation/compute}" method="post" th:object="${formSimulateur}">
-          <!-- Anti double soumission: token serveur -->
-          <input type="hidden" name="token" th:value="${token}" />
-          <input type="hidden" name="id" th:field="*{id}" />
-          <input type="hidden" name="idRegion" th:field="*{idRegion}" />
-          <input type="hidden" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
-          <input type="hidden" name="idCommune" th:field="*{idCommune}" />
-          <input type="hidden" id="sGeometry" name="sGeometry" th:value="${formSimulateur.sGeometry}" />
-          <input type="hidden" id="mapLat" name="mapLat" th:field="*{mapLat}"/>
-          <input type="hidden" id="mapLng" name="mapLng" th:field="*{mapLng}"/>
-          <div class="row g-3 mb-3">
-            <!-- Colonne gauche : paramètres -->
-            <div class="col-12 col-lg-6">
-              <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                  <span>Paramètres du projet</span>
-                  <button type="button" class="btn btn-sm btn-outline-primary" onclick="clearProjectForm()">
-                    <i class="fas fa-plus"></i> Nouveau
-                  </button>
-                </div>
-                <div class="card-body">
-                  <div class="row g-2 align-items-end">
-                    <div class="col-12 col-md-6 col-lg-6">
-                      <label for="name" class="form-label">Nom du projet</label>
-                      <input type="text" class="form-control" id="name" th:field="*{name}" placeholder="Nom du projet">
-                    </div>
-                    <div class="col-12 col-md-3 col-lg-3">
-                      <label for="annee" class="form-label">Année</label>
-                      <input type="number" class="form-control" id="annee" th:field="*{annee}" placeholder="2024">
-                    </div>
-                    <div class="col-12 col-md-3 col-lg-3">
-                      <label for="isDense" class="form-label">Type de zone</label>
-                      <div class="form-check mt-2">
-                        <input class="form-check-input" type="checkbox" id="isDense" th:field="*{isDense}">
-                        <label class="form-check-label" for="isDense">
-                          Zone dense
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="row g-2 mt-3">
-                    <div class="col-12 col-md-6">
-                      <label for="densityPerAccommodation" class="form-label">Densité par logement</label>
-                      <input type="number" step="0.01" class="form-control" id="densityPerAccommodation" th:field="*{densityPerAccommodation}" placeholder="2.16">
-                    </div>
-                    <div class="col-12 col-md-6">
-                      <label for="avgAreaAccommodation" class="form-label">Surface moy. logement (m²)</label>
-                      <input type="number" step="0.01" class="form-control" id="avgAreaAccommodation" th:field="*{avgAreaAccommodation}" placeholder="68">
-                    </div>
-                  </div>
-                  
-                  <div class="row g-2 mt-3">
-                    <div class="col-12 col-md-6">
-                      <label for="surfaceFloor" class="form-label">Surface plancher (m²)</label>
-                      <input type="number" step="0.01" class="form-control" id="surfaceFloor" th:field="*{floorSurface}" placeholder="5000">
-                    </div>
-                    <div class="col-12 col-md-6">
-                      <label for="population" class="form-label">Population estimée</label>
-                      <input type="number" step="0.01" class="form-control" id="population" th:field="*{population}" placeholder="1000">
-                    </div>
-                  </div>
-                  
-                  <div class="row g-2 mt-3">
-                    <div class="col-12 col-md-6">
-                      <label for="surfaceArea" class="form-label">Surface de la zone (m²)</label>
-                      <input type="number" step="0.01" class="form-control" id="surfaceArea" th:field="*{surfaceArea}" placeholder="10000">
-                    </div>
-                    <div class="col-12 col-md-6">
-                      <label for="surfacePark" class="form-label">Surface parc prévue (m²)</label>
-                      <input type="number" step="0.01" class="form-control" id="surfacePark" th:field="*{surfacePark}" placeholder="2000">
-                    </div>
-                  </div>
-                  
-                  <div class="row mt-3">
-                    <div class="col-12">
-                      <button type="button" onclick="computeSimulation()" class="btn btn-primary w-100">
-                        <i class="fas fa-calculator"></i> Calculer
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
 
-
-            <!-- Colonne droite : carte -->
-            <div class="col-12 col-lg-6 map-block">
-              <div class="card">
-                <div class="card-header">Localisation du projet</div>
-                <div class="card-body p-0">
-                  <div id="mapSimulator" style="width:100%; height:400px;"></div>
-                </div>
-                <div class="card-footer text-muted small">
-                  Utilisez les outils de dessin pour définir la zone du projet
-                </div>
-              </div>
-            </div>
-          </div>
           
 
-          <!-- Message si pas de résultats -->
-          <div class="row mt-3" th:if="${projectWorks == null || projectWorks.isEmpty()}">
-            <div class="col-12">
-              <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> Aucun résultat de simulation disponible. Calculez une simulation pour voir les résultats.
-              </div>
-            </div>
-          </div>
-
-          <!-- Résultats de simulation -->
-          <div class="row mt-3" th:if="${simulationResult != null}">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-header">Résultats de simulation</div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-12 col-md-6 col-lg-3">
-                      <div class="card text-center border-primary">
-                        <div class="card-body">
-                          <h6 class="text-muted">Population estimée</h6>
-                          <h3 class="text-primary" th:text="${simulationResult.population != null ? #numbers.formatDecimal(simulationResult.population, 0, 0) : '-'}">-</h3>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-3">
-                      <div class="card text-center border-success">
-                        <div class="card-body">
-                          <h6 class="text-muted">Surface zone (m²)</h6>
-                          <h3 class="text-success" th:text="${simulationResult.surfaceArea != null ? (simulationResult.surfaceArea > 10000 ? #numbers.formatDecimal(simulationResult.surfaceArea / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(simulationResult.surfaceArea, 0, 0) + ' m²') : '-'}">-</h3>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-3">
-                      <div class="card text-center border-info">
-                        <div class="card-body">
-                          <h6 class="text-muted">Surface parc (m²)</h6>
-                          <h3 class="text-info" th:text="${simulationResult.surfacePark != null ? (simulationResult.surfacePark > 10000 ? #numbers.formatDecimal(simulationResult.surfacePark / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(simulationResult.surfacePark, 0, 0) + ' m²') : '-'}">-</h3>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-3">
-                      <div class="card text-center border-warning">
-                        <div class="card-body">
-                          <h6 class="text-muted">Densité</h6>
-                          <h3 class="text-warning" th:text="${simulationResult.densityPerAccommodation != null ? #numbers.formatDecimal(simulationResult.densityPerAccommodation, 0, 2) : '-'}">-</h3>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Détails supplémentaires -->
-                  <div class="row mt-3" th:if="${simulationResult.isDense != null || simulationResult.annee != null || simulationResult.floorSurface != null}">
-                    <div class="col-12">
-                      <h6>Paramètres du projet</h6>
-                      <dl class="row small">
-                        <dt class="col-sm-3" th:if="${simulationResult.annee != null}">Année:</dt>
-                        <dd class="col-sm-9" th:if="${simulationResult.annee != null}" th:text="${simulationResult.annee}">-</dd>
-                        
-                        <dt class="col-sm-3" th:if="${simulationResult.isDense != null}">Type de zone:</dt>
-                        <dd class="col-sm-9" th:if="${simulationResult.isDense != null}" th:text="${simulationResult.isDense ? 'Zone dense' : 'Zone non dense'}">-</dd>
-                        
-                        <dt class="col-sm-3" th:if="${simulationResult.floorSurface != null}">Surface plancher:</dt>
-                        <dd class="col-sm-9" th:if="${simulationResult.floorSurface != null}" th:text="${simulationResult.floorSurface > 10000 ? #numbers.formatDecimal(simulationResult.floorSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(simulationResult.floorSurface, 0, 0) + ' m²'}">-</dd>
-                        
-                        <dt class="col-sm-3" th:if="${simulationResult.avgAreaAccommodation != null}">Surface moy. logement:</dt>
-                        <dd class="col-sm-9" th:if="${simulationResult.avgAreaAccommodation != null}" th:text="${#numbers.formatDecimal(simulationResult.avgAreaAccommodation, 0, 2) + ' m²'}">-</dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Table des ProjectWork sur toute la largeur -->
-          <div class="row mt-3 results-block" th:if="${projectWorks != null && !projectWorks.isEmpty()}">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-header">
-                  <h6 class="mb-0">Populations impactées par le projet <span class="badge bg-info" th:text="${projectWorks.size()}">0</span></h6>
-                </div>
-                <div class="card-body p-0">
-                  <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-hover table-sm mb-0" id="projectWorkTable">
-                      <thead class="table-light sticky-top">
-                        <tr>
-                          <th style="cursor: pointer;" onclick="sortProjectWorkTable('name')">
-                            Nom <i class="fas fa-sort" id="sortIcon-name"></i>
-                          </th>
-                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('localPopulation')">
-                            Pop. locale <i class="fas fa-sort" id="sortIcon-localPopulation"></i>
-                          </th>
-                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('accessingPopulation')">
-                            Pop. accès <i class="fas fa-sort" id="sortIcon-accessingPopulation"></i>
-                          </th>
-                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('accessingSurface')">
-                            Surf. accès <i class="fas fa-sort" id="sortIcon-accessingSurface"></i>
-                          </th>
-                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('missingSurface')">
-                            Surf. manquante <i class="fas fa-sort" id="sortIcon-missingSurface"></i>
-                          </th>
-                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('surfacePerCapita')">
-                            Surf./hab. <i class="fas fa-sort" id="sortIcon-surfacePerCapita"></i>
-                          </th>
-                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('newSurface')">
-                            Nouvelle surf. <i class="fas fa-sort" id="sortIcon-newSurface"></i>
-                          </th>
-                          <th class="text-end" style="cursor: pointer;" onclick="sortProjectWorkTable('newSurfacePerCapita')">
-                            Nouv. surf./hab. <i class="fas fa-sort" id="sortIcon-newSurfacePerCapita"></i>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody id="projectWorkTableBody">
-                        <tr th:each="work : ${projectWorks}" style="cursor: pointer;"
-                            th:attr="data-name=${work.idInspire ?: '(sans nom)'},
-                                     data-local-population=${work.localPopulation ?: 0},
-                                     data-accessing-population=${work.accessingPopulation ?: 0},
-                                     data-accessing-surface=${work.accessingSurface ?: 0},
-                                     data-missing-surface=${work.missingSurface ?: 0},
-                                     data-surface-per-capita=${work.surfacePerCapita ?: 0},
-                                     data-new-surface=${work.newSurface ?: 0},
-                                     data-new-surface-per-capita=${work.newSurfacePerCapita ?: 0}">
-                          <td th:text="${work.idInspire ?: '(sans nom)'}">Nom</td>
-                          <td class="text-end" th:text="${work.localPopulation != null ? #numbers.formatDecimal(work.localPopulation, 0, 0) : '-'}">-</td>
-                          <td class="text-end" th:text="${work.accessingPopulation != null ? #numbers.formatDecimal(work.accessingPopulation, 0, 0) : '-'}">-</td>
-                          <td class="text-end" th:text="${work.accessingSurface != null ? (work.accessingSurface > 10000 ? #numbers.formatDecimal(work.accessingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.accessingSurface, 0, 0) + ' m²') : '-'}">-</td>
-                          <td class="text-end" th:text="${work.missingSurface != null ? (work.missingSurface > 10000 ? #numbers.formatDecimal(work.missingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.missingSurface, 0, 0) + ' m²') : '-'}">-</td>
-                          <td class="text-end" th:text="${work.surfacePerCapita != null ? #numbers.formatDecimal(work.surfacePerCapita, 0, 2) + ' m²' : '-'}" th:classappend="${work.surfacePerCapita != null ? (work.surfacePerCapita < 10 ? 'below-oms-threshold' : 'above-oms-threshold') : ''}">-</td>
-                          <td class="text-end" th:text="${work.newSurface != null ? (work.newSurface > 10000 ? #numbers.formatDecimal(work.newSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.newSurface, 0, 0) + ' m²') : '-'}">-</td>
-                          <td class="text-end" th:text="${work.newSurfacePerCapita != null ? #numbers.formatDecimal(work.newSurfacePerCapita, 0, 2) + ' m²' : '-'}" th:classappend="${work.newSurfacePerCapita != null ? (work.newSurfacePerCapita < 10 ? 'below-oms-threshold' : 'above-oms-threshold') : ''}">-</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
       </div>
     </main>
   </div>

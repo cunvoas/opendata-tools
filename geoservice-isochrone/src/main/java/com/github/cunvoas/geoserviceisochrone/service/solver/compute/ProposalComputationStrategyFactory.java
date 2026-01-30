@@ -1,5 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.service.solver.compute;
 
+import java.util.List;
+
 /**
  * Abstract factory to create computation strategy (iterative or solver).
  */
@@ -8,12 +10,30 @@ public final class ProposalComputationStrategyFactory {
     private ProposalComputationStrategyFactory() {}
 
     public enum Type {
-        ITERATIVE,
-        SOLVER_1,
-        SOLVER_2,
-        SOLVER_3
-    }
+        ITERATIVE("Itératif"),
+        SOLVER_1("Solveur 1"),
+        SOLVER_2("Solveur 2"),
+        SOLVER_3("Solveur 3");
+    	
+    	private String displayName;
 
+    	Type(String displayName) {
+    		this.displayName = displayName;
+    	}
+
+    	public String getDisplayName() {
+    		return displayName;
+    	}
+    }
+	
+    
+    public static List<ProposalComputationStrategyFactory.Type> availableTypes = List.of(
+			ProposalComputationStrategyFactory.Type.ITERATIVE,
+			ProposalComputationStrategyFactory.Type.SOLVER_1,
+			ProposalComputationStrategyFactory.Type.SOLVER_2,
+			ProposalComputationStrategyFactory.Type.SOLVER_3
+	);
+    
     public static ProposalComputationStrategy create(Type type, double minParkSurface) {
         switch (type) {
             case ITERATIVE:
