@@ -81,7 +81,7 @@ public class ServicePropositionParc {
 	 * @param insee
 	 * @param annee
 	 */
-	public Map<String, ParkProposalWork> calculeProposition(String insee, Integer annee, ProposalComputationStrategyFactory.Type typeAlgo) {
+	public Map<String, ParkProposalWork> calculeProposition(String insee, Integer annee, ProposalComputationStrategyFactory.TypeAlgo typeAlgo) {
 		log.warn("Calcul des propositions de parc pour la commune {} en {}", insee, annee);
 		
 		Boolean dense = serviceOpenData.isDistanceDense(insee);
@@ -186,7 +186,7 @@ public class ServicePropositionParc {
 		return carreMap;
 	}
 	
-	public List<ProposalComputationStrategyFactory.Type> getAvailableAlgorithms() {
+	public List<ProposalComputationStrategyFactory.TypeAlgo> getAvailableAlgorithms() {
 		return ProposalComputationStrategyFactory.getAvailableTypes();
 	}
 	

@@ -153,10 +153,19 @@
             <!-- Colonne droite : liste des propositions -->
             <div class="col-12 col-lg-6">
               <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                   <h6 class="mb-0">
                     <i class="fas fa-list me-2"></i>Propositions pour <span th:text="${formProposal.nameCommune != null ? formProposal.nameCommune : 'la commune'}"></span>
                   </h6>
+                  <button type="button" class="btn btn-sm btn-outline-danger btn-clear-proposals" 
+                          id="btnClearPropositions"
+                          onclick="clearPropositions()" 
+                          data-bs-toggle="tooltip" 
+                          data-bs-placement="left"
+                          title="Masquer les propositions sur la carte"
+                          th:disabled="${propositions == null || propositions.isEmpty()}">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
                 </div>
                 <div class="card-body">
                   <!-- Message si pas de propositions -->
@@ -296,6 +305,23 @@
     position: sticky;
     top: 0;
     z-index: 10;
+  }
+
+  /* Style pour le bouton effacer les propositions */
+  .btn-clear-proposals {
+    transition: all 0.2s ease;
+  }
+
+  .btn-clear-proposals:hover:not(:disabled) {
+    transform: scale(1.1);
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: white !important;
+  }
+
+  .btn-clear-proposals:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   @media print {
@@ -507,10 +533,9 @@ setTimeout(function() {
 // ----------- OVERLAYS DYNAMIQUES -----------
 const dataParcs = L.layerGroup().addTo(map);
 const dataProjectZone = L.layerGroup().addTo(map);
-const dataProjectWork = L.layerGroup(); // Layer pour les propositions, non affiché par défaut
+const dataProposal = L.layerGroup(); // Layer pour les propositions, non affiché par défaut
 
 overlays['Parcs existants'] = dataParcs;
-overlays['Projets'] = dataProjectZone;
 
 L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
 
@@ -537,7 +562,7 @@ legend.addTo(map);
 // ----------- CHARGEMENT PARCS -----------
 const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
 const endpointProjects = /*[[@{/mvc/geojson/projectByCorner}]]*/ '';
-const endpointProjectWork = /*[[@{/mvc/geojson/projectWorkById}]]*/ '';
+const endpointProposal = /*[[@{/mvc/geojson/proposal}]]*/ '';
 
 /**
  * Détermine le style dynamique d'un parc en fonction de ses propriétés
@@ -587,141 +612,12 @@ function loadParcs() {
     .catch(err => console.error('[Simulateur] Erreur chargement parcs', err));
 }
 
-/**
- * Charge les projets de simulation dans la zone visible
- */
-function loadProjects() {
-  if (!endpointProjects) return;
-  
-  const b = map.getBounds();
-  const url = `${endpointProjects}?swLat=${b.getSouthWest().lat}&swLng=${b.getSouthWest().lng}&neLat=${b.getNorthEast().lat}&neLng=${b.getNorthEast().lng}`;
-  
-  fetch(url)
-    .then(r => r.json())
-    .then(geojson => {
-      dataProjectZone.clearLayers();
-      
-      // Re-add current layer if it exists
-      if (currentLayer) {
-        currentLayer.addTo(dataProjectZone);
-      }
-      
-      L.geoJSON(geojson, {
-        style: function(feature) {
-          return {
-            color: '#0066cc',
-            fillColor: '#3399ff',
-            weight: 2,
-            fillOpacity: 0.25
-          };
-        },
-        onEachFeature: function(feature, layer) {
-          let popupContent = '';
-          let projectName = '';
-          if (feature.properties && feature.properties.name) {
-            projectName = feature.properties.name;
-            popupContent = '<b>' + feature.properties.name + '</b><br>';
-          } else {
-            popupContent = '<b>Projet de simulation</b><br>';
-          }
-          if (feature.properties) {
-            if (feature.properties.annee) popupContent += 'Année: ' + feature.properties.annee + '<br>';
-            if (feature.properties.population) popupContent += 'Population: ' + feature.properties.population + '<br>';
-            if (feature.properties.surfaceArea) popupContent += 'Surface: ' + Math.round(feature.properties.surfaceArea) + ' m²<br>';
-          }
-          // Afficher les infos du projet au clic sur la forme (comme les parcs)
-          layer.bindPopup(popupContent);
-        }
-      }).addTo(dataProjectZone);
-      console.log('[Simulateur] Projets chargés:', geojson.features ? geojson.features.length : 0);
-    })
-    .catch(err => console.error('[Simulateur] Erreur chargement projets', err));
-}
-
-/**
- * Charge les éléments du projet (ProjectWork) pour le projet en cours
- */
-function loadProjectWork() {
-  if (!endpointProjectWork) return;
-  
-  // Récupérer l'ID du projet depuis le formulaire
-  const projectId = document.getElementById('id').value;
-  if (!projectId || projectId.trim() === '') {
-    dataProjectWork.clearLayers();
-    return;
-  }
-  
-  const url = `${endpointProjectWork}?id=${projectId}`;
-  
-  fetch(url)
-    .then(r => r.json())
-    .then(geojson => {
-      dataProjectWork.clearLayers();
-      
-      L.geoJSON(geojson, {
-        style: function(feature) {
-          // Couleur basée sur newSurfacePerCapita par rapport au seuil OMS (10 m²/hab)
-          let fillColor = '#cccccc'; // Gris par défaut si pas de valeur
-          let borderColor = '#666666';
-          
-          if (feature.properties && feature.properties.newSurfacePerCapita !== null && feature.properties.newSurfacePerCapita !== undefined) {
-            if (feature.properties.newSurfacePerCapita < 10) {
-              // Rouge si sous le seuil OMS
-              fillColor = '#ff6666';
-              borderColor = '#cc0000';
-            } else {
-              // Vert si au-dessus du seuil OMS
-              fillColor = '#66ff66';
-              borderColor = '#00cc00';
-            }
-          }
-          
-          return {
-            color: borderColor,
-            fillColor: fillColor,
-            weight: 2,
-            fillOpacity: 0.5
-          };
-        },
-        onEachFeature: function(feature, layer) {
-          let popupContent = '';
-          if (feature.properties) {
-            popupContent += '<b>Carré INSEE: ' + (feature.properties.idInspire || 'N/A') + '</b><br>';
-            if (feature.properties.localPopulation) {
-              popupContent += 'Population locale: ' + Math.round(feature.properties.localPopulation) + '<br>';
-            }
-            if (feature.properties.accessingPopulation) {
-              popupContent += 'Population accès: ' + Math.round(feature.properties.accessingPopulation) + '<br>';
-            }
-            if (feature.properties.accessingSurface) {
-              popupContent += 'Surface accès: ' + Math.round(feature.properties.accessingSurface) + ' m²<br>';
-            }
-            if (feature.properties.surfacePerCapita) {
-              popupContent += 'Surface/hab: ' + Math.round(feature.properties.surfacePerCapita * 100) / 100 + ' m²<br>';
-            }
-            if (feature.properties.newSurfacePerCapita) {
-              popupContent += 'Nouvelle surf/hab: ' + Math.round(feature.properties.newSurfacePerCapita * 100) / 100 + ' m²';
-            }
-          }
-          layer.bindPopup(popupContent);
-          
-          // Marquer comme projectWork
-          layer._isProjectWork = true;
-        }
-      }).addTo(dataProjectWork);
-      console.log('[Simulateur] ProjectWork chargés:', geojson.features ? geojson.features.length : 0);
-    })
-    .catch(err => console.error('[Simulateur] Erreur chargement projectWork', err));
-}
-
 // Chargement initial et au déplacement
 map.on('moveend', function() {
   loadParcs();
-  loadProjects();
 });
 loadParcs();
-loadProjects();
-// Ne pas charger loadProjectWork() au démarrage, sera chargé par le bouton de visualisation
+// Ne pas charger loadProposal() au démarrage, sera chargé par le bouton de visualisation
 
 console.log('[Simulateur] Carte initialisée');
 
@@ -761,170 +657,6 @@ console.log('[Simulateur] Carte initialisée');
   });
 })();
 
-// ----------- CALCUL AUTOMATIQUE POPULATION -----------
-(function initAutoPopulation(){
-  const floorEl = document.getElementById('surfaceFloor');
-  const avgEl = document.getElementById('avgAreaAccommodation');
-  const densityEl = document.getElementById('densityPerAccommodation');
-  const populationEl = document.getElementById('population');
-
-  if (!floorEl || !avgEl || !densityEl || !populationEl) return;
-
-  const computePopulation = () => {
-    const floor = parseFloat(floorEl.value);
-    const avg = parseFloat(avgEl.value);
-    const density = parseFloat(densityEl.value);
-    if (isNaN(floor) || isNaN(avg) || isNaN(density) || avg === 0) {
-      return;
-    }
-    const pop = (floor / avg) * density;
-    populationEl.value = Math.round(pop);
-  };
-
-  ['input', 'change'].forEach(evt => {
-    floorEl.addEventListener(evt, computePopulation);
-    avgEl.addEventListener(evt, computePopulation);
-    densityEl.addEventListener(evt, computePopulation);
-  });
-
-  computePopulation();
-})();
-
-// Fonction pour effacer le formulaire et créer un nouveau projet
-function clearProjectForm() {
-  console.log('[Simulateur] clearProjectForm() appelée');
-  
-  // Effacer les champs du formulaire
-  document.getElementById('id').value = '';
-  document.getElementById('name').value = '';
-  document.getElementById('annee').value = '';
-  document.getElementById('isDense').checked = false;
-  document.getElementById('densityPerAccommodation').value = '';
-  document.getElementById('avgAreaAccommodation').value = '';
-  document.getElementById('surfaceFloor').value = '';
-  document.getElementById('population').value = '';
-  document.getElementById('surfaceArea').value = '';
-  document.getElementById('surfacePark').value = '';
-  document.getElementById('sGeometry').value = '';
-  
-  // Effacer la géométrie de la carte
-  if (currentLayer) {
-    dataProjectZone.removeLayer(currentLayer);
-    currentLayer = null;
-  }
-  
-  // Supprimer le label du projet
-  if (projectLabel) {
-    map.removeLayer(projectLabel);
-    projectLabel = null;
-  }
-  
-  // Effacer les projectWork de la carte
-  dataProjectWork.clearLayers();
-  
-  console.log('[Simulateur] Formulaire effacé');
-}
-
-// Fonction pour calculer la simulation (comme savePark dans newPark.html)
-function computeSimulation() {
-  console.log('[Simulateur] computeSimulation() appelée');
-  
-  // Récupérer les couches dessinées pour s'assurer que sGeometry est à jour
-  const self_drawn = map.pm.getGeomanDrawLayers(true);
-  const strPoly = JSON.stringify(self_drawn.toGeoJSON());
-  document.getElementById('sGeometry').value = strPoly;
-  
-  // Récupérer le formulaire et le soumettre normalement
-  const form = document.getElementById('formCompute');
-  form.submit();
-}
-
-
-// ----------- PAGINATION ET TRI DU TABLEAU PROJETS -----------
-let currentPage = 1;
-const itemsPerPage = 4;
-let sortAscending = true;
-
-function initProjectsTable() {
-  const rows = document.querySelectorAll('#projectsTableBody .project-row');
-  if (rows.length === 0) return;
-  
-  updatePagination();
-}
-
-function updatePagination() {
-  const rows = Array.from(document.querySelectorAll('#projectsTableBody .project-row'));
-  const totalRows = rows.length;
-  const totalPages = Math.ceil(totalRows / itemsPerPage);
-  
-  if (totalRows === 0) {
-    document.getElementById('paginationContainer')?.classList.add('d-none');
-    return;
-  }
-  
-  // Afficher/masquer les lignes selon la page courante
-  rows.forEach((row, index) => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    row.style.display = (index >= startIndex && index < endIndex) ? '' : 'none';
-  });
-  
-  // Mettre à jour l'info de pagination
-  const paginationInfo = document.getElementById('paginationInfo');
-  if (paginationInfo) {
-    paginationInfo.textContent = `Page ${currentPage} / ${totalPages}`;
-  }
-  
-  // Gérer l'état des boutons précédent/suivant
-  const prevPage = document.getElementById('prevPage');
-  const nextPage = document.getElementById('nextPage');
-  if (prevPage) prevPage.classList.toggle('disabled', currentPage === 1);
-  if (nextPage) nextPage.classList.toggle('disabled', currentPage === totalPages);
-}
-
-function changePage(delta) {
-  const rows = document.querySelectorAll('#projectsTableBody .project-row');
-  const totalPages = Math.ceil(rows.length / itemsPerPage);
-  
-  const newPage = currentPage + delta;
-  if (newPage >= 1 && newPage <= totalPages) {
-    currentPage = newPage;
-    updatePagination();
-  }
-}
-
-function sortProjectsTable() {
-  const tbody = document.getElementById('projectsTableBody');
-  const rows = Array.from(tbody.querySelectorAll('.project-row'));
-  const sortIcon = document.getElementById('sortIcon');
-  
-  if (rows.length === 0) return;
-  
-  // Trier les lignes par nom
-  rows.sort((a, b) => {
-    const nameA = (a.dataset.name || '').toLowerCase();
-    const nameB = (b.dataset.name || '').toLowerCase();
-    return sortAscending ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
-  });
-  
-  // Réorganiser les lignes dans le tbody
-  rows.forEach(row => tbody.appendChild(row));
-  
-  // Inverser le sens du tri pour le prochain clic
-  sortAscending = !sortAscending;
-  
-  // Mettre à jour l'icône
-  if (sortIcon) {
-    sortIcon.className = sortAscending ? 'fas fa-sort-down' : 'fas fa-sort-up';
-  }
-  
-  // Revenir à la première page après tri
-  currentPage = 1;
-  updatePagination();
-}
-
-// Initialiser le tableau au chargement
-initProjectsTable();
 
 // ----------- TRI DU TABLEAU DES PROPOSITIONS -----------
 let propositionsSortColumn = null;
@@ -986,6 +718,12 @@ function changePropositionsPage(delta) {
   }
 }
 
+// ----------- EFFACER LES PROPOSITIONS DE LA CARTE -----------
+function clearPropositions() {
+  dataProposal.clearLayers();
+  console.log('[Simulateur] Cercles des propositions effacés de la carte');
+}
+
 function sortPropositionsTable(column) {
   const tbody = document.getElementById('propositionsTableBody');
   if (!tbody) return;
@@ -1042,6 +780,27 @@ function sortPropositionsTable(column) {
 // Initialiser la pagination des propositions au chargement
 initPropositionsTable();
 
+// Initialiser les tooltips Bootstrap
+const clearProposalsBtn = document.getElementById('btnClearPropositions');
+if (clearProposalsBtn) {
+  new bootstrap.Tooltip(clearProposalsBtn);
+}
+
+// Initialiser l'année avec la première année disponible si elle est vide
+(function initAnnee() {
+  const anneeSelect = document.getElementById('annee');
+  if (anneeSelect && !anneeSelect.value) {
+    const options = anneeSelect.querySelectorAll('option');
+    for (let option of options) {
+      if (option.value && option.value !== '') {
+        anneeSelect.value = option.value;
+        console.log('[Simulateur] Année initialisée à:', option.value);
+        break;
+      }
+    }
+  }
+})();
+
 // ----------- VISUALISER UNE PROPOSITION -----------
 function viewProposition(button) {
   const propositionId = button.getAttribute('data-id');
@@ -1056,66 +815,63 @@ function viewProposition(button) {
   }
   
   // Effacer les données précédentes
-  dataProjectWork.clearLayers();
+  dataProposal.clearLayers();
   
   // Charger les données de la proposition
-  if (endpointProjectWork) {
-    const url = `${endpointProjectWork}?id=${propositionId}`;
+  if (endpointProposal) {
+    const url = `${endpointProposal}/${propositionId}`;
     
     fetch(url)
       .then(r => r.json())
       .then(geojson => {
         if (geojson && geojson.features && geojson.features.length > 0) {
           L.geoJSON(geojson, {
-            style: function(feature) {
-              // Couleur basée sur newSurfacePerCapita par rapport au seuil OMS (10 m²/hab)
-              let fillColor = '#cccccc';
-              let borderColor = '#666666';
-              
-              if (feature.properties && feature.properties.newSurfacePerCapita !== null && feature.properties.newSurfacePerCapita !== undefined) {
-                if (feature.properties.newSurfacePerCapita < 10) {
-                  fillColor = '#ff6666';
-                  borderColor = '#cc0000';
-                } else {
-                  fillColor = '#66ff66';
-                  borderColor = '#00cc00';
+            pointToLayer: function(feature, latlng) {
+              // Créer des cercles pour les points avec radius
+              if (feature.properties && feature.properties.radius) {
+                const radius = parseFloat(feature.properties.radius);
+                if (!isNaN(radius)) {
+                  return L.circle(latlng, {
+                    radius: radius,
+                    color: '#20B2AA',
+                    fillColor: '#40E0D0',
+                    weight: 2,
+                    fillOpacity: 0.5
+                  });
                 }
               }
-              
-              return {
-                color: borderColor,
-                fillColor: fillColor,
+              // Fallback: point par défaut
+              return L.circleMarker(latlng, {
+                radius: 5,
+                color: '#20B2AA',
+                fillColor: '#40E0D0',
                 weight: 2,
                 fillOpacity: 0.5
-              };
+              });
             },
             onEachFeature: function(feature, layer) {
               let popupContent = '';
               if (feature.properties) {
-                popupContent += '<b>Carré INSEE: ' + (feature.properties.idInspire || 'N/A') + '</b><br>';
-                if (feature.properties.localPopulation) {
-                  popupContent += 'Population locale: ' + Math.round(feature.properties.localPopulation) + '<br>';
-                }
-                if (feature.properties.accessingPopulation) {
-                  popupContent += 'Population accès: ' + Math.round(feature.properties.accessingPopulation) + '<br>';
-                }
-                if (feature.properties.accessingSurface) {
-                  popupContent += 'Surface accès: ' + Math.round(feature.properties.accessingSurface) + ' m²<br>';
-                }
-                if (feature.properties.surfacePerCapita) {
-                  popupContent += 'Surface/hab: ' + Math.round(feature.properties.surfacePerCapita * 100) / 100 + ' m²<br>';
-                }
-                if (feature.properties.newSurfacePerCapita) {
-                  popupContent += 'Nouvelle surf/hab: ' + Math.round(feature.properties.newSurfacePerCapita * 100) / 100 + ' m²';
+                if (feature.properties.radius) {
+                  const radius = parseFloat(feature.properties.radius);
+                  if (!isNaN(radius)) {
+                    popupContent += `<p>Diamètre: ${Math.round(2*radius)} m</p>`;
+                    const surface = parseFloat(feature.properties.surface);
+                    if (surface >= 10000) {
+                      popupContent += `<p>Surface: ${(surface / 10000).toFixed(2)} ha</p>`;
+                    } else {
+                      popupContent += `<p>Surface: ${Math.round(surface)} m²</p>`;
+                    }
+                  }
                 }
               }
               layer.bindPopup(popupContent);
-              layer._isProjectWork = true;
+              layer._isProposal = true;
             }
-          }).addTo(dataProjectWork);
+          }).addTo(dataProposal);
           
           // Ajouter le layer à la carte
-          dataProjectWork.addTo(map);
+          dataProposal.addTo(map);
           
           console.log('[Simulateur] Proposition chargée:', geojson.features.length, 'éléments');
         } else {
@@ -1132,57 +888,6 @@ function viewProposition(button) {
   }
 }
 
-// ----------- TRI DU TABLEAU DE RÉSULTATS -----------
-let projectWorkSortColumn = null;
-let projectWorkSortAscending = true;
-
-function sortProjectWorkTable(column) {
-  const tbody = document.getElementById('projectWorkTableBody');
-  if (!tbody) return;
-  
-  const rows = Array.from(tbody.querySelectorAll('tr'));
-  if (rows.length === 0) return;
-  
-  // Si on clique sur la même colonne, inverser l'ordre
-  if (projectWorkSortColumn === column) {
-    projectWorkSortAscending = !projectWorkSortAscending;
-  } else {
-    projectWorkSortColumn = column;
-    projectWorkSortAscending = true;
-  }
-  
-  // Trier les lignes
-  rows.sort((a, b) => {
-    let valueA, valueB;
-    
-    if (column === 'name') {
-      valueA = (a.dataset.name || '').toLowerCase();
-      valueB = (b.dataset.name || '').toLowerCase();
-      return projectWorkSortAscending ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
-    } else {
-      // Pour les colonnes numériques
-      const dataKey = column.replace(/([A-Z])/g, '-$1').toLowerCase();
-      valueA = parseFloat(a.dataset[column.replace(/([A-Z])/g, (m) => '-' + m.toLowerCase()).substring(column.startsWith('data-') ? 0 : 5)] || a.getAttribute('data-' + dataKey.replace('data-', '')) || 0);
-      valueB = parseFloat(b.dataset[column.replace(/([A-Z])/g, (m) => '-' + m.toLowerCase()).substring(column.startsWith('data-') ? 0 : 5)] || b.getAttribute('data-' + dataKey.replace('data-', '')) || 0);
-      return projectWorkSortAscending ? valueA - valueB : valueB - valueA;
-    }
-  });
-  
-  // Réorganiser les lignes dans le tbody
-  rows.forEach(row => tbody.appendChild(row));
-  
-  // Mettre à jour les icônes de tri
-  document.querySelectorAll('[id^="sortIcon-"]').forEach(icon => {
-    icon.className = 'fas fa-sort';
-  });
-  
-  const sortIcon = document.getElementById('sortIcon-' + column);
-  if (sortIcon) {
-    sortIcon.className = projectWorkSortAscending ? 'fas fa-sort-up' : 'fas fa-sort-down';
-  }
-  
-  console.log('[Simulateur] Tableau trié par', column, projectWorkSortAscending ? 'ASC' : 'DESC');
-}
 
 
 </script>

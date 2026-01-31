@@ -14,7 +14,7 @@ import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalCom
 @Repository 
 public interface ParkProposalMetaRepository extends JpaRepository<ParkProposalMeta, Long>{
 
-	public ParkProposalMeta findByAnneeAndInseeAndTypeAlgo(Integer annee, String insee, ProposalComputationStrategyFactory.Type typeAlgo);
+	public ParkProposalMeta findByAnneeAndInseeAndTypeAlgo(Integer annee, String insee, ProposalComputationStrategyFactory.TypeAlgo typeAlgo);
 
 	public List<ParkProposalMeta> findByAnneeAndInsee(Integer annee, String insee);
 

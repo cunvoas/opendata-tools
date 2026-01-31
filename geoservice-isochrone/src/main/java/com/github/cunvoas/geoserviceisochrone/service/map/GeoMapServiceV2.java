@@ -54,6 +54,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalMeta;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
@@ -62,6 +63,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.IrisDataComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalMetaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWorkRepository;
@@ -75,6 +77,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategyFactory.TypeAlgo;
 import com.google.common.math.BigDecimalMath;
 import com.google.common.primitives.Ints;
 
@@ -140,6 +143,8 @@ public class GeoMapServiceV2 {
 
     @Autowired
     private ParkProposalRepository parkProposalRepository;
+    @Autowired
+    private ParkProposalMetaRepository parkProposalMetaRepository;
     
 
     @Autowired
@@ -289,21 +294,6 @@ public class GeoMapServiceV2 {
     	return this.findAllParkByArea(polygon, annee);
     }
 
-	  
-    /**
-     * findParkProposalByArea.
-     * @param swLat south-west latitude
-     * @param swLng south-west longitude
-     * @param neLat north-est latitude
-     * @param neLng north-est longitude
-     * @return  ParkProposal geojson
-     */
-    
-	public GeoJsonRoot findParkProposalByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
-    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
-    	return this.findParkProposalByArea(polygon, annee);
-    }
-	
 	
 	/**
 	 * findAllParkOutlineByArea.
@@ -601,37 +591,57 @@ public class GeoMapServiceV2 {
 		return root;
 	}
 	
-	
+
+    /**
+     * findParkProposalByArea.
+     * @param swLat south-west latitude
+     * @param swLng south-west longitude
+     * @param neLat north-est latitude
+     * @param neLng north-est longitude
+     * @return  ParkProposal geojson
+     */
+	public GeoJsonRoot findParkProposalByArea(Integer annee, Double swLat, Double swLng, Double neLat, Double neLng) {
+    	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+    	
+    	if (annee==null) {
+    		annee = applicationBusinessProperties.getDerniereAnnee();
+    	}
+    	TypeAlgo typeAlgo=TypeAlgo.ITERATIVE_1;
+    	
+    	return this.findParkProposalByArea(polygon, annee, typeAlgo, null);
+    }
 
 	/**
 	 * findParkProposalByArea.
 	 * @param polygon Polygon
-	 * @return   park proposal geojson
+	 * @return park proposal geojson
 	 */
-	public GeoJsonRoot findParkProposalByArea(Polygon polygon, Integer annee) {
+	public GeoJsonRoot findParkProposalByArea(Polygon polygon, Integer annee, TypeAlgo typeAlgo, Long idMeta) {
 		GeoJsonRoot root = new GeoJsonRoot();
+		List<ParkProposal> proposals =  null;
 		
-    	if (polygon!=null) {
-			List<ParkProposal> proposals =  parkProposalRepository.findParkProposalInMapArea(annee, GeometryQueryHelper.toText(polygon));
-			if (!CollectionUtils.isEmpty(proposals)) {
-				for (ParkProposal proposal : proposals) {
-					GeoJsonFeature feature = new GeoJsonFeature();
-					root.getFeatures().add(feature);
-					feature.setGeometry(proposal.getCentre());
-					
-					
-					ParkProposalView pv = new ParkProposalView();
-					
-					pv.setId(String.valueOf(proposal.getIdInspire()));
-					pv.setDense(proposal.getIsDense());
-					pv.setRadius(proposal.getRadius());
-					pv.setSurface(Math.round(proposal.getParkSurface().longValue()));
-					
-					feature.setProperties(pv);
-					
-				}
+		if (idMeta!=null) {
+			proposals =  parkProposalRepository.findParkProposalByIdMeta(idMeta);
+		} else if (polygon!=null) {
+			proposals =  parkProposalRepository.findParkProposalInMapArea(annee, GeometryQueryHelper.toText(polygon), typeAlgo);
+		}
+		
+		if (!CollectionUtils.isEmpty(proposals)) {
+			for (ParkProposal proposal : proposals) {
+				GeoJsonFeature feature = new GeoJsonFeature();
+				root.getFeatures().add(feature);
+				feature.setGeometry(proposal.getCentre());
+				
+				ParkProposalView pv = new ParkProposalView();
+				
+				pv.setId(String.valueOf(proposal.getIdInspire()));
+				pv.setDense(proposal.getIsDense());
+				pv.setRadius(proposal.getRadius());
+				pv.setSurface(Math.round(proposal.getParkSurface().longValue()));
+				
+				feature.setProperties(pv);
 			}
-    	}
+		}
 		return root;
 	}
 	

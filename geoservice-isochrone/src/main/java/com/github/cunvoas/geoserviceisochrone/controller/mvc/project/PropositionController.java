@@ -171,6 +171,35 @@ public class PropositionController {
         return show(form, model);
     }
     
+    /**
+     * Clear all proposals for the selected commune.
+     */
+    @PostMapping("/clear")
+    public String clearProposals(@ModelAttribute FormProposition form, Model model) {
+        log.info("clearProposals() - form={}, commune={}", form, form.getCodeInsee());
+        
+        if (form.getCodeInsee() == null || form.getCodeInsee().isEmpty()) {
+            log.warn("Code INSEE manquant lors de l'effacement des propositions");
+            model.addAttribute("clearError", "Erreur: Aucune commune sélectionnée");
+            return show(form, model);
+        }
+        
+        try {
+            // Delete all proposals for the commune
+            List<ParkProposalMeta> propositions = parkProposalMetaRepository.findByInsee(form.getCodeInsee());
+            parkProposalMetaRepository.deleteAll(propositions);
+            
+            log.info("Suppression de {} propositions pour INSEE={}", propositions.size(), form.getCodeInsee());
+            model.addAttribute("clearSuccess", "Toutes les propositions ont été effacées pour " + form.getNameCommune());
+        
+        } catch (Exception e) {
+            log.error("Erreur lors de l'effacement des propositions", e);
+            model.addAttribute("clearError", "Erreur lors de l'effacement: " + e.getMessage());
+        }
+        
+        return show(form, model);
+    }
+    
     
     
     /**

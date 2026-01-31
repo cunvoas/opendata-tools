@@ -26,7 +26,7 @@ public class ParkProposalMeta {
 	//id business
     private Integer annee;
     private String insee;
-    private ProposalComputationStrategyFactory.Type typeAlgo;
+    private ProposalComputationStrategyFactory.TypeAlgo typeAlgo;
     
     //data
     private Integer numberOfParks = 0;

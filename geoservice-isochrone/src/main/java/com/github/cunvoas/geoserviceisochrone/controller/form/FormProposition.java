@@ -17,7 +17,7 @@ public class FormProposition extends AbstractFormLocate {
     private Long id;
     private Integer annee = Year.now().getValue();
     private String codeInsee;
-    private ProposalComputationStrategyFactory.Type type;
+    private ProposalComputationStrategyFactory.TypeAlgo type;
     private String name;
     
     // Coordonnées carte (valeurs par défaut, redéfinies depuis AbstractFormLocate)
