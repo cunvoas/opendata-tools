@@ -698,38 +698,6 @@ map.pm.addControls({
 // Variable pour stocker la couche actuelle du projet en édition
 let currentLayer = null;
 
-/**
- * Charge la géométrie existante depuis le formulaire (sGeometry)
- */
-function loadExistingGeometry() {
-  const sGeom = document.getElementById('sGeometry').value;
-  if (!sGeom || sGeom.trim() === '') return;
-  
-  try {
-    const geojson = JSON.parse(sGeom);
-    console.log('[Simulateur] Chargement géométrie existante');
-    
-    const geoLayer = L.geoJSON(geojson, {
-      style: {
-        color: '#0066cc',
-        fillColor: '#3399ff',
-        weight: 2,
-        fillOpacity: 0.35
-      }
-    });
-    
-    geoLayer.addTo(dataProjectZone);
-    
-    geoLayer.eachLayer(function(layer) {
-      currentLayer = layer;
-    });
-    
-    console.log('[Simulateur] Géométrie existante chargée');
-    
-  } catch (e) {
-    console.error('[Simulateur] Erreur parsing géométrie existante:', e);
-  }
-}
 
 // ----------- CHARGEMENT DES LAYERS -----------
 const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
@@ -802,21 +770,15 @@ function loadProjects() {
   const b = map.getBounds();
   const url = `${endpointProjects}?swLat=${b.getSouthWest().lat}&swLng=${b.getSouthWest().lng}&neLat=${b.getNorthEast().lat}&neLng=${b.getNorthEast().lng}`;
   
+  // ID du projet en cours d'édition
+  const currentProjectId = document.getElementById('id').value;
+  
   fetch(url)
     .then(r => r.json())
     .then(geojson => {
-      // Sauvegarder le currentLayer avant clear
-      const savedCurrentLayer = currentLayer;
-      
       dataProjectZone.clearLayers();
       
-      // Restaurer currentLayer
-      if (savedCurrentLayer) {
-        dataProjectZone.addLayer(savedCurrentLayer);
-        currentLayer = savedCurrentLayer;
-      }
-      
-      // Charger les autres projets (affichage seulement, pas d'édition)
+      // Charger les projets
       L.geoJSON(geojson, {
         style: function(feature) {
           return {
@@ -839,6 +801,23 @@ function loadProjects() {
             if (feature.properties.surfaceArea) popupContent += 'Surface: ' + Math.round(feature.properties.surfaceArea) + ' m²<br>';
           }
           layer.bindPopup(popupContent);
+          
+          // Si c'est le projet en cours d'édition, activer Geoman
+          if (currentProjectId && feature.properties && feature.properties.id == currentProjectId) {
+            console.log('[Simulateur] Projet en édition trouvé, activation Geoman');
+            currentLayer = layer;
+            
+            // Activer l'édition Geoman
+            layer.pm.enable({
+              allowSelfIntersection: false
+            });
+            
+            // Écouter les modifications
+            layer.on('pm:edit', function(e) {
+              console.log('[Geoman] pm:edit - projet modifié');
+              document.getElementById('sGeometry').value = JSON.stringify(e.layer.toGeoJSON());
+            });
+          }
         }
       }).addTo(dataProjectZone);
       console.log('[Simulateur][dataProjectZone] Projets chargés:', geojson.features ? geojson.features.length : 0);
@@ -853,17 +832,46 @@ map.on("pm:remove", (e) => {
     currentLayer = null;
 });
 
+/*
 map.on('pm:create', ({ layer }) => {  
     console.log("[Geoman] pm:create");
     currentLayer = layer;
     currentLayer.addTo(dataProjectZone);
+    layer.on('pm:edit', e => {
+      console.log(e);
+    });
 });
+*/
+map.on('pm:create', (e) => {
+  console.log("[Geoman] pm:create");
+  currentLayer = e.layer;
+  e.layer.on('pm:edit', ({ layer }) => {
+    console.log("[Geoman] pm:edit - forme modifiée");
+    // Sauvegarder la géométrie modifiée dans sGeometry
+    document.getElementById('sGeometry').value = JSON.stringify(layer.toGeoJSON());
+    console.log("[Geoman] Géométrie sauvegardée:", layer.toGeoJSON());
+  });
+});
+
+
+map.on('pm:change', ({ layer }) => {  
+    console.log("[Geoman] pm:change");
+    currentLayer = layer;
+   // currentLayer.addTo(dataProjectZone);
+});
+
+
 
 map.on('pm:drawend', function (e) {
     console.log("[Geoman] pm:drawend");
     const self_drawn = map.pm.getGeomanDrawLayers(true);
     const strPoly = JSON.stringify(self_drawn.toGeoJSON());
     document.getElementById('sGeometry').value = strPoly;
+});
+
+// Quand l'utilisateur active/désactive le mode édition global
+map.on('pm:globaleditmodetoggled', function(e) {
+    console.log("[Geoman] pm:globaleditmodetoggled enabled=" + e.enabled);
 });
 
 
@@ -954,9 +962,6 @@ map.on('moveend', function() {
   loadParcs();
   loadProjects();
 });
-
-// Charger la géométrie existante du formulaire (projet en édition)
-loadExistingGeometry();
 
 // Charger les autres données
 loadParcs();
