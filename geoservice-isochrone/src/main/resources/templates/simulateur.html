@@ -695,101 +695,43 @@ map.pm.addControls({
 
 
 // ----------- CHARGEMENT GÉOMÉTRIE EXISTANTE -----------
-// Variable pour stocker la couche actuelle
+// Variable pour stocker la couche actuelle du projet en édition
 let currentLayer = null;
 
 /**
- * Met à jour le popup avec le nom du projet sur la forme (clic pour afficher)
+ * Charge la géométrie existante depuis le formulaire (sGeometry)
  */
-function updateProjectLabel() {
-  if (!currentLayer) return;
+function loadExistingGeometry() {
+  const sGeom = document.getElementById('sGeometry').value;
+  if (!sGeom || sGeom.trim() === '') return;
   
-  const projectName = document.getElementById('name').value;
-  
-  // Supprimer l'ancien popup s'il existe
-  currentLayer.unbindPopup();
-  
-  if (!projectName || projectName.trim() === '') return;
-  
-  // Ajouter un popup au clic sur la forme (comme les parcs)
-  currentLayer.bindPopup('<b>' + projectName + '</b>');
-  
-  console.log('[Simulateur] Label du projet mis à jour:', projectName);
+  try {
+    const geojson = JSON.parse(sGeom);
+    console.log('[Simulateur] Chargement géométrie existante');
+    
+    const geoLayer = L.geoJSON(geojson, {
+      style: {
+        color: '#0066cc',
+        fillColor: '#3399ff',
+        weight: 2,
+        fillOpacity: 0.35
+      }
+    });
+    
+    geoLayer.addTo(dataProjectZone);
+    
+    geoLayer.eachLayer(function(layer) {
+      currentLayer = layer;
+    });
+    
+    console.log('[Simulateur] Géométrie existante chargée');
+    
+  } catch (e) {
+    console.error('[Simulateur] Erreur parsing géométrie existante:', e);
+  }
 }
 
-// Événement de création d'une forme
-map.on('pm:create', ({ layer }) => {
-  console.log('[Geoman] Forme créée:', layer);
-  
-  // Suppression de la couche précédente si elle existe
-  if (currentLayer) {
-    map.removeLayer(currentLayer);
-  }
-  
-  currentLayer = layer;
-  currentLayer.addTo(dataProjectZone);
-  
-  // Mettre à jour le label du projet
-  updateProjectLabel();
-  
-  // Ajouter listener d'édition sur cette couche
-  layer.on('pm:edit', e => {
-    console.log('[Geoman] Forme modifiée:', e);
-    
-    const self_drawn = map.pm.getGeomanDrawLayers(true);
-    const strPoly = JSON.stringify(self_drawn.toGeoJSON());
-    document.getElementById('sGeometry').value = strPoly;
-    console.log('[Geoman] GeoJSON mis à jour:', strPoly);
-    
-    // Mettre à jour la position du label
-    updateProjectLabel();
-  });
-});
-
-// Événement après avoir terminé le dessin
-map.on('pm:drawend', function (e) {
-  console.log('[Geoman] Dessin terminé');
-  
-  const self_drawn = map.pm.getGeomanDrawLayers(true);
-  const strPoly = JSON.stringify(self_drawn.toGeoJSON());
-  document.getElementById('sGeometry').value = strPoly;
-  console.log('[Geoman] GeoJSON capturé:', strPoly);
-});
-
-// Événement après modification d'une forme
-map.on('pm:change', function (e) {
-  console.log('[Geoman] Modification détectée');
-  
-  const layerToDraw = e.layer;
-  const strPoly = JSON.stringify(layerToDraw.toGeoJSON());
-  document.getElementById('sGeometry').value = strPoly;
-  console.log('[Geoman] GeoJSON mis à jour:', strPoly);
-});
-
-// Événement de suppression d'une forme
-map.on('pm:remove', ({ layer }) => {
-  console.log('[Geoman] Forme supprimée:', layer);
-  
-  // Vérifier que ce n'est pas un parc
-  if (layer && layer._isParc) {
-    console.warn('[Geoman] Tentative de suppression sur un parc bloquée');
-    return;
-  }
-  
-  if (layer === currentLayer) {
-    currentLayer = null;
-    dataProjectZone.clearLayers();
-    document.getElementById('sGeometry').value = '';
-    console.log('[Geoman] GeoJSON effacé');
-  }
-});
-
-// Écouteur sur le champ nom du projet pour mettre à jour le label
-document.getElementById('name').addEventListener('input', function() {
-  updateProjectLabel();
-});
-
-// ----------- CHARGEMENT PARCS -----------
+// ----------- CHARGEMENT DES LAYERS -----------
 const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
 const endpointProjects = /*[[@{/mvc/geojson/projectByCorner}]]*/ '';
 const endpointProjectWork = /*[[@{/mvc/geojson/projectWorkById}]]*/ '';
@@ -801,7 +743,6 @@ function getParkStyle(feature) {
   let fillColor = '#3aa637'; // Couleur par défaut (parc inclus OMS)
   
   if (feature && feature.properties) {
-    // Vérifier d'abord si le parc est actif
     if (feature.properties.actif === false) {
       fillColor = '#DC20E9'; // Futur parc ou détruit
     } else if (feature.properties.oms === false) {
@@ -814,8 +755,12 @@ function getParkStyle(feature) {
   return { color: '#1e4d1c', fillColor, weight: 1, fillOpacity: 0.35 };
 }
 
+// ==========================================
+// LAYER 1: dataParcs - LECTURE SEULE
+// ==========================================
 /**
- * Charge les parcs dans la zone visible
+ * Charge les parcs dans la zone visible.
+ * Pas d'événements Geoman, lecture seule uniquement.
  */
 function loadParcs() {
   if (!endpointParcs) return;
@@ -833,20 +778,23 @@ function loadParcs() {
           if (feature.properties && feature.properties.name) {
             layer.bindPopup('<b>' + feature.properties.name + '</b>');
           }
-          // Empêcher toute édition Geoman sur les parcs existants
+          // Lecture seule: désactiver Geoman
           layer.pm.setOptions({ pmIgnore: true });
           layer.pm.disable();
-          // Ajouter une classe CSS pour identifier les parcs
           layer._isParc = true;
         }
       }).addTo(dataParcs);
-      console.log('[Simulateur] Parcs chargés:', geojson.features ? geojson.features.length : 0);
+      console.log('[Simulateur][dataParcs] Parcs chargés:', geojson.features ? geojson.features.length : 0);
     })
-    .catch(err => console.error('[Simulateur] Erreur chargement parcs', err));
+    .catch(err => console.error('[Simulateur][dataParcs] Erreur:', err));
 }
 
+// ==========================================
+// LAYER 2: dataProjectZone - ÉDITABLE (comme newPark)
+// ==========================================
 /**
- * Charge les projets de simulation dans la zone visible
+ * Charge les projets de simulation dans la zone visible.
+ * Gère les événements Geoman comme newPark.html.
  */
 function loadProjects() {
   if (!endpointProjects) return;
@@ -857,13 +805,18 @@ function loadProjects() {
   fetch(url)
     .then(r => r.json())
     .then(geojson => {
+      // Sauvegarder le currentLayer avant clear
+      const savedCurrentLayer = currentLayer;
+      
       dataProjectZone.clearLayers();
       
-      // Re-add current layer if it exists
-      if (currentLayer) {
-        currentLayer.addTo(dataProjectZone);
+      // Restaurer currentLayer
+      if (savedCurrentLayer) {
+        dataProjectZone.addLayer(savedCurrentLayer);
+        currentLayer = savedCurrentLayer;
       }
       
+      // Charger les autres projets (affichage seulement, pas d'édition)
       L.geoJSON(geojson, {
         style: function(feature) {
           return {
@@ -875,9 +828,7 @@ function loadProjects() {
         },
         onEachFeature: function(feature, layer) {
           let popupContent = '';
-          let projectName = '';
           if (feature.properties && feature.properties.name) {
-            projectName = feature.properties.name;
             popupContent = '<b>' + feature.properties.name + '</b><br>';
           } else {
             popupContent = '<b>Projet de simulation</b><br>';
@@ -887,22 +838,46 @@ function loadProjects() {
             if (feature.properties.population) popupContent += 'Population: ' + feature.properties.population + '<br>';
             if (feature.properties.surfaceArea) popupContent += 'Surface: ' + Math.round(feature.properties.surfaceArea) + ' m²<br>';
           }
-          // Afficher les infos du projet au clic sur la forme (comme les parcs)
           layer.bindPopup(popupContent);
         }
       }).addTo(dataProjectZone);
-      console.log('[Simulateur] Projets chargés:', geojson.features ? geojson.features.length : 0);
+      console.log('[Simulateur][dataProjectZone] Projets chargés:', geojson.features ? geojson.features.length : 0);
     })
-    .catch(err => console.error('[Simulateur] Erreur chargement projets', err));
+    .catch(err => console.error('[Simulateur][dataProjectZone] Erreur:', err));
 }
 
+// Événements Geoman
+map.on("pm:remove", (e) => {
+    console.log("[Geoman] pm:remove");
+    document.getElementById("sGeometry").value = '';
+    currentLayer = null;
+});
+
+map.on('pm:create', ({ layer }) => {  
+    console.log("[Geoman] pm:create");
+    currentLayer = layer;
+    currentLayer.addTo(dataProjectZone);
+});
+
+map.on('pm:drawend', function (e) {
+    console.log("[Geoman] pm:drawend");
+    const self_drawn = map.pm.getGeomanDrawLayers(true);
+    const strPoly = JSON.stringify(self_drawn.toGeoJSON());
+    document.getElementById('sGeometry').value = strPoly;
+});
+
+
+
+// ==========================================
+// LAYER 3: dataProjectWork - LECTURE SEULE
+// ==========================================
 /**
- * Charge les éléments du projet (ProjectWork) pour le projet en cours
+ * Charge les éléments ProjectWork pour le projet en cours.
+ * Pas d'événements Geoman, lecture seule uniquement.
  */
 function loadProjectWork() {
   if (!endpointProjectWork) return;
   
-  // Récupérer l'ID du projet depuis le formulaire
   const projectId = document.getElementById('id').value;
   if (!projectId || projectId.trim() === '') {
     dataProjectWork.clearLayers();
@@ -918,17 +893,14 @@ function loadProjectWork() {
       
       L.geoJSON(geojson, {
         style: function(feature) {
-          // Couleur basée sur newSurfacePerCapita par rapport au seuil OMS (10 m²/hab)
-          let fillColor = '#cccccc'; // Gris par défaut si pas de valeur
+          let fillColor = '#cccccc';
           let borderColor = '#666666';
           
           if (feature.properties && feature.properties.newSurfacePerCapita !== null && feature.properties.newSurfacePerCapita !== undefined) {
             if (feature.properties.newSurfacePerCapita < 10) {
-              // Rouge si sous le seuil OMS
               fillColor = '#ff6666';
               borderColor = '#cc0000';
             } else {
-              // Vert si au-dessus du seuil OMS
               fillColor = '#66ff66';
               borderColor = '#00cc00';
             }
@@ -963,22 +935,30 @@ function loadProjectWork() {
           }
           layer.bindPopup(popupContent);
           
-          // Empêcher l'édition des projectWork
+          // Lecture seule: désactiver Geoman
           layer.pm.setOptions({ pmIgnore: true });
           layer.pm.disable();
           layer._isProjectWork = true;
         }
       }).addTo(dataProjectWork);
-      console.log('[Simulateur] ProjectWork chargés:', geojson.features ? geojson.features.length : 0);
+      console.log('[Simulateur][dataProjectWork] Chargés:', geojson.features ? geojson.features.length : 0);
     })
-    .catch(err => console.error('[Simulateur] Erreur chargement projectWork', err));
+    .catch(err => console.error('[Simulateur][dataProjectWork] Erreur:', err));
+
 }
 
-// Chargement initial et au déplacement
+// ==========================================
+// CHARGEMENT INITIAL
+// ==========================================
 map.on('moveend', function() {
   loadParcs();
   loadProjects();
 });
+
+// Charger la géométrie existante du formulaire (projet en édition)
+loadExistingGeometry();
+
+// Charger les autres données
 loadParcs();
 loadProjects();
 loadProjectWork();

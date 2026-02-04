@@ -205,10 +205,12 @@ public class ProjectSimulatorController {
         Geometry geometry = null;
         String sGeom = form.getSGeometry();
 		try {
-			if ( StringUtils.isNotBlank(sGeom) ) {
+			if ( StringUtils.isNotBlank(sGeom) && sGeom.indexOf("features\":[]") < 0 ) {
 				log.info("start process parseGeoman");
 				geometry = geoJson2GeometryHelper.parseGeoman(sGeom);
 				log.info("end process parseGeoman");
+			} else {
+				log.info("Géométrie vide ou supprimée");
 			}
 		} catch (JsonProcessingException e) {
 			log.error("geoman parsing error = ", sGeom);
@@ -243,11 +245,14 @@ public class ProjectSimulatorController {
 		bo.setIdCommune(form.getIdCommune());
 		bo.setName(form.getName());
 		
-		// Assigner la géométrie parsée (comme pour NewPark)
+		// Assigner la géométrie parsée (toujours mettre à jour, même si null pour suppression)
+		bo.setShapeArea(geometry);
 		if (geometry != null) {
-			bo.setShapeArea(geometry);
 			bo.setCenterArea(geometry.getCentroid());
 			log.debug("mapToBo() - Geometry assigned: type={}", geometry.getGeometryType());
+		} else {
+			bo.setCenterArea(null);
+			log.debug("mapToBo() - Geometry cleared");
 		}
     	return bo;
     }

@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/mvc/proposal")
 @Slf4j
-public class PropositionController {
+public class ParksPropositionController {
 
     private static final String VIEW = "proposal";
     private static final String FORM_KEY = "formProposal";
