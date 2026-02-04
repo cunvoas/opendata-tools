@@ -832,16 +832,6 @@ map.on("pm:remove", (e) => {
     currentLayer = null;
 });
 
-/*
-map.on('pm:create', ({ layer }) => {  
-    console.log("[Geoman] pm:create");
-    currentLayer = layer;
-    currentLayer.addTo(dataProjectZone);
-    layer.on('pm:edit', e => {
-      console.log(e);
-    });
-});
-*/
 map.on('pm:create', (e) => {
   console.log("[Geoman] pm:create");
   currentLayer = e.layer;
@@ -857,7 +847,6 @@ map.on('pm:create', (e) => {
 map.on('pm:change', ({ layer }) => {  
     console.log("[Geoman] pm:change");
     currentLayer = layer;
-   // currentLayer.addTo(dataProjectZone);
 });
 
 
@@ -1066,10 +1055,19 @@ function clearProjectForm() {
 function computeSimulation() {
   console.log('[Simulateur] computeSimulation() appelée');
   
-  // Récupérer les couches dessinées pour s'assurer que sGeometry est à jour
-  const self_drawn = map.pm.getGeomanDrawLayers(true);
-  const strPoly = JSON.stringify(self_drawn.toGeoJSON());
-  document.getElementById('sGeometry').value = strPoly;
+  // Si on a un currentLayer (édition d'un projet existant ou nouvelle forme), sauvegarder sa géométrie
+  if (currentLayer) {
+    document.getElementById('sGeometry').value = JSON.stringify(currentLayer.toGeoJSON());
+    console.log('[Simulateur] Géométrie sauvegardée depuis currentLayer');
+  } else {
+    // Sinon, récupérer les couches dessinées par Geoman (nouvelles formes)
+    const self_drawn = map.pm.getGeomanDrawLayers(true);
+    const strPoly = JSON.stringify(self_drawn.toGeoJSON());
+    document.getElementById('sGeometry').value = strPoly;
+    console.log('[Simulateur] Géométrie sauvegardée depuis getGeomanDrawLayers');
+  }
+  
+  console.log('[Simulateur] sGeometry =', document.getElementById('sGeometry').value);
   
   // Récupérer le formulaire et le soumettre normalement
   const form = document.getElementById('formCompute');
