@@ -49,11 +49,8 @@ public class ErrorController  extends ResponseEntityExceptionHandler{
         String stackTrace = getStackTrace(throwable);
 
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-        String statusLabel = messageSource.getMessage(
-            "http.status." + status.value(),
-            null,
-            "HTTP " + status.value(),
-            LocaleContextHolder.getLocale()
+        String statusLabel = messageSource.getMessage("http.status." + status.value(),
+            null, "HTTP " + status.value(), LocaleContextHolder.getLocale()
         );
 
         model.addAttribute("errorMessage", errorMessage);
