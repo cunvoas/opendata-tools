@@ -124,6 +124,7 @@ application:
     iris:
         annees: 2020
   feature-flipping:
+    show-stacktrace-on-error: false
     mobile-api: false
     parkAnalysisEnabled: true
     sendEmail: false

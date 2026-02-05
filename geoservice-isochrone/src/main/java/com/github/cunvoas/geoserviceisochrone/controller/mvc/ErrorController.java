@@ -1,5 +1,10 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,6 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 //@ControllerAdvice
 @Slf4j
 public class ErrorController  extends ResponseEntityExceptionHandler{
+	
+	@Value("${application.feature-flipping.show-stacktrace-on-error:false}")
+	private boolean showStacktraceOnError;
 	
 //	@Override
 //	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
@@ -47,9 +55,30 @@ public class ErrorController  extends ResponseEntityExceptionHandler{
     public String exception(final Throwable throwable, final Model model) {
         log.error("Exception during execution of SpringSecurity application", throwable);
         String errorMessage = (throwable != null ? throwable.getMessage() : "Unknown error");
+        String stackTrace = getStackTrace(throwable);
+        
         model.addAttribute("errorMessage", errorMessage);
+        model.addAttribute("exception", throwable != null ? throwable.getClass().getName() : "Unknown");
+        model.addAttribute("trace", stackTrace);
         model.addAttribute("httpStatus", HttpStatus.INTERNAL_SERVER_ERROR);
+        model.addAttribute("status", 500);
+        model.addAttribute("showStacktrace", showStacktraceOnError);
+        
         return "error";
+    }
+    
+    /**
+     * Convertit une exception en sa représentation sous forme de string (stack trace).
+     * @param throwable l'exception
+     * @return la stack trace en string
+     */
+    private String getStackTrace(Throwable throwable) {
+        if (throwable == null) {
+            return "";
+        }
+        StringWriter sw = new StringWriter();
+        throwable.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
     }
 
 }
