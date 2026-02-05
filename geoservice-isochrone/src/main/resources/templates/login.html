@@ -29,9 +29,6 @@
     <div class="flex flex-col justify-center lg:px-8 min-h-full px-6 py-12">
         <div class="mt-5 mx-auto max-w-sm w-full">
             <form class="bg-white overflow-hidden p-10 rounded-xl shadow-lg space-y-6" th:action="@{/login}" method="post">
-                <!-- CSRF Token for anti-replay protection -->
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
                 <div class="sm:mx-auto sm:w-full sm:max-w-sm">
                     <img class="mx-auto h-20 w-auto" th:src="@{/pub/logo.png}">
                 </div>
