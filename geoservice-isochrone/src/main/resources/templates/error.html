@@ -15,7 +15,8 @@
                             <div class="col-lg-8">
                                 <div class="text-center mt-4">
                                     <h1 class="display-1" th:text="${status} ?: '500'">500</h1>
-                                    <p class="lead" th:text="#{global.errorRaised}">Internal Server Error</p>
+                                    <p class="lead" th:text="${httpStatusLabel} ?: 'HTTP 500'">Internal Server Error</p>
+                                    <p th:text="#{global.errorRaised}">Une erreur est survenue</p>
                                     
                                     <div th:if="${showStacktrace}">
                                     <!-- Affichage du message d'erreur et traces si feature flag activé -->

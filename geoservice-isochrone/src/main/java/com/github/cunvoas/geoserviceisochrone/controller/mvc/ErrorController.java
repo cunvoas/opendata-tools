@@ -5,6 +5,8 @@ import java.io.StringWriter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,23 +25,12 @@ import lombok.extern.slf4j.Slf4j;
 //@ControllerAdvice
 @Slf4j
 public class ErrorController  extends ResponseEntityExceptionHandler{
-	
-	@Value("${application.feature-flipping.show-stacktrace-on-error:false}")
-	private boolean showStacktraceOnError;
-	
-//	@Override
-//	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-//		Map<String, String> errors = new HashMap<>();
-//		ex.getBindingResult().getAllErrors().forEach((error) ->{
-//			
-//			String fieldName = ((FieldError) error).getField();
-//			String message = error.getDefaultMessage();
-//			errors.put(fieldName, message);
-//		});
-//		return new ResponseEntity<Object>(errors, HttpStatus.BAD_REQUEST);
-//	}
 
+    @Value("${application.feature-flipping.show-stacktrace-on-error:false}")
+    private boolean showStacktraceOnError;
 
+    @Autowired
+    private MessageSource messageSource;
 
 	/**
 	 * Gestionnaire d'exception générique.
@@ -56,14 +47,23 @@ public class ErrorController  extends ResponseEntityExceptionHandler{
         log.error("Exception during execution of SpringSecurity application", throwable);
         String errorMessage = (throwable != null ? throwable.getMessage() : "Unknown error");
         String stackTrace = getStackTrace(throwable);
-        
+
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        String statusLabel = messageSource.getMessage(
+            "http.status." + status.value(),
+            null,
+            "HTTP " + status.value(),
+            LocaleContextHolder.getLocale()
+        );
+
         model.addAttribute("errorMessage", errorMessage);
         model.addAttribute("exception", throwable != null ? throwable.getClass().getName() : "Unknown");
         model.addAttribute("trace", stackTrace);
-        model.addAttribute("httpStatus", HttpStatus.INTERNAL_SERVER_ERROR);
-        model.addAttribute("status", 500);
+        model.addAttribute("httpStatus", status);
+        model.addAttribute("status", status.value());
+        model.addAttribute("httpStatusLabel", statusLabel);
         model.addAttribute("showStacktrace", showStacktraceOnError);
-        
+
         return "error";
     }
     
