@@ -1,8 +1,13 @@
 <template>
-    <div class="container mx-auto px-4 py-6">
+    <div class="container mx-auto px-4 py-6 relative">
+        <div
+            class="absolute left-4 top-2 text-xs text-gray-400 select-none"
+            :title="'Version: ' + appVersion">
+            v{{ appVersion }}
+        </div>
         <!-- Header Title -->
         <div class="text-center mb-6">
-            <h3 class="text-2xl font-bold text-gray-800" @dblclick="generateShareLink" style="cursor: pointer;" :title="'Version: ' + appVersion">Parcs accessibles en m² par habitant</h3>
+            <h3 class="text-2xl font-bold text-gray-800" @dblclick="generateShareLink" style="cursor: pointer;">Parcs accessibles en m² par habitant</h3>
         </div>
         
         <!-- Logos Row -->
@@ -95,17 +100,32 @@ export default {
   name: 'HeaderAsso',
   data() {
     return {
-      appVersion: '1.0.28'
+      appVersion: '#not-set'
     };
   },
   mounted() {
-    // Fetch the version from localStorage or the version.json file
-    const storedVersion = localStorage.getItem('app-version');
-    if (storedVersion) {
-      this.appVersion = storedVersion;
-    }
+    this.loadAppVersion();
   },
   methods: {
+    async loadAppVersion() {
+      // Fetch the version from localStorage or the version.json file
+      const storedVersion = localStorage.getItem('app-version');
+      if (storedVersion) {
+        this.appVersion = storedVersion;
+        return;
+      }
+
+      try {
+        const response = await fetch(`${import.meta.env.BASE_URL}version.json`);
+        const data = await response.json();
+        if (data?.version) {
+          this.appVersion = data.version;
+          localStorage.setItem('app-version', data.version);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement de version:', error);
+      }
+    },
     generateShareLink() {
       // Get location data from localStorage
       const savedLocation = localStorage.getItem('location-selected');

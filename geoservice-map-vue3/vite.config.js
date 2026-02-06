@@ -1,10 +1,38 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
+import fs from 'fs'
+import path from 'path'
+
+// Plugin to generate version.json from package.json
+const versionPlugin = {
+  name: 'version-plugin',
+  apply: 'build',
+  enforce: 'pre',
+  resolveId(id) {
+    if (id.includes('virtual-version')) {
+      return id
+    }
+  },
+  async generateBundle() {
+    const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'))
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, -5)
+    const version = `${packageJson.version}-${timestamp}`
+    
+    const versionJson = JSON.stringify({ version }, null, 2)
+    
+    this.emitFile({
+      type: 'asset',
+      fileName: 'version.json',
+      source: versionJson
+    })
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    versionPlugin,
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
