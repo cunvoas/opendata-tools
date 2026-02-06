@@ -7,19 +7,41 @@
       <option value="2015">2015</option>
     </select>
 
-    <label for="checkbox"> | Parcs</label>
+    <label
+      for="checkbox"
+      title="Affiche les contours des parcs."
+    >
+      | Parcs
+    </label>
     <input id="checkbox" v-model="showParcs" type="checkbox" />
 
-    <label for="checkbox"> | Isochrones</label>
+    <label
+      for="checkbox"
+      title="Affiche les isochrones pour visualiser les zones d'accessibilité aux parcs."
+    >
+      | Isochrones
+    </label>
     <input id="checkbox" v-model="showIsochrones" type="checkbox" />
 
-    <label for="cbCarre"> | Données carroyées</label>
+    <label
+      for="cbCarre"
+      title="Affiche les données carroyées (grille de 200 m) pour visualiser la surface de parcs accessible par habitant."
+    >
+      | Carrés INSEE
+    </label>
     <input id="cbCarre" v-model="showCarre" type="checkbox" />
 
-    <label for="cbCadastre"> | Cadastre</label>
+    <label for="cbCadastre"
+      title="Affiche les limites communales issues du cadastre."
+      > | Cadastre</label>
     <input id="cbCadastre" v-model="showCadastre" type="checkbox" />
 
-    <label for="cbColorblind"> | Mode daltonien</label>
+    <label
+      for="cbColorblind"
+      title="Adapte les couleurs pour améliorer la lisibilité pour les personnes atteintes de daltonisme. "
+    >
+      | Mode daltonien
+    </label>
     <input id="cbColorblind" v-model="colorblindMode" type="checkbox" @change="onColorModeChange" />
 
     <br />
