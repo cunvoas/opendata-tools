@@ -15,11 +15,11 @@ import lombok.extern.slf4j.Slf4j;
  * Iterative computation using calculeEtapeProposition over all squares.
  */
 @Slf4j
-public class IterativeComputationStrategy extends AbstractComputationtrategy  {
+public class IterativeComputationDeficitStrategy extends AbstractComputationtrategy  {
 
     private final double minParkSurface;
 
-    public IterativeComputationStrategy(double minParkSurface) {
+    public IterativeComputationDeficitStrategy(double minParkSurface) {
         this.minParkSurface = minParkSurface;
     }
 

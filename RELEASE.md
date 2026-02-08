@@ -1,4 +1,9 @@
 
+V1.1.2-20260131
+
+    - Simulation de projet: page de calcul et résultat
+    
+
 V1.1.1-20260121
 
     - Simulation de projet: algo programmation par contrainte.
