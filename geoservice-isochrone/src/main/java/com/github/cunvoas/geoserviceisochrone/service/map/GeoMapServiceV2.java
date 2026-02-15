@@ -532,6 +532,8 @@ public class GeoMapServiceV2 {
 						pv.setOms(park.getOmsCustom());
 					}
 					pv.setActif(getActif(park));
+					pv.setDateDebut(park.getDateDebut());
+					pv.setDateFin(park.getDateFin());					
 					
 					ParkArea pa =parkAreaRepository.findByIdParcEtJardin(park.getId());
 					pv.setEntry(pa!=null && pa.getPolygon()!=null);

@@ -221,3 +221,44 @@ const defaultLoc = {
       "lonX": "3.046986424",
       "latY": "50.631855028"
   };
+
+/**
+ * Tests if a park/resource is active during a specific year
+ * Checks if the first day of the given year falls within the active date range
+ * 
+ * @param {number|string} annee - The year to test (e.g., 2026)
+ * @param {string} dateDebut - Start date in YYYYMMDD or YYYY-MM-DD format (inclusive)
+ * @param {string} dateFin - End date in YYYYMMDD or YYYY-MM-DD format (exclusive)
+ * 
+ * @returns {boolean} True if dateDebut <= year+0101 < dateFin, false otherwise
+ * 
+ * @example
+ * // Active: 20260101 <= 20260101 < 20261231
+ * isActive(2026, '20260101', '20261231')  // Returns: true
+ * 
+ * @example
+ * // Active: 20260101 <= 20270101 < 20270131 (January 1st is before January 31st)
+ * isActive(2027, '20260101', '20270131')  // Returns: true
+ * 
+ * @example
+ * // Not active: 20250101 < 20260101 (year 2025 first day is before start date)
+ * isActive(2025, '20260101', '20270101')  // Returns: false
+ * 
+ * @example
+ * // Using YYYY-MM-DD format
+ * isActive(2026, '2026-01-01', '2026-12-31')  // Returns: true
+ */
+export function isActive(annee, dateDebut, dateFin) {
+  // Normalize year to string
+  const anneeStr = String(annee);
+  
+  // Construct the date to test: January 1st of the given year
+  const dateTest = `${anneeStr}0101`;
+  
+  // Normalize dateDebut and dateFin to YYYYMMDD format
+  const normalizedDebut = dateDebut.replace(/-/g, '');
+  const normalizedFin = dateFin.replace(/-/g, '');
+  
+  // Test if dateDebut <= dateTest < dateFin
+  return normalizedDebut <= dateTest && dateTest < normalizedFin;
+}

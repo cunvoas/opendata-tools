@@ -209,7 +209,7 @@ import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { buildShareableUrl } from '../utils/urlParams.js';
+import { buildShareableUrl, isActive } from '../utils/urlParams.js';
 import debounce from 'lodash/debounce';
 
 
@@ -866,6 +866,23 @@ export default {
         if (!feature || !feature.properties) {
           console.warn('onDetailPark: feature or feature.properties is missing', feature);
           return;
+        }
+        
+        // Vérifier si le parc est actif pour l'année sélectionnée
+        if (feature.properties.dateDebut && feature.properties.dateFin) {
+          if (!isActive(this.annee, feature.properties.dateDebut, feature.properties.dateFin)) {
+            // Masquer le parc inactif en le rendant invisible et sans interaction
+            if (layer.setStyle && typeof layer.setStyle === 'function') {
+              layer.setStyle({
+                fillOpacity: 0,
+                opacity: 0,
+                stroke: false,
+                fill: false
+              });
+            }
+            // Ne pas ajouter de tooltip pour les parcs inactifs
+            return;
+          }
         }
         
         let oms = feature.properties.oms;
