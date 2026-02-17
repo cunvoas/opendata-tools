@@ -474,6 +474,14 @@ export default {
       } else if (newLocation.locType === 'address') {
         this.zoom = 17;
       }
+
+        
+      // 📊 Envoyer l'événement à Matomo
+      const cityName = newLocation.cityName || 'Unknown';
+      const locType = newLocation.locType || 'city';
+      window._paq.push(['trackEvent', 'City Map', locType, cityName]);
+
+
       this.debouncedFetchCommune(newLocation.latY, newLocation.lonX);
     },
     updateRegionIfChanged(newLocation) {
