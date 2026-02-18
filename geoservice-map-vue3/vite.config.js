@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import fs from 'fs'
-import path from 'path'
 
 // Plugin to generate version.json from package.json
 const versionPlugin = {
@@ -16,8 +15,8 @@ const versionPlugin = {
   },
   async generateBundle() {
     const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'))
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, -5)
-    const version = `${packageJson.version}-${timestamp}`
+    const timestamp = new Date().toISOString().replace(/[:.-]/g, '').slice(0, -4).replace(/[T]/g, '-')
+    const version = `${packageJson.version}_${timestamp}`
     
     const versionJson = JSON.stringify({ version }, null, 2)
     

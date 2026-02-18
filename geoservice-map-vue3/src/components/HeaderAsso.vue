@@ -108,22 +108,16 @@ export default {
   },
   methods: {
     async loadAppVersion() {
-      // Fetch the version from localStorage or the version.json file
+      if (import.meta.env.DEV) {
+        this.appVersion = 'vX.Y.Z_YYYYMMDD-HHmmSS';
+        return;
+      }
+
+      // Fetch the version from localStorage
       const storedVersion = localStorage.getItem('app-version');
       if (storedVersion) {
         this.appVersion = storedVersion;
         return;
-      }
-
-      try {
-        const response = await fetch(`${import.meta.env.BASE_URL}version.json`);
-        const data = await response.json();
-        if (data?.version) {
-          this.appVersion = data.version;
-          localStorage.setItem('app-version', data.version);
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement de version:', error);
       }
     },
     generateShareLink() {

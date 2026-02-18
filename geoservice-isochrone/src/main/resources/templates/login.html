@@ -5,6 +5,7 @@
     <title th:text="#{login.title}">Login title</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <script src="https://cdn.tailwindcss.com/"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -23,9 +24,27 @@
                 }, 6000); // 6000 milliseconds = 6 seconds
             });
         });
-    </script>
+	
+	  // Matomo
+	  var _paq = window._paq = window._paq || [];
+	  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+	  _paq.push(['trackPageView']);
+	  _paq.push(['enableLinkTracking']);
+	  (function() {
+	    var u="//asso.autmel.ovh/audience/";
+	    _paq.push(['setTrackerUrl', u+'matomo.php']);
+	    _paq.push(['setSiteId', '2']);
+	    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+	    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+	  })();
+	</script>
+	<!-- End Matomo Code -->
+	
 </head>
 <body class="bg-slate-100">
+    <noscript>
+       <img referrerpolicy="no-referrer-when-downgrade" src="https://asso.autmel.ovh/audience/matomo.php?idsite=2&amp;rec=1" style="border:0" alt="" />
+    </noscript>
     <div class="flex flex-col justify-center lg:px-8 min-h-full px-6 py-12">
         <div class="mt-5 mx-auto max-w-sm w-full">
             <form class="bg-white overflow-hidden p-10 rounded-xl shadow-lg space-y-6" th:action="@{/login}" method="post">
