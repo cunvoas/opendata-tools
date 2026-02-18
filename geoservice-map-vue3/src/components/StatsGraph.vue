@@ -151,13 +151,6 @@ export default {
                   
                   await this.processLocation(toRaw(newLocation));
                   
-                  /*
-                  if ( newLocation instanceof Proxy) {
-                    await this.processLocation ( JSON.parse(JSON.stringify(newLocation)) );
-                  } else {
-                    await this.processLocation(newLocation);
-                  }
-                    */
                 }
             },
             immediate: true,
