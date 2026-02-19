@@ -4,7 +4,7 @@
 	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 
 
-    <head th:insert="~{fragments/fragment-head :: head}"></head>
+    <head th:replace="~{fragments/fragment-head :: head(#{error.title})}"></head>
     
     <body>
         <div id="layoutError">

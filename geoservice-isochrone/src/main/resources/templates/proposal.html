@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
-<head th:insert="~{fragments/fragment-head :: head}"></head>
+<head th:replace="~{fragments/fragment-head :: head(#{proposal.title})}"></head>
 <body class="sb-nav-fixed">
 <div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
 <div id="layoutSidenav">
