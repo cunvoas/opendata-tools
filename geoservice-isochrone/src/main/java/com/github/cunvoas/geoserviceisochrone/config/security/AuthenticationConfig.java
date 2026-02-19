@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.context.request.RequestContextListener;
@@ -95,6 +96,7 @@ public class AuthenticationConfig {
 //			   .rememberMe(Customizer.withDefaults())
 				
 				.csrf(csrf -> {
+					
 					// Configuration CSRF renforcée pour la protection anti-rejeu
 					CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
 					// Désactiver la validation de l'en-tête X-CSRF-TOKEN pour permettre l'usage du token dans le corps
@@ -112,8 +114,13 @@ public class AuthenticationConfig {
                  			    "/favicon.ico"
 						);
 				})
-				
+			.addFilterAfter(csrfCookieFilter(), CsrfFilter.class)
 			.build();
+	}
+
+	@Bean
+	public CsrfCookieFilter csrfCookieFilter() {
+		return new CsrfCookieFilter();
 	}
 
 	/**

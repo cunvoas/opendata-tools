@@ -79,6 +79,8 @@ export default {
         this.player.load();
         this.player.play();
       }
+
+      window._paq.push(['trackEvent', 'Video Changed', index, this.currentVideo.videoTitle]);
     }
   },
   mounted() {

@@ -151,13 +151,6 @@ export default {
                   
                   await this.processLocation(toRaw(newLocation));
                   
-                  /*
-                  if ( newLocation instanceof Proxy) {
-                    await this.processLocation ( JSON.parse(JSON.stringify(newLocation)) );
-                  } else {
-                    await this.processLocation(newLocation);
-                  }
-                    */
                 }
             },
             immediate: true,
@@ -236,7 +229,18 @@ export default {
       
       // Stocker la location pour pouvoir rafraîchir plus tard
       this.lastProcessedLocation = newLocation;
+
+  
+      // 📊 Envoyer l'événement à Matomo
+      const cityName = newLocation.cityName || 'Unknown';
+      window._paq.push(['trackEvent', 'City Stats', newLocation.locType , cityName]);
       
+      // Si vous avez aussi un ID unique : 
+      //window._paq.push(['setCustomVariable', 1, 'Current City', cityName, 'page']);
+      
+
+
+
       const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
       
       // Debug: log the received location
@@ -294,6 +298,9 @@ export default {
         this.parseJsonBar(newData);
         this.parseJsonPie(newData);
         this.loaded = true;
+
+
+        
       } catch (error) {
         console.error("Error loading stats:", error);
         this.loaded = false;
