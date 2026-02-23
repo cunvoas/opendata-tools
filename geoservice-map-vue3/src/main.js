@@ -68,7 +68,11 @@ app.use(VueMatomo, {
 app.use(VueMatomo, {
     // Configure your matomo server and site by providing
     host: 'https://asso.autmel.ovh/audience',
-    siteId: '1'
+    siteId: '1',
+    // Send tracking data via POST to avoid URL length limits
+    preInitActions: [
+        ['setRequestMethod', 'POST']
+    ]
 });
 
 app.use(router);

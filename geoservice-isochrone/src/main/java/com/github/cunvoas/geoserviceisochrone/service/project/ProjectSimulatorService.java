@@ -28,6 +28,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mReposi
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -122,6 +123,22 @@ public class ProjectSimulatorService {
 			return List.of();
 		}
 		return projectSimulatorRepository.findByIdCommune(idCommune);
+	}
+	
+	/**
+	 * Supprime la simulation.
+	 * @param idCommune id de la commune
+	 * @param idSimulator id de la simulation
+	 * @return list des simulations de la commune.
+	 */
+	@Transactional
+	public List<ProjectSimulator> delete(Long idCommune, Long idSimulator) {
+		projectSimulatorlWorkRepository.deleteByIdProjectSimulator(idSimulator);
+		projectSimulatorRepository.deleteById(idSimulator);
+		if (idCommune == null) {
+			return List.of();
+		}
+		return findByCity(idCommune);
 	}
 
 

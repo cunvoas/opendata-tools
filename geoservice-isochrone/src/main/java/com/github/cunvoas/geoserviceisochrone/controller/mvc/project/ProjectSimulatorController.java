@@ -170,6 +170,35 @@ public class ProjectSimulatorController {
     }
 
     /**
+     * Delete a project.
+     */
+    @PostMapping("/delete")
+    public String deleteProject(@RequestParam("projectId") Long projectId, @ModelAttribute FormProjectSimulator form, Model model) {
+        log.info("deleteProject() - projectId={}", projectId);
+        ProjectSimulator ps = projectSimulatorService.getById(projectId);
+        if (ps != null) {
+            Long idCommune = ps.getIdCommune();
+            projectSimulatorService.delete(idCommune, projectId);
+            
+            // Réinitialiser le formulaire en gardant uniquement la localisation
+            FormProjectSimulator newForm = new FormProjectSimulator();
+            newForm.setIdCommune(idCommune);
+            // Récupérer les coordonnées de la commune pour la carte
+            if (idCommune != null) {
+                Coordinate c = serviceReadReferences.getCoordinate(idCommune);
+                if (c != null) {
+                    newForm.setMapLng(String.valueOf(c.getX()));
+                    newForm.setMapLat(String.valueOf(c.getY()));
+                }
+            }
+            model.addAttribute("token", tokenManagement.getValidToken());
+            return show(newForm, model);
+        }
+        model.addAttribute("token", tokenManagement.getValidToken());
+        return show(form, model);
+    }
+
+    /**
      * Handle form submission and return JSON response for AJAX requests.
      * @param sGeometry GeoJSON string representing the project zone
      * @param form form object

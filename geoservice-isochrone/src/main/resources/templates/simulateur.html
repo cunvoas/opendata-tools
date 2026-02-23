@@ -89,6 +89,32 @@
           </div>
         </div>
 
+
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmModalLabel"><i class="fas fa-exclamation-triangle text-danger"></i> Confirmation de suppression</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir supprimer le projet <strong id="deleteProjectName"></strong> ?</p>
+        <p class="text-muted small">Cette action est irréversible.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <form id="formDeleteProject" th:action="@{/mvc/simulation/delete}" method="post" style="display: inline;">
+          <input type="hidden" id="deleteProjectId" name="projectId" value="" />
+          <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Supprimer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
         <!-- Liste des projets existants -->
         <div class="row mb-3 projects-existing">
           <div class="col-12">
@@ -128,6 +154,11 @@
                               <i class="fas fa-edit"></i> Éditer
                             </button>
                           </form>
+                          <button type="button" class="btn btn-sm btn-outline-danger ms-1" 
+                                  th:attr="data-id=${project.id}, data-name=${project.name}"
+                                  onclick="confirmDelete(this.getAttribute('data-id'), this.getAttribute('data-name'))">
+                            <i class="fas fa-trash"></i> Supprimer
+                          </button>
                         </td>
                       </tr>
                     </tbody>
@@ -157,6 +188,28 @@
           <i class="fas fa-exclamation-triangle"></i> La soumission a échoué : le formulaire a déjà été soumis ou a expiré. Veuillez réessayer.
         </div>
 
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmModalLabel"><i class="fas fa-exclamation-triangle text-danger"></i> Confirmation de suppression</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir supprimer le projet <strong id="deleteProjectName"></strong> ?</p>
+        <p class="text-muted small">Cette action est irréversible.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <form id="formDeleteProject" th:action="@{/mvc/simulation/delete}" method="post" style="display: inline;">
+          <input type="hidden" id="deleteProjectId" name="projectId" value="" />
+          <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Supprimer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
         <!-- Formulaire de simulation -->
         <form id="formCompute" th:action="@{/mvc/simulation/compute}" method="post" th:object="${formSimulateur}">
           <!-- Anti double soumission: token serveur -->
@@ -407,6 +460,7 @@
 </div>
 
 <div th:insert="~{fragments/fragment-footer :: footer}"></div>
+
 <div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
 <script th:src="@{/mvc/static/js/scripts.js}"></script>
 
@@ -1211,6 +1265,16 @@ function sortProjectWorkTable(column) {
   }
   
   console.log('[Simulateur] Tableau trié par', column, projectWorkSortAscending ? 'ASC' : 'DESC');
+}
+
+// ----------- SUPPRESSION DE PROJET -----------
+
+function confirmDelete(projectId, projectName) {
+  console.log('[Simulateur] confirmDelete - projectId:', projectId, 'projectName:', projectName);
+  document.getElementById('deleteProjectId').value = projectId;
+  document.getElementById('deleteProjectName').textContent = projectName || '';
+  var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+  deleteModal.show();
 }
 
 
