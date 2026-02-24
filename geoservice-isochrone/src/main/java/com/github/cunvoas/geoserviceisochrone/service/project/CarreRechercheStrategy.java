@@ -12,6 +12,7 @@ import java.util.Set;
  * @author cunvoas
  */
 public interface CarreRechercheStrategy {
+	
     /**
      * Recherche les carrés INSEE impactés selon la stratégie.
      *

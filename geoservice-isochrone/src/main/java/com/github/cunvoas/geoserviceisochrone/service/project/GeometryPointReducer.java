@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.util;
+package com.github.cunvoas.geoserviceisochrone.service.project;
 
 import java.util.ArrayList;
 import java.util.List;

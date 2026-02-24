@@ -9,34 +9,17 @@ public final class ProposalComputationStrategyFactory {
 
     private ProposalComputationStrategyFactory() {}
 
-    public enum TypeAlgo {
-        ITERATIVE_1("Itératif par déficit"),
-        SOLVER_1("Solveur 1"),
-        SOLVER_2("Solveur 2"),
-        SOLVER_3("Solveur 3");
-    	
-    	private String displayName;
-
-    	TypeAlgo(String displayName) {
-    		this.displayName = displayName;
-    	}
-
-    	public String getDisplayName() {
-    		return displayName;
-    	}
-    }
-	
     
-    public static List<ProposalComputationStrategyFactory.TypeAlgo> getAvailableTypes() {
-    	return List.of(
-			ProposalComputationStrategyFactory.TypeAlgo.ITERATIVE_1,
-			ProposalComputationStrategyFactory.TypeAlgo.SOLVER_1,
-			ProposalComputationStrategyFactory.TypeAlgo.SOLVER_2,
-			ProposalComputationStrategyFactory.TypeAlgo.SOLVER_3
-    	);
+    public static List<ProposalComputationTypeAlgo> getAvailableTypes() {
+        return List.of(
+            ProposalComputationTypeAlgo.ITERATIVE_1,
+            ProposalComputationTypeAlgo.SOLVER_1,
+            ProposalComputationTypeAlgo.SOLVER_2,
+            ProposalComputationTypeAlgo.SOLVER_3
+        );
     }
     
-    public static ProposalComputationStrategy create(TypeAlgo type, double minParkSurface) {
+    public static ProposalComputationStrategy create(ProposalComputationTypeAlgo type, double minParkSurface) {
         switch (type) {
             case ITERATIVE_1:
                 return new IterativeComputationDeficitStrategy(minParkSurface);

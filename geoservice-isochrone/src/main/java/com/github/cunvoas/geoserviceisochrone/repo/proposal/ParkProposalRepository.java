@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategyFactory.TypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
 
 /**
  * Spring JPA repository.
@@ -40,6 +40,6 @@ public interface ParkProposalRepository extends JpaRepository<ParkProposal, Inse
 	 */
 	@Query(nativeQuery = true, 
 			   value = "SELECT pp.* FROM park_proposal pp WHERE annee=?1 and ST_Intersects(pp.centre, ?2) and id_meta in (SELECT pm.id from park_proposal_meta WHERE pa.annne=?1 AND pa.type_algo=?3)")
-	public List<ParkProposal> findParkProposalInMapArea(Integer annee, String sPolygon, TypeAlgo meta );
+	public List<ParkProposal> findParkProposalInMapArea(Integer annee, String sPolygon, ProposalComputationTypeAlgo meta );
 	
 }

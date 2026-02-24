@@ -54,7 +54,6 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
-import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalMeta;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
@@ -77,7 +76,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategyFactory.TypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
 import com.google.common.math.BigDecimalMath;
 import com.google.common.primitives.Ints;
 
@@ -608,7 +607,7 @@ public class GeoMapServiceV2 {
     	if (annee==null) {
     		annee = applicationBusinessProperties.getDerniereAnnee();
     	}
-    	TypeAlgo typeAlgo=TypeAlgo.ITERATIVE_1;
+    	ProposalComputationTypeAlgo typeAlgo=ProposalComputationTypeAlgo.ITERATIVE_1;
     	
     	return this.findParkProposalByArea(polygon, annee, typeAlgo, null);
     }
@@ -618,7 +617,7 @@ public class GeoMapServiceV2 {
 	 * @param polygon Polygon
 	 * @return park proposal geojson
 	 */
-	public GeoJsonRoot findParkProposalByArea(Polygon polygon, Integer annee, TypeAlgo typeAlgo, Long idMeta) {
+	public GeoJsonRoot findParkProposalByArea(Polygon polygon, Integer annee, ProposalComputationTypeAlgo typeAlgo, Long idMeta) {
 		GeoJsonRoot root = new GeoJsonRoot();
 		List<ParkProposal> proposals =  null;
 		

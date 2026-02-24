@@ -12,8 +12,8 @@ import org.locationtech.jts.geom.Polygon;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
+import com.github.cunvoas.geoserviceisochrone.service.project.GeometryPointReducer;
 import com.github.cunvoas.geoserviceisochrone.util.GeoPolygonRenderer;
-import com.github.cunvoas.geoserviceisochrone.util.GeometryPointReducer;
 
 public class TestProjectSimulator {
 	

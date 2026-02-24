@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,11 +22,11 @@ import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlIsochroneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWorkRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
-import com.github.cunvoas.geoserviceisochrone.util.GeometryPointReducer;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -79,11 +78,14 @@ public class ProjectSimulatorService {
 	private ProjectSimulatorRepository projectSimulatorRepository;
 	@Autowired
 	private ProjectSimulatorlWorkRepository projectSimulatorlWorkRepository;
-
+	@Autowired
+	private  ProjectSimulatorlIsochroneRepository projectSimulatorlIsochroneRepository;
+	
 	@Autowired
 	private GeometryPointReducer geometryPointReducer;
 
 	// Ajout du champ factory
+	@Autowired
 	private CarreRechercheStrategyFactory carreRechercheStrategyFactory;
 
 
@@ -323,30 +325,6 @@ public class ProjectSimulatorService {
 
 		return projectSimulatorlWorkRepository.findByIdProjectSimulator(projectId);
 	}
-	
 
-	public ProjectSimulatorService() {
-		super();
-	}
 	
-	@Autowired
-	public ProjectSimulatorService(ApplicationBusinessProperties applicationBusinessProperties,
-                              InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository,
-                              InseeCarre200mComputedV2Repository inseeCarre200mComputedV2Repository,
-                              ServiceReadReferences serviceReadReferences,
-                              Filosofil200mRepository filosofil200mRepository,
-                              ProjectSimulatorRepository projectSimulatorRepository,
-                              ProjectSimulatorlWorkRepository projectSimulatorlWorkRepository,
-                              GeometryPointReducer geometryPointReducer) {
-		super();
-		this.applicationBusinessProperties = applicationBusinessProperties;
-	    this.inseeCarre200mOnlyShapeRepository = inseeCarre200mOnlyShapeRepository;
-	    this.inseeCarre200mComputedV2Repository = inseeCarre200mComputedV2Repository;
-	    this.serviceReadReferences = serviceReadReferences;
-	    this.filosofil200mRepository = filosofil200mRepository;
-	    this.projectSimulatorRepository = projectSimulatorRepository;
-	    this.projectSimulatorlWorkRepository = projectSimulatorlWorkRepository;
-	    this.geometryPointReducer = geometryPointReducer;
-	    this.carreRechercheStrategyFactory = new CarreRechercheStrategyFactory(geometryPointReducer, serviceReadReferences);
-	}
 }

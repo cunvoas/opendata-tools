@@ -17,7 +17,7 @@ public class NeighborsCarreRechercheStrategy implements CarreRechercheStrategy {
     public Set<InseeCarre200mOnlyShape> findCarres(ProjectSimulator projectSimulator, List<InseeCarre200mOnlyShape> carreShapes, List<InseeCarre200mOnlyShape> carreShapesProjet, Integer urbanDistance) {
         Set<InseeCarre200mOnlyShape> carreForSimulation = new HashSet<>();
         for (InseeCarre200mOnlyShape carreShapeProject : carreShapesProjet) {
-            List<InseeCarre200mOnlyShape> neighbors = ProjectSimulatorHelper.findNeighbors(carreShapeProject, carreShapes, urbanDistance);
+            List<InseeCarre200mOnlyShape> neighbors = NeighborsHelper.findNeighbors(carreShapeProject, carreShapes, urbanDistance);
             carreForSimulation.addAll(neighbors);
         }
         return carreForSimulation;

@@ -27,6 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.AbstractComputationtrategy;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategy;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategyFactory;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -81,7 +82,7 @@ public class ServicePropositionParc {
 	 * @param insee
 	 * @param annee
 	 */
-	public Map<String, ParkProposalWork> calculeProposition(String insee, Integer annee, ProposalComputationStrategyFactory.TypeAlgo typeAlgo) {
+	public Map<String, ParkProposalWork> calculeProposition(String insee, Integer annee, ProposalComputationTypeAlgo typeAlgo) {
 		log.warn("Calcul des propositions de parc pour la commune {} en {}", insee, annee);
 		
 		Boolean dense = serviceOpenData.isDistanceDense(insee);
@@ -186,7 +187,7 @@ public class ServicePropositionParc {
 		return carreMap;
 	}
 	
-	public List<ProposalComputationStrategyFactory.TypeAlgo> getAvailableAlgorithms() {
+	public List<ProposalComputationTypeAlgo> getAvailableAlgorithms() {
 		return ProposalComputationStrategyFactory.getAvailableTypes();
 	}
 	

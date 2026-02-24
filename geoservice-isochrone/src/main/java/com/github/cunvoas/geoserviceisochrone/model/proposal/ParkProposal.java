@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 
 import org.locationtech.jts.geom.Point;
 
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
