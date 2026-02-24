@@ -1109,6 +1109,14 @@ function clearProjectForm() {
 function computeSimulation() {
   console.log('[Simulateur] computeSimulation() appelée');
   
+  // Vérifier que le champ nom est rempli
+  const nameField = document.getElementById('name');
+  if (!nameField.value || nameField.value.trim() === '') {
+    alert('Veuillez renseigner le nom du projet avant de lancer le calcul.');
+    nameField.focus();
+    return;
+  }
+  
   // Si on a un currentLayer (édition d'un projet existant ou nouvelle forme), sauvegarder sa géométrie
   if (currentLayer) {
     document.getElementById('sGeometry').value = JSON.stringify(currentLayer.toGeoJSON());
