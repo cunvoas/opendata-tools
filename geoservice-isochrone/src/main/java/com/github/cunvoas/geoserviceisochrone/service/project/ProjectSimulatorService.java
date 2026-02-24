@@ -27,6 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWor
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
+import com.github.cunvoas.geoserviceisochrone.util.GeometryPointReducer;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -79,7 +80,11 @@ public class ProjectSimulatorService {
 	@Autowired
 	private ProjectSimulatorlWorkRepository projectSimulatorlWorkRepository;
 
+	@Autowired
+	private GeometryPointReducer geometryPointReducer;
 
+	// Ajout du champ factory
+	private CarreRechercheStrategyFactory carreRechercheStrategyFactory;
 
 
 	/**
@@ -246,26 +251,21 @@ public class ProjectSimulatorService {
 	 * @return Map des carrés INSEE avec leurs données de proposition (clé: idInspire)
 	 */
 	public Map<String, ProjectSimulatorWork> populate(ProjectSimulator projectSimulator, Integer urbanDistance, Double recoSquareMeterPerCapita) {
+		// Utilisation de la factory pour la stratégie par défaut (NEIGHBORS)
+		return populate(projectSimulator, urbanDistance, recoSquareMeterPerCapita, ModeRechercheCarre.NEIGHBORS);
+	}
 
+	public Map<String, ProjectSimulatorWork> populate(ProjectSimulator projectSimulator, Integer urbanDistance, Double recoSquareMeterPerCapita, ModeRechercheCarre mode) {
 		Integer annee=projectSimulator.getAnnee();
 		String insee=projectSimulator.getInsee();
 		Boolean dense=projectSimulator.getIsDense();
 
-		// Récupérer les carrés de la commune
 		List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findCarreByInseeCode(insee, true);
-
-		// Récupérer les carrés directement impactés du projet
 		List<InseeCarre200mOnlyShape> carreShapesProjet = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(projectSimulator.getShapeArea());
 
-		// carres impactés aux distances OMS par le projet (voisins du projet)
-		Set<InseeCarre200mOnlyShape> carreForSimulation = new HashSet<>();
-		for (InseeCarre200mOnlyShape carreShapeProject : carreShapesProjet) {
-			List<InseeCarre200mOnlyShape>  neighbors = ProjectSimulatorHelper.findNeighbors(carreShapeProject, carreShapes, urbanDistance);
-			carreForSimulation.addAll(neighbors);
-		}
+		CarreRechercheStrategy strategy = carreRechercheStrategyFactory.getStrategy(mode);
+		Set<InseeCarre200mOnlyShape> carreForSimulation = strategy.findCarres(projectSimulator, carreShapes, carreShapesProjet, urbanDistance);
 
-
-		//préparation des données pour le calcul
 		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		for (InseeCarre200mOnlyShape shape : carreForSimulation) {
 			Optional<InseeCarre200mComputedV2> oCarreCputd = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
@@ -283,7 +283,6 @@ public class ProjectSimulatorService {
 				parkProposal.setIsDense(dense);
 				parkProposal.setSurfacePerCapita(carreCputd.getSurfaceParkPerCapitaOms());
 
-				// ( Seuil OMS – MAX (0, surface disponible  - seuil OMS) ) * Nb Habitant qui ont accès
 				Double densiteMissing = Math.max(recoSquareMeterPerCapita - carreCputd.getSurfaceParkPerCapitaOms().doubleValue(), 0);
 
 				BigDecimal accessingPop =carreCputd.getPopulationInIsochroneOms();
@@ -295,12 +294,9 @@ public class ProjectSimulatorService {
 				parkProposal.setMissingSurface(BigDecimal.valueOf(densiteMissing*accessingPop.doubleValue())); 
 
 				parkProposal.setLocalPopulation(carreCputd.getPopAll()!=null?carreCputd.getPopAll():BigDecimal.ZERO);
-				
-				// Initialiser les valeurs "nouvelles" avec les valeurs actuelles
 				parkProposal.setNewSurface(parkProposal.getAccessingSurface()); 
 				parkProposal.setNewSurfacePerCapita(parkProposal.getSurfacePerCapita()); 
 				parkProposal.setNewMissingSurface(parkProposal.getMissingSurface()); 
-				
 				carreMap.put(shape.getIdInspire(), parkProposal);
 			} else {
 				log.info("Pas de données Filosofil pour le carré {} en {}", shape.getIdInspire(), annee);
@@ -311,7 +307,7 @@ public class ProjectSimulatorService {
 			log.info("Aucun carré avec données pour la commune {} en {}", insee, annee);
 		} else  {
 			log.info("Calcul des propositions pour {} carrés dans la commune {} en {} (dense={}): reco={} m²/hab", 
-					carreMap.size(), insee, annee, dense, recoSquareMeterPerCapita);
+				carreMap.size(), insee, annee, dense, recoSquareMeterPerCapita);
 		}
 
 		return carreMap;
@@ -326,5 +322,31 @@ public class ProjectSimulatorService {
 	public List<ProjectSimulatorWork> getProjectWorks(Long projectId) {
 
 		return projectSimulatorlWorkRepository.findByIdProjectSimulator(projectId);
+	}
+	
+
+	public ProjectSimulatorService() {
+		super();
+	}
+	
+	@Autowired
+	public ProjectSimulatorService(ApplicationBusinessProperties applicationBusinessProperties,
+                              InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository,
+                              InseeCarre200mComputedV2Repository inseeCarre200mComputedV2Repository,
+                              ServiceReadReferences serviceReadReferences,
+                              Filosofil200mRepository filosofil200mRepository,
+                              ProjectSimulatorRepository projectSimulatorRepository,
+                              ProjectSimulatorlWorkRepository projectSimulatorlWorkRepository,
+                              GeometryPointReducer geometryPointReducer) {
+		super();
+		this.applicationBusinessProperties = applicationBusinessProperties;
+	    this.inseeCarre200mOnlyShapeRepository = inseeCarre200mOnlyShapeRepository;
+	    this.inseeCarre200mComputedV2Repository = inseeCarre200mComputedV2Repository;
+	    this.serviceReadReferences = serviceReadReferences;
+	    this.filosofil200mRepository = filosofil200mRepository;
+	    this.projectSimulatorRepository = projectSimulatorRepository;
+	    this.projectSimulatorlWorkRepository = projectSimulatorlWorkRepository;
+	    this.geometryPointReducer = geometryPointReducer;
+	    this.carreRechercheStrategyFactory = new CarreRechercheStrategyFactory(geometryPointReducer, serviceReadReferences);
 	}
 }
