@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class GitHelper {
+	
 
 	/*
 	 * Client Git léger basé sur JGit pour réaliser :
