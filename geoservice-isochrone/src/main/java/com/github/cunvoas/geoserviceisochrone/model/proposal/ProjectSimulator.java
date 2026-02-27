@@ -37,6 +37,7 @@ public class ProjectSimulator {
 	private Point centerArea;
 	private Geometry shapeArea;
 	private BigDecimal surfaceArea;
+	private Geometry influenceArea;
 
 	private Point centerPark;
 	private BigDecimal surfacePark;

@@ -1,5 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.service.project;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -10,14 +11,18 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class CarreRechercheStrategyFactory {
-
-
-    public CarreRechercheStrategy getStrategy(ModeRechercheCarre mode) {
+	@Autowired
+	private NeighborsCarreRechercheStrategy neighborsCarreRechercheStrategy;
+	@Autowired
+	private GeometryReducerIsochroneCarreRechercheStrategy geometryReducerIsochroneCarreRechercheStrategy;
+    
+	
+	public CarreRechercheStrategy getStrategy(ModeRechercheCarre mode) {
         switch (mode) {
             case NEIGHBORS:
-                return new NeighborsCarreRechercheStrategy();
+                return neighborsCarreRechercheStrategy;
             case GEOMETRY_REDUCER_ISOCHRONE:
-                return new GeometryReducerIsochroneCarreRechercheStrategy();
+                return geometryReducerIsochroneCarreRechercheStrategy;
             default:
                 throw new IllegalArgumentException("Mode de recherche inconnu: " + mode);
         }

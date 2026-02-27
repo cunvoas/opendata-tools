@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
@@ -27,6 +28,15 @@ public class MapperIsoChrone {
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
 	private static DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+	
+	public Polygon map(DtoIsoChrone dto)  {
+		Polygon geom=null;
+				
+		List<Coordinate> shape = map(dto.getGeometry().getCoordinates());
+		geom = factory.createPolygon(shape.toArray(new Coordinate[0]));
+		
+		return geom;
+	}
 	
 	public ParkEntrance map(ParkEntrance model, DtoIsoChrone dto)  {
 		if (dto!=null) {
@@ -58,7 +68,6 @@ public class MapperIsoChrone {
 		
 		
 		return model;
-		
 	}
 	
 	private List<Coordinate> map(List<DtoCoordinate> coordinate ) {

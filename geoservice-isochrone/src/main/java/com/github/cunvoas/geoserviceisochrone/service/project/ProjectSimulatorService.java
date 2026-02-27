@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
@@ -24,8 +23,6 @@ import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repos
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlIsochroneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWorkRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 
 import jakarta.transaction.Transactional;
@@ -64,15 +61,11 @@ public class ProjectSimulatorService {
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	@Autowired
-	private InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;
-	@Autowired
 	private InseeCarre200mComputedV2Repository inseeCarre200mComputedV2Repository;
 	//	@Autowired
 	//	private ServiceOpenData serviceOpenData;
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
-	@Autowired
-	private Filosofil200mRepository filosofil200mRepository;
 
 	@Autowired
 	private ProjectSimulatorRepository projectSimulatorRepository;
@@ -81,10 +74,6 @@ public class ProjectSimulatorService {
 	@Autowired
 	private  ProjectSimulatorlIsochroneRepository projectSimulatorlIsochroneRepository;
 	
-	@Autowired
-	private GeometryPointReducer geometryPointReducer;
-
-	// Ajout du champ factory
 	@Autowired
 	private CarreRechercheStrategyFactory carreRechercheStrategyFactory;
 
@@ -113,6 +102,9 @@ public class ProjectSimulatorService {
 			for (ProjectSimulatorWork item : items) {
 				item.setIdProjectSimulator(projectSimulator.getId());
 			}
+			// remove ancient
+//			projectSimulatorlWorkRepository.deleteByIdProjectSimulator(projectSimulator.getId());
+			// add new
 			projectSimulatorlWorkRepository.saveAll(items);
 		}
 
@@ -196,6 +188,11 @@ public class ProjectSimulatorService {
 		projectSimulator.setAnnee(annee);
 		projectSimulator.setIsDense(dense);
 		projectSimulator.setInsee(insee);
+		
+		// save to get and ID
+		if (projectSimulator.getId()==null) {
+			projectSimulator = projectSimulatorRepository.save(projectSimulator);
+		}
 
 		// tous les carres de la ville avec les données nécessaires
 		Map<String, ProjectSimulatorWork> carreMap = populate(projectSimulator, urbanDistance, recoSquareMeterPerCapita);
@@ -254,7 +251,9 @@ public class ProjectSimulatorService {
 	 */
 	public Map<String, ProjectSimulatorWork> populate(ProjectSimulator projectSimulator, Integer urbanDistance, Double recoSquareMeterPerCapita) {
 		// Utilisation de la factory pour la stratégie par défaut (NEIGHBORS)
-		return populate(projectSimulator, urbanDistance, recoSquareMeterPerCapita, ModeRechercheCarre.NEIGHBORS);
+		// FIXME CHOOSE BEST ENGINE
+//		return populate(projectSimulator, urbanDistance, recoSquareMeterPerCapita, ModeRechercheCarre.NEIGHBORS);
+		return populate(projectSimulator, urbanDistance, recoSquareMeterPerCapita, ModeRechercheCarre.GEOMETRY_REDUCER_ISOCHRONE);
 	}
 
 	public Map<String, ProjectSimulatorWork> populate(ProjectSimulator projectSimulator, Integer urbanDistance, Double recoSquareMeterPerCapita, ModeRechercheCarre mode) {
@@ -262,18 +261,15 @@ public class ProjectSimulatorService {
 		String insee=projectSimulator.getInsee();
 		Boolean dense=projectSimulator.getIsDense();
 
-		List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findCarreByInseeCode(insee, true);
-		List<InseeCarre200mOnlyShape> carreShapesProjet = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(projectSimulator.getShapeArea());
-
 		CarreRechercheStrategy strategy = carreRechercheStrategyFactory.getStrategy(mode);
-		Set<InseeCarre200mOnlyShape> carreForSimulation = strategy.findCarres(projectSimulator, carreShapes, carreShapesProjet, urbanDistance);
+		Set<InseeCarre200mOnlyShape> carreForSimulation = strategy.findCarres(projectSimulator, urbanDistance);
 
 		Map<String, ProjectSimulatorWork> carreMap = new HashMap<>();
 		for (InseeCarre200mOnlyShape shape : carreForSimulation) {
 			Optional<InseeCarre200mComputedV2> oCarreCputd = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
 			if (oCarreCputd.isPresent()) {
 				InseeCarre200mComputedV2 carreCputd = oCarreCputd.get();
-				Filosofil200m filo = filosofil200mRepository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
+//				Filosofil200m filo = filosofil200mRepository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
 
 				ProjectSimulatorWork parkProposal = new ProjectSimulatorWork();
 				parkProposal.setAnnee(annee);

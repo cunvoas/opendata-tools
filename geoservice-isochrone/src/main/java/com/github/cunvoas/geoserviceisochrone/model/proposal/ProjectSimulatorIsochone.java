@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.model.proposal;
 
 import java.util.Date;
 
+import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 
@@ -16,7 +17,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(of = {"idProjectSimulator", "point"})
 @Entity(name = "project_simul_isochrone")
 @IdClass(ProjectSimulatorIsochroneId.class)
-public class ProjectSimulatorIsochone {
+public class ProjectSimulatorIsochone implements Comparable<ProjectSimulatorIsochone> {
 
 
 	@Id
@@ -29,5 +30,18 @@ public class ProjectSimulatorIsochone {
 	private Geometry isochrone;
 	
 	private Date updateDate;
+	
+	// only to easyly compute 
+	private transient Boolean processed=false; 
+
+	@Override
+	public int compareTo(ProjectSimulatorIsochone other) {
+		CompareToBuilder cbt=new CompareToBuilder();
+		cbt.append(this.idProjectSimulator, other.idProjectSimulator);
+		cbt.append(this.point, other.point);
+		return cbt.toComparison();
+	}
+	
+	
 	
 }

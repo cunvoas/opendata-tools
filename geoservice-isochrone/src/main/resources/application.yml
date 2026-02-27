@@ -6,6 +6,11 @@ server:
   shutdown: graceful
   shutdown.grace-period: 60s
   
+management:
+  # zipkin + brave
+  tracing:
+  enabled: false
+
 spring:
   application.name: isochrone
   application.version: '@project.version@'
