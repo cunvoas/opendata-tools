@@ -1,5 +1,12 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,20 +25,12 @@ import lombok.extern.slf4j.Slf4j;
 //@ControllerAdvice
 @Slf4j
 public class ErrorController  extends ResponseEntityExceptionHandler{
-	
-//	@Override
-//	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-//		Map<String, String> errors = new HashMap<>();
-//		ex.getBindingResult().getAllErrors().forEach((error) ->{
-//			
-//			String fieldName = ((FieldError) error).getField();
-//			String message = error.getDefaultMessage();
-//			errors.put(fieldName, message);
-//		});
-//		return new ResponseEntity<Object>(errors, HttpStatus.BAD_REQUEST);
-//	}
 
+    @Value("${application.feature-flipping.show-stacktrace-on-error:false}")
+    private boolean showStacktraceOnError;
 
+    @Autowired
+    private MessageSource messageSource;
 
 	/**
 	 * Gestionnaire d'exception générique.
@@ -47,9 +46,36 @@ public class ErrorController  extends ResponseEntityExceptionHandler{
     public String exception(final Throwable throwable, final Model model) {
         log.error("Exception during execution of SpringSecurity application", throwable);
         String errorMessage = (throwable != null ? throwable.getMessage() : "Unknown error");
+        String stackTrace = getStackTrace(throwable);
+
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        String statusLabel = messageSource.getMessage("http.status." + status.value(),
+            null, "HTTP " + status.value(), LocaleContextHolder.getLocale()
+        );
+
         model.addAttribute("errorMessage", errorMessage);
-        model.addAttribute("httpStatus", HttpStatus.INTERNAL_SERVER_ERROR);
+        model.addAttribute("exception", throwable != null ? throwable.getClass().getName() : "Unknown");
+        model.addAttribute("trace", stackTrace);
+        model.addAttribute("httpStatus", status);
+        model.addAttribute("status", status.value());
+        model.addAttribute("httpStatusLabel", statusLabel);
+        model.addAttribute("showStacktrace", showStacktraceOnError);
+
         return "error";
+    }
+    
+    /**
+     * Convertit une exception en sa représentation sous forme de string (stack trace).
+     * @param throwable l'exception
+     * @return la stack trace en string
+     */
+    private String getStackTrace(Throwable throwable) {
+        if (throwable == null) {
+            return "";
+        }
+        StringWriter sw = new StringWriter();
+        throwable.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
     }
 
 }

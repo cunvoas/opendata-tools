@@ -170,6 +170,35 @@ public class ProjectSimulatorController {
     }
 
     /**
+     * Delete a project.
+     */
+    @PostMapping("/delete")
+    public String deleteProject(@RequestParam("projectId") Long projectId, @ModelAttribute FormProjectSimulator form, Model model) {
+        log.info("deleteProject() - projectId={}", projectId);
+        ProjectSimulator ps = projectSimulatorService.getById(projectId);
+        if (ps != null) {
+            Long idCommune = ps.getIdCommune();
+            projectSimulatorService.delete(idCommune, projectId);
+            
+            // Réinitialiser le formulaire en gardant uniquement la localisation
+            FormProjectSimulator newForm = new FormProjectSimulator();
+            newForm.setIdCommune(idCommune);
+            // Récupérer les coordonnées de la commune pour la carte
+            if (idCommune != null) {
+                Coordinate c = serviceReadReferences.getCoordinate(idCommune);
+                if (c != null) {
+                    newForm.setMapLng(String.valueOf(c.getX()));
+                    newForm.setMapLat(String.valueOf(c.getY()));
+                }
+            }
+            model.addAttribute("token", tokenManagement.getValidToken());
+            return show(newForm, model);
+        }
+        model.addAttribute("token", tokenManagement.getValidToken());
+        return show(form, model);
+    }
+
+    /**
      * Handle form submission and return JSON response for AJAX requests.
      * @param sGeometry GeoJSON string representing the project zone
      * @param form form object
@@ -205,10 +234,12 @@ public class ProjectSimulatorController {
         Geometry geometry = null;
         String sGeom = form.getSGeometry();
 		try {
-			if ( StringUtils.isNotBlank(sGeom) ) {
+			if ( StringUtils.isNotBlank(sGeom) && sGeom.indexOf("features\":[]") < 0 ) {
 				log.info("start process parseGeoman");
 				geometry = geoJson2GeometryHelper.parseGeoman(sGeom);
 				log.info("end process parseGeoman");
+			} else {
+				log.info("Géométrie vide ou supprimée");
 			}
 		} catch (JsonProcessingException e) {
 			log.error("geoman parsing error = ", sGeom);
@@ -243,11 +274,14 @@ public class ProjectSimulatorController {
 		bo.setIdCommune(form.getIdCommune());
 		bo.setName(form.getName());
 		
-		// Assigner la géométrie parsée (comme pour NewPark)
+		// Assigner la géométrie parsée (toujours mettre à jour, même si null pour suppression)
+		bo.setShapeArea(geometry);
 		if (geometry != null) {
-			bo.setShapeArea(geometry);
 			bo.setCenterArea(geometry.getCentroid());
 			log.debug("mapToBo() - Geometry assigned: type={}", geometry.getGeometryType());
+		} else {
+			bo.setCenterArea(null);
+			log.debug("mapToBo() - Geometry cleared");
 		}
     	return bo;
     }

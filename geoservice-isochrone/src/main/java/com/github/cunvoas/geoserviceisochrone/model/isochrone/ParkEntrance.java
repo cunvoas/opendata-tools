@@ -2,8 +2,6 @@ package com.github.cunvoas.geoserviceisochrone.model.isochrone;
 
 
 
-import java.util.Date;
-
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
@@ -58,10 +56,10 @@ public class ParkEntrance {
     private String entranceLink;
     /** Point d'entrée (coordonnées GPS). */
     @Column(name="entrance_point", columnDefinition = "geometry(Point,4326)")
-    private org.locationtech.jts.geom.Point entrancePoint;
+    private Point entrancePoint;
     /** Polygone isochrone IGN associé à l'entrée. */
     @Column(columnDefinition = "geometry(Polygon,4326)")
-    private org.locationtech.jts.geom.Polygon polygon;
+    private Polygon polygon;
     /**
      * Retourne la longitude de l'entrée si disponible.
      * @return longitude en chaîne de caractères, vide sinon

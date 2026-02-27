@@ -6,6 +6,11 @@ server:
   shutdown: graceful
   shutdown.grace-period: 60s
   
+management:
+  # zipkin + brave
+  tracing:
+  enabled: false
+
 spring:
   application.name: isochrone
   application.version: '@project.version@'
@@ -46,8 +51,8 @@ spring:
 #    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgis}?useTimeZone=true&serverTimezone=UTC&autoReconnect=true&useSSL=false
     url: ${DB_URL}
     username: ${DB_USER:postgis}
-    password: ${DB_PASSWORD:postgis
-#    testWhileIdle: true
+    password: ${DB_PASSWORD:postgis}
+    testWhileIdle: true
 #    validationQuery: SELECT 1
 
   # Pool JDBC : HikariCP
@@ -124,6 +129,7 @@ application:
     iris:
         annees: 2020
   feature-flipping:
+    show-stacktrace-on-error: false
     mobile-api: false
     parkAnalysisEnabled: true
     sendEmail: false

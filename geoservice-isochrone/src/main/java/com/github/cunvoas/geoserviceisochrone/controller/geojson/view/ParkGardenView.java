@@ -1,5 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.controller.geojson.view;
 
+import java.util.Date;
+
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonProperty;
 
 import lombok.Data;
@@ -21,5 +23,7 @@ public class ParkGardenView extends GeoJsonProperty {
 	private Boolean oms;
 	private Boolean entry;
 	private Boolean actif;
+	private Date dateDebut;
+	private Date dateFin;
 	
 }

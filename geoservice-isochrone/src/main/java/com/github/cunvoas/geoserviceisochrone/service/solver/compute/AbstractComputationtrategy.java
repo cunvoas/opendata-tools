@@ -1,13 +1,8 @@
 package com.github.cunvoas.geoserviceisochrone.service.solver.compute;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-
-import com.github.cunvoas.geoserviceisochrone.extern.helper.DistanceHelper;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 import com.github.cunvoas.geoserviceisochrone.service.solver.sort.ProposalSortStrategy;
 import com.github.cunvoas.geoserviceisochrone.service.solver.sort.ProposalSortStrategyFactory;
@@ -61,4 +56,5 @@ public abstract class AbstractComputationtrategy implements ProposalComputationS
 	public List<ParkProposalWork> findNeighbors(String idInspire, Map<String, ParkProposalWork> carreMap, Integer urbanDistance) {
 		return ParkProposalHelper.findNeighbors(idInspire, carreMap, urbanDistance);
 	}
+	
 }

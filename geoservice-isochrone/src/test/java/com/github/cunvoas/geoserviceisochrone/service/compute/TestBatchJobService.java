@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.service.admin;
+package com.github.cunvoas.geoserviceisochrone.service.compute;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

@@ -2,6 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.controller.mvc.geojson;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -146,5 +147,13 @@ public class GeoJsonForMvcController {
 		) {
         return geoMapService.findAllCadastreByArea(swLat, swLng, neLat, neLng);
     }
+	
+	@GetMapping("/proposal/{idMeta}")
+	// chnager la signature et avoir l'ID meta projet
+	public GeoJsonRoot getParkProposalByArea(
+			@PathVariable("idMeta") Long idMeta
+		) {
+		return geoMapService.findParkProposalByArea(null, null, null, idMeta);
+	}
 	
 }

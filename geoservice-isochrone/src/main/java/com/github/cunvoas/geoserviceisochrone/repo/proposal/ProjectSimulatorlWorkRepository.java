@@ -29,4 +29,8 @@ public interface ProjectSimulatorlWorkRepository extends JpaRepository<ProjectSi
 	 */
 	List<ProjectSimulatorWork> findByIdProjectSimulator(Long idProjectSimulator);
 	
+	/**
+	 * @param idProjectSimulator
+	 */
+	void deleteByIdProjectSimulator(Long idProjectSimulator);
 }

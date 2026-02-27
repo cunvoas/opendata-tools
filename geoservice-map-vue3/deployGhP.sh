@@ -13,8 +13,11 @@ cp -Rf $DIST_PATH/dist/* $GH_PAGES_LOCAL_PATH/
 cp -f  $DIST_PATH/404.html $GH_PAGES_LOCAL_PATH/
 cp -f  $DIST_PATH/favicon.ico $GH_PAGES_LOCAL_PATH/
 
-
-
+echo "cd ${GH_PAGES_LOCAL_PATH}"
+echo 'git status'
+echo 'git add .'
+echo 'git commit -m "chore: TEXT"'
+echo 'git push'
 
 
 

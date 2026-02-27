@@ -17,6 +17,9 @@ import lombok.Data;
  */
 @Data
 public abstract class AbstractFormLocate {
+	
+	// token to prevent double submit
+	private String token;
 
 	// preset select of the user
 	protected Long idRegion;

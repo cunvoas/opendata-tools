@@ -48,6 +48,7 @@ application:
     token: ${GIT_TOKEN}
     defaultBranch: main
   feature-flipping:
+    show-stacktrace-on-error: false
     mobile-api: false
     parkAnalysisEnabled: true
     salaryAnalysisEnabled: false

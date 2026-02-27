@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="²http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
-<head th:insert="~{fragments/fragment-head :: head}"></head>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{fragments/fragment-head :: head(#{simulateur.title})}"></head>
 <body class="sb-nav-fixed">
 <div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
 <div id="layoutSidenav">
@@ -89,6 +89,32 @@
           </div>
         </div>
 
+
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmModalLabel"><i class="fas fa-exclamation-triangle text-danger"></i> Confirmation de suppression</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir supprimer le projet <strong id="deleteProjectName"></strong> ?</p>
+        <p class="text-muted small">Cette action est irréversible.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <form id="formDeleteProject" th:action="@{/mvc/simulation/delete}" method="post" style="display: inline;">
+          <input type="hidden" id="deleteProjectId" name="projectId" value="" />
+          <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Supprimer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
         <!-- Liste des projets existants -->
         <div class="row mb-3 projects-existing">
           <div class="col-12">
@@ -128,6 +154,11 @@
                               <i class="fas fa-edit"></i> Éditer
                             </button>
                           </form>
+                          <button type="button" class="btn btn-sm btn-outline-danger ms-1" 
+                                  th:attr="data-id=${project.id}, data-name=${project.name}"
+                                  onclick="confirmDelete(this.getAttribute('data-id'), this.getAttribute('data-name'))">
+                            <i class="fas fa-trash"></i> Supprimer
+                          </button>
                         </td>
                       </tr>
                     </tbody>
@@ -157,6 +188,28 @@
           <i class="fas fa-exclamation-triangle"></i> La soumission a échoué : le formulaire a déjà été soumis ou a expiré. Veuillez réessayer.
         </div>
 
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmModalLabel"><i class="fas fa-exclamation-triangle text-danger"></i> Confirmation de suppression</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir supprimer le projet <strong id="deleteProjectName"></strong> ?</p>
+        <p class="text-muted small">Cette action est irréversible.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <form id="formDeleteProject" th:action="@{/mvc/simulation/delete}" method="post" style="display: inline;">
+          <input type="hidden" id="deleteProjectId" name="projectId" value="" />
+          <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Supprimer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
         <!-- Formulaire de simulation -->
         <form id="formCompute" th:action="@{/mvc/simulation/compute}" method="post" th:object="${formSimulateur}">
           <!-- Anti double soumission: token serveur -->
@@ -407,6 +460,7 @@
 </div>
 
 <div th:insert="~{fragments/fragment-footer :: footer}"></div>
+
 <div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
 <script th:src="@{/mvc/static/js/scripts.js}"></script>
 
@@ -695,101 +749,11 @@ map.pm.addControls({
 
 
 // ----------- CHARGEMENT GÉOMÉTRIE EXISTANTE -----------
-// Variable pour stocker la couche actuelle
+// Variable pour stocker la couche actuelle du projet en édition
 let currentLayer = null;
 
-/**
- * Met à jour le popup avec le nom du projet sur la forme (clic pour afficher)
- */
-function updateProjectLabel() {
-  if (!currentLayer) return;
-  
-  const projectName = document.getElementById('name').value;
-  
-  // Supprimer l'ancien popup s'il existe
-  currentLayer.unbindPopup();
-  
-  if (!projectName || projectName.trim() === '') return;
-  
-  // Ajouter un popup au clic sur la forme (comme les parcs)
-  currentLayer.bindPopup('<b>' + projectName + '</b>');
-  
-  console.log('[Simulateur] Label du projet mis à jour:', projectName);
-}
 
-// Événement de création d'une forme
-map.on('pm:create', ({ layer }) => {
-  console.log('[Geoman] Forme créée:', layer);
-  
-  // Suppression de la couche précédente si elle existe
-  if (currentLayer) {
-    map.removeLayer(currentLayer);
-  }
-  
-  currentLayer = layer;
-  currentLayer.addTo(dataProjectZone);
-  
-  // Mettre à jour le label du projet
-  updateProjectLabel();
-  
-  // Ajouter listener d'édition sur cette couche
-  layer.on('pm:edit', e => {
-    console.log('[Geoman] Forme modifiée:', e);
-    
-    const self_drawn = map.pm.getGeomanDrawLayers(true);
-    const strPoly = JSON.stringify(self_drawn.toGeoJSON());
-    document.getElementById('sGeometry').value = strPoly;
-    console.log('[Geoman] GeoJSON mis à jour:', strPoly);
-    
-    // Mettre à jour la position du label
-    updateProjectLabel();
-  });
-});
-
-// Événement après avoir terminé le dessin
-map.on('pm:drawend', function (e) {
-  console.log('[Geoman] Dessin terminé');
-  
-  const self_drawn = map.pm.getGeomanDrawLayers(true);
-  const strPoly = JSON.stringify(self_drawn.toGeoJSON());
-  document.getElementById('sGeometry').value = strPoly;
-  console.log('[Geoman] GeoJSON capturé:', strPoly);
-});
-
-// Événement après modification d'une forme
-map.on('pm:change', function (e) {
-  console.log('[Geoman] Modification détectée');
-  
-  const layerToDraw = e.layer;
-  const strPoly = JSON.stringify(layerToDraw.toGeoJSON());
-  document.getElementById('sGeometry').value = strPoly;
-  console.log('[Geoman] GeoJSON mis à jour:', strPoly);
-});
-
-// Événement de suppression d'une forme
-map.on('pm:remove', ({ layer }) => {
-  console.log('[Geoman] Forme supprimée:', layer);
-  
-  // Vérifier que ce n'est pas un parc
-  if (layer && layer._isParc) {
-    console.warn('[Geoman] Tentative de suppression sur un parc bloquée');
-    return;
-  }
-  
-  if (layer === currentLayer) {
-    currentLayer = null;
-    dataProjectZone.clearLayers();
-    document.getElementById('sGeometry').value = '';
-    console.log('[Geoman] GeoJSON effacé');
-  }
-});
-
-// Écouteur sur le champ nom du projet pour mettre à jour le label
-document.getElementById('name').addEventListener('input', function() {
-  updateProjectLabel();
-});
-
-// ----------- CHARGEMENT PARCS -----------
+// ----------- CHARGEMENT DES LAYERS -----------
 const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
 const endpointProjects = /*[[@{/mvc/geojson/projectByCorner}]]*/ '';
 const endpointProjectWork = /*[[@{/mvc/geojson/projectWorkById}]]*/ '';
@@ -801,7 +765,6 @@ function getParkStyle(feature) {
   let fillColor = '#3aa637'; // Couleur par défaut (parc inclus OMS)
   
   if (feature && feature.properties) {
-    // Vérifier d'abord si le parc est actif
     if (feature.properties.actif === false) {
       fillColor = '#DC20E9'; // Futur parc ou détruit
     } else if (feature.properties.oms === false) {
@@ -814,8 +777,12 @@ function getParkStyle(feature) {
   return { color: '#1e4d1c', fillColor, weight: 1, fillOpacity: 0.35 };
 }
 
+// ==========================================
+// LAYER 1: dataParcs - LECTURE SEULE
+// ==========================================
 /**
- * Charge les parcs dans la zone visible
+ * Charge les parcs dans la zone visible.
+ * Pas d'événements Geoman, lecture seule uniquement.
  */
 function loadParcs() {
   if (!endpointParcs) return;
@@ -833,20 +800,23 @@ function loadParcs() {
           if (feature.properties && feature.properties.name) {
             layer.bindPopup('<b>' + feature.properties.name + '</b>');
           }
-          // Empêcher toute édition Geoman sur les parcs existants
+          // Lecture seule: désactiver Geoman
           layer.pm.setOptions({ pmIgnore: true });
           layer.pm.disable();
-          // Ajouter une classe CSS pour identifier les parcs
           layer._isParc = true;
         }
       }).addTo(dataParcs);
-      console.log('[Simulateur] Parcs chargés:', geojson.features ? geojson.features.length : 0);
+      console.log('[Simulateur][dataParcs] Parcs chargés:', geojson.features ? geojson.features.length : 0);
     })
-    .catch(err => console.error('[Simulateur] Erreur chargement parcs', err));
+    .catch(err => console.error('[Simulateur][dataParcs] Erreur:', err));
 }
 
+// ==========================================
+// LAYER 2: dataProjectZone - ÉDITABLE (comme newPark)
+// ==========================================
 /**
- * Charge les projets de simulation dans la zone visible
+ * Charge les projets de simulation dans la zone visible.
+ * Gère les événements Geoman comme newPark.html.
  */
 function loadProjects() {
   if (!endpointProjects) return;
@@ -854,16 +824,15 @@ function loadProjects() {
   const b = map.getBounds();
   const url = `${endpointProjects}?swLat=${b.getSouthWest().lat}&swLng=${b.getSouthWest().lng}&neLat=${b.getNorthEast().lat}&neLng=${b.getNorthEast().lng}`;
   
+  // ID du projet en cours d'édition
+  const currentProjectId = document.getElementById('id').value;
+  
   fetch(url)
     .then(r => r.json())
     .then(geojson => {
       dataProjectZone.clearLayers();
       
-      // Re-add current layer if it exists
-      if (currentLayer) {
-        currentLayer.addTo(dataProjectZone);
-      }
-      
+      // Charger les projets
       L.geoJSON(geojson, {
         style: function(feature) {
           return {
@@ -875,9 +844,7 @@ function loadProjects() {
         },
         onEachFeature: function(feature, layer) {
           let popupContent = '';
-          let projectName = '';
           if (feature.properties && feature.properties.name) {
-            projectName = feature.properties.name;
             popupContent = '<b>' + feature.properties.name + '</b><br>';
           } else {
             popupContent = '<b>Projet de simulation</b><br>';
@@ -887,22 +854,81 @@ function loadProjects() {
             if (feature.properties.population) popupContent += 'Population: ' + feature.properties.population + '<br>';
             if (feature.properties.surfaceArea) popupContent += 'Surface: ' + Math.round(feature.properties.surfaceArea) + ' m²<br>';
           }
-          // Afficher les infos du projet au clic sur la forme (comme les parcs)
           layer.bindPopup(popupContent);
+          
+          // Si c'est le projet en cours d'édition, activer Geoman
+          if (currentProjectId && feature.properties && feature.properties.id == currentProjectId) {
+            console.log('[Simulateur] Projet en édition trouvé, activation Geoman');
+            currentLayer = layer;
+            
+            // Activer l'édition Geoman
+            layer.pm.enable({
+              allowSelfIntersection: false
+            });
+            
+            // Écouter les modifications
+            layer.on('pm:edit', function(e) {
+              console.log('[Geoman] pm:edit - projet modifié');
+              document.getElementById('sGeometry').value = JSON.stringify(e.layer.toGeoJSON());
+            });
+          }
         }
       }).addTo(dataProjectZone);
-      console.log('[Simulateur] Projets chargés:', geojson.features ? geojson.features.length : 0);
+      console.log('[Simulateur][dataProjectZone] Projets chargés:', geojson.features ? geojson.features.length : 0);
     })
-    .catch(err => console.error('[Simulateur] Erreur chargement projets', err));
+    .catch(err => console.error('[Simulateur][dataProjectZone] Erreur:', err));
 }
 
+// Événements Geoman
+map.on("pm:remove", (e) => {
+    console.log("[Geoman] pm:remove");
+    document.getElementById("sGeometry").value = '';
+    currentLayer = null;
+});
+
+map.on('pm:create', (e) => {
+  console.log("[Geoman] pm:create");
+  currentLayer = e.layer;
+  e.layer.on('pm:edit', ({ layer }) => {
+    console.log("[Geoman] pm:edit - forme modifiée");
+    // Sauvegarder la géométrie modifiée dans sGeometry
+    document.getElementById('sGeometry').value = JSON.stringify(layer.toGeoJSON());
+    console.log("[Geoman] Géométrie sauvegardée:", layer.toGeoJSON());
+  });
+});
+
+
+map.on('pm:change', ({ layer }) => {  
+    console.log("[Geoman] pm:change");
+    currentLayer = layer;
+});
+
+
+
+map.on('pm:drawend', function (e) {
+    console.log("[Geoman] pm:drawend");
+    const self_drawn = map.pm.getGeomanDrawLayers(true);
+    const strPoly = JSON.stringify(self_drawn.toGeoJSON());
+    document.getElementById('sGeometry').value = strPoly;
+});
+
+// Quand l'utilisateur active/désactive le mode édition global
+map.on('pm:globaleditmodetoggled', function(e) {
+    console.log("[Geoman] pm:globaleditmodetoggled enabled=" + e.enabled);
+});
+
+
+
+// ==========================================
+// LAYER 3: dataProjectWork - LECTURE SEULE
+// ==========================================
 /**
- * Charge les éléments du projet (ProjectWork) pour le projet en cours
+ * Charge les éléments ProjectWork pour le projet en cours.
+ * Pas d'événements Geoman, lecture seule uniquement.
  */
 function loadProjectWork() {
   if (!endpointProjectWork) return;
   
-  // Récupérer l'ID du projet depuis le formulaire
   const projectId = document.getElementById('id').value;
   if (!projectId || projectId.trim() === '') {
     dataProjectWork.clearLayers();
@@ -918,17 +944,14 @@ function loadProjectWork() {
       
       L.geoJSON(geojson, {
         style: function(feature) {
-          // Couleur basée sur newSurfacePerCapita par rapport au seuil OMS (10 m²/hab)
-          let fillColor = '#cccccc'; // Gris par défaut si pas de valeur
+          let fillColor = '#cccccc';
           let borderColor = '#666666';
           
           if (feature.properties && feature.properties.newSurfacePerCapita !== null && feature.properties.newSurfacePerCapita !== undefined) {
             if (feature.properties.newSurfacePerCapita < 10) {
-              // Rouge si sous le seuil OMS
               fillColor = '#ff6666';
               borderColor = '#cc0000';
             } else {
-              // Vert si au-dessus du seuil OMS
               fillColor = '#66ff66';
               borderColor = '#00cc00';
             }
@@ -963,22 +986,27 @@ function loadProjectWork() {
           }
           layer.bindPopup(popupContent);
           
-          // Empêcher l'édition des projectWork
+          // Lecture seule: désactiver Geoman
           layer.pm.setOptions({ pmIgnore: true });
           layer.pm.disable();
           layer._isProjectWork = true;
         }
       }).addTo(dataProjectWork);
-      console.log('[Simulateur] ProjectWork chargés:', geojson.features ? geojson.features.length : 0);
+      console.log('[Simulateur][dataProjectWork] Chargés:', geojson.features ? geojson.features.length : 0);
     })
-    .catch(err => console.error('[Simulateur] Erreur chargement projectWork', err));
+    .catch(err => console.error('[Simulateur][dataProjectWork] Erreur:', err));
+
 }
 
-// Chargement initial et au déplacement
+// ==========================================
+// CHARGEMENT INITIAL
+// ==========================================
 map.on('moveend', function() {
   loadParcs();
   loadProjects();
 });
+
+// Charger les autres données
 loadParcs();
 loadProjects();
 loadProjectWork();
@@ -1081,10 +1109,27 @@ function clearProjectForm() {
 function computeSimulation() {
   console.log('[Simulateur] computeSimulation() appelée');
   
-  // Récupérer les couches dessinées pour s'assurer que sGeometry est à jour
-  const self_drawn = map.pm.getGeomanDrawLayers(true);
-  const strPoly = JSON.stringify(self_drawn.toGeoJSON());
-  document.getElementById('sGeometry').value = strPoly;
+  // Vérifier que le champ nom est rempli
+  const nameField = document.getElementById('name');
+  if (!nameField.value || nameField.value.trim() === '') {
+    alert('Veuillez renseigner le nom du projet avant de lancer le calcul.');
+    nameField.focus();
+    return;
+  }
+  
+  // Si on a un currentLayer (édition d'un projet existant ou nouvelle forme), sauvegarder sa géométrie
+  if (currentLayer) {
+    document.getElementById('sGeometry').value = JSON.stringify(currentLayer.toGeoJSON());
+    console.log('[Simulateur] Géométrie sauvegardée depuis currentLayer');
+  } else {
+    // Sinon, récupérer les couches dessinées par Geoman (nouvelles formes)
+    const self_drawn = map.pm.getGeomanDrawLayers(true);
+    const strPoly = JSON.stringify(self_drawn.toGeoJSON());
+    document.getElementById('sGeometry').value = strPoly;
+    console.log('[Simulateur] Géométrie sauvegardée depuis getGeomanDrawLayers');
+  }
+  
+  console.log('[Simulateur] sGeometry =', document.getElementById('sGeometry').value);
   
   // Récupérer le formulaire et le soumettre normalement
   const form = document.getElementById('formCompute');
@@ -1228,6 +1273,16 @@ function sortProjectWorkTable(column) {
   }
   
   console.log('[Simulateur] Tableau trié par', column, projectWorkSortAscending ? 'ASC' : 'DESC');
+}
+
+// ----------- SUPPRESSION DE PROJET -----------
+
+function confirmDelete(projectId, projectName) {
+  console.log('[Simulateur] confirmDelete - projectId:', projectId, 'projectName:', projectName);
+  document.getElementById('deleteProjectId').value = projectId;
+  document.getElementById('deleteProjectName').textContent = projectName || '';
+  var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+  deleteModal.show();
 }
 
 

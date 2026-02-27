@@ -58,6 +58,12 @@ export default {
                 locType: 'com2co',  // Force locType to com2co
                 graphType: graphType.suffix
             };
+
+            // 📊 Envoyer l'événement à Matomo
+            if (window._paq && Array.isArray(window._paq)) {
+                const com2coName = location.com2coName || 'Unknown';
+                window._paq.push(['trackEvent', 'City Stats', 'com2co', com2coName]);
+            }
             
             console.log("Com2coQuickAccess emitting:", JSON.stringify(location));
             

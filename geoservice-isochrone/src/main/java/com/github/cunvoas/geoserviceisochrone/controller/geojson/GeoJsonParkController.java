@@ -7,6 +7,7 @@ import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -109,6 +110,7 @@ public class GeoJsonParkController {
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
     @GetMapping("/proposal")
+    // chnager la signature et avoir l'ID meta projet
     public GeoJsonRoot getParkProposalByArea(
     			@RequestParam("swLat") Double swLat,
     			@RequestParam("swLng") Double swLng,
@@ -119,10 +121,10 @@ public class GeoJsonParkController {
     	if (annee==null) {
     		annee=applicationBusinessProperties.getDerniereAnnee();
     	}
+    	
         return geoMapService.findParkProposalByArea(annee, swLat, swLng, neLat, neLng);
     }
     
-
 
     /**
      * get park by city.

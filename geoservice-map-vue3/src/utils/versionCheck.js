@@ -2,7 +2,7 @@ const CHECK_INTERVAL = 4 * 60 * 60 * 1000; // 4 heures en ms
 
 async function checkForUpdates() {
   try {
-    const response = await fetch('/parcs-et-jardins/version.json');
+    const response = await fetch(`${import.meta.env.BASE_URL}version.json`);
     const data = await response.json();
     const lastVersion = localStorage.getItem('app-version');
     

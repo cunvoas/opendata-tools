@@ -7,19 +7,41 @@
       <option value="2015">2015</option>
     </select>
 
-    <label for="checkbox"> | Parcs</label>
+    <label
+      for="checkbox"
+      title="Affiche les contours des parcs."
+    >
+      | Parcs
+    </label>
     <input id="checkbox" v-model="showParcs" type="checkbox" />
 
-    <label for="checkbox"> | Isochrones</label>
+    <label
+      for="checkbox"
+      title="Affiche les isochrones pour visualiser les zones d'accessibilité aux parcs."
+    >
+      | Isochrones
+    </label>
     <input id="checkbox" v-model="showIsochrones" type="checkbox" />
 
-    <label for="cbCarre"> | Données carroyées</label>
+    <label
+      for="cbCarre"
+      title="Affiche les données carroyées (grille de 200 m) pour visualiser la surface de parcs accessible par habitant."
+    >
+      | Carrés INSEE
+    </label>
     <input id="cbCarre" v-model="showCarre" type="checkbox" />
 
-    <label for="cbCadastre"> | Cadastre</label>
+    <label for="cbCadastre"
+      title="Affiche les limites communales issues du cadastre."
+      > | Cadastre</label>
     <input id="cbCadastre" v-model="showCadastre" type="checkbox" />
 
-    <label for="cbColorblind"> | Mode daltonien</label>
+    <label
+      for="cbColorblind"
+      title="Adapte les couleurs pour améliorer la lisibilité pour les personnes atteintes de daltonisme. "
+    >
+      | Mode daltonien
+    </label>
     <input id="cbColorblind" v-model="colorblindMode" type="checkbox" @change="onColorModeChange" />
 
     <br />
@@ -187,7 +209,7 @@ import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { buildShareableUrl } from '../utils/urlParams.js';
+import { buildShareableUrl, isActive } from '../utils/urlParams.js';
 import debounce from 'lodash/debounce';
 
 
@@ -452,6 +474,14 @@ export default {
       } else if (newLocation.locType === 'address') {
         this.zoom = 17;
       }
+
+        
+      // 📊 Envoyer l'événement à Matomo
+      const cityName = newLocation.cityName || 'Unknown';
+      const locType = newLocation.locType || 'city';
+      window._paq.push(['trackEvent', 'City Map', locType, cityName]);
+
+
       this.debouncedFetchCommune(newLocation.latY, newLocation.lonX);
     },
     updateRegionIfChanged(newLocation) {
@@ -846,6 +876,23 @@ export default {
           return;
         }
         
+        // Vérifier si le parc est actif pour l'année sélectionnée
+        if (feature.properties.dateDebut && feature.properties.dateFin) {
+          if (!isActive(this.annee, feature.properties.dateDebut, feature.properties.dateFin)) {
+            // Masquer le parc inactif en le rendant invisible et sans interaction
+            if (layer.setStyle && typeof layer.setStyle === 'function') {
+              layer.setStyle({
+                fillOpacity: 0,
+                opacity: 0,
+                stroke: false,
+                fill: false
+              });
+            }
+            // Ne pas ajouter de tooltip pour les parcs inactifs
+            return;
+          }
+        }
+        
         let oms = feature.properties.oms;
         let valid = ''
         if (oms === false) {
@@ -888,10 +935,14 @@ export default {
           feature.properties.actif,
           colorblindMode
         );
-        layer.setStyle({
-          fillColor: fillColor,
-          color: fillColor,
-        });
+        
+        // setStyle only works on paths (Polygon, Polyline), not on Point markers or FeatureGroup
+        if (layer.setStyle && typeof layer.setStyle === 'function') {
+          layer.setStyle({
+            fillColor: fillColor,
+            color: fillColor,
+          });
+        }
       } catch (error) {
         console.error('Error in onDetailPark:', error, feature);
       }
@@ -984,20 +1035,22 @@ export default {
           { permanent: false, sticky: true }
         );
 
-        if ( !feature.properties.oms) {
-          layer.setStyle({
-            fillColor: feature.properties.fillColor,
-            opacity: 0.0,
-            fillOpacity: 0.0,
-          });
-        } else {
-          layer.setStyle({
-            weight: 2,
-            color: "#8eac8e",
-            opacity: 0.70,
-            fillColor: feature.properties.fillColor,
-            fillOpacity: 0.09,
-          });
+        if (layer.setStyle && typeof layer.setStyle === 'function') {
+          if ( !feature.properties.oms) {
+            layer.setStyle({
+              fillColor: feature.properties.fillColor,
+              opacity: 0.0,
+              fillOpacity: 0.0,
+            });
+          } else {
+            layer.setStyle({
+              weight: 2,
+              color: "#8eac8e",
+              opacity: 0.70,
+              fillColor: feature.properties.fillColor,
+              fillOpacity: 0.09,
+            });
+          }
         }
       };
     },
@@ -1051,24 +1104,30 @@ export default {
             }
           }
 
-          e.target.setStyle({
-            weight: 5,
-          });
+          if (e.target.setStyle && typeof e.target.setStyle === 'function') {
+            e.target.setStyle({
+              weight: 5,
+            });
+          }
 
           document.getElementById("dataDetail").innerHTML =
             theComment + detailData;
         });
 
         layer.on("mouseout", function (e) {
-          e.target.setStyle({
-            weight: 2,
-          });
+          if (e.target.setStyle && typeof e.target.setStyle === 'function') {
+            e.target.setStyle({
+              weight: 2,
+            });
+          }
         });
 
-        layer.setStyle({
-            fillColor:  getSquareColor(feature.properties.isDense, feature.properties.squareMtePerCapitaOms, colorblindMode),
-            fillOpacity: 0.4,
-          });
+        if (layer.setStyle && typeof layer.setStyle === 'function') {
+          layer.setStyle({
+              fillColor:  getSquareColor(feature.properties.isDense, feature.properties.squareMtePerCapitaOms, colorblindMode),
+              fillOpacity: 0.4,
+            });
+        }
        
 
       };
