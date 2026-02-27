@@ -180,7 +180,7 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 	@Query(nativeQuery = true, 
 		   value = "SELECT pj.* FROM parc_jardin pj "
 		   		+ " WHERE date_part('year',COALESCE(pj.date_debut, TO_DATE('20100101','YYYYMMDD'))) <=:annee "
-		   		+ "   AND :annee <= date_part('year',COALESCE(pj.date_fin, TO_DATE('20991231','YYYYMMDD'))) "
+		   		+ "   AND :annee <= date_part('year',COALESCE(pj.date_fin, TO_DATE('21991231','YYYYMMDD'))) "
 		   		+ "   AND ST_Intersects(pj.contour, :searchArea) OR ST_Intersects(pj.coordonnee, :searchArea)")
 	List<ParcEtJardin> findByAreaAndYear(@Param("annee")Integer annee, @Param("searchArea")Polygon searchArea);
 

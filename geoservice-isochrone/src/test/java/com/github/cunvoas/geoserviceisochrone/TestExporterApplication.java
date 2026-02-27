@@ -151,7 +151,7 @@ class TestExporterApplication {
 	}
 
 	@Test
-	@Disabled
+//	@Disabled
 	@Order(22)
 	void writeGeoJsonParkOutline() {
 		try {

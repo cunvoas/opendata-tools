@@ -22,4 +22,7 @@ public interface ProposalComputationStrategy {
                                Double minSquareMeterPerCapita,
                                Double recoSquareMeterPerCapita,
                                Integer urbanDistance);
+    
+    
+    
 }

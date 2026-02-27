@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
-<head th:insert="~{fragments/fragment-head :: head}"></head>
+<head th:replace="~{fragments/fragment-head :: head(#{consultMap.title})}"></head>
 <body class="sb-nav-fixed">
 <div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
 <div id="layoutSidenav">
@@ -256,15 +256,16 @@ const dataCarre = L.layerGroup();
 const dataIris = L.layerGroup();
 const dataCadastre = L.layerGroup();
 const dataVegetation = L.layerGroup();
-const dataProposalParcs = L.layerGroup();
+//const dataProposalParcs = L.layerGroup();
 const dataLayers = {
   'Parcs': dataParcs,
   'Carrés': dataCarre,
   'IRIS': dataIris,
   'Cadastre': dataCadastre,
-  'Végétation IGN': dataVegetation,
-  'Proposition de parcs': dataProposalParcs
+  'Végétation IGN': dataVegetation
 };
+//,   'Proposition de parcs': dataProposalParcs
+
 
 console.log('[ConsultMap] Initialisation carte...');
 const map = L.map('mapConsult', { zoom: 15, layers: [layerOSM, dataParcs] }).setView(center);
@@ -380,7 +381,7 @@ function  getSquareColor(zoneDense, densite, colorblindMode = false) {
 
 // Endpoints Thymeleaf (remplacés serveur)
 const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
-const endpointParkProposal = /*[[@{/map/park/proposal}]]*/ '';
+// const endpointParkProposal = /*[[@{/map/park/proposal}]]*/ '';
 const endpointCarre = /*[[@{/map/insee/carre200m/area}]]*/ '';
 const endpointIris = /*[[@{/map/insee/iris/area}]]*/ '';
 const endpointCadastre = /*[[@{/mvc/geojson/cadastreByCorner}]]*/ '';
@@ -418,7 +419,7 @@ function getParkStyle(feature) {
 const overlayConfig = {
   'Parcs': { endpoint: endpointParcs, style: { color:'#1e4d1c', fillColor:'#3aa637', weight:1, fillOpacity:0.35 } },
   'Carrés': { endpoint: endpointCarre, style: { color:'#002a99', fillColor:'#3385ff', weight:1, fillOpacity:0.25 } },
-  'Proposition de parcs': { endpoint: endpointParkProposal, style: { color:'#d4691e', fillColor:'#ff9900', weight:2, fillOpacity:0.3 }, useCircles: true },
+//  'Proposition de parcs': { endpoint: endpointParkProposal, style: { color:'#d4691e', fillColor:'#ff9900', weight:2, fillOpacity:0.3 }, useCircles: true },
   'IRIS': { endpoint: endpointIris, style: { color:'#b85f00', fillColor:'#ff9d33', weight:1, fillOpacity:0.25 } },
   // Cadastre dynamique: rechargé à chaque mouvement avec cache et debounce
   'Cadastre': { endpoint: endpointCadastre, style: { color:'#7a7c00', fillColor:'#d6d900', weight:1, fillOpacity:0.18 } },

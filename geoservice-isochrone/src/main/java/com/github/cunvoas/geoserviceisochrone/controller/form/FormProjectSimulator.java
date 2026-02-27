@@ -21,7 +21,7 @@ public class FormProjectSimulator extends AbstractFormLocate {
     private BigDecimal floorSurface;
     
     private BigDecimal densityPerAccommodation=new BigDecimal("2.16");
-    private BigDecimal avgAreaAccommodation=new BigDecimal("68");
+    private BigDecimal avgAreaAccommodation=new BigDecimal("78");
     
     private BigDecimal surfaceArea;
     private BigDecimal surfacePark;

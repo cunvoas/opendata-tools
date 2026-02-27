@@ -57,12 +57,23 @@ function initializeFromUrl() {
 initializeFromUrl();
 
 
+/*
 app.use(VueMatomo, {
     // Configure your matomo server and site by providing
     host: 'https://autmel.piwik.pro',
     siteId: 'f948682b-11fe-4d25-ab02-fcfe606a7397'
 });
+*/
 
+app.use(VueMatomo, {
+    // Configure your matomo server and site by providing
+    host: 'https://asso.autmel.ovh/audience',
+    siteId: '1',
+    // Send tracking data via POST to avoid URL length limits
+    preInitActions: [
+        ['setRequestMethod', 'POST']
+    ]
+});
 
 app.use(router);
 

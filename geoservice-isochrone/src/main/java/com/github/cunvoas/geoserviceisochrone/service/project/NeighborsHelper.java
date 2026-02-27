@@ -12,7 +12,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyS
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ProjectSimulatorHelper {
+public class NeighborsHelper {
 
 	/**
 	 * Trouve les N carrés voisins d'un carré donné selon la sensité.

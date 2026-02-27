@@ -114,6 +114,30 @@
                 <br />
                 Les bénévoles des associations et les utilisateurs de l'application pour la saisie des données.
             </p>
+
+            <h2 class="font-bold underline my-6">Thésaurus</h2>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                    <h3 class="text-lg font-semibold">Isochrone</h3>
+                    <p class="mt-2 text-sm leading-relaxed">Surface représentant la zone atteignable à pied en un temps donné depuis une entrée de parc. Nous utilisons 5 minutes en zone urbaine et 20 minutes en zone rurale.</p>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                    <h3 class="text-lg font-semibold">m² / habitant</h3>
+                    <p class="mt-2 text-sm leading-relaxed">Indicateur de densité d'espaces verts publics. Il correspond au ratio entre la surface totale des parcs accessibles et la population couverte.</p>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                    <h3 class="text-lg font-semibold">Carreau INSEE</h3>
+                    <p class="mt-2 text-sm leading-relaxed">Maille de référence de 200m × 200m utilisée pour agréger les données socio-démographiques locales et évaluer la population couverte.</p>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                    <h3 class="text-lg font-semibold">Espaces verts publics de proximité</h3>
+                    <p class="mt-2 text-sm leading-relaxed">Espaces accessibles librement (parcs, jardins, squares) à distance piétonne. Les cimetières ou surfaces minérales ne sont pas comptés dans la surface accessible.</p>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                    <h3 class="text-lg font-semibold">Zone urbaine / périurbaine</h3>
+                    <p class="mt-2 text-sm leading-relaxed">Catégorisation appliquée pour ajuster les seuils OMS : 10 m²/habitant en zone urbaine et 25 m²/habitant en zone périurbaine.</p>
+                </div>
+            </div>
         </div>
     </div>
 </template>
