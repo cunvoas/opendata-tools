@@ -1,7 +1,7 @@
 #FROM gcr.io/distroless/java21-debian12
 
 
-FROM eclipse-temurin:21.0.9_10-jdk-alpine-3.23
+FROM eclipse-temurin:21.0.10_7-jdk-alpine-3.23
 RUN apk update
 RUN apk --no-cache add curl
 
