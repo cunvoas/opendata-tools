@@ -1,27 +1,17 @@
-#FROM gcr.io/distroless/java21-debian12
-
-
-#FROM eclipse-temurin:21.0.10_7-jdk-alpine-3.23
 FROM eclipse-temurin:21.0.10_7-jdk-alpine-3.22
-RUN apk update
-RUN apk --no-cache add curl
+RUN apk --no-cache add curl \
+    && addgroup -S app \
+    && adduser -S -G app app
 
-#FROM openjdk:25-rc-jdk-slim-trixie
-#RUN apt-get update && apt-get install -y curl
-#RUN apt-get upgrade -y
+WORKDIR /app
 
-
-
-COPY geoservice-isochrone-*.?ar app.jar 
-COPY secret.env .env
+COPY --chown=app:app geoservice-isochrone-*.?ar app.jar
+COPY --chown=app:app secret.env .env
 
 
-#RUN addgroup --system --gid 1001 appuser 
-#RUN adduser --system --uid 1001 --gid 1001 appuser
-#USER 1001
+USER app
 
 
 #ENTRYPOINT ["java", "-Dcom.sun.management.jmxremote","-Dcom.sun.management.jmxremote.port=9010","-Dcom.sun.management.jmxremote.rmi.port=9010","-Dcom.sun.management.jmxremote.local.only=true","-Dcom.sun.management.jmxremote.authenticate=false","-Dcom.sun.management.jmxremote.ssl=false","-Dspring.profiles.active=prod,pi", "-jar", "app.jar"]
 
 ENTRYPOINT ["java", "-Xms2G", "-Xmx2G", "-Dspring.profiles.active=pi_nuc,metrics", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:+UseG1GC", "-jar", "app.jar"]
-
