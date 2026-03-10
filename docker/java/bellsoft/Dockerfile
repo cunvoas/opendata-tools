@@ -1,7 +1,6 @@
 FROM bellsoft/liberica-openjdk-alpine-musl:25-cds
 
-RUN apk update
-RUN apk --no-cache add curl \
+RUN apk update && apk --no-cache add curl \
     && addgroup -S app \
     && adduser -S -G app app
 

@@ -1,7 +1,6 @@
 FROM eclipse-temurin:21.0.10_7-jre-alpine-3.22
 
-RUN apk update
-RUN apk --no-cache add curl \
+RUN apk update && apk --no-cache add curl \
     && addgroup -S app \
     && adduser -S -G app app
 
