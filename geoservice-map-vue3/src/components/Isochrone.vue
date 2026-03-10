@@ -64,6 +64,8 @@
         :visible="tileProvider.visible"
         :url="tileProvider.url"
         :attribution="tileProvider.attribution"
+        :tms="tileProvider.tms"
+        :tile-size="tileProvider.tileSize"
         layer-type="base"
       />
 
@@ -436,6 +438,22 @@ export default {
           maxZoom: 18,
           minZoom: 10,
         },
+        // Global Building Atlas TMS server is currently unavailable
+        // The server at tubvsig-so2sat-vm1.srv.mwn.de experiences periodic downtime due to high traffic
+        // See: https://github.com/zhu-xlab/GlobalBuildingAtlas/blob/main/README.md#faq
+        // TODO: Re-enable when server is stable or use alternative tile service
+        /*
+        {
+          name: "Global Building Atlas",
+          visible: false,
+          url: "https://tubvsig-so2sat-vm1.srv.mwn.de/geoserver/gwc/service/tms/1.0.0/global3D:volume_480m@EPSG:900913@png/{z}/{x}/{y}.png",
+          attribution: '&copy; <a href="https://github.com/zhu-xlab/GlobalBuildingAtlas" target="_blank">GlobalBuildingAtlas</a> (Volume Preview)',
+          tms: true,
+          tileSize: 256,
+          maxZoom: 19,
+          minZoom: 17,
+        },
+        */
       ],
       addressIcon: L.icon({
         iconUrl: '../assets/location.png', // Replace with the path to your address icon
