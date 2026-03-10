@@ -1,0 +1,26 @@
+services:
+  nginx:
+    container_name: 'reverse-proxy'
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Mount shared certs (read-only for nginx) - from certbot container volume
+      - letsencrypt_certs:/etc/nginx/certs:ro
+      # Optional: mount passwd file if using basic auth
+      # - ./nginx_passwd:/etc/nginx/passwd:ro
+    networks:
+      - reverse_proxy_net
+    restart: unless-stopped
+
+volumes:
+  letsencrypt_certs:
+    # Shared volume for Let's Encrypt certificates (managed by certbot)
+    driver: local
+
+networks:
+  reverse_proxy_net:
+    driver: bridge

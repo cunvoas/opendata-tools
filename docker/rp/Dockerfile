@@ -5,18 +5,18 @@ RUN apk --no-cache add curl
 
 COPY ./nginx.conf /etc/nginx/
 COPY ./nginx_conf/* /etc/nginx/conf.d/
-
-USER 0
-RUN mkdir -p /etc/nginx/passwd/
-USER $CONTAINER_USER_ID
-COPY ./nginx_passwd/* /etc/nginx/passwd/
-
 COPY ./default/* /etc/nginx/html/
 COPY ./default/img/* /etc/nginx/html/img/
 
-# Set non-root user
-#RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-#USER appuser
+# Prepare mount points for runtime cert/passwd volumes (managed by certbot container)
+# These are placeholders; actual content comes from mounted volumes at runtime.
+USER 0
+RUN mkdir -p /etc/nginx/certs /etc/nginx/passwd \
+    && chown -R nginx:nginx /etc/nginx/certs /etc/nginx/passwd \
+    && chmod 750 /etc/nginx/certs /etc/nginx/passwd
+
+# Run as non-root nginx user
+USER nginx
 
 EXPOSE 80
 EXPOSE 443
