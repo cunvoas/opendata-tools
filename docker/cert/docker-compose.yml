@@ -1,0 +1,32 @@
+services:
+  certbot:
+    container_name: 'certbot'
+    image: certbot/certbot:latest
+    command: >
+      sh -c "certbot certonly --webroot -w /tmp/acme_challenge 
+      -d my.web.site --text --agree-tos --email=my.email@my.web.site 
+      --rsa-key-size 2048 --verbose --keep-until-expiring 
+      --preferred-challenges=dns,http && sleep infinity"
+    entrypoint: ""
+    volumes:
+      # Shared cert volume: certbot writes here, nginx reads from here
+      - letsencrypt_certs:/etc/letsencrypt:rw
+      # Webroot for ACME challenges
+      - acme_challenge:/tmp/acme_challenge:rw
+    environment:
+      - TERM=xterm
+    networks:
+      - reverse_proxy_net
+    restart: unless-stopped
+
+volumes:
+  letsencrypt_certs:
+    # Shared volume for Let's Encrypt certificates
+    driver: local
+  acme_challenge:
+    # Temporary volume for ACME challenge files
+    driver: local
+
+networks:
+  reverse_proxy_net:
+    driver: bridge
