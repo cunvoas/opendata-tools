@@ -443,9 +443,11 @@
                           <td class="text-end" th:text="${work.accessingPopulation != null ? #numbers.formatDecimal(work.accessingPopulation, 0, 0) : '-'}">-</td>
                           <td class="text-end" th:text="${work.accessingSurface != null ? (work.accessingSurface > 10000 ? #numbers.formatDecimal(work.accessingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.accessingSurface, 0, 0) + ' m²') : '-'}">-</td>
                           <td class="text-end" th:text="${work.missingSurface != null ? (work.missingSurface > 10000 ? #numbers.formatDecimal(work.missingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.missingSurface, 0, 0) + ' m²') : '-'}">-</td>
-                          <td class="text-end" th:text="${work.surfacePerCapita != null ? #numbers.formatDecimal(work.surfacePerCapita, 0, 2) + ' m²' : '-'}" th:classappend="${work.surfacePerCapita != null ? (work.surfacePerCapita < 10 ? 'below-oms-threshold' : 'above-oms-threshold') : ''}">-</td>
+                          <td class="text-end" th:text="${work.surfacePerCapita != null ? #numbers.formatDecimal(work.surfacePerCapita, 0, 2) + ' m²' : '-'}"
+                              th:attr="data-density=${work.surfacePerCapita}">-</td>
                           <td class="text-end" th:text="${work.newSurface != null ? (work.newSurface > 10000 ? #numbers.formatDecimal(work.newSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.newSurface, 0, 0) + ' m²') : '-'}">-</td>
-                          <td class="text-end" th:text="${work.newSurfacePerCapita != null ? #numbers.formatDecimal(work.newSurfacePerCapita, 0, 2) + ' m²' : '-'}" th:classappend="${work.newSurfacePerCapita != null ? (work.newSurfacePerCapita < 10 ? 'below-oms-threshold' : 'above-oms-threshold') : ''}">-</td>
+                          <td class="text-end" th:text="${work.newSurfacePerCapita != null ? #numbers.formatDecimal(work.newSurfacePerCapita, 0, 2) + ' m²' : '-'}"
+                              th:attr="data-density=${work.newSurfacePerCapita}">-</td>
                         </tr>
                       </tbody>
                     </table>
@@ -465,12 +467,19 @@
 <script th:src="@{/mvc/static/js/scripts.js}"></script>
 
 <style>
-  .below-oms-threshold {
-    background-color: #ffcccc !important;
-  }
-  .above-oms-threshold {
-    background-color: #ccffcc !important;
-  }
+  /* Niveaux de densité surface/habitant - palette normale (bleu → vert) */
+  .density-level-1 { background-color: #b0c4f0 !important; color: #000 !important; } /* Très faible */
+  .density-level-2 { background-color: #d0d8f5 !important; color: #000 !important; } /* Faible */
+  .density-level-3 { background-color: #e8ebfa !important; color: #000 !important; } /* Moyen */
+  .density-level-4 { background-color: #c8e6a0 !important; color: #000 !important; } /* Bon */
+  .density-level-5 { background-color: #a0e060 !important; color: #000 !important; } /* Excellent */
+
+  /* Niveaux de densité surface/habitant - palette daltonien (orange → bleu, ColorBrewer2) */
+  .density-level-1-cb { background-color: #f4a582 !important; color: #000 !important; } /* Très faible */
+  .density-level-2-cb { background-color: #fddbc7 !important; color: #000 !important; } /* Faible */
+  .density-level-3-cb { background-color: #f7f7f7 !important; color: #000 !important; } /* Moyen */
+  .density-level-4-cb { background-color: #d1e5f0 !important; color: #000 !important; } /* Bon */
+  .density-level-5-cb { background-color: #4393c3 !important; color: #fff !important; } /* Excellent */
 
   .print-button-fixed {
     position: fixed;
@@ -594,6 +603,146 @@
 
 <script th:inline="javascript">
 
+
+//needs to be here for map coloring
+let colorblindMode = false; // Mode daltonien global
+
+// isDense du résultat de simulation (null si pas encore simulé)
+/*<![CDATA[*/
+let zoneDenseResult = /*[[${simulationResult?.isDense}]]*/ null;
+/*]]>*/
+
+/**
+* Détermine la couleur d'un carré en fonction de sa densité et du mode daltonien
+* @param {boolean} zoneDense - Indique si le carré est en zone dense
+* @param {number|string|null} densite - La densité (m²/hab) du carré
+* @param {boolean} [colorblindMode=false] - Active le mode daltonien avec palette adaptée
+* @returns {string} Code couleur hexadécimal
+*/
+function  getSquareColor(zoneDense, densite, colorblindMode = false) {
+// Gris neutre pour valeurs non calculées
+let color = '#959595';
+
+if (densite===null || densite==='N/A' || densite==='' ) {
+ return color;
+}
+densite = (""+densite).replace(",", ".");
+
+// Définition des deux palettes de couleurs
+let level1, level2, level3, level4, level5;
+
+if (colorblindMode) {
+ // Palette adaptée aux daltoniens (évite confusion rouge/vert et bleu/jaune)
+ // Utilise une progression du orange (mauvais) au bleu foncé (bon)
+ // ColorBrewer2 compatible avec tous types de daltonisme
+ level1 = '#d73027';  // Rouge-orangé foncé (très faible)
+ level2 = '#fc8d59';  // Orange clair (faible)
+ level3 = '#fee090';  // Jaune-orangé pâle (moyen-faible)
+ level4 = '#4575b4';  // Bleu foncé (bon)
+ level5 = '#91bfdb';  // Bleu clair (très bon)
+} else {
+ // Palette classique (bleu → vert)
+ level1 = '#0000e8';  // Bleu foncé (très faible)
+ level2 = '#6060e8';  // Bleu moyen (faible)
+ level3 = '#b0b0e8';  // Bleu clair (moyen-faible)
+ level4 = '#578817';  // Vert foncé (bon)
+ level5 = '#57ee17';  // Vert clair (très bon)
+}
+
+const densiteMinDense=10;
+const densiteMaxDense=12;
+const densiteMinNoDense=25;
+const densiteMaxNoDense=45;
+
+// default == dense
+let p25 = 3;
+let p50 = 6;
+let densiteMin = densiteMinDense;
+let densiteMax = densiteMaxDense;
+if (zoneDense===false) {
+   densiteMin = densiteMinNoDense;
+   densiteMax = densiteMaxNoDense;
+   
+   p25 = 8;
+   p50 = 17;
+}
+
+
+if (zoneDense===false || zoneDense===true) {
+   if (densite>=densiteMax) {
+       color=level5;  // Excellent
+   } else if (densite>=densiteMin) {
+       color=level4;  // Bon
+   } else {
+     
+     color = level3;  // Moyen
+     if (densite < p25) {
+       color = level1;  // Très faible
+     } else if (densite < p50) {
+       color = level2;  // Faible
+     }
+   }
+}
+return color;
+}
+
+/**
+ * Détermine la classe CSS de densité surface/habitant pour les cellules de tableau.
+ * Utilise les mêmes seuils que getSquareColor, alignés par type de zone (dense / non dense).
+ * @param {number|string|null} densite - La densité (m²/hab)
+ * @param {boolean|null} zoneDense - true = zone dense, false = zone non dense, null = seuils OMS bruts
+ * @param {boolean} [colorblindMode=false] - Active les classes avec palette daltonien (-cb)
+ * @returns {string} Classe CSS 'density-level-N' ou 'density-level-N-cb' (N de 1 à 5), ou '' si N/A
+ */
+function getSurfacePerCapitaClass(densite, zoneDense, colorblindMode = false) {
+  if (densite === null || densite === 'N/A' || densite === '') return '';
+  const val = parseFloat(("" + densite).replace(",", "."));
+  if (isNaN(val)) return '';
+
+  const suffix = colorblindMode ? '-cb' : '';
+
+  // Seuils selon le type de zone (identiques à getSquareColor)
+  let p25, p50, densiteMin, densiteMax;
+  if (zoneDense === false) {
+    // Zone non dense
+    p25 = 8;   p50 = 17;
+    densiteMin = 25; densiteMax = 45;
+  } else if (zoneDense === true) {
+    // Zone dense
+    p25 = 3;   p50 = 6;
+    densiteMin = 10; densiteMax = 12;
+  } else {
+    // Seuil OMS générique : 9 m²/hab (recommandation minimale)
+    p25 = 3;   p50 = 6;
+    densiteMin = 9; densiteMax = 12;
+  }
+
+  if (val >= densiteMax)    return 'density-level-5' + suffix; // Excellent
+  if (val >= densiteMin)    return 'density-level-4' + suffix; // Bon
+  if (val >= p50)           return 'density-level-3' + suffix; // Moyen
+  if (val >= p25)           return 'density-level-2' + suffix; // Faible
+  return                           'density-level-1' + suffix; // Très faible
+}
+
+/**
+ * Applique les classes de densité surface/habitant sur toutes les cellules
+ * du tableau projectWorkTable portant l'attribut data-density.
+ * Doit être appelé après le rendu et à chaque changement de colorblindMode ou zoneDense.
+ */
+function applyDensityClasses() {
+  const allClasses = [
+    'density-level-1', 'density-level-2', 'density-level-3', 'density-level-4', 'density-level-5',
+    'density-level-1-cb', 'density-level-2-cb', 'density-level-3-cb', 'density-level-4-cb', 'density-level-5-cb'
+  ];
+  document.querySelectorAll('[data-density]').forEach(function(td) {
+    const val = td.getAttribute('data-density');
+    allClasses.forEach(c => td.classList.remove(c));
+    const cls = getSurfacePerCapitaClass(val, zoneDenseResult, colorblindMode);
+    if (cls) td.classList.add(cls);
+  });
+}
+
+
 // ----------- CONFIGURATION CARTE -----------
 const mapMinZoom = 10;
 const mapMaxZoom = 18;
@@ -699,22 +848,96 @@ L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
 
 // Légende des états de parcs (couleurs alignées avec consultMap)
 const legend = L.control({ position: 'bottomright' });
+
+function buildLegendContent() {
+  const cb = colorblindMode;
+  // Couleurs carreaux (identiques à getSquareColor)
+  const c1 = cb ? '#d73027' : '#0000e8';
+  const c2 = cb ? '#fc8d59' : '#6060e8';
+  const c3 = cb ? '#fee090' : '#b0b0e8';
+  const c4 = cb ? '#4575b4' : '#578817';
+  const c5 = cb ? '#91bfdb' : '#57ee17';
+
+  // Seuils selon le type de zone
+  let l1, l2, l3, l4, l5;
+  if (zoneDenseResult === true) {
+    l1 = 'Très faible (< 3 m²/hab)';
+    l2 = 'Faible (3–6 m²/hab)';
+    l3 = 'Moyen (6–10 m²/hab)';
+    l4 = 'Bon (10–12 m²/hab)';
+    l5 = 'Excellent (≥ 12 m²/hab)';
+  } else if (zoneDenseResult === false) {
+    l1 = 'Très faible (< 8 m²/hab)';
+    l2 = 'Faible (8–17 m²/hab)';
+    l3 = 'Moyen (17–25 m²/hab)';
+    l4 = 'Bon (25–45 m²/hab)';
+    l5 = 'Excellent (≥ 45 m²/hab)';
+  } else {
+    l1 = 'Très faible (< 3 m²/hab)';
+    l2 = 'Faible (3–6 m²/hab)';
+    l3 = 'Moyen (6–9 m²/hab)';
+    l4 = 'Bon (9–12 m²/hab)';
+    l5 = 'Excellent (≥ 12 m²/hab)';
+  }
+
+  const sq = (color) => `<i style="background:${color};width:18px;height:18px;display:inline-block;margin-right:6px;border:1px solid #aaa;"></i>`;
+  const labels = [];
+  labels.push(`${sq('#3aa637')} Parc inclus OMS`);
+  labels.push(`${sq('#e96020')} Parc exclus OMS`);
+  labels.push(`${sq('#DC20E9')} Parc futur ou détruit`);
+  labels.push('<hr style="margin:4px 0;">');
+  labels.push('<b>Carreaux — surf./hab.</b>');
+  labels.push(`${sq(c5)} ${l5}`);
+  labels.push(`${sq(c4)} ${l4}`);
+  labels.push(`${sq(c3)} ${l3}`);
+  labels.push(`${sq(c2)} ${l2}`);
+  labels.push(`${sq(c1)} ${l1}`);
+  return labels.join('<br>');
+}
+
 legend.onAdd = function () {
   const div = L.DomUtil.create('div', 'info legend');
   div.style.background = 'white';
   div.style.padding = '8px';
   div.style.borderRadius = '4px';
   div.style.boxShadow = '0 0 8px rgba(0,0,0,0.2)';
-  const labels = [];
-  labels.push(`<i style="background:#3aa637;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc inclus OMS`);
-  labels.push(`<i style="background:#e96020;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc exclus OMS`);
-  labels.push(`<i style="background:#DC20E9;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc futur ou détruit`);
-  labels.push(`<i style="background:#66ff66;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Carreaux ≥ 10 m²/hab`);
-  labels.push(`<i style="background:#ff6666;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Carreaux < 10 m²/hab`);
-  div.innerHTML = labels.join('<br>');
+  div.innerHTML = buildLegendContent();
+
+  // Toggle daltonien dans la légende
+  div.innerHTML += '<div style="margin-top:6px;border-top:1px solid #ddd;padding-top:4px;">'
+    + '<label style="font-size:0.85em;cursor:pointer;">'
+    + '<input type="checkbox" id="colorblindToggle" ' + (colorblindMode ? 'checked' : '') + '> Mode daltonien'
+    + '</label></div>';
+
+  div.querySelector('#colorblindToggle').addEventListener('change', function () {
+    colorblindMode = this.checked;
+    console.log('[Simulateur] Mode daltonien:', colorblindMode);
+    refreshDensityDisplay();
+  });
+
   return div;
 };
 legend.addTo(map);
+
+// Rafraîchit la légende et les couleurs du tableau si le mode daltonien change
+function refreshDensityDisplay() {
+  // Mettre à jour le contenu de la légende sans la recréer (on conserve le div existant)
+  const legendDiv = document.querySelector('.info.legend');
+  if (legendDiv) {
+    legendDiv.innerHTML = buildLegendContent()
+      + '<div style="margin-top:6px;border-top:1px solid #ddd;padding-top:4px;">'
+      + '<label style="font-size:0.85em;cursor:pointer;">'
+      + '<input type="checkbox" id="colorblindToggle" ' + (colorblindMode ? 'checked' : '') + '> Mode daltonien'
+      + '</label></div>';
+    legendDiv.querySelector('#colorblindToggle').addEventListener('change', function () {
+      colorblindMode = this.checked;
+      console.log('[Simulateur] Mode daltonien:', colorblindMode);
+      refreshDensityDisplay();
+    });
+  }
+  // Recolorie le tableau
+  applyDensityClasses();
+}
 
 // ----------- LEAFLET-GEOMAN DRAWING -----------
 // Configuration de leaflet-geoman pour le dessin
@@ -1274,6 +1497,12 @@ function sortProjectWorkTable(column) {
   
   console.log('[Simulateur] Tableau trié par', column, projectWorkSortAscending ? 'ASC' : 'DESC');
 }
+
+// ----------- INITIALISATION COULEURS TABLEAU DENSITÉ -----------
+// Applique les classes CSS au chargement (Thymeleaf a rendu le DOM, JS colorie)
+document.addEventListener('DOMContentLoaded', function () {
+  applyDensityClasses();
+});
 
 // ----------- SUPPRESSION DE PROJET -----------
 
