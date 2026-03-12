@@ -626,7 +626,7 @@ let color = '#959595';
 if (densite===null || densite==='N/A' || densite==='' ) {
  return color;
 }
-densite = (""+densite).replace(",", ".");
+densite = parseFloat((""+densite).replace(",", "."));
 
 // Définition des deux palettes de couleurs
 let level1, level2, level3, level4, level5;
@@ -653,6 +653,11 @@ const densiteMinDense=10;
 const densiteMaxDense=12;
 const densiteMinNoDense=25;
 const densiteMaxNoDense=45;
+
+// Normalisation : null/undefined → zone dense par défaut
+if (zoneDense===null || zoneDense===undefined) {
+   zoneDense = true;
+}
 
 // default == dense
 let p25 = 3;
@@ -937,6 +942,8 @@ function refreshDensityDisplay() {
   }
   // Recolorie le tableau
   applyDensityClasses();
+  // Recolorie les carrés du layer projectWork
+  refreshProjectWorkColors();
 }
 
 // ----------- LEAFLET-GEOMAN DRAWING -----------
@@ -1171,13 +1178,7 @@ function loadProjectWork() {
           let borderColor = '#666666';
           
           if (feature.properties && feature.properties.newSurfacePerCapita !== null && feature.properties.newSurfacePerCapita !== undefined) {
-            if (feature.properties.newSurfacePerCapita < 10) {
-              fillColor = '#ff6666';
-              borderColor = '#cc0000';
-            } else {
-              fillColor = '#66ff66';
-              borderColor = '#00cc00';
-            }
+            fillColor = getSquareColor(zoneDenseResult, feature.properties.newSurfacePerCapita, colorblindMode);
           }
           
           return {
@@ -1219,6 +1220,22 @@ function loadProjectWork() {
     })
     .catch(err => console.error('[Simulateur][dataProjectWork] Erreur:', err));
 
+}
+
+// Recolorie les carrés du layer dataProjectWork selon colorblindMode courant
+function refreshProjectWorkColors() {
+  dataProjectWork.eachLayer(function(geoJsonLayer) {
+    if (geoJsonLayer.eachLayer) {
+      geoJsonLayer.eachLayer(function(layer) {
+        const props = layer.feature && layer.feature.properties;
+        if (props && props.newSurfacePerCapita !== null && props.newSurfacePerCapita !== undefined) {
+          layer.setStyle({
+            fillColor: getSquareColor(zoneDenseResult, props.newSurfacePerCapita, colorblindMode)
+          });
+        }
+      });
+    }
+  });
 }
 
 // ==========================================
