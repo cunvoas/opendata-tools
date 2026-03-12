@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/java25-debian13:latest
+FROM gcr.io/distroless/java25-debian13
 
 WORKDIR /app
 
