@@ -130,7 +130,7 @@ public class MailjetSender {
 	}
 	
 	/**
-	 * tranform binary file to base64.
+	 * transform binary file to base64.
 	 * @param file to encode
 	 * @return base64 file content
 	 * @throws FileNotFoundException

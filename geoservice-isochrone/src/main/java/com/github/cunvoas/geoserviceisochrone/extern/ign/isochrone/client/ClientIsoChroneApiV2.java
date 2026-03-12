@@ -34,6 +34,7 @@ import okhttp3.Response;
  * <ul>
  *   <li>Documentation API isochrone IGN v2 :
  *     <a href="https://geoservices.ign.fr/documentation/services/services-geoplateforme/itineraire#72786">https://geoservices.ign.fr/documentation/services/services-geoplateforme/itineraire#72786</a>
+ *     <a href="https://geoservices.ign.fr/documentation/services/services-geoplateforme/isochrone">https://geoservices.ign.fr/documentation/services/services-geoplateforme/isochrone</a>
  *   </li>
  *   <li>Exemple d'utilisation :
  *     <a href="https://geoservices.ign.fr/documentation/services/utilisation-web/exemples/bibiotheque-dacces-calcul-disochrones-et">https://geoservices.ign.fr/documentation/services/utilisation-web/exemples/bibiotheque-dacces-calcul-disochrones-et</a>

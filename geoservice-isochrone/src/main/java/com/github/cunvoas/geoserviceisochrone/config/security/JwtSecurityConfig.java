@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
  * Configuration de sécurité pour les API REST avec JWT.
  * Cette configuration s'applique spécifiquement aux endpoints /api/** pour les applications mobiles.
  */
-@Configuration
+//@Configuration
 @RequiredArgsConstructor
 public class JwtSecurityConfig {
 
