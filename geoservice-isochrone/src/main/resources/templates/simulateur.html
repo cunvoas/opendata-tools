@@ -226,7 +226,12 @@
             <div class="col-12 col-lg-6">
               <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                  <span>Paramètres du projet</span>
+                  <span class="d-flex align-items-center gap-2">
+                    <span>Paramètres du projet</span>
+                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#formComputeHelpModal" aria-label="Aide sur le formulaire">
+                      <i class="fas fa-question-circle"></i>
+                    </button>
+                  </span>
                   <button type="button" class="btn btn-sm btn-outline-primary" onclick="clearProjectForm()">
                     <i class="fas fa-plus"></i> Nouveau
                   </button>
@@ -942,8 +947,6 @@ function refreshDensityDisplay() {
   }
   // Recolorie le tableau
   applyDensityClasses();
-  // Recolorie les carrés du layer projectWork
-  refreshProjectWorkColors();
 }
 
 // ----------- LEAFLET-GEOMAN DRAWING -----------
@@ -1533,6 +1536,45 @@ function confirmDelete(projectId, projectName) {
 
 
 </script>
+
+<!-- Modal d'aide pour le formulaire de simulation -->
+<div class="modal fade" id="formComputeHelpModal" tabindex="-1" aria-labelledby="formComputeHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="formComputeHelpModalLabel">Aide sur les paramètres de simulation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <div class="list-group list-group-flush">
+          <div class="list-group-item">
+            <strong>Densité par logement</strong> : nombre moyen d'habitants par logement. Utile pour estimer la population à partir du nombre de logements. Source INSEE
+            <a href="https://www.insee.fr/fr/statistiques/2381486" target="_blank" rel="noopener noreferrer">(voir données)</a>.
+          </div>
+          <div class="list-group-item">
+            <strong>Surface moy. logement (m²)</strong> : surface moyenne d'un logement dans la zone étudiée. Source ADEME
+            <a href="https://batizoom.ademe.fr/indicateurs/surface-moyenne-par-type-de-logement" target="_blank" rel="noopener noreferrer">(voir données)</a>.
+          </div>
+          <div class="list-group-item">
+            <strong>Surface plancher (m²)</strong> : surface totale de plancher créée par le projet, cela correspond à la surface de tous les étages.
+          </div>
+          <div class="list-group-item">
+            <strong>Population estimée</strong> : population estimée qui arrivera sur la zone du projet, calculée ou saisie manuellement selon les besoins.
+          </div>
+          <div class="list-group-item">
+            <strong>Surface de la zone (m²)</strong> : emprise totale du périmètre du projet (polygone dessiné ou valeur saisie).
+          </div>
+          <div class="list-group-item">
+            <strong>Surface parc prévue (m²)</strong> : surface dédiée aux parcs, espaces verts publics au sein du périmètre (Attention certains projets intègré déjà les espaces vers existants, il faudra alors les soustraires).
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

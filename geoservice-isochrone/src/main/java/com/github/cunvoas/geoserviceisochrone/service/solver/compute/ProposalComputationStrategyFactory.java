@@ -13,9 +13,10 @@ public final class ProposalComputationStrategyFactory {
     public static List<ProposalComputationTypeAlgo> getAvailableTypes() {
         return List.of(
             ProposalComputationTypeAlgo.ITERATIVE_1,
-            ProposalComputationTypeAlgo.SOLVER_1,
-            ProposalComputationTypeAlgo.SOLVER_2,
-            ProposalComputationTypeAlgo.SOLVER_3
+            ProposalComputationTypeAlgo.PPC_1,
+            ProposalComputationTypeAlgo.PPC_2,
+            ProposalComputationTypeAlgo.PPC_3,
+            ProposalComputationTypeAlgo.CHI2_4
         );
     }
     
@@ -23,12 +24,14 @@ public final class ProposalComputationStrategyFactory {
         switch (type) {
             case ITERATIVE_1:
                 return new IterativeComputationDeficitStrategy(minParkSurface);
-            case SOLVER_1:
+            case PPC_1:
                 return new Solver1ComputationStrategy();
-            case SOLVER_2:
+            case PPC_2:
                 return new Solver2ComputationStrategy();
-            case SOLVER_3:
+            case PPC_3:
                 return new Solver3ComputationStrategy();
+            case CHI2_4:
+                return new LeastSquaresStrategy();
             default:
                 throw new IllegalArgumentException("Unknown computation strategy type: " + type);
         }

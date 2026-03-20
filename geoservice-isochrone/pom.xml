@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.7</version><!-- 3.5.5 -->
+		<version>3.5.11</version><!-- 3.5.5 -->
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.github.cunvoas</groupId>
@@ -22,8 +22,8 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		
-		<postgresql.version>42.7.9</postgresql.version>
-		<hibernate.version>6.6.40.Final</hibernate.version>
+		<postgresql.version>42.7.10</postgresql.version>
+		<hibernate.version>6.6.44.Final</hibernate.version>
     </properties>
 	
 
@@ -73,16 +73,23 @@
 			<artifactId>jackson-datatype-jts</artifactId>
 			<version>2.21.0</version>
 		</dependency>
-        <dependency>
+		
+<!--        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.21.1</version>
-        </dependency>
+        </dependency>-->
 	
 		<dependency>
 		 <groupId>de.grundid.opendatalab</groupId>
 		 <artifactId>geojson-jackson</artifactId>
 		 <version>3.0</version>
+		 <exclusions>
+		 	<exclusion>
+		 		<groupId>tools.jackson.core</groupId>
+		 		<artifactId>jackson-databind</artifactId>
+		 	</exclusion>
+		 </exclusions>
 		</dependency>
 				
 		<!-- spring -->
@@ -209,7 +216,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+        </dependency>
+        
 		<!-- cache for ban system -->
 		<dependency>
 			<groupId>com.google.guava</groupId>

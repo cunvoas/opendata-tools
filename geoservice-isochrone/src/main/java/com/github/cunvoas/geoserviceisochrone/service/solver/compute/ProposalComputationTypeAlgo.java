@@ -2,9 +2,10 @@ package com.github.cunvoas.geoserviceisochrone.service.solver.compute;
 
 public enum ProposalComputationTypeAlgo {
     ITERATIVE_1("Itératif par déficit"),
-    SOLVER_1("Solveur 1"),
-    SOLVER_2("Solveur 2"),
-    SOLVER_3("Solveur 3");
+    PPC_1("Solveur PPC 1"),
+    PPC_2("Solveur PPC 2"),
+    PPC_3("Solveur PPC 3"),
+    CHI2_4("χ²");
 
     private String displayName;
 
