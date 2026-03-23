@@ -19,7 +19,8 @@ public final class ProposalComputationStrategyFactory {
             ProposalComputationTypeAlgo.PPC_2,
             ProposalComputationTypeAlgo.PPC_3,
             ProposalComputationTypeAlgo.CHI2_5,
-            ProposalComputationTypeAlgo.CHI2_6
+            ProposalComputationTypeAlgo.CHI2_6,
+            ProposalComputationTypeAlgo.GENETIC_7
         );
     }
     
@@ -41,6 +42,8 @@ public final class ProposalComputationStrategyFactory {
                 return new LeastSquaresNeigbour1Strategy();
             case CHI2_6:
                 return new LeastSquaresNeighbour2Strategy();
+            case GENETIC_7:
+                return new Genetic1Strategy(minParkSurface);
              default:
                 throw new IllegalArgumentException("Unknown computation strategy type: " + type);
         }
