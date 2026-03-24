@@ -38,11 +38,12 @@
 		</dependency>
 
 		<!-- Lightweight embedded Git client (JGit) -->
-		<dependency>
-			<groupId>org.eclipse.jgit</groupId>
-			<artifactId>org.eclipse.jgit</artifactId>
-			<version>7.5.0.202512021534-r</version>
-		</dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>7.6.0.202603022253-r</version>
+            <scope>compile</scope>
+        </dependency>
 
 
 		<!-- DB + geoloccalization -->
