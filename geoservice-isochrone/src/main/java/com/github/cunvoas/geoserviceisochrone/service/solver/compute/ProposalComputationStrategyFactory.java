@@ -12,13 +12,13 @@ public final class ProposalComputationStrategyFactory {
     
     public static List<ProposalComputationTypeAlgo> getAvailableTypes() {
         return List.of(
-            ProposalComputationTypeAlgo.ITERATIVE_1,
+//            ProposalComputationTypeAlgo.ITERATIVE_1,
             ProposalComputationTypeAlgo.ITERATIVE_2,
             ProposalComputationTypeAlgo.ITERATIVE_3,
-            ProposalComputationTypeAlgo.PPC_1,
-            ProposalComputationTypeAlgo.PPC_2,
+//            ProposalComputationTypeAlgo.PPC_1,
+//            ProposalComputationTypeAlgo.PPC_2,
             ProposalComputationTypeAlgo.PPC_3,
-            ProposalComputationTypeAlgo.CHI2_5,
+//            ProposalComputationTypeAlgo.CHI2_5,
             ProposalComputationTypeAlgo.CHI2_6,
             ProposalComputationTypeAlgo.GENETIC_7
         );
