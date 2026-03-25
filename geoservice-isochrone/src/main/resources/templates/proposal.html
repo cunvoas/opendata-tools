@@ -119,7 +119,12 @@
                       </select>
                     </div>
                     <div class="col-12 col-md-6">
-                      <label for="type" class="form-label">Algorithme</label>
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label for="type" class="form-label mb-0">Algorithme</label>
+                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#algorithmeHelpModal" title="Aide sur les algorithmes">
+                          <i class="fas fa-question-circle"></i>
+                        </button>
+                      </div>
                       <select class="form-select" id="type" th:field="*{type}">
                         <option value="" disabled>Choisir un algorithme...</option>
                         <option th:each="t : ${typeCalcul}" th:value="${t}" th:text="${t.displayName}"></option>
@@ -926,6 +931,215 @@ function deleteProposition(button) {
 
 
 </script>
+
+<!-- Modal d'aide sur les algorithmes -->
+<div class="modal fade" id="algorithmeHelpModal" tabindex="-1" aria-labelledby="algorithmeHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="algorithmeHelpModalLabel">
+          <i class="fas fa-lightbulb text-warning"></i> Aide : Types d'algorithmes
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-4">Sélectionnez un algorithme pour en savoir plus sur son fonctionnement :</p>
+        
+        <div class="accordion" id="accordionAlgorithmes">
+          
+          <!-- 1. IterativeComputationDeficit2Strategy -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#algo1">
+                <strong>Itératif - Déficit surfacique</strong>
+              </button>
+            </h2>
+            <div id="algo1" class="accordion-collapse collapse" data-bs-parent="#accordionAlgorithmes">
+              <div class="accordion-body">
+                <p><strong>Fonctionnement :</strong></p>
+                <p>Cet algorithme fonctionne de manière itérative en traitant les carrés un à un selon leur déficit en surface de parc <strong>par habitant</strong>.</p>
+                
+                <p><strong>Processus :</strong></p>
+                <ol class="small">
+                  <li>Identifie le carré avec le plus grand déficit surfacique (densité actuelle vs recommandée)</li>
+                  <li>Calcule la surface de parc nécessaire pour atteindre la densité recommandée</li>
+                  <li>Si la surface calculée ≥ 1 000 m² : crée la proposition et met à jour le carré et ses voisins</li>
+                  <li>Si la surface < 1 000 m² : passe au suivant</li>
+                  <li>Recommence jusqu'à traiter tous les carrés déficitaires</li>
+                </ol>
+                
+                <p><strong>Avantages :</strong></p>
+                <ul class="small">
+                  <li>Priorise les zones avec les plus grands déficits absolu (en m²/hab)</li>
+                  <li>Rapide et déterministe</li>
+                </ul>
+                
+                <p><strong>Surface minimale :</strong> 1 000 m² par proposition</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. IterativeComputationPopulation1Strategy -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#algo2">
+                <strong>Itératif - Impact humain</strong>
+              </button>
+            </h2>
+            <div id="algo2" class="accordion-collapse collapse" data-bs-parent="#accordionAlgorithmes">
+              <div class="accordion-body">
+                <p><strong>Fonctionnement :</strong></p>
+                <p>Cet algorithme priorise les carrés selon l'<strong>impact humain</strong> : déficit surfacique × population.</p>
+                
+                <p><strong>Processus :</strong></p>
+                <ol class="small">
+                  <li>Pour chaque carré, calcule : impact = manque de surface × population accédant</li>
+                  <li>Sélectionne le carré avec le plus grand impact</li>
+                  <li>Calcule la surface de parc nécessaire pour atteindre la recommandation</li>
+                  <li>Si surface ≥ 1 000 m² : crée la proposition et propage aux voisins</li>
+                  <li>Met à jour la carteMap et recommence</li>
+                </ol>
+                
+                <p><strong>Différence clé :</strong></p>
+                <p>Contrairement à l'algorithme "Déficit surfacique" qui priorise les grandes surfaces manquantes, celui-ci <strong>privilégie les zones densément peuplées</strong> subissant un grand déficit.</p>
+                
+                <p><strong>Avantages :</strong></p>
+                <ul class="small">
+                  <li>Minimise l'impact social du déficit (max de population satisfaite)</li>
+                  <li>Cible les zones d'habitation dense en priorité</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. LeastSquaresNeighbour2Strategy -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#algo3">
+                <strong>Moindres carrés χ²</strong>
+              </button>
+            </h2>
+            <div id="algo3" class="accordion-collapse collapse" data-bs-parent="#accordionAlgorithmes">
+              <div class="accordion-body">
+                <p><strong>Fonctionnement :</strong></p>
+                <p>Utilise une approche statistique <strong>globale</strong> par moindres carrés (χ²) pour estimer une addition moyenne optimale de surface par habitant.</p>
+                
+                <p><strong>Processus :</strong></p>
+                <ol class="small">
+                  <li>Pour chaque itération, collecte les observations des carrés déficitaires :
+                    <ul>
+                      <li><strong>Poids :</strong> population ayant accès au carré</li>
+                      <li><strong>Valeur :</strong> déficit = max(0, recommandation - densité actuelle)</li>
+                    </ul>
+                  </li>
+                  <li>Ajuste un modèle constant via PolynomialCurveFitter (degré 0)</li>
+                  <li>Déduit l'addition moyenne pondérée par la population</li>
+                  <li>Propose cette addition pour les carrés les plus déficitaires</li>
+                  <li>Propage aux voisins et itère</li>
+                </ol>
+                
+                <p><strong>Avantages :</strong></p>
+                <ul class="small">
+                  <li>Approche mathématique rigoureuse (régression statistique)</li>
+                  <li>Optimise globalement les déficits pondérés</li>
+                  <li>Plus itérations que l'itératif simple → convergence progressive</li>
+                </ul>
+                
+                <p><strong>Cas d'usage :</strong> Études urbaines nécessitant une rigueur statistique</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Solver3ComputationStrategy -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#algo4">
+                <strong>Programmation par contraintes (Choco Solver)</strong>
+              </button>
+            </h2>
+            <div id="algo4" class="accordion-collapse collapse" data-bs-parent="#accordionAlgorithmes">
+              <div class="accordion-body">
+                <p><strong>Fonctionnement :</strong></p>
+                <p>Modélise le problème comme un <strong>problème d'optimisation combinatoire</strong> résolu via le solveur Choco.</p>
+                
+                <p><strong>Formulation :</strong></p>
+                <ul class="small">
+                  <li><strong>Variables :</strong> une surface proposée par carré (en unités de 500 m²)</li>
+                  <li><strong>Domaine :</strong> [0, besoin local maximum] pour chaque carré</li>
+                  <li><strong>Contrainte :</strong> 0 m² OU ≥ 1 000 m² (pas de parcs intermédiaires)</li>
+                  <li><strong>Objectif :</strong> minimiser la somme des écarts résiduels (déficit non comblé)</li>
+                </ul>
+                
+                <p><strong>Caractéristiques :</strong></p>
+                <ol class="small">
+                  <li>Résout globalement (pas itératif)</li>
+                  <li>Précision de ±500 m² (acceptée pour le métier)</li>
+                  <li>Tient compte des effets de voisinage (un parc bénéficie aux voisins)</li>
+                  <li>Calcule l'optimum selon des critères mathématiques stricts</li>
+                </ol>
+                
+                <p><strong>Avantages :</strong></p>
+                <ul class="small">
+                  <li>Garantit une solution optimale globale</li>
+                  <li>Très efficace pour les problèmes complexes</li>
+                  <li>Temps de calcul généralement rapide (&lt; quelques secondes)</li>
+                </ul>
+                
+                <p><strong>Cas d'usage :</strong> Optimisation complète d'une région, petites communes</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Genetic1Strategy -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#algo5">
+                <strong>Algorithme génétique</strong>
+              </button>
+            </h2>
+            <div id="algo5" class="accordion-collapse collapse" data-bs-parent="#accordionAlgorithmes">
+              <div class="accordion-body">
+                <p><strong>Fonctionnement :</strong></p>
+                <p>Utilise un <strong>algorithme génétique</strong> pour explorer l'espace des solutions et trouver une bonne proposition.</p>
+                
+                <p><strong>Processus évolutionnaire :</strong></p>
+                <ol class="small">
+                  <li><strong>Population initiale :</strong> 100 individus (propositions aléatoires)</li>
+                  <li><strong>Fitness (qualité) :</strong> réduction du déficit pondérée par la population (tient compte des voisins)</li>
+                  <li><strong>Sélection :</strong> tournoi de taille 3</li>
+                  <li><strong>Croisement :</strong> uniforme (0.9 de probabilité)</li>
+                  <li><strong>Mutation :</strong> perturbation gaussienne (0.05 de probabilité)</li>
+                  <li><strong>Évolution :</strong> 200 générations avec élitisme (10%)</li>
+                </ol>
+                
+                <p><strong>Caractéristiques :</strong></p>
+                <ul class="small">
+                  <li>Résout globalement (pas itératif)</li>
+                  <li>Exploratoire : peut découvrir des solutions non-évidentes</li>
+                  <li>Chaque chromosome code une proposition complète pour tous les carrés</li>
+                  <li>Tenant compte des effets de voisinage dans la fitness</li>
+                </ul>
+                
+                <p><strong>Avantages :</strong></p>
+                <ul class="small">
+                  <li>Robustesse à la complexité du problème</li>
+                  <li>Flexible et adaptatif</li>
+                  <li>Bon pour les grandes régions complexes</li>
+                </ul>
+                
+                <p><strong>Cas d'usage :</strong> Grandes communes, optimisation exploratoire, scénarios complexes</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
