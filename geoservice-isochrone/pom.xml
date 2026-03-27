@@ -6,24 +6,24 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.7</version><!-- 3.5.5 -->
+		<version>3.5.12</version><!-- 3.5.5 -->
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.github.cunvoas</groupId>
 	<artifactId>geoservice-isochrone</artifactId>
-	<version>1.1.5</version>
+	<version>1.1.7</version>
   
 	<properties>
 		<java.version>21</java.version>
-		<lombok.version>1.18.38</lombok.version>
+		<lombok.version>1.18.44</lombok.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.release>${java.version}</maven.compiler.release>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		
-		<postgresql.version>42.7.9</postgresql.version>
-		<hibernate.version>6.6.40.Final</hibernate.version>
+		<postgresql.version>42.7.10</postgresql.version>
+		<hibernate.version>6.6.45.Final</hibernate.version>
     </properties>
 	
 
@@ -38,11 +38,12 @@
 		</dependency>
 
 		<!-- Lightweight embedded Git client (JGit) -->
-		<dependency>
-			<groupId>org.eclipse.jgit</groupId>
-			<artifactId>org.eclipse.jgit</artifactId>
-			<version>7.5.0.202512021534-r</version>
-		</dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>7.6.0.202603022253-r</version>
+            <scope>compile</scope>
+        </dependency>
 
 
 		<!-- DB + geoloccalization -->
@@ -66,47 +67,48 @@
 			<artifactId>jts-core</artifactId>
 			<version>1.20.0</version>
 		</dependency>
-
-
 		<dependency>
 			<groupId>com.graphhopper.external</groupId>
 			<artifactId>jackson-datatype-jts</artifactId>
-			<version>2.19.2</version>
+			<version>2.21.0</version>
 		</dependency>
-		<dependency>
+		
+<!--        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.21.1</version>
-        </dependency>
-        		
+        </dependency>-->
 	
 		<dependency>
 		 <groupId>de.grundid.opendatalab</groupId>
 		 <artifactId>geojson-jackson</artifactId>
 		 <version>3.0</version>
+		 <exclusions>
+		 	<exclusion>
+		 		<groupId>tools.jackson.core</groupId>
+		 		<artifactId>jackson-databind</artifactId>
+		 	</exclusion>
+		 </exclusions>
 		</dependency>
 				
 		<!-- spring -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+            <scope>runtime</scope>
+        </dependency>
+
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-		
-          
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-<!--			<exclusions>
-				<exclusion>
-					<groupId>org.apache.tomcat.embed</groupId>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-			</exclusions>-->
 		</dependency>
-<!--		<dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-jetty</artifactId>
-		</dependency>-->
+		
 		
         <dependency> 
             <groupId>org.springframework.boot</groupId> 
@@ -116,15 +118,14 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
-		
-		<!-- security impl -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 		<dependency>
 		    <groupId>org.thymeleaf.extras</groupId>
@@ -132,11 +133,6 @@
 		    <version>3.1.3.RELEASE</version>
 		</dependency>
 		
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.83</version>
-		</dependency>	
 	<!-- JWT Authentication -->
 	<dependency>
 		<groupId>io.jsonwebtoken</groupId>
@@ -155,11 +151,13 @@
 		<version>0.13.0</version>
 		<scope>runtime</scope>
 	</dependency>
-			<!-- basics DTOs & Fast calls to get external data -->
+	
+	
+	<!-- basics DTOs & Fast calls to get external data -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20250517</version>
+            <version>20251224</version>
         </dependency>
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
@@ -187,12 +185,6 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-compress</artifactId>
 			<version>1.28.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-io</groupId>
-					<artifactId>commons-io</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -203,14 +195,19 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
 			<version>1.14.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-io</groupId>
-					<artifactId>commons-io</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
-		
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.choco-solver</groupId>
+            <artifactId>choco-solver</artifactId>
+            <version>4.10.18</version>
+        </dependency>
+        
 		<!-- cache for ban system -->
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -229,11 +226,6 @@
 			<artifactId>imgscalr-lib</artifactId>
 			<version>4.2</version>
 		</dependency>
-<!--<dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>commons-imaging</artifactId>
-    <version>1.0.0-alpha5</version>
-</dependency>-->
 
 		
 		<!-- Barcodes -->
@@ -270,7 +262,8 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-        <dependency>
+<!--
+         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-bridge-brave</artifactId>
         </dependency>
@@ -278,17 +271,26 @@
             <groupId>io.zipkin.reporter2</groupId>
             <artifactId>zipkin-reporter-brave</artifactId>
         </dependency>
-<dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-starter-sleuth</artifactId>
-    <version>3.1.11</version>
-</dependency>
-<dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-sleuth-zipkin</artifactId>
-    <version>3.1.11</version>
-</dependency>
-         
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-sleuth</artifactId>
+            <version>3.1.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-sleuth-zipkin</artifactId>
+            <version>3.1.11</version>
+        </dependency>
+-->
+        
+        <dependency>
+            <groupId>com.github.loki4j</groupId>
+            <artifactId>loki-logback-appender</artifactId>
+            <version>2.0.3</version>
+        </dependency>   
+        
+        
+        
 		<!--TEST -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -298,86 +300,44 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-			<version>5.13.4</version>
+			<version>5.14.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>5.19.0</version>
+			<version>5.23.0</version>
 			<scope>test</scope>
 		</dependency>
-		
-		<!-- override for security reasons -->
-		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
-			<version>2.5</version>
-		</dependency>
+
         <dependency>
-            <groupId>io.zipkin.brave</groupId>
-            <artifactId>brave-instrumentation-mongodb</artifactId>
-            <version>6.3.0</version>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>29.5</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
-            <version>2.3.0</version>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-geojson</artifactId>
+            <version>29.5</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-core</artifactId>
-            <version>11.0.18</version>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-wkt</artifactId>
+             <version>29.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-hsql</artifactId>
+            <version>29.2</version>
+            <scope>test</scope>
         </dependency>
 
 
 
-        
-        
-		<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <optional>true</optional>
-            <scope>runtime</scope>
-        </dependency>
-
-
-<dependency>
-    <groupId>org.geotools</groupId>
-    <artifactId>gt-shapefile</artifactId>
-    <version>29.5</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.geotools</groupId>
-    <artifactId>gt-geojson</artifactId>
-    <version>29.5</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.geotools</groupId>
-    <artifactId>gt-epsg-wkt</artifactId>
-     <version>29.5</version>
-    <scope>test</scope>
-</dependency>
-
-<!-- https://mvnrepository.com/artifact/org.geotools/gt-epsg-hsql -->
-<dependency>
-    <groupId>org.geotools</groupId>
-    <artifactId>gt-epsg-hsql</artifactId>
-    <version>29.2</version>
-    <scope>test</scope>
-</dependency>
-
-
-
-
-      <dependency>
-        <groupId>org.choco-solver</groupId>
-        <artifactId>choco-solver</artifactId>
-        <version>4.10.18</version>
-        </dependency>
-        
+    
 	</dependencies>
 	
 	
@@ -424,6 +384,7 @@
 			</resource>
 		</resources>
 		<plugins>
+		
 		<plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -504,4 +465,51 @@
 		</profile>
 		
 	</profiles>
+	
+	
+    <!-- override for security reasons -->
+	<dependencyManagement>
+	   <dependencies>
+	        <!-- SLEUH -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcutil-jdk18on</artifactId>
+                <version>1.83</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>1.83</version>
+            </dependency>
+            
+            
+            <!-- OKHTTP -->
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>2.3.0</version>
+            </dependency>
+            
+            <!-- SPRING -->
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>2.6</version>
+            </dependency>
+<!--
+            <dependency>
+                <groupId>io.zipkin.brave</groupId>
+                <artifactId>brave-instrumentation-mongodb</artifactId>
+                <version>6.3.0</version>
+            </dependency>
+-->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>11.0.20</version>
+            </dependency>
+    
+
+	   </dependencies>
+	</dependencyManagement>
 </project>
