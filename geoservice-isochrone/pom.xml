@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.github.cunvoas</groupId>
 	<artifactId>geoservice-isochrone</artifactId>
-	<version>1.1.6</version>
+	<version>1.1.7</version>
   
 	<properties>
 		<java.version>21</java.version>
@@ -107,17 +107,8 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-<!--			<exclusions>
-				<exclusion>
-					<groupId>org.apache.tomcat.embed</groupId>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-			</exclusions>-->
 		</dependency>
-<!--		<dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-jetty</artifactId>
-		</dependency>-->
+		
 		
         <dependency> 
             <groupId>org.springframework.boot</groupId> 
@@ -271,7 +262,8 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-        <dependency>
+<!--
+         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-bridge-brave</artifactId>
         </dependency>
@@ -289,7 +281,16 @@
             <artifactId>spring-cloud-sleuth-zipkin</artifactId>
             <version>3.1.11</version>
         </dependency>
-         
+-->
+        
+        <dependency>
+            <groupId>com.github.loki4j</groupId>
+            <artifactId>loki-logback-appender</artifactId>
+            <version>2.0.3</version>
+        </dependency>   
+        
+        
+        
 		<!--TEST -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -495,11 +496,13 @@
                 <artifactId>snakeyaml</artifactId>
                 <version>2.6</version>
             </dependency>
+<!--
             <dependency>
                 <groupId>io.zipkin.brave</groupId>
                 <artifactId>brave-instrumentation-mongodb</artifactId>
                 <version>6.3.0</version>
             </dependency>
+-->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>

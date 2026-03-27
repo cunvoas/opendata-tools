@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+
+  <springProperty scope="context" name="appName" source="spring.application.name"/>
+    
   <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
   <include resource="logback-properties.xml"/>
-
+  
+  <include resource="org/springframework/boot/logging/logback/base.xml"/>
   <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
   <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
@@ -37,6 +41,24 @@
     </appender> 
 	
 	
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <http>
+            <url>http://loki:3100/loki/api/v1/push</url>
+        </http>
+        
+        <format>
+            <label>
+                <pattern>application=${appName},host=${HOSTNAME},level=%level</pattern>
+            </label>
+            <!-- 
+            <message>
+                <pattern>${FILE_LOG_PATTERN}</pattern>
+            </message>
+            -->
+            <sortByTime>true</sortByTime>
+        </format>
+    </appender>
+    
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
@@ -54,7 +76,8 @@
   <!-- deployed environments -->
   <springProfile name="prod,pi,pi_nuc">
     <root level="ERROR">
-      <appender-ref ref="LOG_FILE"/>
+     <!--  <appender-ref ref="LOG_FILE"/> -->
+      <appender-ref ref="LOKI"/>
     </root>
   </springProfile>
 
