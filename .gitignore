@@ -16,7 +16,7 @@ target
 **/.env
 geoservice-map-vue3/deployGhP.sh
 **/build
-
+**/.dart_tool
 
 
 # dependencies
