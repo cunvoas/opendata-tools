@@ -76,7 +76,7 @@
   <!-- deployed environments -->
   <springProfile name="prod,pi,pi_nuc">
     <root level="ERROR">
-     <!--  <appender-ref ref="LOG_FILE"/> -->
+      <appender-ref ref="LOG_FILE"/>
       <appender-ref ref="LOKI"/>
     </root>
   </springProfile>
