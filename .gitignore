@@ -17,7 +17,7 @@ target
 geoservice-map-vue3/deployGhP.sh
 **/build
 **/.dart_tool
-
+**/.scannerwork
 
 # dependencies
 node_modules
