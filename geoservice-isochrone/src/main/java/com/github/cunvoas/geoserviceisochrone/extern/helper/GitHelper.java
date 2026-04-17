@@ -16,7 +16,7 @@ public class GitHelper {
 	/*
 	 * Client Git léger basé sur JGit pour réaliser :
 	 *  - git add "dossier/."
-	 *  - git commit -m "chore: data YYYY-MM-DD hh:mm:ss"
+	 *  - git commit -m "chore: data for YYYY-MM-DD hh:mm:ss"
 	 *  - git push (origin) avec login/token fournis dans application-prod.yml
 	 *
 	 * Configuration attendue (application-prod.yml) :

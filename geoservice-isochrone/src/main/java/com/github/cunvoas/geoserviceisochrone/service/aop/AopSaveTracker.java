@@ -1,9 +1,11 @@
 package com.github.cunvoas.geoserviceisochrone.service.aop;
 
+import java.util.Arrays;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
-import org.bouncycastle.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -71,7 +73,7 @@ public class AopSaveTracker {
     	int pos=0;
     	ContributeurAction ca =new ContributeurAction();
     	
-    	if (!Arrays.isNullOrEmpty(joinPoint.getArgs())
+    	if (!ArrayUtils.isEmpty(joinPoint.getArgs())
     		&& joinPoint.getArgs()[pos] instanceof FormParkEntranceDetail) {
     		
     			FormParkEntranceDetail frm = (FormParkEntranceDetail)joinPoint.getArgs()[pos] ;

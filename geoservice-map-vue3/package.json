@@ -1,14 +1,21 @@
 {
   "name": "geoservice-map-vue3",
   "private": true,
-  "version": "1.1.3",
+  "version": "1.1.7",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:raspberry": "vite build --mode raspberry",
     "build:github": "vite build --mode github",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sonar": "sonar-scanner",
+    "sonar:local": "sonar-scanner -Dsonar.host.url=http://192.168.1.20:9000",
+    "sonar:token": "sonar-scanner -Dsonar.token=$SONAR_TOKEN",
+    "sonar:full": "npm run test:coverage && sonar-scanner -Dsonar.host.url=http://192.168.1.20:9000 -Dsonar.token=$SONAR_TOKEN",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "axios": "^1.13.5",
@@ -24,14 +31,20 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",
     "@vitejs/plugin-vue": "^5.2.1",
+    "@vitest/coverage-v8": "^4.1.4",
     "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vue/cli-plugin-router": "~5.0.0",
+    "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.22",
+    "happy-dom": "^20.9.0",
+    "jsdom": "^27.0.1",
     "leaflet": "^1.9.4",
     "postcss": "^8.5.6",
     "sass-embedded": "^1.80.6",
+    "sonarqube-scanner": "^4.2.3",
     "tailwindcss": "^3.4.18",
     "vite": "^6.4.1",
-    "vite-plugin-pwa": "^1.2.0"
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^4.1.4"
   }
 }
