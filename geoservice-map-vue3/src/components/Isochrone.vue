@@ -447,6 +447,7 @@ export default {
           name: "Global Building Atlas",
           visible: false,
           url: "https://tubvsig-so2sat-vm1.srv.mwn.de/geoserver/gwc/service/tms/1.0.0/global3D:volume_480m@EPSG:900913@png/{z}/{x}/{y}.png",
+       wfsUrl: "https://tubvsig-so2sat-vm1.srv.mwn.de/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=global3D:lod1_global&outputFormat=application/json&srsName=EPSG:4326&bbox=3.1097331237792973,50.62802013834752,3.1137331237792973,50.628558068476174,EPSG:4326",
           attribution: '&copy; <a href="https://github.com/zhu-xlab/GlobalBuildingAtlas" target="_blank">GlobalBuildingAtlas</a> (Volume Preview)',
           tms: true,
           tileSize: 256,

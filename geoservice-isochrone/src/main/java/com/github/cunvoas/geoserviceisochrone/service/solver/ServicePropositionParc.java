@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Filosofil200m;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
@@ -75,6 +76,21 @@ public class ServicePropositionParc {
 		if (proposals!=null && !proposals.isEmpty()) {
 			parkProposalRepository.saveAll(proposals);
 		}
+	}
+	
+	public void deleteParkProposal(Long metaId) {
+		List<ParkProposal> props = parkProposalRepository.findParkProposalByIdMeta(metaId);
+		
+		List<InseeCarre200mComputedId> ids = props.stream().map(p -> {
+			InseeCarre200mComputedId id = new InseeCarre200mComputedId();
+			id.setAnnee(p.getAnnee());
+			id.setIdInspire(p.getIdInspire());
+			return id;
+		}).collect(java.util.stream.Collectors.toList());
+
+		parkProposalWorkRepository.deleteAllById(ids);
+		parkProposalRepository.deleteAll(props);
+		parkProposalMetaRepository.deleteById(metaId);
 	}
 	
 	/**

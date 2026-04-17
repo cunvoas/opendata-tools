@@ -16,22 +16,15 @@ import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalCom
 @Repository
 public interface ParkProposalRepository extends JpaRepository<ParkProposal, InseeCarre200mComputedId>{
 
-//	/** 
-//	 * findParkProposalInMapArea.
-//	 * @param mapArea shape in string
-//	 * @return list of ParkArea
-//	 */
-//	@Query(nativeQuery = true, 
-//			   value = "SELECT pp.* FROM park_proposal pp WHERE annee=?1 and id_meta=?2  and ST_Intersects(pp.centre, ?3)")
-//	public List<ParkProposal> findParkProposalInMapArea(Integer annee, Long meta, String sPolygon);
-	
-
 	/** 
 	 * findParkProposalInMapArea.
 	 * @param mapArea shape in string
 	 * @return list of ParkArea
 	 */
 	public List<ParkProposal> findParkProposalByIdMeta(Long meta);
+	
+	@Query("DELETE FROM park_proposal pp WHERE idMeta=?1")
+	public void deleteByIdMeta(Long meta);
 	
 	/** 
 	 * findParkProposalInMapArea.

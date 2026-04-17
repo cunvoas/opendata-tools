@@ -47,6 +47,18 @@ public abstract class AbstractComputationtrategy implements ProposalComputationS
 	
 	
 	/**
+	 * Trie les propositions par impact humain total decroissant : manque de surface × population.
+	 * Priorite aux carreaux ou le deficit est a la fois grand et concerne beaucoup d'habitants.
+	 * @param carreMap
+	 * @return
+	 */
+	public List<ParkProposalWork> sortProposalsByMissingPopulation(Map<String, ParkProposalWork> carreMap) {
+		ProposalSortStrategy strategy = ProposalSortStrategyFactory.create(Type.MISSING_POPULATION);
+		return strategy.sort(carreMap);
+	}
+
+
+	/**
 	 * Trouve les N carrés voisins d'un carré donné selon la sensité.
 	 * 
 	 * @param idInspire identifiant du carré central

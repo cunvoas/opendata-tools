@@ -273,7 +273,10 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 			Geometry geometryToAnalyse, 
 			Geometry shapeParkOnSquare) {
 		
-
+		if (carreShape==null) {
+			return crDto;
+		}
+		
 		// population located in all the isochrones
 		Long surfacePopulationIso = 0L;
 		
