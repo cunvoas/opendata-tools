@@ -2,22 +2,11 @@
 
 # https://levelup.gitconnected.com/java-23-springboot-3-3-4-metrics-micrometer-aop-part-6-808dcb97dcb7
 
-
-# zipkin + sleuth
-spring:
-    sleuth:
-        sampler.probability: 1.0
-#        reactor.instrumentation-type: decorate-on-last
-    zipkin:
-        baseUrl: http://zipkin:9411/
-        sender.type: web
-    
     
 # JMX
 spring.datasource.hikari.registerMbeans: true
 
 management:
-# zipkin + brave
   tracing:
     enabled: true
     sampling:
@@ -28,16 +17,11 @@ management:
   baggage:
     correlation:
       enabled: true
-  zipkin:
-    tracing:
-      endpoint: http://zipkin:9411/api/v2/spans
-      connect-timeout: 1s
-      read-timeout: 10s
-#      encoding: [JSON]
+
 # prometheus
   endpoints.web.exposure:
-    include: prometheus,health,info,metric
-    exclude: env,configprops,shutdown,heapdump,threaddump, beans
+    include: health,info,prometheus,metrics
+    exclude: env,configprops,shutdown,heapdump,threaddump,beans
   endpoint:
     health.show-details: always
     shutdown.enabled: false
@@ -51,9 +35,9 @@ management:
     export.prometheus.enabled: true
   health.probes.enabled: true
     
-
 # embeded tomcat    
 server.tomcat:
+  mbeanregistry.enabled: true
   accesslog:
     enabled: false
     suffix: .log
@@ -64,7 +48,7 @@ server.tomcat:
 #  basedir: /var/log/jvm
   
 logging:
-  level:
+  level:    
     org.apache.tomcat: ERROR
     org.apache.catalina: ERROR
     org.springframework.web: DEBUG

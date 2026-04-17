@@ -14,27 +14,38 @@ const routes = [
   {
     path: '/carte',
     name: 'appCarte',
-    title: 'Carte',
     component: AppCarte,
+    meta: {
+      title: 'Carte des parcs et jardins – MEL | Parcs & Jardins',
+      description: 'Explorez la carte interactive des parcs, jardins et espaces verts de la Métropole Européenne de Lille. Analyse de l\'accessibilité selon les critères OMS.',
+    },
   },
-  
   {
     path: '/stats',
     name: 'stats',
-    title: 'Statistiques',
     component: AppStatistics,
+    meta: {
+      title: 'Statistiques des espaces verts – MEL | Parcs & Jardins',
+      description: 'Statistiques détaillées sur la superficie et la répartition des espaces verts par habitant dans la MEL. Comparaison avec les standards OMS (10 m² par habitant).',
+    },
   },
   {
     path: '/information',
     name: 'appInformation',
-    title: 'informations',
     component: AppInformation,
+    meta: {
+      title: 'Informations – Méthodologie et sources | Parcs & Jardins',
+      description: 'Méthodologie, sources de données et informations sur l\'étude géographique des parcs et jardins de la MEL réalisée par Autmel, Deûl\'Air, Entrelianne et LM Oxygène.',
+    },
   },
   {
     path: '/aideoVideo',
     name: 'appVideoAdmin',
-    title: 'Video d\'aide',
     component: AppVideoAdmin,
+    meta: {
+      title: 'Aide vidéo | Parcs & Jardins',
+      description: 'Tutoriels vidéo pour utiliser l\'application cartographique des parcs et jardins de la MEL.',
+    },
   },
   {
     path: '/',
