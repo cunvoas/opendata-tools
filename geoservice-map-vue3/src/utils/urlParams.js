@@ -143,7 +143,7 @@ export function buildUrlWithParams(options = {}) {
  */
 export function hasGeographicalParams() {
   const params = getUrlParams();
-  return params.regionId !== null || params.c2cId !== null || params.city !== null;
+  return params.region !== null || params.c2c !== null || params.city !== null;
 }
 
 /**

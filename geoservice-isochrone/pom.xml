@@ -13,19 +13,8 @@
 	<artifactId>geoservice-isochrone</artifactId>
 	<version>1.1.7</version>
   
-  <properties>
-    <!-- SonarQube properties -->
-    <sonar.organization>LM Oxygène</sonar.organization>
-    <sonar.host.url>http://192.168.1.20:9000</sonar.host.url>
-    
-    <sonar.projectKey>geoservice-isochrone</sonar.projectKey>
-    <sonar.coverage.exclusions>**/*Application.java,**/config/**,**/dto/**,**/entity/**</sonar.coverage.exclusions>
-    <sonar.exclusions>**/target/**,**/*Test.java</sonar.exclusions>
-    <sonar.test.exclusions>**/*Test.java</sonar.test.exclusions>
-
-
-    <java.version>21</java.version>   
-        
+	<properties>
+		<java.version>21</java.version>
 		<lombok.version>1.18.44</lombok.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -33,6 +22,7 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		
+		<postgresql.version>42.7.10</postgresql.version>
 		<hibernate.version>6.6.45.Final</hibernate.version>
     </properties>
 	
@@ -60,7 +50,7 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.7.10</version>
+			<version>${postgresql.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate.orm</groupId>
@@ -434,78 +424,6 @@
 	</build>
 	<profiles>
 		
-		
-
-    <!-- SonarQube analysis profile -->
-    <profile>
-      <id>sonar</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <sonar.sources>src/main/java</sonar.sources>
-        <sonar.tests>src/test/java</sonar.tests>
-        <sonar.java.binaries>target/classes</sonar.java.binaries>
-        <!-- Supprimé sonar.java.test.binaries car il peut causer des erreurs si vide -->
-        <sonar.junit.reportPaths>target/surefire-reports</sonar.junit.reportPaths>
-        <!-- Configuration moderne pour Jacoco -->
-        <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <!-- S'assurer que les tests sont exécutés -->
-        <maven.test.skip>false</maven.test.skip>
-        <skipTests>false</skipTests>
-      </properties>
-      <build>
-        <plugins>
-          <!-- Compiler plugin pour s'assurer que les répertoires de test sont créés -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>compile-tests</id>
-                <phase>test-compile</phase>
-                <goals>
-                  <goal>testCompile</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          
-          <!-- Configuration pour ignorer les échecs de tests lors de l'analyse SonarQube -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <testFailureIgnore>true</testFailureIgnore>
-              <!-- Forcer la création des répertoires -->
-              <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-            </configuration>
-          </plugin>
-          
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.12</version>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>report</id>
-                <phase>test</phase>
-                <goals>
-                  <goal>report</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-
 		<!-- code analysis -->
 		<profile>
 			<id>SONAR</id>
@@ -530,7 +448,7 @@
 					<plugin>
 						<groupId>org.owasp</groupId>
 						<artifactId>dependency-check-maven</artifactId>
-						<version>12.2.1</version>
+						<version>8.4.2</version>
 						<configuration>
 							<failBuildOnCVSS>8</failBuildOnCVSS>
 						</configuration>
