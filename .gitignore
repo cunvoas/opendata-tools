@@ -18,6 +18,7 @@ geoservice-map-vue3/deployGhP.sh
 **/build
 **/.dart_tool
 **/.scannerwork
+#**/coverage
 
 # dependencies
 node_modules
@@ -44,7 +45,7 @@ node_modules
 # misc
 /.sass-cache
 /connect.lock
-/coverage
+#/coverage
 /coverage-integration
 /libpeerconnection.log
 npm-debug.log
