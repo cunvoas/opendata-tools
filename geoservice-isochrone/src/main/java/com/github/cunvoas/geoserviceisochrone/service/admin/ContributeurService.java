@@ -202,7 +202,6 @@ public class ContributeurService {
 		toBeSaved.setIdCommunauteCommune(contributeur.getIdCommunauteCommune());
 		toBeSaved.setIdCommune(contributeur.getIdCommune());
 		
-		log.warn(""+toBeSaved.getPassword().length());
 		toBeSaved = contributeurRepository.save(toBeSaved);
 		
 		if (newAccount) {

@@ -1,4 +1,5 @@
 //import Vue from 'vue'
+/* eslint-env browser */
 import { createApp } from 'vue'
 import VueMatomo from 'vue-matomo'
 import HeaderAsso from './components/HeaderAsso.vue'
@@ -82,7 +83,17 @@ initVersionCheck();
 
 app.mount('#app');
 
-router.afterEach((to, from) => {
+router.afterEach((to) => {
+  // Update page title and description for SEO
+  if (to.meta?.title) {
+    document.title = to.meta.title;
+  }
+  if (to.meta?.description) {
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', to.meta.description);
+    }
+  }
   // Log the page view to Matomo
   window._paq.push(['setCustomUrl', to.fullPath]);
   window._paq.push(['trackPageView']);
