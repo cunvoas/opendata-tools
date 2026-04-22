@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.12</version><!-- 3.5.5 -->
+		<version>3.5.13</version><!-- 3.5.5 -->
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.github.cunvoas</groupId>
 	<artifactId>geoservice-isochrone</artifactId>
-	<version>1.1.7</version>
+	<version>1.1.8</version>
   
   <properties>
     <!-- SonarQube properties -->
