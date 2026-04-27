@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{fragments/fragment-head :: head(#{entrance.edit.title})}"></head>
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<main>
+
+				<div class="container">
+
+<div class="row row-cols-1 row-cols-md-12 g-2 ">
+	<div class="container-fluid px-4">
+		<h1 class="mt-12" th:text="#{entrance.title}">title</h1>
+	</div>
+     <div class="row">
+         <div class="col-3">
+             <div class="card" style="text-align: center">
+               	<!-- region -->
+				<form th:action="@{/mvc/entrance/region}" th:object="${editEntrance}" method="post" onchange="submit();">
+					<div class="form-floating">
+						<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+							<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
+							<option th:each="region : ${regions}" 
+								th:value="${region.id}" 
+								th:text="${region.name}" 
+								th:selected="${region.id==idRegion}"></option>
+						</select>
+						<label for="idRegion"><i class="fas fa-map me-2"></i><span th:text="#{entrance.region}"></span></label>
+					</div>
+				</form>
+             </div>
+         </div>
+         <div class="col-3">
+             <div class="card" style="text-align: center">
+                	<!-- comm2co -->
+					<form th:action="@{/mvc/entrance/commDeCo}" th:object="${editEntrance}" method="post" onchange="submit();">
+					<fieldset id="fsComm2co" disabled="disabled">
+						<div class="form-floating">
+							<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+								<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
+								<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+							</select>
+							<label for="idCommunauteDeCommunes"><i class="fas fa-building me-2"></i><span th:text="#{entrance.communateDeCommunes}">Comm2co></span></label>
+							<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						</div>
+					</fieldset>
+					</form>
+             </div>
+         </div>
+         <div class="col-6">
+             <div class="card" style="text-align: center">
+             	<!-- commune -->
+				<form id="formSelectCity" th:action="@{/mvc/entrance/city}" method="POST" th:object="${editEntrance}">
+				<fieldset id="fsCity" disabled="disabled">
+					<div class="form-floating">
+						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" />
+						<label for="idCommune-filter"><i class="fas fa-city me-2"></i><span th:text="#{entrance.commune}">ville</span></label>
+						<datalist id="communes" class="form-label">
+							<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
+						</datalist>
+						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+					</div>
+				</fieldset>
+				</form>
+             </div>
+         </div>
+     </div>
+     <div class="row">
+         <div class="col-6">
+             <div class="card" style="text-align: center">
+				<!-- garden -->
+				<form id="formSelectPark" th:action="@{/mvc/entrance/park}" method="POST" th:object="${editEntrance}">
+				<fieldset id="fsPark" disabled="disabled">
+					<div class="form-floating">
+						<input class="form-select" list="parks" id="idPark-filter" name="idPark-filter" />
+						<label for="idPark-filter" th:text="#{entrance.park}">parc</label>
+						<datalist id="parks" class="form-label">
+							<option th:each="park : ${parks}" 
+								th:value="${park.name}" 
+								th:attr="data-value=${park.id}" 
+								th:label="${park.name}"></option>
+						</datalist>
+						<input type="hidden" id="idPark" name="idPark" th:field="*{idPark}" />
+						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+					</div>
+				</fieldset>
+				</form>
+             </div>
+         </div>
+         <div class="col-6">
+             <div class="card" style="text-align: center">
+				<!-- entree -->
+				<form th:action="@{/mvc/entrance/entrance}" th:object="${editEntrance}" method="POST" onchange="submit();">
+				<fieldset id="fsEntrance" disabled="disabled">
+					<div class="form-floating">
+						<select class="form-select" id="idEntrance" name="idEntrance" th:field="*{idEntrance}">
+							<option value="" selected disabled th:text="#{entrance.parkEntrance.placeholder}">Choose here</option>
+							<option th:each="parkEntrance : ${parkEntrances}" 
+								th:value="${parkEntrance.id}" th:text="${parkEntrance.description}" 
+								th:attr="data-lng=${parkEntrance.entryLng},data-lat=${parkEntrance.entryLat}"
+								th:selected="${parkEntrance.id==idEntrance}"></option>
+						</select>
+						<label for="idPark" th:text="#{entrance.parkEntrance}">parc</label>
+						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+						<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+						<input type="hidden" id="idPark" name="idPark" th:field="*{idPark}" />
+                        <input type="hidden" id="areaId" name="areaId" th:field="*{areaId}" />
+					</div>
+				</fieldset>
+				</form>
+             </div>
+         </div>
+     </div>
+     
+    <div class="col-6">
+    	<form th:action="@{/mvc/entrance/editPark}" th:object="${editEntrance.parcEtJardin}" method="post">
+        <fieldset id="fsEditPark" disabled="disabled">
+        <div class="row">
+			<div class="container-fluid px-4">
+				<h4 class="mt-12" th:text="#{entrance.park.title}">title</h4>
+			</div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="name" name="name" th:field="*{name}"  disabled="disabled"/>
+						<label class="form-label" for="name" th:text="#{entrance.park}">parc</label>
+					</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="quartier" name="quartier" th:field="*{quartier}"  disabled="disabled"/>
+						<label class="form-label" for="quartier" th:text="#{entrance.park.block}">block</label>
+					</div>
+                </div>
+            </div>
+        </div>
+         <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="sousType" name="sousType" th:field="*{sousType}"  disabled="disabled"/>
+                        <label class="form-label" for="sousType" th:text="#{entrance.sousType}">sousType</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <input class="form-control" type="text" id="surface" name="surface" th:field="*{surface}" disabled="disabled"
+                                                                        th:value="${#numbers.formatDecimal(editEntrance.parcEtJardin.surface,1,0)}" />
+                        <label class="form-label" for="surface" th:text="#{entrance.surface}">surface</label>
+                    </div>
+                </div>
+            </div>
+         </div>
+        </fieldset>
+        </form>
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="mapLatitude" name="mapLatitude" th:field="*{editEntrance.mapLat}" disabled="disabled"/>
+						<label class="form-label" for="mapLatitude" th:text="#{entrance.park.point.lat}">latitude</label>
+					</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="mapLongitude" name="mapLongitude" th:field="*{editEntrance.mapLng}"  disabled="disabled"/>
+						<label class="form-label" for="mapLongitude"th:text="#{entrance.park.point.lng}">longitude</label>
+					</div>
+                </div>
+            </div>
+        </div>
+        
+         <div class="row">
+	         <div class="col container-fluid px-4">
+				<h4 class="mt-12" id="editEntranceTitle" th:text="#{entrance.edit.title}">title </h4>
+			</div>
+			<div class="col">
+				<button class="btn btn-success" th:text="#{entrance.edit.mode}" onclick="switchMode(this)">mode</button>
+
+				<button type="button" class="btn btn-outline-warning" th:text="#{entrance.map.marker.clear}" onclick="removeTempMarker(this)">cancel add mode</button>
+            
+            <br />
+				<input type="checkbox" id="showIsochrone" name="showIsochrone" onclick="toggleIsochrone()" />
+				<input type="checkbox" id="showEntrance" name="showEntrance"  onclick="toggleIsochrone()" checked="checked" />
+				<label for="showIsochrone" th:text="#{entrance.show.isochrone}"></label>
+            </div>
+         </div>
+         
+    <form id="editEntrance" th:action="@{/mvc/entrance/editEntrance}" th:object="${parkEntranceDetail}" method="POST">
+    <fieldset id="fsEditEntrance" disabled="disabled">
+		<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
+		<input type="hidden" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+		<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+		<input type="hidden" id="idPark" name="idPark" th:field="*{idPark}" />
+		<input type="hidden" id="idEntrance" name="idEntrance" th:field="*{idEntrance}" />
+		<input type="hidden" id="entranceId" name="entranceId" th:field="*{entranceId}"/>
+		<input type="hidden" id="areadId" name="areadId" th:field="*{areaId}"/>
+		<input type="hidden" id="mode" name="mode" th:field="*{mode}"/>
+       <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+               		<div class="form-floating">
+						<input class="form-control" type="text" id="description" name="description" th:field="*{description}" />
+						<label class="form-label" for="description" th:text="#{entrance.edit.description}">description</label>
+					</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+			        <div class="form-floating">
+						<input class="form-control" type="text" id="entranceLink" name="entranceLink" th:field="*{entranceLink}" />
+						<label class="form-label" for="entranceLink" th:text="#{entrance.edit.entranceLink}">lien</label>
+					</div>
+                </div>
+            </div>
+        </div>		
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="entranceLat" name="entranceLat" th:field="*{entranceLat}" />
+						<label class="form-label" for="entranceLat" th:text="#{entrance.edit.entranceLat}">latitude</label>
+					</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<input class="form-control" type="text" id="entranceLng" name="entranceLng" th:field="*{entranceLng}" />
+						<label class="form-label" for="entranceLng" th:text="#{entrance.edit.entranceLng}">longitude</label>
+					</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        <button type="submit" class="btn btn-outline-success" th:text="#{entrance.edit.submit.isochrone}" th:formaction="@{/mvc/entrance/mergeIsochrone}">validate</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+					<div class="form-floating">
+						<button id="btnSave" onclick="saveEntrance()" type="button" class="btn btn-outline-danger" th:text="#{entrance.edit.submit}">validate</button>
+					</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+					    <input type="text" class="form-control getdate" th:field="*{updateDate}" />
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <div class="form-floating">
+                        &nbsp;
+                    </div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+    </form>
+    </div>
+    
+    <div class="col-6">
+		<div class="container-fluid px-4">
+			<h2 class="mt-12" th:text="#{entrance.map.title}">title</h2>
+             <div style="text-align: end;">
+                 Localiser dans <a id="aGMapLink" href="#" target="_blank" rel="noopener noreferrer" alt="voir la même carte sur GMap">Google Map</a>
+                 <span th:if="${parkEntranceDetail.idPark != null}">
+	                 &nbsp;&nbsp;
+	                 <a id="aParkLink" target="_blank" rel="noopener noreferrer" th:href="@{/mvc/park/new/check?idPark={idPark}(idPark=${parkEntranceDetail.idPark})}" >Editer le parc</a>
+                 </span>
+             </div>
+		</div>
+        <div class="row h-100 ">
+            <div class="col-12">
+                <div class="card h-100 border" style="text-align: center">
+                    <div id="mapid" style="width: 100%; height: 600px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+								
+				</div>
+			</main>
+		</div> <!-- layoutSidenav_content -->
+	</div> <!-- layoutSidenav -->
+	
+
+	<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+
+	<div th:insert="~{fragments/fragment-jslibs :: appMap}"></div>
+
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+	<script th:inline="javascript">
+	
+	/* manage correct ID for COMMUNNE SELECTION */
+	// th-field broke the datalist work
+	document.querySelector('#idCommune-filter').value=[[${editEntrance.nameCommune}]];
+	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
+		const input = e.target,
+	        list = input.getAttribute('list'),
+	        options = document.querySelectorAll('#' + list + ' option'),
+	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+	        inputValue = input.value;
+		    
+	    	hiddenInput.value = inputValue;
+		    
+		    for(let i = 0; i < options.length; i++) {
+		    	const option = options[i];
+		        if(option.value === inputValue) {
+		        	hiddenInput.value = option.getAttribute('data-value');
+		        	document.querySelector("#formSelectCity").submit();
+		            break;
+		        }
+		    }
+	});
+	document.querySelector('#idCommune-filter').addEventListener('focusout', function(e) {
+		const input = e.target,
+        list = input.getAttribute('list'),
+        options = document.querySelectorAll('#' + list + ' option'),
+        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+        inputValue = input.value;
+	    
+	    const regex = /[0-9]/g;
+	    const found = hiddenInput.match(regex);
+	    if (found) {
+	    	document.querySelector("#formSelectCity").submit();
+	    }
+	});
+
+	/* manage correct ID for PARK SELECTION */
+	// th-field broke the datalist work
+	document.querySelector('#idPark-filter').value=[[${editEntrance.namePark}]];
+	document.querySelector('#idPark-filter').addEventListener('input', function(e) {
+		const input = e.target,
+	        list = input.getAttribute('list'),
+	        options = document.querySelectorAll('#' + list + ' option'),
+	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+	        inputValue = input.value;
+		    
+
+        console.log("idPark-filter input event");
+        console.log(inputValue);
+        console.log(hiddenInput);
+        
+	    	hiddenInput.value = inputValue;
+		    
+		    for(let i = 0; i < options.length; i++) {
+		    	const option = options[i];
+		        if(option.value === inputValue) {
+		        	hiddenInput.value = option.getAttribute('data-value');
+		        	document.querySelector("#formSelectPark").submit();
+		            break;
+		        }
+		    }
+	});
+	document.querySelector('#idPark-filter').addEventListener('focusout', function(e) {
+		const input = e.target,
+        list = input.getAttribute('list'),
+        options = document.querySelectorAll('#' + list + ' option'),
+        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
+        inputValue = input.value;
+	    
+        console.log("idPark-filter focusout event");
+        console.log(inputValue);
+        console.log(hiddenInput);
+        
+        
+	    const regex = /[0-9]/g;
+	    const found = hiddenInput.match(regex);
+	    if (found) {
+	    	document.querySelector("#formSelectPark").submit();
+	    }
+	});		
+		
+	// MAP MANAGEMENT
+	
+	// point icons
+	const entranceIcon = L.icon({
+	    iconUrl: [[@{/mvc/static/images/marker-icon-entrance-1x.png}]]
+	    ,iconAnchor:   [12, 41] // point of the icon which will correspond to marker's location
+	    ,popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
+	});
+	const editEntranceIcon = L.icon({
+	    iconUrl: [[@{/mvc/static/images/marker-icon-parkEdit-1x.png}]]
+	    ,iconAnchor:   [12, 41] // point of the icon which will correspond to marker's location
+	    ,popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
+	});
+
+
+	
+	/////////////////////////////////////////////////////////////////////////
+	// map layers
+    let mapMinZoom=14;
+    let mapMaxZoom=19;
+    const layerEsriWorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    	name: 'Carte WorldStreetMap',
+    	attribution: "ArcGIS World Street Map (Esri)",
+        maxZoom: mapMaxZoom,
+        minZoom: mapMinZoom
+	});
+    const layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+	        attribution: 'Aut MEL',
+	        maxZoom: mapMaxZoom,
+            minZoom: mapMinZoom
+	    });
+    const layerStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	        attribution: 'Aut MEL',
+	        maxZoom: mapMaxZoom,
+            minZoom: mapMinZoom
+	    });
+    const layerAeroIgnMap = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
+		name: 'Vues Aérienne IGN',
+		attribution: '&copy; <a href="https://geoservices.ign.fr/services-geoplateforme-diffusion">IGN GeoPortail</a>',
+		tileSize: 256,
+		maxZoom: Math.min(18, mapMaxZoom), // 18 maxi
+		minZoom: mapMinZoom,
+	});
+
+    // fonds de carte
+    const mapLayers = {
+        'Vues Aérienne IGN': layerAeroIgnMap,
+   		'Satellite ArcGisOnline': layerSatellite,
+   		'Carte WorldStreetMap': layerEsriWorldStreetMap,
+        'Carte OpenStreetMap': layerStreetMap,
+   		
+   	};
+    const dataAutmel = L.layerGroup();
+    const dataLayers = {
+    	"Contours des parcs": dataAutmel
+    };
+    
+    // Add an object to save markers
+    const markers = {};
+    
+    // custom location on load
+    let locateWorkPlace= L.latLng(50.626419,3.0719121);
+    let mLng = document.getElementById("mapLongitude").value;
+    let mLat = document.getElementById("mapLatitude").value;
+    if (mLng!="" && mLat!="") {
+        locateWorkPlace = L.latLng(mLat, mLng);
+    }
+     
+    
+    const isMap = L.map('mapid', {
+    	zoom: 16,
+        layers: [ layerStreetMap, layerEsriWorldStreetMap, layerSatellite, layerAeroIgnMap]
+    }).setView(locateWorkPlace);
+    
+	const zoomControl = L.control.scale().addTo(isMap);
+    const layerControl = L.control.layers(mapLayers, dataLayers).addTo(isMap);
+    
+    //isMap.on('click', addMarker);
+	// remove added markers
+	function removeTempMarker(e) {
+		isMap.removeLayer(newMarker);
+	}
+	
+
+	const legend = L.control({position: 'bottomright'});
+    legend.onAdd = function (isMap) {
+        const div = L.DomUtil.create('div', 'info legend');
+        const labels = [];
+
+        labels.push(`<i style="background:#78e826"></i> Parc inclus OMS`);
+        labels.push(`<i style="background:#f6fc26"></i> Entrées à saisir`);
+        labels.push(`<i style="background:#e96020"></i> Parc exclus OMS`);
+        div.innerHTML = labels.join('<br>');
+        return div;
+    };
+    legend.addTo(isMap);
+    
+	
+    function customOnEachFeatureDetail(feature, layer) {
+        if (feature.properties.oms) {
+            if (feature.properties.entry) {
+                layer.setStyle({
+                    "fillOpacity": 0.3,
+                     "opacity": 0.6,
+                     "color": "#78e826",
+                     "fillColor": "#78e826"
+                 });
+            } else {
+                layer.setStyle({
+                    "fillOpacity": 0.3,
+                    "opacity": 0.6,
+                    "color": "#f6fc26",
+                    "fillColor": "#f6fc26"
+                });
+            }
+        } else {
+            layer.setStyle({
+                "fillOpacity": 0.3,
+                 "opacity": 0.6,
+                 "color": "#e96020",
+                 "fillColor": "#e96020"
+             });
+        }
+        
+
+        // does this feature have a property named fillColor?
+        if (feature.properties) {
+            const sUrlLocationPark =
+                "&idRegion="+document.querySelector('#idRegion').value +
+                "&idComm2Co="+document.querySelector('#idCommunauteDeCommunes').value +
+                "&idCommune="+document.querySelector('#idCommune').value;
+            const sUrlEditPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/entrance/goto}]]+'?idPark=';
+            if (feature.properties.name) {
+            	let parcEdit = "<p>"+feature.properties.name+"</p>";
+                if (feature.properties.id) {
+                    parcEdit= "<p>"+ feature.properties.name + "<br /><a href='"+ sUrlEditPark + feature.properties.id + sUrlLocationPark +"' >Edit</a></p>";
+                }
+                layer.bindPopup(parcEdit);
+            }
+        }
+        
+    }
+
+    function getGMapLink(clkLat, clkLng) {
+        return "<a href='"+getGMapUrl(clkLat, clkLng)+"' target='_blank' rel='noopener noreferrer'>GMap</a>";
+    }
+    function getGMapUrl(clkLat, clkLng) {
+        gUrl="https://www.google.com/maps/@"+clkLat+","+clkLng+",18.03z";
+        return gUrl;
+    }
+    
+    let geojsonAutmelLayer = null;
+    // relead parks with map fit
+    function loadParkShape() {
+        // get corners
+        swLat=isMap.getBounds().getSouthWest().lat;
+        swLng=isMap.getBounds().getSouthWest().lng;
+        neLat=isMap.getBounds().getNorthEast().lat;
+        neLng=isMap.getBounds().getNorthEast().lng;
+        sPos="swLat="+ swLat +"&swLng="+swLng +"&neLat="+neLat +"&neLng="+neLng;
+        
+        // purpose google map link
+        const gmLat = (neLat+swLat)/2;
+        const gmLng = (swLng+neLng)/2;
+        const lnk = getGMapUrl(gmLat, gmLng);
+        
+        const oGmLink =  document.getElementById("aGMapLink");
+        console.log("old: "+oGmLink.href);
+        oGmLink.href=lnk;
+        console.log("new: "+oGmLink.href);
+        
+        
+        // contours parc autmel
+        if (geojsonAutmelLayer!==null) {
+        	dataAutmel.removeLayer(geojsonAutmelLayer);
+        }
+        const sUrlGeoAutmel= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkGardenOutlineByCorner}]]+'?'+sPos;
+        geojsonAutmelLayer = new L.GeoJSON.AJAX(sUrlGeoAutmel, {onEachFeature: customOnEachFeatureDetail});
+        dataAutmel.addLayer(geojsonAutmelLayer);
+        
+    }
+    loadParkShape();
+    isMap.on('zoomend',loadParkShape);
+    isMap.on('moveend',loadParkShape);
+    
+		
+	////////////////////////////////////////////////////////////////////////////
+    // isochrone
+    function fetchJSON(url) {
+	  return fetch(url)
+	    .then(function(response) {
+	      return response.json();
+	    });
+	}
+    function isEmpty(obj) {
+        return Object.keys(obj).length === 0;
+    }
+    function customOnEachFeature(feature, layer) {
+        // does this feature have a property named fillColor?
+        if (feature.properties) {
+        	if (feature.properties.fillColor) {
+        		 layer.setStyle(
+        				 {fillColor: feature.properties.fillColor},
+                         {fillOpacity: 0.60},
+                         {color: feature.properties.fillColor},
+        				 {opacity: 0.95}
+        		 );
+        	}
+            if (feature.properties.name) {
+            	layer.bindPopup(feature.properties.name);
+            }
+        }
+    }
+    
+    
+    const idPark = document.getElementById("idPark").value;
+    let geojsonEntranceLayer = null;
+    let geojsonParkLayer = null;
+	if (!isEmpty(idPark) && idPark!='') {
+		const sUrlGeoEntrance= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones/entrance}]]+'?idPark='+idPark;
+		geojsonEntranceLayer = new L.GeoJSON.AJAX(sUrlGeoEntrance, {onEachFeature: customOnEachFeature});
+		
+		const sUrlGeoPark= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/isochrones/park}]]+'?idPark='+idPark;
+		geojsonParkLayer = new L.GeoJSON.AJAX(sUrlGeoPark, {onEachFeature: customOnEachFeature});
+		
+	}
+	
+	function toggleIsochrone() {
+		if (!isEmpty(idPark) && idPark!='') {
+			const showIso = document.getElementById("showIsochrone").checked;
+			const showEntrance = document.getElementById("showEntrance").checked;
+			
+			if (showIso) {
+				if (showEntrance) {
+					isMap.removeLayer(geojsonParkLayer);// For hide
+				    isMap.addLayer(geojsonEntranceLayer);//For show entrance
+				} else {
+					isMap.removeLayer(geojsonEntranceLayer);// For hide
+					isMap.addLayer(geojsonParkLayer);//For show park
+				}
+			} else {
+                isMap.removeLayer(geojsonEntranceLayer);// For hide
+                isMap.removeLayer(geojsonParkLayer);// For hide
+			}
+		}
+	}
+	
+	
+    let newMarker = null;
+    function addMarker(e){
+        //markers["new1"] 
+        if (newMarker===null) {
+	        // Add marker to map at click location; add popup window
+	        newMarker = new L.marker(e.latlng, {draggable:true,icon: entranceIcon})
+	                        .addTo(isMap);
+	        //console.log(e.latlng);
+	        document.getElementById("entranceLat").value = e.latlng.lat;
+	        document.getElementById("entranceLng").value = e.latlng.lng;
+	    
+	        newMarker.on('dragend', function (e) {
+	            console.log(newMarker.getLatLng());
+	            document.getElementById("entranceLat").value = newMarker.getLatLng().lat;
+	            document.getElementById("entranceLng").value = newMarker.getLatLng().lng;
+	        });
+        }
+    }
+
+	
+	/* switch between map and satellite view */
+	function switchMode(e) {
+		const mode = document.getElementById("mode").value;
+		//console.log(document.getElementById("editEntranceTitle").innerText);
+		if (mode==="upd") {
+			document.getElementById("mode").value="add";
+			e.innerText = [[#{entrance.edit.mode.add}]];
+			document.getElementById("editEntranceTitle").innerText = [[#{entrance.edit.title.add}]];
+			
+			document.getElementById("entranceId").value="";
+			//document.getElementById("areaId").value="";
+			document.getElementById("description").value="";
+			document.getElementById("entranceLink").value="";
+			document.getElementById("entranceLat").value="";
+			document.getElementById("entranceLng").value="";
+			
+	        document.getElementById("fsEditPark").disabled = false;
+            document.getElementById("fsEditEntrance").disabled = false;
+			
+			isMap.on('click', addMarker);
+		}
+
+	}
+	
+    
+    // park MARKER
+    const mPark = document.getElementById("name").value;
+    if (mPark!="") {
+    	L.marker(locateWorkPlace).addTo(isMap)
+    		.bindPopup(mPark)
+    		.openPopup();
+    }
+    
+    // Entrance markers
+    //const idPark = document.querySelector('#idPark').value;
+    const idEntrance = document.querySelector('#idEntrance').value;
+    const idParkRegex = /[0-9]/g;
+    const idParkFound = idPark.match(idParkRegex);
+    if (idParkFound) {
+    	options = document.querySelectorAll('#idEntrance option');
+       // console.log("options:"+options);
+    	for(let i = 1; i < options.length; i++) {
+    		const option = options[i];
+	        
+	        lng = option.getAttribute('data-lng');
+	        lat = option.getAttribute('data-lat');
+	        txt = option.text;
+	        if (idEntrance==option.value) {
+	        	const editMarker = L.marker(L.latLng(lat,lng), {icon:editEntranceIcon,draggable:true})
+		        	.addTo(isMap)
+		        	.bindPopup(txt).openPopup();
+		        editMarker.on('dragend', function(event) {
+		        	 const latlng = event.target.getLatLng();
+		        	  console.log(latlng.lat, latlng.lng)
+
+	        		  document.getElementById("entranceLng").value=latlng.lng;
+	        		  document.getElementById("entranceLat").value=latlng.lat;
+		        	});
+		        
+	        } else {
+		        L.marker(L.latLng(lat,lng), {icon:entranceIcon})
+		        	.addTo(isMap)
+		        	.bindPopup(txt);
+    		}
+	    }
+    }
+    
+
+
+    function showPosition(position) {
+      document.getElementById("mapLatitude").value =position.coords.latitude;
+      document.getElementById("mapLongitude").value =position.coords.longitude;
+      
+      urlLocate=window.location.protocol + "//" + window.location.host + [[@{/mvc/entrance/locateMe}]]+'?lng='+position.coords.longitude+'&lat='+position.coords.latitude;
+      alert(urlLocate)
+    }
+    function locateMe() {
+	    if (navigator.geolocation) {
+	       navigator.geolocation.getCurrentPosition(showPosition);
+	    }
+    }
+    
+    function remoteCall() {
+    	// https://stackabuse.com/bytes/how-to-make-an-ajax-call-without-jquery/
+    	let xhr = new XMLHttpRequest();
+    	xhr.open('GET', 'https://api.example.com/data', true);
+    	xhr.onreadystatechange = function() {
+    	  if (xhr.readyState == 4 && xhr.status == 200)
+    	    console.log(xhr.responseText);
+    	}
+    	xhr.send();
+    }
+    
+    function saveEntrance() {
+        // protect against multiple submit
+        document.getElementById("btnSave").disabled= true;
+        document.getElementById("editEntrance").submit();
+    }
+    function manageDisabled() {
+    	
+        if (document.getElementById("idRegion").value!="") {
+            document.getElementById("fsComm2co").disabled = false;
+            document.getElementById("fsCity").disabled = false;
+        }
+        if (document.getElementById("idCommunauteDeCommunes").value!="") {
+            document.getElementById("fsCity").disabled = false;
+        }
+        
+/*
+    	if (document.getElementById("idRegion").value!="") {
+    		document.getElementById("fsComm2co").disabled = false;
+    	}
+    	if (document.getElementById("idCommunauteDeCommunes").value!="") {
+    		document.getElementById("fsCity").disabled = false;
+    	}
+*/
+    	if (document.getElementById("idCommune").value!="") {
+    		document.getElementById("fsPark").disabled = false;
+    	}
+    	if (document.getElementById("idPark").value!="") {
+    		document.getElementById("fsEntrance").disabled = false;
+    	}
+    	if (document.getElementById("entranceId").value!="" ||
+    		document.getElementById("idEntrance").value!="") {
+    		document.getElementById("fsEditPark").disabled = false;
+    		document.getElementById("fsEditEntrance").disabled = false;
+    	}
+    }
+    manageDisabled();
+</script>
+
+</body>
+</html>

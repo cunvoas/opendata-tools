@@ -1,0 +1,91 @@
+
+
+
+            <div id="layoutSidenav_nav" th:fragment="navLeft" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav">
+                        
+                            <div class="sb-sidenav-menu-heading" th:text="#{menu.abstract}">group 1</div>
+                            <a class="nav-link" th:href="@{/mvc/dashboard}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-gauge-high"></i></div>
+                                <div th:text="#{menu.abstract.dashboard}">g1 t1</div>
+                            </a>
+
+                       <span sec:authorize="hasAuthority('ADMINISTRATOR')">
+                            <div class="sb-sidenav-menu-heading" th:text="#{menu.management}">group 2</div>
+                            
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayout1" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                <div th:text="#{menu.management.members}">group2-1</div>
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayout1" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                	<a class="nav-link" th:href="@{/mvc/management/asso/list}" th:text="#{menu.management.association}">g2-1 t1</a>
+                                    <a class="nav-link" th:href="@{/mvc/management/contrib/list}" th:text="#{menu.management.contributor}">g2-1 t2</a>
+                                </nav>
+                            </div>
+                       </span>
+                            
+                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayout2" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="fas fa-database"></i></div>
+                                 <div th:text="#{menu.management.opendata}">group2-2</div>
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayout2" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                	<a class="nav-link" th:href="@{/mvc/management/comm2co/list}" th:text="#{menu.management.cityGroups}">g2-1 t1</a>
+                                    <a class="nav-link" th:href="@{/mvc/management/cityassoc/list}" th:text="#{menu.management.cities}">g2-1 t2</a>
+                                </nav>
+                            </div>
+                            
+                            
+                            
+                            
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayout3" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="fas fa-tree-city"></i></div>
+                                 <div th:text="#{menu.management.parks}">group2-2</div>
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayout3" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" th:href="@{/mvc/consult}" th:text="#{menu.maps.consult}">g2-1 t2</a>
+                                    <a class="nav-link" th:href="@{/mvc/park/list}" th:text="#{menu.maps.parks}">g2-1 t2</a>
+                                    <a class="nav-link" th:href="@{/mvc/park/new}" th:text="#{menu.maps.parks.new}">g2-1 t1</a>
+                                </nav>
+                            </div>
+                            
+                           
+                            
+                            <a class="nav-link" th:href="@{/mvc/entrance}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-map-location-dot"></i></div>
+                                <div th:text="#{menu.maps.entances}">g3 t1</div>
+                            </a>
+
+
+
+                            
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayout4" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="fas fa-calculator"></i></div>
+                                <div th:text="#{menu.maps.compute}">group2-2</div>
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayout4" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" th:href="@{/mvc/simulation}" th:text="#{menu.maps.simulation}">g2-1 t2</a>
+                                    <a class="nav-link" th:href="@{/mvc/proposal}" th:text="#{menu.maps.proposal}">g2-1 t2</a>
+                                </nav>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <div class="sb-sidenav-footer" sec:authorize="isAuthenticated()">
+                        <div class="small" th:text="#{global.user.logged}">Logged in as:</div>
+                        <span sec:authentication="name">my name</span>
+                        <span sec:authentication="principal.authorities">my role</span>
+                    </div>
+                </nav>
+            </div>
+           

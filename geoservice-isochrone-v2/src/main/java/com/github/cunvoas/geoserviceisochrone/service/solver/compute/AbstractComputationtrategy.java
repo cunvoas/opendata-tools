@@ -1,0 +1,72 @@
+package com.github.cunvoas.geoserviceisochrone.service.solver.compute;
+
+import java.util.List;
+import java.util.Map;
+
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
+import com.github.cunvoas.geoserviceisochrone.service.solver.sort.ProposalSortStrategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.sort.ProposalSortStrategyFactory;
+import com.github.cunvoas.geoserviceisochrone.service.solver.sort.ProposalSortStrategyFactory.Type;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public abstract class AbstractComputationtrategy implements ProposalComputationStrategy {
+
+
+	public static final double AT_LEAST_PARK_SURFACE = 1_000; // m²
+	public static final double MIN_PARK_SURFACE = 650; // m²
+	public static final double CARRE_SIZE = 200; // mètres (200m x 200m)	
+	public static final double CARRE_SURFACE = 40_000; // m²
+	
+	
+
+	/**
+	 * Trie les propositions par déficit décroissant
+	 * @param carreMap
+	 * @return
+	 * test: 268566.01
+	 */
+	public List<ParkProposalWork> sortProposalsByDeficit(Map<String, ParkProposalWork> carreMap) {
+		ProposalSortStrategy strategy = ProposalSortStrategyFactory.create(Type.DEFICIT);
+		return strategy.sort(carreMap);
+	}
+	
+	
+	/**
+	 * Trie les propositions par déficit décroissant
+	 * @param carreMap
+	 * @return
+	 * test: xxxs
+	 */
+	public List<ParkProposalWork> sortProposalsByPersona(Map<String, ParkProposalWork> carreMap) {
+		ProposalSortStrategy strategy = ProposalSortStrategyFactory.create(Type.PERSONA);
+		return strategy.sort(carreMap);
+	}
+	
+	
+	
+	/**
+	 * Trie les propositions par impact humain total decroissant : manque de surface × population.
+	 * Priorite aux carreaux ou le deficit est a la fois grand et concerne beaucoup d'habitants.
+	 * @param carreMap
+	 * @return
+	 */
+	public List<ParkProposalWork> sortProposalsByMissingPopulation(Map<String, ParkProposalWork> carreMap) {
+		ProposalSortStrategy strategy = ProposalSortStrategyFactory.create(Type.MISSING_POPULATION);
+		return strategy.sort(carreMap);
+	}
+
+
+	/**
+	 * Trouve les N carrés voisins d'un carré donné selon la sensité.
+	 * 
+	 * @param idInspire identifiant du carré central
+	 * @param annee année de référence
+	 * @return liste des carrés voisins (max 24 ou 143 selon densité)
+	 */
+	public List<ParkProposalWork> findNeighbors(String idInspire, Map<String, ParkProposalWork> carreMap, Integer urbanDistance) {
+		return ParkProposalHelper.findNeighbors(idInspire, carreMap, urbanDistance);
+	}
+	
+}

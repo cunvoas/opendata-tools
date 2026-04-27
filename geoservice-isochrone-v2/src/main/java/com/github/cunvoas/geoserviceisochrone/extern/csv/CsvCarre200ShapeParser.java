@@ -1,0 +1,81 @@
+package com.github.cunvoas.geoserviceisochrone.extern.csv;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
+/**
+ * Parseur CSV pour l'import de carreaux INSEE 200m. Permet de gérer les entêtes et la conversion de colonnes.
+ * @author cunvoas
+ * @deprecated Utilisation déconseillée, remplacé par d'autres parseurs plus récents.
+ * @see https://commons.apache.org/proper/commons-csv/user-guide.html
+ */
+@Component
+@Deprecated
+public class CsvCarre200ShapeParser {
+	
+	/**
+	 * Enumération des entêtes du CSV pour faciliter la maintenance et l'évolution.
+	 * Fournit également une méthode de lookup pour retrouver l'entête à partir du nom de colonne.
+	 * @author cunvoas
+	 */
+	public enum ParkEntranceCsvHeaders {
+		idInspire("Identifiant INSPIRE du carreau habité"),
+		idCarreHab("Identifiant du carreau habité"),
+		idRectHab("Identifiant du rectangle d’appartenance du carreau habité"),
+		nbHabCarre("Nombre d’individus résidant dans le carreau"),
+		nbCarRect("Nombre de carreaux habités du rectangle d’appartenance"),
+		geoPoint2d("geo_point_2d"),
+		geoShape("geo_shape"),
+		code("code"),
+		epci("EPCI"),
+		commune("Commune"),
+		region("region"),
+		departement("departement");
+		
+		
+		
+		private String column;
+
+		ParkEntranceCsvHeaders(String column) {
+			this.column = column;
+		}
+
+		public String geColumn() {
+			return column;
+		}
+
+		// Lookup table
+		private static final Map<String, ParkEntranceCsvHeaders> lookup = new HashMap<>();
+
+		// Populate the lookup table on loading time
+		static {
+			for (ParkEntranceCsvHeaders env : ParkEntranceCsvHeaders.values()) {
+				lookup.put(env.geColumn(), env);
+			}
+		}
+
+		// This method can be used for reverse lookup purpose
+		public static ParkEntranceCsvHeaders get(String column) {
+			return lookup.get(column);
+		}
+
+	}
+	
+	
+	/**
+	 * Convertit une chaîne en Double. Retourne 0 si la chaîne est vide ou nulle.
+	 * @param val la valeur à convertir
+	 * @return la valeur convertie en Double, ou 0 si la chaîne est vide
+	 */
+	private Double parseDouble(String val) {
+		Double ret = Double.valueOf(0);
+		
+		if (val!=null && val.trim().length()>0) {
+			ret = Double.valueOf(val);
+		}
+		return ret;
+	}
+	
+}
