@@ -36,17 +36,21 @@ public class ProjectSimulatorController {
     private static final String VIEW = "simulateur";
     private static final String FORM_KEY = "formSimulateur";
 
-    @Autowired
-    private ProjectSimulatorService projectSimulatorService;
-    
-    @Autowired
-    private ServiceReadReferences serviceReadReferences;
+    private final ProjectSimulatorService projectSimulatorService;
+    private final ServiceReadReferences serviceReadReferences;
+    private final GeoJson2GeometryHelper geoJson2GeometryHelper;
+    private final TokenManagement tokenManagement;
 
     @Autowired
-    private GeoJson2GeometryHelper geoJson2GeometryHelper;
-    
-    @Autowired
-    private TokenManagement tokenManagement;
+    public ProjectSimulatorController(ProjectSimulatorService projectSimulatorService,
+                                      ServiceReadReferences serviceReadReferences,
+                                      GeoJson2GeometryHelper geoJson2GeometryHelper,
+                                      TokenManagement tokenManagement) {
+        this.projectSimulatorService = projectSimulatorService;
+        this.serviceReadReferences = serviceReadReferences;
+        this.geoJson2GeometryHelper = geoJson2GeometryHelper;
+        this.tokenManagement = tokenManagement;
+    }
 
 
     /**

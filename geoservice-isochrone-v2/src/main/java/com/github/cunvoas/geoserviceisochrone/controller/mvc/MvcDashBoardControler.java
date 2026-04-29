@@ -26,14 +26,15 @@ import com.github.cunvoas.geoserviceisochrone.service.dashboard.DashboadService;
 @RequestMapping("/mvc")
 public class MvcDashBoardControler {
 	
-	@Autowired
-	private DashboadService dashboadService;
-	
-	@Autowired
-    private ActivityTrackerService activityTrackerService;
+	private final DashboadService dashboadService;
+	private final ActivityTrackerService activityTrackerService;
+	private final ContributeurService contributeurService;
 
-	@Autowired
-	private ContributeurService contributeurService;
+	public MvcDashBoardControler(DashboadService dashboadService, ActivityTrackerService activityTrackerService, ContributeurService contributeurService) {
+		this.dashboadService = dashboadService;
+		this.activityTrackerService = activityTrackerService;
+		this.contributeurService = contributeurService;
+	}
 	
 	/**
 	 * info page.

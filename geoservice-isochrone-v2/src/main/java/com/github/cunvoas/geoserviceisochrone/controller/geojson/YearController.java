@@ -17,8 +17,12 @@ import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusines
 @RequestMapping("/map/years")
 public class YearController {
 
-	@Autowired
-	private ApplicationBusinessProperties applicationBusinessProperties;
+  private final ApplicationBusinessProperties applicationBusinessProperties;
+
+  @Autowired
+  public YearController(ApplicationBusinessProperties applicationBusinessProperties) {
+    this.applicationBusinessProperties = applicationBusinessProperties;
+  }
 
     /**
      * list all city.

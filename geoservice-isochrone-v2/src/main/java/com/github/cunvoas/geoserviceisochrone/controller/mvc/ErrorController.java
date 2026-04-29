@@ -29,8 +29,11 @@ public class ErrorController  extends ResponseEntityExceptionHandler{
     @Value("${application.feature-flipping.show-stacktrace-on-error:false}")
     private boolean showStacktraceOnError;
 
-    @Autowired
-    private MessageSource messageSource;
+    private final MessageSource messageSource;
+
+    public ErrorController(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
 
 	/**
 	 * Gestionnaire d'exception générique.

@@ -36,13 +36,16 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 @RequestMapping("/mvc/entrance")
 public class EntranceControler {
 	
-	@Autowired
-	private ServiceReadReferences serviceReadReferences;
-	@Autowired
-	private ServiceOpenData serviceOpenData;
+	private final ServiceReadReferences serviceReadReferences;
+	private final ServiceOpenData serviceOpenData;
+	private final ParkService parkService;
 
 	@Autowired
-	private ParkService parkService;
+	public EntranceControler(ServiceReadReferences serviceReadReferences, ServiceOpenData serviceOpenData, ParkService parkService) {
+		this.serviceReadReferences = serviceReadReferences;
+		this.serviceOpenData = serviceOpenData;
+		this.parkService = parkService;
+	}
 	
     
 	

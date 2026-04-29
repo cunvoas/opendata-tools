@@ -26,16 +26,19 @@ import lombok.extern.slf4j.Slf4j;
 @Service("userDetailsService")
 @Slf4j
 public class LimitedUserDetailsService  implements UserDetailsService {
+
+    @Autowired
+    public LimitedUserDetailsService(ContributeurRepository contributeurRepository, LoginAttemptService loginAttemptService) {
+        this.contributeurRepository = contributeurRepository;
+        this.loginAttemptService = loginAttemptService;
+    }
 	
 	@Value("${application.security.timehack:1000}")
 	private Long timeHack=1000L;
  
-	@Autowired
-	@Lazy
-	private ContributeurRepository contributeurRepository;
+	private final ContributeurRepository contributeurRepository;
 
-    @Autowired
-    private LoginAttemptService loginAttemptService;
+    private final LoginAttemptService loginAttemptService;
  
     /**
      * Ajoute un délai aléatoire pour limiter les attaques par force brute.

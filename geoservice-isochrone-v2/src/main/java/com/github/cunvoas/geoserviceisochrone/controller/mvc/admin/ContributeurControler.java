@@ -41,19 +41,27 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ContributeurControler {
 	
+	private final MessageSource messageSource;
+	private final ContributeurService contributeurService;
+	private final RegionRepository regionRepository;
+	private final CommunauteCommuneRepository communauteCommuneRepository;
+	private final CityRepository cityRepository;
+	private final AssociationService associationService;
+
 	@Autowired
-	private MessageSource messageSource;
-	
-	@Autowired
-	private ContributeurService contributeurService;
-	@Autowired
-	private RegionRepository regionRepository;
-	@Autowired
-	private CommunauteCommuneRepository communauteCommuneRepository;
-	@Autowired
-	private CityRepository cityRepository;
-	@Autowired
-	private AssociationService associationService;
+	public ContributeurControler(MessageSource messageSource,
+	                            ContributeurService contributeurService,
+	                            RegionRepository regionRepository,
+	                            CommunauteCommuneRepository communauteCommuneRepository,
+	                            CityRepository cityRepository,
+	                            AssociationService associationService) {
+		this.messageSource = messageSource;
+		this.contributeurService = contributeurService;
+		this.regionRepository = regionRepository;
+		this.communauteCommuneRepository = communauteCommuneRepository;
+		this.cityRepository = cityRepository;
+		this.associationService = associationService;
+	}
 
 	private String formName = "editContributeur";
 	private String listName = "listContributeur";

@@ -18,9 +18,13 @@ import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 @RequestMapping("/mvc/geojson")
 public class GeoJsonForMvcController {
 
+    private final GeoMapServiceV2 geoMapService;
+
     @Autowired
-    private GeoMapServiceV2 geoMapService;
-	
+    public GeoJsonForMvcController(GeoMapServiceV2 geoMapService) {
+    	this.geoMapService=geoMapService;
+    }
+    
 	/**
 	 * Récupère les isochrones d'entrée d'un parc.
 	 * @param idPark Identifiant du parc

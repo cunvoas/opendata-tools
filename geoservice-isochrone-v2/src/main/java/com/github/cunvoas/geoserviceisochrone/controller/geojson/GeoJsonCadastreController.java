@@ -22,8 +22,12 @@ public class GeoJsonCadastreController {
 
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 	
+    private final GeoMapServiceV2 geoMapService;
+
     @Autowired
-    private GeoMapServiceV2 geoMapService;
+    public GeoJsonCadastreController(GeoMapServiceV2 geoMapService) {
+        this.geoMapService = geoMapService;
+    }
     
     /**
      * get Cadastre by area.

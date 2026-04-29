@@ -37,7 +37,7 @@ public class GeoJson2GeometryHelper {
 
 	// use the safe because is threadsafe
 	// plus de ObjectMapper dédié aux geojson JTS
-	private ObjectMapper mapper;
+	private final ObjectMapper mapper;
 	
 	@Autowired
 	public GeoJson2GeometryHelper(ObjectMapper objectMapper) {

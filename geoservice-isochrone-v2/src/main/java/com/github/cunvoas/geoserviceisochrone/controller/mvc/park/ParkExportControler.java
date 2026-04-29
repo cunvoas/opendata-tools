@@ -32,12 +32,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ParkExportControler {
 
+	private final ServiceReadReferences serviceReadReferences;
+	private final ServiceVerificationExporter serviceVerificationExporter;
+	private final ParkExportCsv parkExportCsv;
+
 	@Autowired
-	private ServiceReadReferences serviceReadReferences;
-	@Autowired
-	private ServiceVerificationExporter serviceVerificationExporter;
-	@Autowired
-	private ParkExportCsv parkExportCsv;
+	public ParkExportControler(ServiceReadReferences serviceReadReferences, ServiceVerificationExporter serviceVerificationExporter, ParkExportCsv parkExportCsv) {
+		this.serviceReadReferences = serviceReadReferences;
+		this.serviceVerificationExporter = serviceVerificationExporter;
+		this.parkExportCsv = parkExportCsv;
+	}
 	
 	/**
 	 * export parks.

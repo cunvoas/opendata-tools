@@ -35,13 +35,16 @@ public class ParkEditControler {
 	
 	private String formName = "editPark";
 
+	private final ServiceReadReferences serviceReadReferences;
+	private final ServiceParcPrefecture serviceParcPrefecture;
+	private final ParkTypeService parkTypeService;
+
 	@Autowired
-	private ServiceReadReferences serviceReadReferences;
-	@Autowired
-	private ServiceParcPrefecture serviceParcPrefecture;
-	
-	@Autowired
-	private ParkTypeService parkTypeService;
+	public ParkEditControler(ServiceReadReferences serviceReadReferences, ServiceParcPrefecture serviceParcPrefecture, ParkTypeService parkTypeService) {
+		this.serviceReadReferences = serviceReadReferences;
+		this.serviceParcPrefecture = serviceParcPrefecture;
+		this.parkTypeService = parkTypeService;
+	}
 
 	/**
 	 * edit page

@@ -18,8 +18,12 @@ import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 @RequestMapping("/map/insee/carre200m")
 public class GeoJsonCarreInseeController {
 
+    private final GeoMapServiceV2 inseeCarre200mService;
+
     @Autowired
-    private GeoMapServiceV2 inseeCarre200mService;
+    public GeoJsonCarreInseeController(GeoMapServiceV2 inseeCarre200mService) {
+        this.inseeCarre200mService = inseeCarre200mService;
+    }
 
 
     /**

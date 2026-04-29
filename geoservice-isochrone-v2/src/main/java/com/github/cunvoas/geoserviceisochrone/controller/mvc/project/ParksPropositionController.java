@@ -34,20 +34,24 @@ public class ParksPropositionController {
     private static final String VIEW = "proposal";
     private static final String FORM_KEY = "formProposal";
 
-    @Autowired
-    private ServiceReadReferences serviceReadReferences;
+    private final ServiceReadReferences serviceReadReferences;
+    private final ApplicationBusinessProperties applicationBusinessProperties;
+    private final TokenManagement tokenManagement;
+    private final ServicePropositionParc servicePropositionParc;
+    private final ParkProposalMetaRepository parkProposalMetaRepository;
 
-	@Autowired
-	private ApplicationBusinessProperties applicationBusinessProperties;
-	
     @Autowired
-    private TokenManagement tokenManagement;
-    
-    @Autowired
-    private ServicePropositionParc servicePropositionParc;
-    
-    @Autowired
-    private ParkProposalMetaRepository parkProposalMetaRepository;
+    public ParksPropositionController(ServiceReadReferences serviceReadReferences,
+                                      ApplicationBusinessProperties applicationBusinessProperties,
+                                      TokenManagement tokenManagement,
+                                      ServicePropositionParc servicePropositionParc,
+                                      ParkProposalMetaRepository parkProposalMetaRepository) {
+        this.serviceReadReferences = serviceReadReferences;
+        this.applicationBusinessProperties = applicationBusinessProperties;
+        this.tokenManagement = tokenManagement;
+        this.servicePropositionParc = servicePropositionParc;
+        this.parkProposalMetaRepository = parkProposalMetaRepository;
+    }
 
     /**
      * Display the simulator view.

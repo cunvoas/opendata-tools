@@ -27,7 +27,7 @@ public class AdressGeoJsonParser {
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 	
 	// possible because is threadsafe
-	private ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 	 private final GeoJsonReader geoJsonReader = new GeoJsonReader();
 	 
 	public AdressGeoJsonParser(ObjectMapper objectMapper) {

@@ -31,17 +31,19 @@ import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadRefere
 @RequestMapping("/mvc/management/comm2co")
 public class CommunauteCommuneControler {
 	
-	private String formName = "editCommunauteCommune";
-	private String listName = "listCommunauteCommune";
-	
+	private final String formName = "editCommunauteCommune";
+	private final String listName = "listCommunauteCommune";
+
+	private final CommunauteCommuneService communauteCommuneService;
+	private final ServiceReadReferences serviceReadReferences;
+	private final TokenManagement tokenManagement;
+
 	@Autowired
-	private CommunauteCommuneService communauteCommuneService;
-	
-	@Autowired
-	private ServiceReadReferences serviceReadReferences;
-	
-	@Autowired
-	private TokenManagement tokenManagement;
+	public CommunauteCommuneControler(CommunauteCommuneService communauteCommuneService, ServiceReadReferences serviceReadReferences, TokenManagement tokenManagement) {
+		this.communauteCommuneService = communauteCommuneService;
+		this.serviceReadReferences = serviceReadReferences;
+		this.tokenManagement = tokenManagement;
+	}
 
 	/**
 	 * Affiche la liste des communautés de communes accessibles à l'utilisateur connecté.

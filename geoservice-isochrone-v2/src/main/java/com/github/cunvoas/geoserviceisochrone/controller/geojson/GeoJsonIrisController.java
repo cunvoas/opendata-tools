@@ -18,8 +18,12 @@ import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 @RequestMapping("/map/insee/iris")
 public class GeoJsonIrisController {
 
+    private final GeoMapServiceV2 geomapService;
+
     @Autowired
-    private GeoMapServiceV2 geomapService;
+    public GeoJsonIrisController(GeoMapServiceV2 geomapService) {
+        this.geomapService = geomapService;
+    }
 
 
     /**

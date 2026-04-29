@@ -27,11 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GeoJsonIgnTopoController {
 
-    @Autowired
-    private IgnTopoService ignTopoService;
+    private final IgnTopoService ignTopoService;
+    private final GeometryQueryHelper geometryQueryHelper;
 
     @Autowired
-    private GeometryQueryHelper geometryQueryHelper;
+    public GeoJsonIgnTopoController(IgnTopoService ignTopoService, GeometryQueryHelper geometryQueryHelper) {
+        this.ignTopoService = ignTopoService;
+        this.geometryQueryHelper = geometryQueryHelper;
+    }
 
     /**
      * get insee by area.

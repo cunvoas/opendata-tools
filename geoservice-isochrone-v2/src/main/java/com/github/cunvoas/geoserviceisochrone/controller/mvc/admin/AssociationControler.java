@@ -32,8 +32,11 @@ public class AssociationControler {
 	private String formName = "editAssociation";
 	private String listName = "listAssociation";
 	
-	@Autowired
-	private AssociationService associationService;
+	private final AssociationService associationService;
+   @Autowired
+   public AssociationControler(AssociationService associationService) {
+	   this.associationService = associationService;
+   }
 
 	/**
 	 * Affiche la liste des associations accessibles à l'utilisateur connecté.

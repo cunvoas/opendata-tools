@@ -1,12 +1,14 @@
 package com.github.cunvoas.geoserviceisochrone.metrics;
 
-import io.micrometer.observation.Observation;
-import io.micrometer.observation.ObservationRegistry;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 
 /**
  * Aspect AOP pour la surveillance Zipkin.
@@ -29,6 +31,7 @@ public class ZipkinTracingAspect {
      * Constructeur.
      * @param observationRegistry registre d'observation Micrometer
      */
+    @Autowired
     public ZipkinTracingAspect(ObservationRegistry observationRegistry) {
         this.observationRegistry = observationRegistry;
     }

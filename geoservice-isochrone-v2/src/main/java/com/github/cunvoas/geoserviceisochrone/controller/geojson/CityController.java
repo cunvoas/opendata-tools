@@ -20,8 +20,12 @@ import com.github.cunvoas.geoserviceisochrone.service.map.CityService;
 @RequestMapping("/map/city")
 public class CityController {
 
+    private final CityService cityService;
+
     @Autowired
-    private CityService service;
+    public CityController (CityService cityService) {
+    	this.cityService=cityService;
+    }
 
     /**
      * list all city.
@@ -30,7 +34,7 @@ public class CityController {
      */
     @GetMapping
     public Page<City> getCityPage(Pageable pageable) {
-        return service.findAll(pageable);
+        return cityService.findAll(pageable);
     }
 
     /**
@@ -45,7 +49,7 @@ public class CityController {
             @PathVariable double lat,
             @PathVariable double lon,
             @PathVariable double distanceM) {
-        return service.findAround(lat, lon, distanceM);
+        return cityService.findAround(lat, lon, distanceM);
     }
 
 }

@@ -37,14 +37,18 @@ import lombok.extern.slf4j.Slf4j;
 @Deprecated
 public class MassGeoJsonIntegratorParser {
 
-	@Autowired
-	private GeoJson2GeometryHelper geoParser;
+    @Autowired
+    public MassGeoJsonIntegratorParser(GeoJson2GeometryHelper geoParser, Filosofil200mRepository filosofil200mRepository, InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository) {
+        this.geoParser = geoParser;
+        this.filosofil200mRepository = filosofil200mRepository;
+        this.inseeCarre200mOnlyShapeRepository = inseeCarre200mOnlyShapeRepository;
+    }
 
-	@Autowired
-	private Filosofil200mRepository filosofil200mRepository;
+	private final GeoJson2GeometryHelper geoParser;
 
-	@Autowired
-	private InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;
+	private final Filosofil200mRepository filosofil200mRepository;
+
+	private final InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;
 
 	/**
 	 * Parse un fichier GeoJSON INSPIRE et enregistre les entités correspondantes.

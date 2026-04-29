@@ -39,11 +39,14 @@ public class ParkListControler {
 	
 	private String formName = "listPark";
 
+	private final ServiceReadReferences serviceReadReferences;
+	private final ParkTypeService parkTypeService;
+
 	@Autowired
-	private ServiceReadReferences serviceReadReferences;
-	
-	@Autowired
-	private ParkTypeService parkTypeService;
+	public ParkListControler(ServiceReadReferences serviceReadReferences, ParkTypeService parkTypeService) {
+		this.serviceReadReferences = serviceReadReferences;
+		this.parkTypeService = parkTypeService;
+	}
 	
 	
 

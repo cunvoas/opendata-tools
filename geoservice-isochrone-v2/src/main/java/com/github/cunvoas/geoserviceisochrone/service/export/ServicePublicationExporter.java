@@ -51,27 +51,29 @@ public class ServicePublicationExporter {
 	 * Initialise la configuration de l'ObjectMapper pour la sérialisation/désérialisation JSON.
 	 */
 	@Autowired
-	public ServicePublicationExporter(ObjectMapper objectMapper) {
-		super();
-		this.objectMapper=objectMapper;
-		// Suppression de l'appel à collectionType (inutile si non utilisé)
-		// La configuration fine doit être faite dans un JsonMapperBuilderCustomizer (voir GeoserviceIsochroneApplication)
-	}
+    public ServicePublicationExporter(ObjectMapper objectMapper,
+            ApplicationBusinessProperties applicationBusinessProperties,
+            ServiceReadReferences serviceReadReferences,
+            CadastreRepository cadastreRepository,
+            GeoJsonCadastreController geoJsonCadastreController,
+            GeoMapServiceV2 geoMapServiceV2) {
+        this.objectMapper = objectMapper;
+        this.applicationBusinessProperties = applicationBusinessProperties;
+        this.serviceReadReferences = serviceReadReferences;
+        this.cadastreRepository = cadastreRepository;
+        this.geoJsonCadastreController = geoJsonCadastreController;
+        this.geoMapServiceV2 = geoMapServiceV2;
+    }
 
-	@Autowired
-	private ApplicationBusinessProperties applicationBusinessProperties;
+	private final ApplicationBusinessProperties applicationBusinessProperties;
 	
-	@Autowired
-	private ServiceReadReferences serviceReadReferences;
+	private final ServiceReadReferences serviceReadReferences;
 	
-    @Autowired
-    private CadastreRepository cadastreRepository;
+    private final CadastreRepository cadastreRepository;
     
-	@Autowired
-	private GeoJsonCadastreController geoJsonCadastreController;
+	private final GeoJsonCadastreController geoJsonCadastreController;
 	
-	@Autowired
-	private GeoMapServiceV2 geoMapServiceV2;
+	private final GeoMapServiceV2 geoMapServiceV2;
 	
 
 

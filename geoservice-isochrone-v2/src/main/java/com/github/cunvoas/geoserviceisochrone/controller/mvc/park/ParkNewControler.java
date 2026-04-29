@@ -54,30 +54,36 @@ public class ParkNewControler {
 	private static final DateFormat DF2 =new SimpleDateFormat("yyyy-MM-dd");
 	private NumberFormat NF = new DecimalFormat("#.##O");
 	
+	private final TokenManagement tokenManagement;
+	private final ServiceReadReferences serviceReadReferences;
+	private final ParkJardinService serviceParkJardinService;
+	private final ApplicationBusinessProperties applicationBusinessProperties;
+	private final ServiceParcPrefecture serviceParcPrefecture;
+	private final ParkTypeService parkTypeService;
+	private final GeoJson2GeometryHelper geoJson2GeometryHelper;
+	private final UploadFormValidator validatorUpload;
+	private final PhotoService photoService;
+
 	@Autowired
-	private TokenManagement tokenManagement;
-	@Autowired
-	private ServiceReadReferences serviceReadReferences;
-	@Autowired
-	private ParkJardinService serviceParkJardinService;
-	
-	@Autowired
-	private ApplicationBusinessProperties applicationBusinessProperties;
-	
-	@Autowired
-	private ServiceParcPrefecture serviceParcPrefecture;
-	
-	@Autowired
-	private ParkTypeService parkTypeService;
-	
-	@Autowired
-	private GeoJson2GeometryHelper geoJson2GeometryHelper;
-	
-    @Autowired
-    private UploadFormValidator validatorUpload;
-    
-	@Autowired
-	private PhotoService photoService;
+	public ParkNewControler(TokenManagement tokenManagement,
+	                       ServiceReadReferences serviceReadReferences,
+	                       ParkJardinService serviceParkJardinService,
+	                       ApplicationBusinessProperties applicationBusinessProperties,
+	                       ServiceParcPrefecture serviceParcPrefecture,
+	                       ParkTypeService parkTypeService,
+	                       GeoJson2GeometryHelper geoJson2GeometryHelper,
+	                       UploadFormValidator validatorUpload,
+	                       PhotoService photoService) {
+		this.tokenManagement = tokenManagement;
+		this.serviceReadReferences = serviceReadReferences;
+		this.serviceParkJardinService = serviceParkJardinService;
+		this.applicationBusinessProperties = applicationBusinessProperties;
+		this.serviceParcPrefecture = serviceParcPrefecture;
+		this.parkTypeService = parkTypeService;
+		this.geoJson2GeometryHelper = geoJson2GeometryHelper;
+		this.validatorUpload = validatorUpload;
+		this.photoService = photoService;
+	}
 	
 	private String formName = "newPark";
 

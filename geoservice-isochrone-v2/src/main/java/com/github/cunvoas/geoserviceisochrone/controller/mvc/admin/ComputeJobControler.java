@@ -29,15 +29,21 @@ public class ComputeJobControler {
 
 	private String formName = "manageJobs";
 	
+	private final BatchJobService batchJobService;
+	private final RegionRepository regionRepository;
+	private final CommunauteCommuneRepository communauteCommuneRepository;
+	private final CityRepository cityRepository;
+
 	@Autowired
-	private BatchJobService batchJobService;
-	
-	@Autowired
-	private RegionRepository regionRepository;
-	@Autowired
-	private CommunauteCommuneRepository communauteCommuneRepository;
-	@Autowired
-	private CityRepository cityRepository;
+	public ComputeJobControler(BatchJobService batchJobService,
+	                          RegionRepository regionRepository,
+	                          CommunauteCommuneRepository communauteCommuneRepository,
+	                          CityRepository cityRepository) {
+		this.batchJobService = batchJobService;
+		this.regionRepository = regionRepository;
+		this.communauteCommuneRepository = communauteCommuneRepository;
+		this.cityRepository = cityRepository;
+	}
 	
 
 	/**

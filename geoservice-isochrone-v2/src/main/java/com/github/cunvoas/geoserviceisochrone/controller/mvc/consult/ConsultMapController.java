@@ -24,8 +24,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConsultMapController {
 
+    private final ServiceReadReferences serviceReadReferences;
+
     @Autowired
-    private ServiceReadReferences serviceReadReferences;
+    public ConsultMapController(ServiceReadReferences serviceReadReferences) {
+        this.serviceReadReferences = serviceReadReferences;
+    }
 
     private static final String VIEW = "consultMap";
     private static final String FORM_KEY = "territoire";

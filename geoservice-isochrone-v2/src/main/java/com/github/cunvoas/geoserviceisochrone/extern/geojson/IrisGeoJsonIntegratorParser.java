@@ -31,11 +31,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class IrisGeoJsonIntegratorParser {
 
-	@Autowired
-	private GeoJson2GeometryHelper geoParser;
+    @Autowired
+    public IrisGeoJsonIntegratorParser(GeoJson2GeometryHelper geoParser, IrisShapeRepository irisShapeRepository) {
+        this.geoParser = geoParser;
+        this.irisShapeRepository = irisShapeRepository;
+    }
 
-	@Autowired
-	private IrisShapeRepository irisShapeRepository;
+	private final GeoJson2GeometryHelper geoParser;
+
+	private final IrisShapeRepository irisShapeRepository;
 
 	/**
 	 * Parse un fichier GeoJSON INSPIRE et enregistre les entités IRIS correspondantes.

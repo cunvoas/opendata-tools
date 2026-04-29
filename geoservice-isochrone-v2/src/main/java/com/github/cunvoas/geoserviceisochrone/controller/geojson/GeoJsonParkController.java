@@ -26,10 +26,14 @@ public class GeoJsonParkController {
 
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 	
+    private final GeoMapServiceV2 geoMapService;
+    private final ApplicationBusinessProperties applicationBusinessProperties;
+
     @Autowired
-    private GeoMapServiceV2 geoMapService;
-    @Autowired
-    private ApplicationBusinessProperties applicationBusinessProperties;
+    public GeoJsonParkController(GeoMapServiceV2 geoMapService, ApplicationBusinessProperties applicationBusinessProperties) {
+        this.geoMapService = geoMapService;
+        this.applicationBusinessProperties = applicationBusinessProperties;
+    }
 
 
     /**

@@ -32,24 +32,34 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ParkJardinService {
 	
-	@Autowired 
-	private ParkJardinRepository parkJardinRepository;
+	private final ParkJardinRepository parkJardinRepository;
 
-	@Autowired 
-	private ParkAreaRepository parkAreaRepository;
+	private final ParkAreaRepository parkAreaRepository;
 
-	@Autowired 
-	private ParkTypeService parkTypeService;
+	private final ParkTypeService parkTypeService;
 
-	@Autowired 
-	private CadastreRepository cadastreRepository;
-	@Autowired 
-	private CityRepository cityRepository;
+	private final CadastreRepository cadastreRepository;
+	private final CityRepository cityRepository;
 
-	@Autowired 
-	private InseeCarre200mOnlyShapeRepository surfaceRepo;
-	
-	
+	private final InseeCarre200mOnlyShapeRepository surfaceRepo;
+
+	@Autowired
+	public ParkJardinService(
+	    ParkJardinRepository parkJardinRepository,
+	    ParkAreaRepository parkAreaRepository,
+	    ParkTypeService parkTypeService,
+	    CadastreRepository cadastreRepository,
+	    CityRepository cityRepository,
+	    InseeCarre200mOnlyShapeRepository surfaceRepo
+	) {
+	    this.parkJardinRepository = parkJardinRepository;
+	    this.parkAreaRepository = parkAreaRepository;
+	    this.parkTypeService = parkTypeService;
+	    this.cadastreRepository = cadastreRepository;
+	    this.cityRepository = cityRepository;
+	    this.surfaceRepo = surfaceRepo;
+	}
+
 	/**
 	 * save ParcEtJardin.
 	 * @param parcEtJardin model

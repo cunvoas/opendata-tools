@@ -27,9 +27,13 @@ import okhttp3.Response;
 @Component
 @Slf4j
 public class AdresseClientServiceGouvImpl implements AdresseClientService {
+
+    @Autowired
+    public AdresseClientServiceGouvImpl(AdressGeoJsonParser adressGeoJsonParser) {
+        this.adressGeoJsonParser = adressGeoJsonParser;
+    }
 	
-	@Autowired
-	private AdressGeoJsonParser adressGeoJsonParser;
+	private final AdressGeoJsonParser adressGeoJsonParser;
 	
 	private static final String URL = "https://api-adresse.data.gouv.fr/";
 	

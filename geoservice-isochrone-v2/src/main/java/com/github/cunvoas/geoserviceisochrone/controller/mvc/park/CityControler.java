@@ -18,7 +18,6 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.Association;
 public class CityControler {
 	
 	private String formName = "commingSoon";
-
 	 
 	/**
 	 * get page with population.

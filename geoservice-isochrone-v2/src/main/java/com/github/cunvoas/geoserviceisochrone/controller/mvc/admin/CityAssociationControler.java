@@ -31,14 +31,17 @@ import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadRefere
 @RequestMapping("/mvc/management/cityassoc")
 public class CityAssociationControler {
 	
-	private String formName = "editCityAssociation";
-	private String listName = "listCityAssociation";
-	
+	private final String formName = "editCityAssociation";
+	private final String listName = "listCityAssociation";
+
+	private final CityAssociationService cityAssociationService;
+	private final ServiceReadReferences serviceReadReferences;
+
 	@Autowired
-	private CityAssociationService cityAssociationService;
-	
-	@Autowired
-	private ServiceReadReferences serviceReadReferences;
+	public CityAssociationControler(CityAssociationService cityAssociationService, ServiceReadReferences serviceReadReferences) {
+		this.cityAssociationService = cityAssociationService;
+		this.serviceReadReferences = serviceReadReferences;
+	}
 
 	/**
 	 * Affiche la liste des communautés de communes avec leurs villes associées.
