@@ -9,6 +9,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.cunvoas.geoserviceisochrone.extern.gouv.adress.dto.AdressBo;
@@ -28,8 +29,9 @@ public class AdressGeoJsonParser {
 	
 	// possible because is threadsafe
 	private final ObjectMapper objectMapper;
-	 private final GeoJsonReader geoJsonReader = new GeoJsonReader();
+	private final GeoJsonReader geoJsonReader = new GeoJsonReader();
 	 
+	@Autowired
 	public AdressGeoJsonParser(ObjectMapper objectMapper) {
 		super();
 		this.objectMapper=objectMapper;

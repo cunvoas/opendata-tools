@@ -24,5 +24,4 @@ public class ParkView extends GeoJsonProperty {
 	private String area;
 	private String people;
 	
-	
 }

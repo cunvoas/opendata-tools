@@ -139,6 +139,63 @@ public class GeoShapeHelper {
 		
 		return polygon;
 	}
+	/**
+	 * Construit un Polygon JTS à partir d'une liste de Point (ordre donné).
+	 * Utilise un stream pour extraire les coordonnées.
+	 * Ferme le polygone si besoin.
+	 */
+	public static Polygon getPolygon(List<Point> jtsPoints) {
+		if (jtsPoints == null || jtsPoints.size() < 3) return null;
+		Coordinate[] coords = jtsPoints.stream()
+			.map(Point::getCoordinate)
+			.toArray(Coordinate[]::new);
+		
+		// Ferme le polygone si nécessaire
+		if (!coords[0].equals2D(coords[coords.length - 1])) {
+			coords = Arrays.copyOf(coords, coords.length + 1);
+			coords[coords.length - 1] = coords[0];
+		}
+		return factory.createPolygon(coords);
+	}
+	
+	
+	/**
+	 * Construit un MultiPolygon à partir de listes de Polygon (outers et inners).
+	 * Chaque inner est associé à l'outer qui le contient (par centroïde).
+	 * @param outers Liste de polygones extérieurs
+	 * @param inners Liste de polygones intérieurs (trous)
+	 * @return MultiPolygon JTS
+	 */
+	public static MultiPolygon getMultiPolygon(List<Polygon> outers, List<Polygon> inners) {
+		if (outers == null || outers.isEmpty()) {
+			return null;
+		}
+		List<Polygon> polygons = new ArrayList<>();
+		List<LinearRing> innerRings = new ArrayList<>();
+		if (inners != null) {
+			for (Polygon inner : inners) {
+				if (inner != null && inner.getNumPoints() >= 4) {
+					innerRings.add(factory.createLinearRing(inner.getExteriorRing().getCoordinates()));
+				}
+			}
+		}
+		for (Polygon outer : outers) {
+			if (outer == null || outer.getNumPoints() < 4) continue;
+			LinearRing outerRing = factory.createLinearRing(outer.getExteriorRing().getCoordinates());
+			List<LinearRing> holesForThisOuter = new ArrayList<>();
+			for (LinearRing innerRing : innerRings) {
+				Polygon innerPoly = factory.createPolygon(innerRing);
+				if (outer.contains(innerPoly.getCentroid())) {
+					holesForThisOuter.add(innerRing);
+				}
+			}
+			Polygon poly = factory.createPolygon(outerRing, holesForThisOuter.toArray(new LinearRing[0]));
+			polygons.add((Polygon) validate(poly));
+		}
+		if (polygons.isEmpty()) return null;
+		MultiPolygon mp = factory.createMultiPolygon(polygons.toArray(new Polygon[0]));
+		return (MultiPolygon) validate(mp);
+	}
 	
 	public static Polygon mergePolygonsWithoutHoles(Polygon poly1, Polygon poly2) {
 

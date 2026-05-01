@@ -3,6 +3,8 @@ package com.github.cunvoas.geoserviceisochrone.controller;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * Fournit les routes pour la page d'accueil, la connexion, la déconnexion, la page d'erreur et le healthcheck.
  */
 @Controller
+@Slf4j
 public class RootController {
 
 	private static final Pattern PATTERN = Pattern.compile(
@@ -79,13 +82,12 @@ public class RootController {
 	 */
 	@RequestMapping(value = "/awake", method = RequestMethod.HEAD)
 	public ResponseEntity<Void> awake(HttpServletRequest request) {
-
 		String address = request.getRemoteAddr();
 		final String xfHeader = request.getHeader("X-Forwarded-For");
 		if (xfHeader != null && !xfHeader.isEmpty()) {
 			address = xfHeader.split(",")[0];
 		}
-
+		log.info("HEAD /awake from {}", address);
 		Matcher matcher = PATTERN.matcher(address);
 		if (matcher.matches()) {
 			return new ResponseEntity<>(HttpStatus.OK);

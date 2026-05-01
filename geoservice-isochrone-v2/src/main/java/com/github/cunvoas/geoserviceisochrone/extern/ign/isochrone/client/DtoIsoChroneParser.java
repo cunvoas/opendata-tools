@@ -20,7 +20,7 @@ import tools.jackson.databind.ObjectMapper;
 @Slf4j
 public class DtoIsoChroneParser {
 
-	private ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper;
 	
 	@Autowired
 	public DtoIsoChroneParser(ObjectMapper objectMapper) {
