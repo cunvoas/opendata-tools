@@ -73,6 +73,9 @@ spring:
 # transaction-isolation: READ_COMMITTED
 #      transactionIsolation: 2
 
+#spring.jpa.properties.hibernate.type.json_format_mapper=com.yourcorp.yourapp.utilities.CustomHibernateJsonFormatter
+
+
 # JPA configuration
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -85,6 +88,7 @@ spring:
     format-sql: false
     properties:
       hibernate:
+        type.json_format_mapper: com.github.cunvoas.geoserviceisochrone.config.jpa.CustomHibernateJsonFormatter
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           batch_size:  50

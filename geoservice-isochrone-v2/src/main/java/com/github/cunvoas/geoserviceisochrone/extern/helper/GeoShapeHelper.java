@@ -190,11 +190,29 @@ public class GeoShapeHelper {
 				}
 			}
 			Polygon poly = factory.createPolygon(outerRing, holesForThisOuter.toArray(new LinearRing[0]));
-			polygons.add((Polygon) validate(poly));
+			Geometry validatedPoly = validate(poly);
+			if (validatedPoly instanceof Polygon) {
+				polygons.add((Polygon) validatedPoly);
+			} else if (validatedPoly instanceof MultiPolygon) {
+				// validate() split the polygon into multiple parts; add each one
+				MultiPolygon mp2 = (MultiPolygon) validatedPoly;
+				for (int i = 0; i < mp2.getNumGeometries(); i++) {
+					polygons.add((Polygon) mp2.getGeometryN(i));
+				}
+			}
 		}
 		if (polygons.isEmpty()) return null;
 		MultiPolygon mp = factory.createMultiPolygon(polygons.toArray(new Polygon[0]));
-		return (MultiPolygon) validate(mp);
+		Geometry validated = validate(mp);
+		if (validated instanceof MultiPolygon) {
+			return (MultiPolygon) validated;
+		} else if (validated instanceof Polygon) {
+			// Wrap single polygon in a MultiPolygon
+			return factory.createMultiPolygon(new Polygon[]{(Polygon) validated});
+		} else {
+			// Unexpected geometry type
+			return null;
+		}
 	}
 	
 	public static Polygon mergePolygonsWithoutHoles(Polygon poly1, Polygon poly2) {
@@ -366,10 +384,18 @@ public class GeoShapeHelper {
 	            return polygons.iterator().next(); // single polygon - no need to wrap
 	        default:
 	            //polygons may still overlap! Need to sym difference them
+	            // buffer(0) is used to fix TopologyException caused by nearly-touching or
+	            // slightly invalid geometries before performing overlay operations
 	            Iterator<Polygon> iter = polygons.iterator();
-	            Geometry ret = iter.next();
+	            Geometry ret = iter.next().buffer(0);
 	            while(iter.hasNext()){
-	                ret = ret.symDifference(iter.next());
+	                Geometry next = iter.next().buffer(0);
+	                try {
+	                    ret = ret.symDifference(next);
+	                } catch (org.locationtech.jts.geom.TopologyException e) {
+	                    // fallback: union instead of symDifference to avoid side location conflicts
+	                    ret = ret.union(next);
+	                }
 	            }
 	            return ret;
 	    }

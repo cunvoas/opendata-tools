@@ -30,7 +30,6 @@ public class ParkOverpass {
 
 	@Id
 	@Column(name = "id")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String type;
 	
@@ -38,19 +37,19 @@ public class ParkOverpass {
 	private Point cornerNorthEast;
 	private Geometry shape;
 	
-	@Column(length = 100)
+	@Column(length = 200)
 	private String name;
-	@Column(length = 100)
+	@Column(length = 200)
 	private String source;
 	
 	// "access": "yes",
 	private Boolean accesible;
 	
 	// "opening_hours": "24/7",
-	@Column(length = 100)
+	@Column(length = 500)
 	private String openingHours;
 	
-//	"operator": "Municipalité du Val d'Hazey",
+//	"operator": "Municipalité de ...",
 	@Column(length = 500)
 	private String operatorName;
 	

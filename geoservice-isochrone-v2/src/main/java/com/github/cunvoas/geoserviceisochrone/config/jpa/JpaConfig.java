@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.config;
+package com.github.cunvoas.geoserviceisochrone.config.jpa;
 
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.AdviceMode;

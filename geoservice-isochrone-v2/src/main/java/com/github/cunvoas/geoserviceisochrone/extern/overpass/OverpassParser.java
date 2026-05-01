@@ -13,18 +13,19 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
 import com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Element;
 import com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.LatLon;
-import com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Node;
 import com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Relation;
 import com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Relation.Member;
 import com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Way;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParkOverpass;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkOverpassRepository;
 
+import jakarta.transaction.Transactional;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.ObjectMapper;
@@ -32,23 +33,15 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Parseur Overpass JSON streaming pour gros fichiers.
- * <p>
- * Exemple d'utilisation :
- * <pre>{@code
- * @Autowired
- * OverpassParser parser;
- * ...
- * try (InputStream in = new FileInputStream("/chemin/vers/overpass.json")) {
- *     parser.parseElements(in, element -> {
- *         // Traitement de chaque élément (Node, Way, Relation)
- *         System.out.println(element.getClass().getSimpleName() + " id=" + element.id);
- *     });
- * }
- * }</pre>
+ * @see https://overpass-turbo.eu/#
+ * @see https://wiki.openstreetmap.org/wiki/Tag:landuse%3Dgreenery
  */
 @Component
 public class OverpassParser {
-	
+
+    @Value("${overpass.parser.batch-size:100}")
+    private int batchSize;
+
     private final ObjectMapper objectMapper;
     private final ParkOverpassRepository parkOverpassRepository;
 
@@ -87,17 +80,35 @@ public class OverpassParser {
 
     /**
      * Helper pour parser un fichier Overpass à partir d'un Path.
-     * Prépare la boucle de traitement sur chaque élément.
+     * Accumule les entités par batch de {@code batchSize} avant de les persister via saveAll().
+     *
+     * <p>Configuration Spring :
+     * <pre>
+     * overpass.parser.batch-size=500          # chunk applicatif
+     * spring.jpa.properties.hibernate.jdbc.batch_size=50
+     * spring.jpa.properties.hibernate.order_inserts=true
+     * spring.jpa.properties.hibernate.order_updates=true
+     * </pre>
      *
      * @param path chemin du fichier Overpass JSON
      * @throws IOException en cas d'erreur d'accès ou de parsing
      */
+    @Transactional
     public void parseEntityFromPath(java.nio.file.Path path) throws IOException {
+        List<ParkOverpass> batch = new ArrayList<>(batchSize);
         try (InputStream in = Files.newInputStream(path)) {
             this.parseElements(in, entity -> {
-                // traitement de chaque élément (Node, Way, Relation)
-            	parkOverpassRepository.save(entity);
+                batch.add(entity);
+                if (batch.size() >= batchSize) {
+                    parkOverpassRepository.saveAll(batch);
+                    batch.clear();
+                }
             });
+            // flush du dernier batch partiel
+            if (!batch.isEmpty()) {
+                parkOverpassRepository.saveAll(batch);
+                batch.clear();
+            }
         }
     }
     
