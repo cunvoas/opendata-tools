@@ -37,8 +37,8 @@ import java.util.List;
 })
 public abstract class Element {
     public long id;
+    
     public String type;
-
     
     public Bounds bounds;
 

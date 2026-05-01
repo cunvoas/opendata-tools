@@ -26,11 +26,7 @@ public class Relation extends Element {
         public String type;
         public Long ref;
         public String role;
+        public List<LatLon> geometry;
         
-        /**
-         * Si le membre est inclus en tant qu'objet complet (Way), il sera désérialisé ici.
-         * Peut être null si le membre n'est référencé que par id.
-         */
-        public Element element;
     }
 }

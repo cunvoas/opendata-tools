@@ -111,8 +111,9 @@ public class OverpassParser {
     public ParkOverpass map(Element element) {
         ParkOverpass out = new ParkOverpass();
         out.setId(Long.valueOf(element.id));
-        out.setType(element.type);
-        out.setName(element instanceof Node node && node.tags != null ? node.tags.getOrDefault("name", null) : null);
+        
+        out.setType(element instanceof Way node && node.tags != null ? node.tags.getOrDefault("leisure", null) : null);
+        out.setName(element instanceof Way node && node.tags != null ? node.tags.getOrDefault("name", null) : null);
         
         if (element.bounds!=null) {
 	        LatLon cne=new LatLon();
@@ -145,6 +146,7 @@ public class OverpassParser {
                 out.setOperatorName(relation.tags.getOrDefault("operator", null));
                 out.setOpeningHours(relation.tags.getOrDefault("opening_hours", null));
                 out.setAccesible("yes".equalsIgnoreCase(relation.tags.getOrDefault("access", "")));
+                out.setType(relation.tags.getOrDefault("leisure", null));
                 out.setName(relation.tags.getOrDefault("name", null));
             }
         }
@@ -171,20 +173,16 @@ public class OverpassParser {
     	List<Polygon> inners=new ArrayList<>();
     	
         for (Member member : members) {
-            // Vérifie que le member.element n'est pas null et est bien un Way
-            if (member.element == null || !(member.element instanceof Way)) {
-                continue;
-            }
-            Way way = (Way) member.element;
+           
             if ("outer".equalsIgnoreCase(member.role)) {
-                List<LatLon> geometry = way.geometry;
+                List<LatLon> geometry = member.geometry;
                 Polygon poly = GeoShapeHelper.getPolygon(mapListPoint(geometry));
                 // si surface >0 alors ajouter à la liste
                 if (poly != null && poly.getArea() > 0) {
                     outers.add(poly);
                 }
             } else if ("inner".equalsIgnoreCase(member.role)) {
-                List<LatLon> geometry = way.geometry;
+                List<LatLon> geometry = member.geometry;
                 Polygon poly = GeoShapeHelper.getPolygon(mapListPoint(geometry));
                 // si surface >0 alors ajouter à la liste
                 if (poly != null && poly.getArea() > 0) {
