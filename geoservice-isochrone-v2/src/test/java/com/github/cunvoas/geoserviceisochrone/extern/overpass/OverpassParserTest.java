@@ -66,5 +66,44 @@ class OverpassParserTest {
         verify(parkOverpassRepository, atLeastOnce()).save(any(ParkOverpass.class));
     }
 
-    // ...autres tests unitaires sur map, mapPolygon, mapMultiPolygon, etc. à ajouter pour la couverture
+    @Test
+    void testGeodeticArea_equatorSquare1deg() {
+        // Carré de 1° x 1° à l'équateur (0,0)-(0,1)-(1,1)-(1,0)-(0,0)
+        List<com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.LatLon> poly = List.of(
+                latlon(0, 0),
+                latlon(0, 1),
+                latlon(1, 1),
+                latlon(1, 0),
+                latlon(0, 0)
+        );
+        double area = OverpassParser.geodeticArea(poly);
+        // Aire attendue ≈ 12364 km² (1.2364e7 m²)
+        assertTrue(area > 1.2e7 && area < 1.27e7, "Area should be close to 1.2364e7 m², got: " + area);
+    }
+
+    @Test
+    void testMap_setsSurfaceForWay() {
+        // Way simple : triangle sur la France
+        com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Way way = new com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Way();
+        way.id = 1L;
+        way.type = "way";
+        way.geometry = List.of(
+                latlon(48.0, 2.0),
+                latlon(48.0, 2.1),
+                latlon(48.1, 2.05),
+                latlon(48.0, 2.0)
+        );
+        way.tags = java.util.Map.of("leisure", "park", "name", "Test Parc");
+        ParkOverpass out = parser.map(way);
+        assertNotNull(out.getSurface(), "Surface should be set");
+        assertTrue(out.getSurface() > 0, "Surface should be positive");
+    }
+
+    // Helper
+    private static com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.LatLon latlon(double lat, double lon) {
+        com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.LatLon l = new com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.LatLon();
+        l.lat = lat;
+        l.lon = lon;
+        return l;
+    }
 }

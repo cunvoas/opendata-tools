@@ -122,24 +122,28 @@ public class OverpassParser {
     public ParkOverpass map(Element element) {
         ParkOverpass out = new ParkOverpass();
         out.setId(Long.valueOf(element.id));
-        
+
         out.setType(element instanceof Way node && node.tags != null ? node.tags.getOrDefault("leisure", null) : null);
         out.setName(element instanceof Way node && node.tags != null ? node.tags.getOrDefault("name", null) : null);
-        
-        if (element.bounds!=null) {
-	        LatLon cne=new LatLon();
-	        cne.lat=element.bounds.maxlat;
-	        cne.lon=element.bounds.maxlon;
-	        out.setCornerNorthEast(mapPoint(cne));
-	
-	        LatLon cso=new LatLon();
-	        cso.lat=element.bounds.minlat;
-	        cso.lon=element.bounds.minlon;
-	        out.setCornerSouthWest(mapPoint(cso));
+
+        if (element.bounds != null) {
+            LatLon cne = new LatLon();
+            cne.lat = element.bounds.maxlat;
+            cne.lon = element.bounds.maxlon;
+            out.setCornerNorthEast(mapPoint(cne));
+
+            LatLon cso = new LatLon();
+            cso.lat = element.bounds.minlat;
+            cso.lon = element.bounds.minlon;
+            out.setCornerSouthWest(mapPoint(cso));
         }
-        
+
         if (element instanceof Way way) {
-        	out.setShape(this.mapPolygon( way.geometry) );
+            out.setShape(this.mapPolygon(way.geometry));
+            if (out.getShape() != null) {
+                // Calcul de l'aire géodésique (en m²) tenant compte de la rotondité de la Terre
+                out.setSurface(geodeticArea(way.geometry));
+            }
             if (way.tags != null) {
                 out.setTags(way.tags);
                 out.setOperatorName(way.tags.getOrDefault("operator", null));
@@ -148,10 +152,23 @@ public class OverpassParser {
                 out.setName(way.tags.getOrDefault("name", null));
             }
         } else if (element instanceof Relation relation) {
-        	//
-        	List<Relation.Member> members = relation.members;
+            List<Relation.Member> members = relation.members;
             out.setShape(this.mapMultiPolygon(members));
-        	 
+            if (out.getShape() != null) {
+                // Pour les multipolygones, additionne l'aire géodésique de chaque outer
+                double area = 0.0;
+                if (members != null) {
+                    for (Relation.Member member : members) {
+                        if ("outer".equalsIgnoreCase(member.role) && member.geometry != null) {
+                            area += geodeticArea(member.geometry);
+                        }
+                        if ("inner".equalsIgnoreCase(member.role) && member.geometry != null) {
+                            area -= geodeticArea(member.geometry);
+                        }
+                    }
+                }
+                out.setSurface(Math.abs(area));
+            }
             if (relation.tags != null) {
                 out.setTags(relation.tags);
                 out.setOperatorName(relation.tags.getOrDefault("operator", null));
@@ -240,6 +257,34 @@ public class OverpassParser {
      */
     public Point mapPoint(LatLon latlon) {
         return GeoShapeHelper.getPoint(latlon.lon, latlon.lat);
+    }
+
+    /**
+     * Calcule l'aire géodésique (en m²) d'un polygone défini par une liste de LatLon (WGS84).
+     * Utilise la formule sphérique adaptée (algorithme de l'aire de Shoelace sur la sphère).
+     * @param geometry liste de LatLon (doit être fermée ou sera fermée automatiquement)
+     * @return aire en mètres carrés
+     */
+    public static double geodeticArea(List<LatLon> geometry) {
+        if (geometry == null || geometry.size() < 3) return 0.0;
+        // Rayon moyen de la Terre en mètres (WGS84)
+        final double R = 6371008.8;
+        double area = 0.0;
+        int n = geometry.size();
+        // S'assurer que le polygone est fermé
+        boolean closed = geometry.get(0).lat == geometry.get(n-1).lat && geometry.get(0).lon == geometry.get(n-1).lon;
+        int max = closed ? n-1 : n;
+        for (int i = 0; i < max; i++) {
+            LatLon p1 = geometry.get(i);
+            LatLon p2 = geometry.get((i+1)%n);
+            double lon1 = Math.toRadians(p1.lon);
+            double lat1 = Math.toRadians(p1.lat);
+            double lon2 = Math.toRadians(p2.lon);
+            double lat2 = Math.toRadians(p2.lat);
+            area += (lon2 - lon1) * (2 + Math.sin(lat1) + Math.sin(lat2));
+        }
+        area = area * R * R / 2.0;
+        return Math.abs(area);
     }
     
     
