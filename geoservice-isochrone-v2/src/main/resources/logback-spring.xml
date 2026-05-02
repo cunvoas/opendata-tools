@@ -25,7 +25,7 @@
     <property name="LOG_PATTERN_FILE"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"/>
 
-	<property name="LOG_DIR" value="/var/log" />h
+	<property name="LOG_DIR" value="/var/log" />
 	<appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 	    <file>${LOG_DIR}/isochrone.log</file>
 	    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -41,19 +41,7 @@
 	</appender> 
 	
 	
-	<appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>${logPath}/${appName}.log</file>
-            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-                <fileNamePattern>${logPath}/${appName}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-                <maxFileSize>100MB</maxFileSize>
-                <maxHistory>30</maxHistory>
-                <totalSizeCap>500MB</totalSizeCap>
-            </rollingPolicy>
-            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-                <pattern>${LOG_PATTERN_FILE}</pattern>
-            </encoder>
-    </appender> 
-	
+
     <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
         <http>
             <url>http://loki:3100/loki/api/v1/push</url>
