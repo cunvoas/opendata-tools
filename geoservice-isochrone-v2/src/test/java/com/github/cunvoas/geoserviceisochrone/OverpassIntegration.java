@@ -27,9 +27,6 @@ class OverpassIntegration {
             Path p = Path.of("/work/PERSO/ASSO/overpass-turbo/mel.geo.json");
             parser.parseEntityFromPath(p);
             
-            p = Path.of("/work/PERSO/ASSO/overpass-turbo/HdF2.geo.json");
-            parser.parseEntityFromPath(p);
-            
             p = Path.of("/work/PERSO/ASSO/overpass-turbo/lyon.geo.json");
             parser.parseEntityFromPath(p);
             

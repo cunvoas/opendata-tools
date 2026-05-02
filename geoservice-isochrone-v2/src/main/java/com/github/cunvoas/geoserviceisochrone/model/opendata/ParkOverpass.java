@@ -76,10 +76,6 @@ public class ParkOverpass {
 	@Column(length = 10)
 	private String zipCode;
 
-	/** Code INSEE de la commune où se trouve l'espace vert. */
-	@Column(length = 5)
-	private String insee;
-
 	/**
      * Stocke les tags OSM dans une colonne jsonb PostgreSQL.
      * Permet d'accéder à tous les attributs supplémentaires de l'élément OSM.
@@ -87,4 +83,16 @@ public class ParkOverpass {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, String> tags;
+    
+
+	/** Code INSEE de la commune où se trouve l'espace vert. */
+	@Column(length = 5)
+	private String insee;
+
+	/** Surface de l'espace vert. */
+	@Column(length = 5)
+	private Double surface;
+
+
+    
 }

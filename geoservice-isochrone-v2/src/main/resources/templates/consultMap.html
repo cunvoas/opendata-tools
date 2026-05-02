@@ -256,13 +256,15 @@ const dataCarre = L.layerGroup();
 const dataIris = L.layerGroup();
 const dataCadastre = L.layerGroup();
 const dataVegetation = L.layerGroup();
+const dataParkOverpass = L.layerGroup(); // Couche pour les parcs Overpass
 //const dataProposalParcs = L.layerGroup();
 const dataLayers = {
   'Parcs': dataParcs,
   'Carrés': dataCarre,
   'IRIS': dataIris,
   'Cadastre': dataCadastre,
-  'Végétation IGN': dataVegetation
+  'Végétation IGN': dataVegetation,
+  'Parcs Overpass': dataParkOverpass
 };
 //,   'Proposition de parcs': dataProposalParcs
 
@@ -387,6 +389,7 @@ const endpointIris = /*[[@{/map/insee/iris/area}]]*/ '';
 const endpointCadastre = /*[[@{/mvc/geojson/cadastreByCorner}]]*/ '';
 //const endpointVegetation = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/stats/vegetalInseeIgnTopo.json';
 const endpointVegetation =  /*[[@{/map/ign-topo/vegetal}]]*/ '';
+const endpointParkOverpass = /*[[@{/mvc/geojson/parkOverpassByCorner}]]*/ '';
 const urlEditPark = /*[[@{/mvc/park/new/check}]]*/ '/mvc/park/new/check';
 
 /**
@@ -423,7 +426,8 @@ const overlayConfig = {
   'IRIS': { endpoint: endpointIris, style: { color:'#b85f00', fillColor:'#ff9d33', weight:1, fillOpacity:0.25 } },
   // Cadastre dynamique: rechargé à chaque mouvement avec cache et debounce
   'Cadastre': { endpoint: endpointCadastre, style: { color:'#7a7c00', fillColor:'#d6d900', weight:1, fillOpacity:0.18 } },
-  'Végétation IGN': { endpoint: endpointVegetation, style: { color:'#0f4d0f', fillColor:'#2fa42f', weight:1, fillOpacity:0.45 } }
+  'Végétation IGN': { endpoint: endpointVegetation, style: { color:'#0f4d0f', fillColor:'#2fa42f', weight:1, fillOpacity:0.45 } },
+  'Parcs Overpass': { endpoint: endpointParkOverpass, style: { color:'#0e3d0c', fillColor:'#4ac6ef', weight:1, fillOpacity:0.35 } }
 };
 console.log('[ConsultMap] overlayConfig:', overlayConfig);
 

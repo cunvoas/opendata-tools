@@ -13,9 +13,25 @@ import org.locationtech.jts.geom.Envelope;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+/**
+ * Utilitaire de rendu graphique pour les objets géométriques JTS (Java Topology Suite).
+ * <p>
+ * Permet de générer des images (BufferedImage) ou des chaînes SVG représentant des géométries JTS
+ * (Polygon, MultiPolygon, LineString, Point, etc.) pour l'affichage ou l'export.
+ * <ul>
+ *   <li>Conversion Geometry → BufferedImage</li>
+ *   <li>Conversion Geometry → SVG (une ou deux géométries, couleurs personnalisées)</li>
+ * </ul>
+ * </p>
+ * @author cunvoas
+ */
 public class GeoPolygonRenderer {
     /**
      * Génère une image (BufferedImage) représentant la Geometry JTS.
+     * @param geometry géométrie à dessiner
+     * @param width largeur de l'image
+     * @param height hauteur de l'image
+     * @return image générée
      */
     public static BufferedImage toImage(Geometry geometry, int width, int height) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -104,7 +120,12 @@ public class GeoPolygonRenderer {
     }
 
 	/**
-	 * Génère une représentation SVG de 2 Geometry JTS, à la même échelle, chaque géométrie avec une couleur différente.
+	 * Génère une représentation SVG de deux géométries JTS à la même échelle, chaque géométrie avec une couleur différente.
+	 * @param geometry1 première géométrie
+	 * @param geometry2 deuxième géométrie
+	 * @param width largeur du SVG
+	 * @param height hauteur du SVG
+	 * @return chaîne SVG
 	 */
 	public static String toSVG(Geometry geometry1, Geometry geometry2, int width, int height) {
 		// Calculer l'enveloppe englobante des deux géométries
@@ -187,14 +208,33 @@ public class GeoPolygonRenderer {
 		sb.append("  <circle cx=\"").append(x).append("\" cy=\"").append(y).append("\" r=\"5\" fill=\"").append(color).append("\"/>");
 	}
 
-    // Pour compatibilité ascendante
+    /**
+     * Génère une image à partir d'un Polygon (pour compatibilité ascendante).
+     * @param polygon polygone à dessiner
+     * @param width largeur de l'image
+     * @param height hauteur de l'image
+     * @return image générée
+     */
     public static BufferedImage toImage(Polygon polygon, int width, int height) {
         return toImage((Geometry) polygon, width, height);
     }
+    /**
+     * Génère une chaîne SVG à partir d'un Polygon (pour compatibilité ascendante).
+     * @param polygon polygone à dessiner
+     * @param width largeur du SVG
+     * @param height hauteur du SVG
+     * @return chaîne SVG
+     */
     public static String toSVG(Polygon polygon, int width, int height) {
         return toSVG((Geometry) polygon, width, height);
     }
-
+    /**
+     * Génère une chaîne SVG à partir d'une géométrie (couleur bleue par défaut).
+     * @param geometry géométrie à dessiner
+     * @param width largeur du SVG
+     * @param height hauteur du SVG
+     * @return chaîne SVG
+     */
     public static String toSVG(Geometry geometry, int width, int height) {
         // Utilise la méthode existante pour une seule géométrie, couleur bleue par défaut
         StringBuilder sb = new StringBuilder();

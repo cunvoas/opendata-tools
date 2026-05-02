@@ -28,6 +28,7 @@ import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.Carre200An
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.IrisView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.IsochroneView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkGardenView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkOverpassView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkPrefView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkProposalView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkView;
@@ -53,6 +54,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcPrefecture;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusPrefEnum;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParkOverpass;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
@@ -62,7 +64,6 @@ import com.github.cunvoas.geoserviceisochrone.repo.IrisDataComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalMetaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWorkRepository;
@@ -75,6 +76,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisDataRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
+import com.github.cunvoas.geoserviceisochrone.service.park.ParkOverpassService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
 import com.google.common.math.BigDecimalMath;
@@ -142,8 +144,6 @@ public class GeoMapServiceV2 {
 
     @Autowired
     private ParkProposalRepository parkProposalRepository;
-    @Autowired
-    private ParkProposalMetaRepository parkProposalMetaRepository;
     
 
     @Autowired
@@ -172,7 +172,9 @@ public class GeoMapServiceV2 {
     private ParcPrefectureRepository parcPrefectureRepository;
     @Autowired
     private GeometryQueryHelper geometryQueryHelper;
-	
+
+    @Autowired
+    private ParkOverpassService parkOverpassService;
     
 	/**
 	 * findCadastreByCity.
@@ -321,6 +323,52 @@ public class GeoMapServiceV2 {
     }
 	
 	/**
+	 * Recherche tous les parcs issus d'Overpass dans une zone géographique définie par un rectangle (coordonnées SW/NE).
+	 *
+	 * @param swLat latitude du coin sud-ouest
+	 * @param swLng longitude du coin sud-ouest
+	 * @param neLat latitude du coin nord-est
+	 * @param neLng longitude du coin nord-est
+	 * @return GeoJson des parcs Overpass dans la zone
+	 */
+	public GeoJsonRoot findAllParkOverpassByArea(Double swLat, Double swLng, Double neLat, Double neLng) {
+		// Construction du polygone à partir des bornes géographiques
+		Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
+		return this.findAllParkOverpassByArea(polygon);
+	}
+
+	/**
+	 * Recherche tous les parcs issus d'Overpass dans une zone géographique définie par un polygone.
+	 *
+	 * @param polygon polygone de recherche
+	 * @return GeoJson des parcs Overpass dans la zone
+	 */
+	public GeoJsonRoot findAllParkOverpassByArea(Polygon polygon) {
+		GeoJsonRoot root = new GeoJsonRoot();
+		if (polygon != null) {
+			// Récupération des parcs Overpass dans la zone
+			List<ParkOverpass> parks = parkOverpassService.findAllParkByArea(polygon);
+			if (!CollectionUtils.isEmpty(parks)) {
+				for (ParkOverpass park : parks) {
+					// Création d'une feature GeoJson pour chaque parc
+					GeoJsonFeature feature = new GeoJsonFeature();
+					root.getFeatures().add(feature);
+					if (park.getShape() != null) {
+						feature.setGeometry(park.getShape());
+					}
+					// Remplissage des propriétés de la vue
+					ParkOverpassView pv = new ParkOverpassView();
+					feature.setProperties(pv);
+					pv.setId(String.valueOf(park.getId()));
+					pv.setName(park.getName());
+					pv.setSurface(park.getSurface());
+				}
+			}
+		}
+		return root;
+	}
+	
+	/**
      * getProjectByArea.
      * @param swLat south-west latitude
      * @param swLng south-west longitude
@@ -332,6 +380,8 @@ public class GeoMapServiceV2 {
     	Polygon polygon = geometryQueryHelper.getPolygonFromBounds(swLat, swLng, neLat, neLng);
     	return this.findProjetSimulationByArea(polygon);
     }
+	
+	
 
     
 	/**

@@ -54,7 +54,7 @@ public class ParkOverpassService {
      * @param polygon le polygone géographique définissant la zone de recherche
      * @return la liste des {@link ParkOverpass} situés dans la zone délimitée par le polygone
      */
-    public List<ParkOverpass> findAllCarreByArea(Polygon polygon) {
+    public List<ParkOverpass> findAllParkByArea(Polygon polygon) {
         // Conversion du polygone JTS en texte WKT pour la requête spatiale
         return parkOverpassRepository.findByMapArea(GeometryQueryHelper.toText(polygon));
     }

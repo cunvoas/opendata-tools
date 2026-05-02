@@ -103,7 +103,16 @@ public class GeoJsonForMvcController {
         return geoMapService.findAllParkOutlineByArea(swLat, swLng, neLat, neLng);
     }
 	
-
+	@GetMapping("/parkOverpassByCorner")
+	public GeoJsonRoot getParkOverpassByArea(
+			@RequestParam("swLat") Double swLat,
+			@RequestParam("swLng") Double swLng,
+			@RequestParam("neLat") Double neLat,
+			@RequestParam("neLng") Double neLng
+		) {
+        return geoMapService.findAllParkOverpassByArea(swLat, swLng, neLat, neLng);
+    }
+	
 	/**
 	 * Récupère les contours des parcs et jardins dans une zone géographique donnée.
 	 * @param swLat Latitude sud-ouest

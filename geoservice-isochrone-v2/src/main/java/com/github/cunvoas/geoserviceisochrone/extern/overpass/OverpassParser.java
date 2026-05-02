@@ -239,7 +239,7 @@ public class OverpassParser {
      * @return Point JTS
      */
     public Point mapPoint(LatLon latlon) {
-        return GeoShapeHelper.getPoint(latlon.lat, latlon.lon);
+        return GeoShapeHelper.getPoint(latlon.lon, latlon.lat);
     }
     
     
