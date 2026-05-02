@@ -1,6 +1,5 @@
 package com.github.cunvoas.geoserviceisochrone.model.admin;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,8 +12,15 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Représente une association.
- * Contient les informations principales d'une association (nom, email, logo, description, site web, etc.).
+ * Entité représentant une association partenaire ou actrice du projet.
+ * <p>
+ * Contient les informations principales d'une association :
+ * <ul>
+ *   <li>Nom, email, logo, description</li>
+ *   <li>Site web, page HelloAsso</li>
+ * </ul>
+ * Utilisée pour l'affichage, la gestion des droits et la valorisation des partenaires.
+ * </p>
  */
 @Data
 @EqualsAndHashCode(of = {"id"})
@@ -24,7 +30,7 @@ import lombok.ToString;
 public class Association {
 
 	/**
-	 * Identifiant unique de l'association.
+	 * Identifiant unique de l'association (clé primaire).
 	 */
 	@Id
 	@ToString.Include
@@ -38,37 +44,40 @@ public class Association {
 	private Long id;
 
 	/**
-	 * Nom de l'association.
+	 * Nom officiel de l'association.
 	 */
 	@ToString.Include
+	@Column(nullable = false, length = 200)
 	private String nom;
 
 	/**
 	 * Adresse email de contact de l'association.
 	 */
+	@Column(length = 200)
 	private String email;
 
 	/**
-	 * URL du logo de l'association.
+	 * URL du logo de l'association (image publique).
 	 */
+	@Column(length = 500)
 	private String logo;
 
 	/**
-	 * Description de l'association.
+	 * Description courte de l'association (présentation, objet, etc.).
 	 */
+	@Column(length = 1000)
 	private String description;
 
 	/**
-	 * URL du site web de l'association.
+	 * URL du site web officiel de l'association.
 	 */
-	@Column(name = "site_url")
+	@Column(name = "site_url", length = 500)
 	private String siteUrl;
 
 	/**
-	 * URL HelloAsso de l'association.
+	 * URL de la page HelloAsso de l'association (financement participatif).
 	 */
-	@Column(name = "hello_asso_url")
+	@Column(name = "hello_asso_url", length = 500)
 	private String helloAssoUrl;
-	
 	
 }

@@ -8,29 +8,22 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Identifiant pour le modèle ProjectSimulatorIsochrone.
+ * Identifiant composite pour le modèle {@link ProjectSimulatorIsochone}.
  * <p>
- * Composé du ProjectSimulatorId et du point Isochrone.
+ * Composé de l'identifiant du simulateur de projet et du point de recherche isochrone.
  * </p>
  */
 @Data
 @EqualsAndHashCode(of = {"idProjectSimulator", "point"})
 public class ProjectSimulatorIsochroneId implements Serializable {
-	
-	/**
-	 * serialVersionUID.
-	 */
+
+	/** Numéro de version de sérialisation. */
 	private static final long serialVersionUID = -6063538891990208907L;
 
-	/**
-	 *  Identifiant du projet simulateur.
-	 */
+	/** Identifiant du projet simulateur. */
     private Long idProjectSimulator;
     
-	/**
-	 * Point pour la recherche isochrone.
-	 */
+	/** Point pour la recherche isochrone. */
 	private Point point;
 	
-
 }

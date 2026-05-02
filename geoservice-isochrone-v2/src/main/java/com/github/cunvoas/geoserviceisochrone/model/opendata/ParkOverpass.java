@@ -18,6 +18,13 @@ import org.hibernate.annotations.JdbcTypeCode;
 
 import java.util.Map;
 
+/**
+ * Entité représentant un parc ou espace vert importé depuis l'API Overpass (OpenStreetMap).
+ * <p>
+ * Contient les informations géographiques (forme, bounding box), descriptives (nom, source,
+ * horaires, opérateur) et administratives (code postal, code INSEE) ainsi que les tags OSM bruts.
+ * </p>
+ */
 @Data
 @EqualsAndHashCode(of = {"id"})
 @Entity(name = "park_overpass")
@@ -28,40 +35,56 @@ indexes = {
 )
 public class ParkOverpass {
 
+	/** Identifiant OSM unique de l'élément (node, way ou relation). */
 	@Id
 	@Column(name = "id")
 	private Long id;
+
+	/** Type OSM de l'élément (node, way, relation). */
 	private String type;
-	
+
+	/** Coin sud-ouest de la bounding box de l'élément. */
 	private Point cornerSouthWest;
+
+	/** Coin nord-est de la bounding box de l'élément. */
 	private Point cornerNorthEast;
+
+	/** Géométrie de l'espace vert (Polygon, MultiPolygon, etc.). */
 	private Geometry shape;
-	
+
+	/** Nom de l'espace vert (tag OSM "name"). */
 	@Column(length = 200)
 	private String name;
+
+	/** Source de la donnée OSM (tag OSM "source"). */
 	@Column(length = 200)
 	private String source;
-	
-	// "access": "yes",
+
+	/** Indique si l'espace vert est accessible au public (tag OSM "access"). */
+	// "access": "yes"
 	private Boolean accesible;
-	
-	// "opening_hours": "24/7",
+
+	/** Horaires d'ouverture (tag OSM "opening_hours", ex : "24/7"). */
 	@Column(length = 500)
 	private String openingHours;
-	
-//	"operator": "Municipalité de ...",
+
+	/** Nom de l'exploitant ou gestionnaire (tag OSM "operator"). */
 	@Column(length = 500)
 	private String operatorName;
-	
+
+	/** Code postal associé à l'espace vert. */
 	@Column(length = 10)
 	private String zipCode;
-	
+
+	/** Code INSEE de la commune où se trouve l'espace vert. */
+	@Column(length = 5)
+	private String insee;
+
 	/**
      * Stocke les tags OSM dans une colonne jsonb PostgreSQL.
+     * Permet d'accéder à tous les attributs supplémentaires de l'élément OSM.
      */
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, String> tags;
-	
-
 }

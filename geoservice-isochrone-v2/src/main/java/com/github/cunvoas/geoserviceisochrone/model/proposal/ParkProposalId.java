@@ -6,32 +6,24 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Identifiant pour le modèle InseeCarre200mComputed.
+ * Identifiant composite pour le modèle {@link ParkProposal}.
  * <p>
- * Composé de l'année de la donnée et de l'identifiant Inspire du carreau de 200 m.
+ * Composé de l'année, de l'identifiant Inspire du carreau de 200m et de l'identifiant de la proposition.
  * </p>
  */
 @Data
 @EqualsAndHashCode(of = {"annee", "idInspire", "idMeta"})
 public class ParkProposalId implements Serializable {
-	
-	/**
-	 * serialVersionUID.
-	 */
+
+	/** Numéro de version de sérialisation. */
 	private static final long serialVersionUID = -6063538891990208907L;
 
-	/**
-	 * Année de la donnée.
-	 */
+	/** Année de la donnée. */
     private Integer annee;
 	
-	/**
-	 *  Identifiant Inspire du carreau de 200 m.
-	 */
+	/** Identifiant Inspire du carreau de 200 m. */
     private String idInspire;
 
-	/**
-	 * Identifiant de la proposition
-	 */
+	/** Identifiant de la proposition (ParkProposalMeta). */
 	private Long idMeta;
 }
