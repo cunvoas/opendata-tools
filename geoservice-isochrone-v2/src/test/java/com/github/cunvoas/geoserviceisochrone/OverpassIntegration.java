@@ -28,9 +28,9 @@ class OverpassIntegration {
     void testParseElements_Way_withDemoGeoJson() throws Exception {
         try {
         	Path p;
-        
-        	p = Path.of("/work/PERSO/github/opendata-tools/geoservice-isochrone-v2/src/test/resources/overpass/multipoly.geojson");
-        	parserGeojson.parseEntityFromFilePath(p);
+
+        	p = Path.of("/work/PERSO/ASSO/overpass-turbo/");
+            parserGeojson.parseEntityFromDirectoryPath(p);
         	
 //        	p = Path.of("/work/PERSO/ASSO/overpass-turbo/mel.geojson");
 //            parserGeojson.parseEntityFromFilePath(p);
