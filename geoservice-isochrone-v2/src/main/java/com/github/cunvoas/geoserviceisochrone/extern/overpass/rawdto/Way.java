@@ -1,7 +1,9 @@
-package com.github.cunvoas.geoserviceisochrone.extern.overpass.dto;
+package com.github.cunvoas.geoserviceisochrone.extern.overpass.rawdto;
 
 import java.util.List;
 import java.util.Map;
+
+import com.github.cunvoas.geoserviceisochrone.extern.overpass.common.LatLon;
 
 /**
  * Représente un chemin OSM (Way) dans la réponse Overpass JSON.

@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.extern.overpass.dto;
+package com.github.cunvoas.geoserviceisochrone.extern.overpass.rawdto;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -17,11 +18,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
-import com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Element;
-import com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.LatLon;
-import com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Relation;
-import com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Relation.Member;
-import com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Way;
+import com.github.cunvoas.geoserviceisochrone.extern.overpass.common.AbstractOverpassParser;
+import com.github.cunvoas.geoserviceisochrone.extern.overpass.common.LatLon;
+import com.github.cunvoas.geoserviceisochrone.extern.overpass.rawdto.Element;
+import com.github.cunvoas.geoserviceisochrone.extern.overpass.rawdto.Relation;
+import com.github.cunvoas.geoserviceisochrone.extern.overpass.rawdto.Relation.Member;
+import com.github.cunvoas.geoserviceisochrone.extern.overpass.rawdto.Way;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParkOverpass;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkOverpassRepository;
 
@@ -32,12 +34,12 @@ import tools.jackson.databind.ObjectMapper;
 
 
 /**
- * Parseur Overpass JSON streaming pour gros fichiers.
+ * Parseur Overpass RAW JSON streaming pour gros fichiers.
  * @see https://overpass-turbo.eu/#
  * @see https://wiki.openstreetmap.org/wiki/Tag:landuse%3Dgreenery
  */
 @Component
-public class OverpassParser {
+public class OverpassRawParser extends AbstractOverpassParser {
 
     @Value("${overpass.parser.batch-size:100}")
     private int batchSize;
@@ -46,7 +48,7 @@ public class OverpassParser {
     private final ParkOverpassRepository parkOverpassRepository;
 
     @Autowired
-    public OverpassParser(ObjectMapper objectMapper, ParkOverpassRepository parkOverpassRepository) {
+    public OverpassRawParser(ObjectMapper objectMapper, ParkOverpassRepository parkOverpassRepository) {
         this.objectMapper = objectMapper;
         this.parkOverpassRepository = parkOverpassRepository;
     }
@@ -145,7 +147,7 @@ public class OverpassParser {
                 out.setSurface(geodeticArea(way.geometry));
             }
             if (way.tags != null) {
-                out.setTags(way.tags);
+                out.setTags(new HashMap<>(way.tags));
                 out.setOperatorName(way.tags.getOrDefault("operator", null));
                 out.setOpeningHours(way.tags.getOrDefault("opening_hours", null));
                 out.setAccesible("yes".equalsIgnoreCase(way.tags.getOrDefault("access", "")));
@@ -170,7 +172,8 @@ public class OverpassParser {
                 out.setSurface(Math.abs(area));
             }
             if (relation.tags != null) {
-                out.setTags(relation.tags);
+                // Correction : cast en Map<String, Object> pour compatibilité avec setTags
+                out.setTags(new java.util.HashMap<>(relation.tags));
                 out.setOperatorName(relation.tags.getOrDefault("operator", null));
                 out.setOpeningHours(relation.tags.getOrDefault("opening_hours", null));
                 out.setAccesible("yes".equalsIgnoreCase(relation.tags.getOrDefault("access", "")));
@@ -258,34 +261,5 @@ public class OverpassParser {
     public Point mapPoint(LatLon latlon) {
         return GeoShapeHelper.getPoint(latlon.lon, latlon.lat);
     }
-
-    /**
-     * Calcule l'aire géodésique (en m²) d'un polygone défini par une liste de LatLon (WGS84).
-     * Utilise la formule sphérique adaptée (algorithme de l'aire de Shoelace sur la sphère).
-     * @param geometry liste de LatLon (doit être fermée ou sera fermée automatiquement)
-     * @return aire en mètres carrés
-     */
-    public static double geodeticArea(List<LatLon> geometry) {
-        if (geometry == null || geometry.size() < 3) return 0.0;
-        // Rayon moyen de la Terre en mètres (WGS84)
-        final double R = 6371008.8;
-        double area = 0.0;
-        int n = geometry.size();
-        // S'assurer que le polygone est fermé
-        boolean closed = geometry.get(0).lat == geometry.get(n-1).lat && geometry.get(0).lon == geometry.get(n-1).lon;
-        int max = closed ? n-1 : n;
-        for (int i = 0; i < max; i++) {
-            LatLon p1 = geometry.get(i);
-            LatLon p2 = geometry.get((i+1)%n);
-            double lon1 = Math.toRadians(p1.lon);
-            double lat1 = Math.toRadians(p1.lat);
-            double lon2 = Math.toRadians(p2.lon);
-            double lat2 = Math.toRadians(p2.lat);
-            area += (lon2 - lon1) * (2 + Math.sin(lat1) + Math.sin(lat2));
-        }
-        area = area * R * R / 2.0;
-        return Math.abs(area);
-    }
-    
     
 }

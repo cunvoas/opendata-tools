@@ -22,16 +22,16 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkOverpassReposit
 
 import tools.jackson.databind.ObjectMapper;
 
-class OverpassParserTest {
+class OverpassRawParserTest {
     private ObjectMapper objectMapper;
     private ParkOverpassRepository parkOverpassRepository;
-    private OverpassParser parser;
+    private OverpassRawParser parser;
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
         parkOverpassRepository = mock(ParkOverpassRepository.class);
-        parser = new OverpassParser(objectMapper, parkOverpassRepository);
+        parser = new OverpassRawParser(objectMapper, parkOverpassRepository);
     }
 
     @Test
@@ -69,14 +69,14 @@ class OverpassParserTest {
     @Test
     void testGeodeticArea_equatorSquare1deg() {
         // Carré de 1° x 1° à l'équateur (0,0)-(0,1)-(1,1)-(1,0)-(0,0)
-        List<com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.LatLon> poly = List.of(
+        List<com.github.cunvoas.geoserviceisochrone.extern.overpass.common.LatLon> poly = List.of(
                 latlon(0, 0),
                 latlon(0, 1),
                 latlon(1, 1),
                 latlon(1, 0),
                 latlon(0, 0)
         );
-        double area = OverpassParser.geodeticArea(poly);
+        double area = parser.geodeticArea(poly);
         // Aire attendue ≈ 12364 km² (1.2364e7 m²)
         assertTrue(area > 1.2e7 && area < 1.27e7, "Area should be close to 1.2364e7 m², got: " + area);
     }
@@ -84,7 +84,7 @@ class OverpassParserTest {
     @Test
     void testMap_setsSurfaceForWay() {
         // Way simple : triangle sur la France
-        com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Way way = new com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.Way();
+        com.github.cunvoas.geoserviceisochrone.extern.overpass.rawdto.Way way = new com.github.cunvoas.geoserviceisochrone.extern.overpass.rawdto.Way();
         way.id = 1L;
         way.type = "way";
         way.geometry = List.of(
@@ -100,8 +100,8 @@ class OverpassParserTest {
     }
 
     // Helper
-    private static com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.LatLon latlon(double lat, double lon) {
-        com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.LatLon l = new com.github.cunvoas.geoserviceisochrone.extern.overpass.dto.LatLon();
+    private static com.github.cunvoas.geoserviceisochrone.extern.overpass.common.LatLon latlon(double lat, double lon) {
+        com.github.cunvoas.geoserviceisochrone.extern.overpass.common.LatLon l = new com.github.cunvoas.geoserviceisochrone.extern.overpass.common.LatLon();
         l.lat = lat;
         l.lon = lon;
         return l;
