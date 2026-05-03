@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.dashboard.DashboardCache;
 import com.github.cunvoas.geoserviceisochrone.model.dashboard.DashboardSummary;
-import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.DashboardCacheRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;

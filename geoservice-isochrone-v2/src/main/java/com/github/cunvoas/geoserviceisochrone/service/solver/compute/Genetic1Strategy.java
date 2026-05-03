@@ -2,9 +2,9 @@ package com.github.cunvoas.geoserviceisochrone.service.solver.compute;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.genetics.AbstractListChromosome;
 import org.apache.commons.math3.genetics.Chromosome;

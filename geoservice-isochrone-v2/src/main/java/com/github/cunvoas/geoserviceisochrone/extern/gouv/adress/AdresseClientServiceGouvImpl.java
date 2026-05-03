@@ -1,20 +1,19 @@
 package com.github.cunvoas.geoserviceisochrone.extern.gouv.adress;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
 import com.github.cunvoas.geoserviceisochrone.extern.gouv.adress.dto.AdressBo;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.client.RestClient;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 
 /**
  * Implémentation du service de recherche d'adresses utilisant l'API adresse.data.gouv.fr.

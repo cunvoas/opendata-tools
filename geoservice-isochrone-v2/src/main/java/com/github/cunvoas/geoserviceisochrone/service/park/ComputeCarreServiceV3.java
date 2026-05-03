@@ -35,7 +35,6 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.LaposteRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.compute.dto.ComputeDto;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;

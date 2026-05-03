@@ -16,7 +16,6 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.context.request.RequestContextListener;
-import org.thymeleaf.spring6.dialect.SpringStandardDialect;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationSecurityProperties;
 

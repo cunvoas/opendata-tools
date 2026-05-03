@@ -1,8 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.model.dashboard;
 
 
-import java.util.Date;
-
 import lombok.Data;
 
 /**

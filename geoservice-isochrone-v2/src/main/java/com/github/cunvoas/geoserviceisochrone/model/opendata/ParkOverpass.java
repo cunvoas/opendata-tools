@@ -1,22 +1,19 @@
 package com.github.cunvoas.geoserviceisochrone.model.opendata;
 
+import java.util.Map;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.type.SqlTypes;
-import org.hibernate.annotations.JdbcTypeCode;
-
-import java.util.Map;
 
 /**
  * Entité représentant un parc ou espace vert importé depuis l'API Overpass (OpenStreetMap).

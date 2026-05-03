@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionExtract;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoJson2GeometryHelper;
@@ -31,8 +32,6 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.LaposteRepository;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.RestClient;
 
 /**
  * Service pour la gestion des entités City et Cadastre.

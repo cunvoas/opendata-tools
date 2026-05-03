@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
-import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoCoordinate;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
@@ -19,7 +18,6 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 

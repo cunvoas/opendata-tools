@@ -1,16 +1,15 @@
 package com.github.cunvoas.geoserviceisochrone.service.project;
 
-import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
-import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
-
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 
 /**
  * Stratégie de recherche basée sur le voisinage des carrés INSEE.

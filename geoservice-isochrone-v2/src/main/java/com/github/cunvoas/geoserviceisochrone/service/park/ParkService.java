@@ -12,11 +12,11 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionExtract;

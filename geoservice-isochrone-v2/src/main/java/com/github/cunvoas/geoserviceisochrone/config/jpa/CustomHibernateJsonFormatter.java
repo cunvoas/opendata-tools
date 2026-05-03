@@ -1,15 +1,15 @@
 package com.github.cunvoas.geoserviceisochrone.config.jpa;
 
 
+import java.lang.reflect.Type;
+
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaType;
 import org.hibernate.type.format.AbstractJsonFormatMapper;
+
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.json.JsonMapper;
-
-
-import java.lang.reflect.Type;
 
 /**
  * Custom formatter for jsonb field.

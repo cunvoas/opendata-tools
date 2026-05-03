@@ -8,15 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
 import com.github.cunvoas.geoserviceisochrone.extern.overpass.common.AbstractOverpassParser;
 import com.github.cunvoas.geoserviceisochrone.extern.overpass.common.LatLon;
 import com.github.cunvoas.geoserviceisochrone.extern.overpass.geojsondto.DtoGeojsonFeature;

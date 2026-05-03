@@ -3,7 +3,6 @@ package com.github.cunvoas.geoserviceisochrone.model.opendata;
 	
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
-import org.springframework.format.annotation.NumberFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

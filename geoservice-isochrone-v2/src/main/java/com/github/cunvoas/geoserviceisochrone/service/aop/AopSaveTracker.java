@@ -1,7 +1,5 @@
 package com.github.cunvoas.geoserviceisochrone.service.aop;
 
-import java.util.Arrays;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;

@@ -13,13 +13,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
+
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service de gestion de l'association des villes aux communautés de communes.
