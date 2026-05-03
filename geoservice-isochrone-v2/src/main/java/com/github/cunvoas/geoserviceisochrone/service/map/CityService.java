@@ -31,19 +31,42 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.LaposteRepository;
 
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestClient;
 
 /**
- * DTO.
+ * Service pour la gestion des entités City et Cadastre.
+ * <p>
+ * Cette classe fournit des méthodes pour peupler, rechercher et manipuler les entités City et Cadastre,
+ * en s'appuyant sur les référentiels associés. Elle permet notamment de récupérer et de décompresser
+ * les fichiers GeoJSON compressés du cadastre via un appel HTTP distant.
+ * <p>
+ *
+ * @author cunvoas
  */
+
 @Service
 @Slf4j
+
 public class CityService {
 	// WGS-84 SRID
 	private GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
-	private OkHttpClient client = new OkHttpClient().newBuilder().build();
+
+	@Autowired
+	private RestClient restClient;
+
+	/**
+	 * Constructeur par défaut (utilisé par Spring)
+	 */
+	public CityService() {}
+
+	/**
+	 * Constructeur pour tests unitaires (injection d'un RestClient custom)
+	 * @param restClient client HTTP à utiliser
+	 */
+	public CityService(RestClient restClient) {
+		this.restClient = restClient;
+	}
 
 	@Autowired
 	private GeoJson2GeometryHelper geoJson2GeometryHelper;
@@ -55,7 +78,10 @@ public class CityService {
 	private LaposteRepository laposteRepository;
 
 	/**
-	 * populate cadastral data.
+	 * Récupère et met à jour les entités City et Cadastre à partir des données Laposte et du cadastre.
+	 * <p>
+	 * Pour chaque entrée Laposte, crée ou met à jour la City correspondante, puis tente de récupérer
+	 * le GeoJSON du cadastre (compressé) pour enrichir l'entité Cadastre associée.
 	 */
 	public void populateCities() {
 		List<Laposte> postes = laposteRepository.findAll();
@@ -105,20 +131,22 @@ public class CityService {
 	}
 
 	/**
-	 * findAll.
-	 * @param page page
-	 * @return list City
+	 * Recherche paginée de toutes les entités City.
+	 *
+	 * @param page pagination
+	 * @return page de City
 	 */
 	public Page<City> findAll(Pageable page) {
 		return cityRepository.findAll(page);
 	}
 
 	/**
-	 * findAround
-	 * @param lat latitude
-	 * @param lon longitude
-	 * @param distanceM in meter
-	 * @return list City
+	 * Recherche les villes à proximité d'un point géographique.
+	 *
+	 * @param lat latitude du point de référence
+	 * @param lon longitude du point de référence
+	 * @param distanceM distance en mètres
+	 * @return liste des villes à proximité
 	 */
 	
 	public List<City> findAround(double lat, double lon, double distanceM) {
@@ -128,10 +156,11 @@ public class CityService {
 		return cityRepository.findNearWithinDistance(p, distanceM);
 	}
 	/**
-	 * findAround
-	 * @param p Point
-	 * @param distanceM in meter
-	 * @return list City
+	 * Recherche les villes à proximité d'un point géographique.
+	 *
+	 * @param p point de référence (JTS)
+	 * @param distanceM distance en mètres
+	 * @return liste des villes à proximité
 	 */
 	public List<City> findAround(Point p, double distanceM) {
 		// log.info("Looking for city around ({},{}) withing {} meters", lat, lon,
@@ -144,35 +173,46 @@ public class CityService {
 	 * @param insee code
 	 * @return bytes
 	 */
+	/**
+	 * Récupère le fichier GeoJSON compressé (gzip) du cadastre pour une commune donnée via HTTP.
+	 * <p>
+	 * Utilise {@link org.springframework.web.client.RestClient} pour effectuer la requête distante.
+	 *
+	 * @param insee code INSEE de la commune
+	 * @return tableau d'octets du fichier gzip, ou null en cas d'échec
+	 */
 	protected byte[] getGzipCadastre(String insee) {
-		byte[] gzipFile = null;
-
 		String dept = insee.substring(0, 2);
 		String gzUrl = String.format(
 				"https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-communes.json.gz",
 				dept, insee, insee);
-
-		Request request = new Request.Builder().url(gzUrl).get().build();
-
 		try {
-			Response response = client.newCall(request).execute();
-			log.debug(response.headers().toString());
-
-			gzipFile = response.body().bytes();
-
+			return doHttpGet(gzUrl);
 		} catch (Exception e) {
 			e.printStackTrace();
+			return null;
 		}
-		return gzipFile;
 	}
 
 	/**
-	 * get cadastre.
-	 * 
-	 * @see https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/59/59001/cadastre-59001-communes.json.gz
-	 * @see https://commons.apache.org/proper/commons-compress/examples.html
-	 * @param gzipFile bytes of zip file
-	 * @return  geoJson
+	 * Effectue un appel HTTP GET et retourne le corps sous forme de byte[].
+	 * Surchargeable pour les tests unitaires.
+	 */
+	protected byte[] doHttpGet(String url) {
+		return restClient.get()
+				.uri(url)
+				.retrieve()
+				.body(byte[].class);
+	}
+
+	/**
+	 * Décompresse un fichier gzip contenant un GeoJSON et retourne le contenu texte.
+	 *
+	 * @see <a href="https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/59/59001/cadastre-59001-communes.json.gz">Exemple de fichier</a>
+	 * @see <a href="https://commons.apache.org/proper/commons-compress/examples.html">Exemple d'utilisation de commons-compress</a>
+	 * @param gzipFile tableau d'octets du fichier gzip
+	 * @return contenu GeoJSON sous forme de chaîne
+	 * @throws ExceptionExtract en cas d'erreur de décompression
 	 */
 	protected String getGeoJsonCadastre(byte[] gzipFile) {
 

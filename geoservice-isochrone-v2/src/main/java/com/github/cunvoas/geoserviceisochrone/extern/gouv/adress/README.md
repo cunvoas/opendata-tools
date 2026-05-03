@@ -15,7 +15,7 @@ Ce module fournit des services pour la recherche et le traitement d'adresses à 
 
 ## Dépendances principales
 - Spring (injection de dépendances)
-- OkHttp (requêtes HTTP)
+- RestClient (requêtes HTTP)
 - Jackson (traitement JSON)
 - JTS (géométrie)
 
