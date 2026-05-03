@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.client.RestClient;
 
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoIsoChrone;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
@@ -13,16 +14,16 @@ import tools.jackson.databind.ObjectMapper;
 
 class TestClientIsoChrone {
 	
-	private IsoChroneClientService tested = new ClientIsoChroneUi1();
+	private IsoChroneClientService testedUiCli = new ClientIsoChroneUi1();
 	private IsoChroneClientService testedApiV1 = new ClientIsoChroneApiV1();
-	private IsoChroneClientService testedApiV2 = new ClientIsoChroneApiV2();
+	private IsoChroneClientService testedApiV2 = new ClientIsoChroneApiV2(RestClient.create());
 
 	@Test
 	@Disabled
-	void testGetIsoChrone() {
+	void testUiCliGetIsoChrone() {
 		
 		Coordinate coord = new Coordinate(3.106738328933716,50.624763376155535);
-		String resp = tested.getIsoChrone(coord, "200");
+		String resp = testedUiCli.getIsoChrone(coord, "200");
 		assertNotNull(resp, "not null");
 		
 		System.out.println(resp);
@@ -30,7 +31,7 @@ class TestClientIsoChrone {
 	
 
 	@Test
-	void testGetIsoChronePh() {
+	void testApiV2GetIsoChrone() {
 		
 		Coordinate coord = new Coordinate(3.0144703388214116,50.63679884038829);
 		String resp = testedApiV2.getIsoChrone(coord, "300");
@@ -42,7 +43,7 @@ class TestClientIsoChrone {
 
 	@Test
 	@Disabled
-	void testGetApiIsoChrone() {
+	void testApiV1GetIsoChrone() {
 
 		Coordinate coord = new Coordinate(3.106738328933716,50.624763376155535);
 		String resp = testedApiV1.getIsoChrone(coord, "200");

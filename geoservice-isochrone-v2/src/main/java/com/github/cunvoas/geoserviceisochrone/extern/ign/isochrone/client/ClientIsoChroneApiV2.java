@@ -8,9 +8,10 @@ import org.springframework.stereotype.Component;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestClient;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 /**
  * <b>ClientIsoChroneApiV2</b> : Client pour l'appel à l'API isochrone v2 de l'IGN (GéoPlateforme).<br>
@@ -63,51 +64,54 @@ import okhttp3.Response;
 		name="application.feature-flipping.isochrone-impl", 
 		havingValue="ign-api-v2")
 public class ClientIsoChroneApiV2 implements IsoChroneClientService {
-	
+
 	private static final String URL = "https://data.geopf.fr/navigation/isochrone";
-	
+
+	private final RestClient restClient;
+
+	@Autowired
+	public ClientIsoChroneApiV2(RestClient restClient) {
+		this.restClient = restClient;
+	}
+
 	@Override
 	public String getIsoChrone(Coordinate coordinate, String duration) {
-		String strResp = null;
-		
-		OkHttpClient client = new OkHttpClient().newBuilder().build();
 		StringBuilder sb = new StringBuilder(URL);
 		sb.append("?gp-access-lib=3.4.1&apiKey=calcul&resource=bdtopo-valhalla&point=");
 		sb.append(coordinate.getLongitude());
-		sb.append("%2C");
-		sb.append(coordinate.getLatitude()); //50.62485026020619
+		sb.append(",");
+		sb.append(coordinate.getLatitude());
 		sb.append("&costValue=");
 		sb.append(duration);
-		
-		sb.append("&direction=departure&costType=time&profile=pedestrian&timeUnit=second&distanceUnit=meter&crs=EPSG%3A4326&constraints=");
-		
-		log.debug(sb.toString());
-		
-		Request request = new Request.Builder()
-				  .url(sb.toString())
-				  .get()
-				  .addHeader("accept", "application/json")
-				  .addHeader("authority", "wxs.ign.fr")
-				  .addHeader("accept-language", "fr-FR,fr")
-				  .addHeader("sec-fetch-dest", "empty")
-				  .addHeader("sec-fetch-mode", "cors")
-				  .addHeader("sec-fetch-site", "cross-site")
-				  .addHeader("Referer", "https://storage.gra.cloud.ovh.net/")
-				  .addHeader("Origin", "https://storage.gra.cloud.ovh.net/")
-//				  .addHeader("Referrer-Policy", "strict-origin-when-cross-origin")
-				  .build();
-		
+		sb.append("&direction=departure&costType=time&profile=pedestrian&timeUnit=second&distanceUnit=meter&crs=EPSG:4326&constraints=");
+
+		String url = sb.toString();
+		log.debug(url);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(java.util.Collections.singletonList(MediaType.APPLICATION_JSON));
+		headers.add("authority", "wxs.ign.fr");
+		headers.add("accept-language", "fr-FR,fr");
+		headers.add("sec-fetch-dest", "empty");
+		headers.add("sec-fetch-mode", "cors");
+		headers.add("sec-fetch-site", "cross-site");
+		headers.add("Referer", "https://storage.gra.cloud.ovh.net/");
+		headers.add("Origin", "https://storage.gra.cloud.ovh.net/");
+
 		try {
-			
-			Response response = client.newCall(request).execute();
-			log.debug(response.headers().toString());
-			
-			strResp= response.body().string();	
-		} catch (IOException e) {
-			log.error(sb.toString(), e);
+			String response = restClient.get()
+					.uri(url)
+					.headers(httpHeaders -> httpHeaders.addAll(headers))
+					.retrieve()
+					.body(String.class);
+			return response;
+		} catch (org.springframework.web.client.HttpStatusCodeException e) {
+			log.error("HTTP error {} for URL {}: {}", e.getStatusCode(), url, e.getResponseBodyAsString());
+			return null;
+		} catch (Exception e) {
+			log.error("Exception for URL {}: {}", url, e.getMessage(), e);
+			return null;
 		}
-		
-		return strResp;
 	}
 
 }

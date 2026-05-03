@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 import com.github.cunvoas.geoserviceisochrone.extern.gouv.adress.dto.AdressBo;
 
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import org.springframework.web.client.RestClient;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 /**
  * Implémentation du service de recherche d'adresses utilisant l'API adresse.data.gouv.fr.
@@ -28,14 +28,15 @@ import okhttp3.Response;
 @Slf4j
 public class AdresseClientServiceGouvImpl implements AdresseClientService {
 
-    @Autowired
-    public AdresseClientServiceGouvImpl(AdressGeoJsonParser adressGeoJsonParser) {
-        this.adressGeoJsonParser = adressGeoJsonParser;
-    }
-	
 	private final AdressGeoJsonParser adressGeoJsonParser;
-	
+	private final RestClient restClient;
 	private static final String URL = "https://api-adresse.data.gouv.fr/";
+
+	@Autowired
+	public AdresseClientServiceGouvImpl(AdressGeoJsonParser adressGeoJsonParser, RestClient restClient) {
+		this.adressGeoJsonParser = adressGeoJsonParser;
+		this.restClient = restClient;
+	}
 	
 	/**
      * Recherche les adresses via l'API adresse.data.gouv.fr et parse la réponse.
@@ -65,21 +66,17 @@ public class AdresseClientServiceGouvImpl implements AdresseClientService {
 	}
 	
 	protected String search(String insee, String requete) {
-		
 		StringBuilder sb = new StringBuilder(URL);
 		sb.append("search/?citycode=").append(insee);
 		sb.append("&q=").append(encodeValue(requete));
 		log.debug(sb.toString());
-		
-		Request request = new Request.Builder()
-				  .url(sb.toString())
-				  .get()
-				  .addHeader("accept", "application/json")
-				  .addHeader("authority", "data.gouv.fr")
-				  .addHeader("user-agent", "curl")
-				  .build();
-		
-		return this.request(request);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		headers.set("authority", "data.gouv.fr");
+		headers.set(HttpHeaders.USER_AGENT, "curl");
+
+		return this.request(sb.toString(), headers);
 	}
 	
 	protected String reverse(String lon, String lat) {
@@ -87,29 +84,27 @@ public class AdresseClientServiceGouvImpl implements AdresseClientService {
 		sb.append("reverse/?lon=").append(lon);
 		sb.append("&lat=").append(lat);
 		log.debug(sb.toString());
-		
-		Request request = new Request.Builder()
-				  .url(sb.toString())
-				  .get()
-				  .addHeader("accept", "application/json")
-				  .addHeader("authority", "data.gouv.fr")
-				  .addHeader("user-agent", "curl")
-				  .build();
-		
-		return this.request(request);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		headers.set("authority", "data.gouv.fr");
+		headers.set(HttpHeaders.USER_AGENT, "curl");
+
+		return this.request(sb.toString(), headers);
 	}
 	
 	
-	private String request(Request request) {
-		OkHttpClient client = new OkHttpClient().newBuilder().build();
-		String strResp = "";
+	private String request(String url, HttpHeaders headers) {
 		try {
-			Response response = client.newCall(request).execute();
-			strResp= response.body().string();	
-		} catch (IOException e) {
-			log.error(request.body().toString(), e);
+			return restClient.get()
+					.uri(url)
+					.headers(httpHeaders -> httpHeaders.addAll(headers))
+					.retrieve()
+					.body(String.class);
+		} catch (Exception e) {
+			log.error("Request failed for url: {}", url, e);
+			return "";
 		}
-		return strResp;
 	}
 	
 	private String encodeValue(String value) {

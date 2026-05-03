@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import org.springframework.web.client.RestClient;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 /**
  * <b>ClientIsoChroneApiV1</b> : Client pour l'appel à l'API isochrone v1 de l'IGN.<br>
@@ -84,50 +84,47 @@ public class ClientIsoChroneApiV1 implements IsoChroneClientService {
 	@Override
 	public String getIsoChrone(Coordinate coordinate, String duration) {
 		String strResp = null;
-		
-		OkHttpClient client = new OkHttpClient().newBuilder().build();
+
 		StringBuilder sb = new StringBuilder(URL);
 		sb.append("/isochrone?point=");
 		sb.append(coordinate.getLongitude());
 		sb.append("%2C");
-		sb.append(coordinate.getLatitude()); //50.62485026020619
+		sb.append(coordinate.getLatitude());
 		sb.append("&costValue=");
 		sb.append(duration);
-		//resource=bdtopo-pgr
-		//resource=bdtopo-iso
 		sb.append("&resource=bdtopo-pgr&distanceUnit=meter&costType=time&profile=pedestrian&direction=departure&geometryFormat=geojson&timeUnit=second&crs=EPSG%3A4326");
 //		sb.append("&constraints=%7B%22constraintType%22%3A%22banned%22%2C%22key%22%3A%22wayType%22%2C%22operator%22%3A%22%3D%22%2C%22value%22%3A%22autoroute%22%7D");
-		
-		log.debug(sb.toString());;
-		
-		Request request = new Request.Builder()
-				  .url(sb.toString())
-				  .get()
-				  .addHeader("accept", "application/json")
-				  .addHeader("authority", "wxs.ign.fr")
-				  .addHeader("accept-language", "fr-FR,fr")
-//				  .addHeader("sec-ch-ua-mobile", "?0")
-//				  .addHeader("sec-ch-ua-platform", "Linux")
-				  .addHeader("sec-fetch-dest", "empty")
-				  .addHeader("sec-fetch-mode", "cors")
-				  .addHeader("sec-fetch-site", "cross-site")
-				  .addHeader("Referer", "https://storage.gra.cloud.ovh.net/")
-				  .addHeader("Origin", "https://storage.gra.cloud.ovh.net/")
-				  
-//				  .addHeader("Referrer-Policy", "strict-origin-when-cross-origin")
-//				  .addHeader("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36")
-				  .build();
-		
+
+		log.debug(sb.toString());
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(java.util.Collections.singletonList(MediaType.APPLICATION_JSON));
+		headers.add("authority", "wxs.ign.fr");
+		headers.add("accept-language", "fr-FR,fr");
+		headers.add("sec-fetch-dest", "empty");
+		headers.add("sec-fetch-mode", "cors");
+		headers.add("sec-fetch-site", "cross-site");
+		headers.add("Referer", "https://storage.gra.cloud.ovh.net/");
+		headers.add("Origin", "https://storage.gra.cloud.ovh.net/");
+
 		try {
-			
-			Response response = client.newCall(request).execute();
-			log.debug(response.headers().toString());
-			
-			strResp= response.body().string();	
-		} catch (IOException e) {
-			e.printStackTrace();
+			RestClient restClient = RestClient.create();
+			log.info("Appel API isochrone URL: {}", sb.toString());
+			strResp = restClient.get()
+				.uri(sb.toString())
+				.headers(httpHeaders -> httpHeaders.addAll(headers))
+				.retrieve()
+				.onStatus(status -> !status.is2xxSuccessful(), (req, resp) -> {
+					log.error("Réponse HTTP non 2xx: {}", resp.getStatusCode());
+					throw new RuntimeException("Erreur HTTP: " + resp.getStatusCode());
+				})
+				.body(String.class);
+			if (strResp == null) {
+				log.error("Réponse de l'API isochrone null pour l'URL: {}", sb.toString());
+			}
+		} catch (Exception e) {
+			log.error("Exception lors de l'appel à l'API isochrone (URL: {}): ", sb.toString(), e);
 		}
-		
 		return strResp;
 	}
 
