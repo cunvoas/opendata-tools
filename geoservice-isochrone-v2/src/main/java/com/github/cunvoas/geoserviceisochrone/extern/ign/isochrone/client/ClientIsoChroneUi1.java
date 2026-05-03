@@ -8,7 +8,43 @@ import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * impl reverse v0.
+ * <b>ClientIsoChroneUi1</b> : Client pour l'appel à l'API isochrone UI1 de l'IGN.<br>
+ * <br>
+ * <b>Fonctionnalités principales :</b>
+ * <ul>
+ *   <li>Construit et exécute une requête HTTP vers l'API isochrone IGN (UI1) pour obtenir une isochrone à partir d'une coordonnée et d'une durée.</li>
+ *   <li>Gère la construction de l'URL avec tous les paramètres nécessaires (point, durée, profil, etc.).</li>
+ *   <li>Utilise RestClient (Spring) pour l'appel HTTP et gère les en-têtes attendus par l'API IGN.</li>
+ *   <li>Retourne la réponse brute JSON de l'API.</li>
+ * </ul>
+ *
+ * <b>Dépendances :</b>
+ * <ul>
+ *   <li>{@link com.github.cunvoas.geoserviceisochrone.model.Coordinate} : Coordonnées du point de départ.</li>
+ *   <li>RestClient (Spring) : Client HTTP pour Java.</li>
+ *   <li>Spring (@Component, @ConditionalOnProperty) pour l'injection et l'activation conditionnelle.</li>
+ * </ul>
+ *
+ * <b>Ressources externes :</b>
+ * <ul>
+ *   <li>Documentation API isochrone IGN :
+ *     <a href="https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrone/api">https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrone/api</a>
+ *   </li>
+ *   <!-- OkHttp n'est plus utilisé -->
+ * </ul>
+ *
+ * <b>Utilisation :</b>
+ * <pre>
+ *   ClientIsoChroneUi1 client = new ClientIsoChroneUi1();
+ *   String json = client.getIsoChrone(new Coordinate(2.337306, 48.849319), "300");
+ * </pre>
+ *
+ * <b>Remarques :</b>
+ * <ul>
+ *   <li>Le client est activé uniquement si la propriété <code>application.feature-flipping.isochrone-impl</code> vaut <code>ign-reverse-ui-v1</code>.</li>
+ *   <li>La réponse est retournée telle quelle (JSON brut).</li>
+ *   <li>En cas d'erreur réseau, la pile d'exception est affichée dans les logs.</li>
+ * </ul>
  */
 @Component
 @Slf4j

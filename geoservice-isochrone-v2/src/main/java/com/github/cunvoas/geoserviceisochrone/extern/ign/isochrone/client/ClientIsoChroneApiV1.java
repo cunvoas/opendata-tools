@@ -1,16 +1,14 @@
 package com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client;
 
-import java.io.IOException;
-
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.client.RestClient;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 
 /**
  * <b>ClientIsoChroneApiV1</b> : Client pour l'appel à l'API isochrone v1 de l'IGN.<br>
@@ -19,14 +17,14 @@ import org.springframework.http.MediaType;
  * <ul>
  *   <li>Construit et exécute une requête HTTP vers l'API isochrone IGN (v1) pour obtenir une isochrone à partir d'une coordonnée et d'une durée.</li>
  *   <li>Gère la construction de l'URL avec tous les paramètres nécessaires (point, durée, profil, etc.).</li>
- *   <li>Utilise OkHttp pour l'appel HTTP et gère les en-têtes attendus par l'API IGN.</li>
+ *   <li>Utilise RestClient (Spring) pour l'appel HTTP et gère les en-têtes attendus par l'API IGN.</li>
  *   <li>Retourne la réponse brute JSON de l'API.</li>
  * </ul>
  *
  * <b>Dépendances :</b>
  * <ul>
  *   <li>{@link Coordinate} : Coordonnées du point de départ.</li>
- *   <li>OkHttp : Client HTTP pour Java (<a href="https://square.github.io/okhttp/">https://square.github.io/okhttp/</a>).</li>
+ *   <li>RestClient (Spring) : Client HTTP pour Java.</li>
  *   <li>Spring (@Component, @ConditionalOnProperty) pour l'injection et l'activation conditionnelle.</li>
  * </ul>
  *
@@ -35,9 +33,7 @@ import org.springframework.http.MediaType;
  *   <li>Documentation API isochrone IGN :
  *     <a href="https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrone/api">https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrone/api</a>
  *   </li>
- *   <li>Documentation OkHttp :
- *     <a href="https://square.github.io/okhttp/">https://square.github.io/okhttp/</a>
- *   </li>
+ *   <!-- OkHttp n'est plus utilisé -->
  * </ul>
  *
  * <b>Utilisation :</b>
