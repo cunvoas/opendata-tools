@@ -344,17 +344,23 @@
 	        options = document.querySelectorAll('#' + list + ' option'),
 	        hiddenInput = document.querySelector("#"+input.getAttribute('id').split("-")[0]),
 	        inputValue = input.value;
-		    
-	    	hiddenInput.value = inputValue;
-		    
-		    for(let i = 0; i < options.length; i++) {
-		        const option = options[i];
-		        if(option.value === inputValue) {
-		        	hiddenInput.value = option.getAttribute('data-value');
-		        	document.querySelector("#formSelectCity").submit();
-		            break;
-		        }
-		    }
+
+	    // Ne pas écraser l'ID numérique avec le texte saisi :
+	    // on cherche d'abord une correspondance exacte dans la datalist
+	    let matched = false;
+	    for(let i = 0; i < options.length; i++) {
+	        const option = options[i];
+	        if(option.value === inputValue) {
+	        	hiddenInput.value = option.getAttribute('data-value');
+	        	matched = true;
+	        	document.querySelector("#formSelectCity").submit();
+	            break;
+	        }
+	    }
+	    // Si aucune correspondance, on vide l'ID pour éviter d'envoyer du texte
+	    if (!matched) {
+	        hiddenInput.value = '';
+	    }
 	});
 	
 	document.querySelector('#idCommune-filter').addEventListener('focusout', function(e) {
@@ -714,7 +720,7 @@
         }
         const sUrlGeoOverpass= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkOverpassByCorner}]]+'?'+sPos;
         geojsonOverpassLayer = new L.GeoJSON.AJAX(sUrlGeoOverpass, {
-            style: { color:'#26D8DE', fillColor:'#71E6EA', weight:1, fillOpacity:0.75 },
+            style: { color:'#26D8DE', fillColor:'#093C3E', weight:1, fillOpacity:0.35 },
             onEachFeature: function(feature, layer) {
                 const p = feature.properties || {};
                 const id = p.id || p.osm_id || '';
@@ -730,7 +736,7 @@
                 }
                 layer.bindPopup(
                     '<b>' + name + '</b><br/>' +
-                    'ID&nbsp;: ' + id + '<br/>' +
+                    'ID&nbsp;: <a href="https://www.openstreetmap.org/way/' + id + '" target="_blank" rel="noopener noreferrer">' + id + '</a><br/>' +
                     'Surface&nbsp;: ' + surface
                 );
             }
