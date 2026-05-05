@@ -13,7 +13,7 @@
   
   <groupId>com.github.cunvoas</groupId>
   <artifactId>geoservice-isochrone-v2</artifactId>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>2.0.0</version>
   <name>geoservice-isochrone-v2</name>
   
   <description>Isochrone service – migration Spring Boot 4</description>
@@ -24,14 +24,6 @@
   </properties>
   <dependencies>
 
-    <!-- TEMPORAIRE pour migration : détecte les propriétés obsolètes ou
-    déplacées, à supprimer ensuite -->
-<!--    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-properties-migrator</artifactId>
-      <scope>runtime</scope>
-    </dependency>-->
-    
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webmvc</artifactId>
@@ -45,6 +37,11 @@
           <artifactId>jackson-core</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <!-- Flyway migration -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -89,7 +86,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk18on</artifactId>
-      <version>1.78.1</version>
+      <version>1.84</version>
     </dependency>
     
     <dependency>
@@ -206,6 +203,11 @@
       <scope>compile</scope>
     </dependency>
 
+    <dependency>
+        <groupId>com.github.loki4j</groupId>
+        <artifactId>loki-logback-appender</artifactId>
+        <version>1.4.0</version> <!-- Replace with the latest version -->
+    </dependency>
 
     <!-- Unit Tests -->
     <dependency>
@@ -275,6 +277,21 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <!-- Flyway Maven Plugin -->
+      <plugin>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <version>12.5.0</version>
+        <configuration>
+          <url>${FLYWAY_URL}</url>
+          <user>${FLYWAY_USER}</user>
+          <password>${FLYWAY_PASSWORD}</password>
+          <schemas>public</schemas>
+          <locations>
+            <location>filesystem:src/main/resources/db/migration</location>
+          </locations>
+        </configuration>
       </plugin>
     </plugins>
   </build>

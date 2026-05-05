@@ -152,5 +152,12 @@ application:
     photo-path-origin: /work/PERSO/ASSO/isochrone/photo_origin
     export-data-path: /work/PERSO/github/gh_pages/geoservice-data
 
-
-
+  # Configuration Flyway pour migrations automatiques
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    out-of-order: false
+    clean-disabled: true
+    table: flyway_schema_history

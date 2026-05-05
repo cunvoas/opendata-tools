@@ -433,13 +433,11 @@
     
     // extras data sur la carte
     const dataPrefecture = L.layerGroup();
-    const dataOverpass = L.layerGroup();
     const dataAutmel = L.layerGroup();
     const dataCadastre = L.layerGroup();
     const dataLayers = {
         "Cadastre des communes": dataCadastre,
     	"Données de la préfecture": dataPrefecture,
-    	"Parcs Overpass (OSM)": dataOverpass,
     	"Contours des parcs": dataAutmel
     };
     
@@ -659,7 +657,6 @@
 
     
     let geojsonPrefLayer = null;
-    let geojsonOverpassLayer = null;
     let geojsonCadastreLayer = null;
     let geojsonParkLayer = null;
     
@@ -707,35 +704,6 @@
         geojsonPrefLayer = new L.GeoJSON.AJAX(sUrlGeoPref, {onEachFeature: customOnEachFeaturePref});
         //geojsonPrefLayer.addTo(dataPrefecture);
         dataPrefecture.addLayer(geojsonPrefLayer);
-        
-        // get shapes: parcs Overpass (OSM) - source complémentaire à la préfecture, destinée à la remplacer
-        if (geojsonOverpassLayer!==null) {
-        	dataOverpass.removeLayer(geojsonOverpassLayer);
-        }
-        const sUrlGeoOverpass= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkOverpassByCorner}]]+'?'+sPos;
-        geojsonOverpassLayer = new L.GeoJSON.AJAX(sUrlGeoOverpass, {
-            style: { color:'#26D8DE', fillColor:'#71E6EA', weight:1, fillOpacity:0.75 },
-            onEachFeature: function(feature, layer) {
-                const p = feature.properties || {};
-                const id = p.id || p.osm_id || '';
-                const name = p.name || '(sans nom)';
-                let surface = 'N/A';
-                if (p.surface != null) {
-                    const s = parseFloat(p.surface);
-                    if (s > 10000) {
-                        surface = (s / 10000).toFixed(2) + ' ha';
-                    } else {
-                        surface = Math.round(s) + ' m²';
-                    }
-                }
-                layer.bindPopup(
-                    '<b>' + name + '</b><br/>' +
-                    'ID&nbsp;: ' + id + '<br/>' +
-                    'Surface&nbsp;: ' + surface
-                );
-            }
-        });
-        dataOverpass.addLayer(geojsonOverpassLayer);
         
         // get shapes: contours parc autmel  : parkGardenByCorner
         if (geojsonParkLayer!==null) {
