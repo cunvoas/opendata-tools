@@ -193,7 +193,7 @@ public class GeoMapServiceV2 {
 				
 				GeoJsonFeature feature = new GeoJsonFeature();
 				root.getFeatures().add(feature);
-				feature.setGeometry(cadastre.getGeoShape());
+				feature.setGeometry(cadastre.getGeoShapeLow());
 				
 				CadastreView cv = new CadastreView();
 				cv.setIdInsee(cadastre.getIdInsee());
@@ -267,7 +267,7 @@ public class GeoMapServiceV2 {
     			
 	    			GeoJsonFeature feature = new GeoJsonFeature();
 					root.getFeatures().add(feature);
-					feature.setGeometry(cadastre.getGeoShape());
+					feature.setGeometry(cadastre.getGeoShapeLow());
 					
 					CadastreView cv = new CadastreView();
 					cv.setIdInsee(cadastre.getIdInsee());

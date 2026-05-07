@@ -24,8 +24,8 @@ public class CommunauteCommuneDto {
 		super();
 		this.id=model.getId();
 		this.name=model.getName();
-		if (model.getCarreCarte()!=null) {
-			Point p = model.getCarreCarte().getCentroid();
+		if (model.getGeoShapeLow()!=null) {
+			Point p = model.getGeoShapeLow().getCentroid();
 			this.lonX=p.getX();
 			this.latY=p.getY();
 			

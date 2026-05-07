@@ -64,11 +64,11 @@ public class CommunauteCommune implements Comparator<CommunauteCommune> {
 	 */
 	List<City> cities;
 	
-	@Column(name = "carre_carte")
-	/**
-	 * Géométrie simplifiée de la communauté de communes (polygone).
-	 */
-	private Geometry carreCarte;
+//	@Column(name = "carre_carte")
+//	/**
+//	 * Géométrie simplifiée de la communauté de communes (polygone).
+//	 */
+//	private Geometry carreCarte;
 
 	@Column(name="geo_shape_low", columnDefinition = "geometry(MultiPolygon,4326)")
 	/**

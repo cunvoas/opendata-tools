@@ -168,28 +168,38 @@ public class ServiceOpenData {
      * @param comm2co la communauté pour laquelle calculer le carré englobant
      * @return le polygone représentant l'enveloppe calculée
      */
-	public Polygon computeSquareOnMap(CommunauteCommune comm2co) {
-		Polygon poly=null;
-		for (City city : comm2co.getCities()) {
-			Optional<Cadastre> opt = cadastreRepository.findById(city.getInseeCode());
-			if (opt.isPresent()) {
-				Geometry shape = opt.get().getGeoShape();
-				if (shape!=null) {
-					// extraction de la boite depuis le cadastre
-					Polygon p= (Polygon)shape.getEnvelope();
-					
-					if (poly==null) {
-						poly = p;
-					} else {
-						// union de l boite précédante avec le cadastre de la ville actuelle.
-						// et recalcul de la nouvelle boite
-						poly= (Polygon) poly.union(p).getEnvelope();
-					}
-				}
-			}
+	public Geometry computeSquareOnMap(CommunauteCommune comm2co) {
+		
+		communauteCommuneRepository.updateGeoShape(comm2co.getId());
+		
+		Optional<CommunauteCommune> opt = communauteCommuneRepository.findById(comm2co.getId());
+		if (opt.isPresent())  {
+			comm2co = opt.get();
+			return comm2co.getGeoShapeLow();
 		}
-		comm2co.setCarreCarte(poly);
-		communauteCommuneRepository.save(comm2co);
-		return poly;
+		return null;
+//		
+//		Polygon poly=null;
+//		for (City city : comm2co.getCities()) {
+//			Optional<Cadastre> opt = cadastreRepository.findById(city.getInseeCode());
+//			if (opt.isPresent()) {
+//				Geometry shape = opt.get().getGeoShape();
+//				if (shape!=null) {
+//					// extraction de la boite depuis le cadastre
+//					Polygon p= (Polygon)shape.getEnvelope();
+//					
+//					if (poly==null) {
+//						poly = p;
+//					} else {
+//						// union de l boite précédante avec le cadastre de la ville actuelle.
+//						// et recalcul de la nouvelle boite
+//						poly= (Polygon) poly.union(p).getEnvelope();
+//					}
+//				}
+//			}
+//		}
+//		comm2co.setCarreCarte(poly);
+//		communauteCommuneRepository.save(comm2co);
+//		return poly;
 	}
 }
