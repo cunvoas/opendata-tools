@@ -4,6 +4,7 @@ package com.github.cunvoas.geoserviceisochrone.model.opendata;
 import java.util.Comparator;
 import java.util.List;
 
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
 import jakarta.persistence.Column;
@@ -67,8 +68,14 @@ public class CommunauteCommune implements Comparator<CommunauteCommune> {
 	/**
 	 * Géométrie simplifiée de la communauté de communes (polygone).
 	 */
-	private Polygon carreCarte;
+	private Geometry carreCarte;
 
+	@Column(name="geo_shape_low", columnDefinition = "geometry(MultiPolygon,4326)")
+	/**
+	 * Géométrie simplifiée du cadastre (MultiPolygon).
+	 */
+    private Geometry geoShapeLow;
+	
 	/**
 	 * Compare deux communautés de communes par leur nom (ordre alphabétique).
 	 *

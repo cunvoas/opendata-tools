@@ -46,6 +46,14 @@ public class Cadastre {
 	 * Géométrie du cadastre (MultiPolygon).
 	 */
     private Geometry geoShape;
+	
+
+	@Column(name="geo_shape_low", columnDefinition = "geometry(MultiPolygon,4326)")
+	/**
+	 * Géométrie simplifiée du cadastre (MultiPolygon).
+	 */
+    private Geometry geoShapeLow;
+	
 
 	/**
 	 * Calcule et retourne le centre géométrique de la commune.

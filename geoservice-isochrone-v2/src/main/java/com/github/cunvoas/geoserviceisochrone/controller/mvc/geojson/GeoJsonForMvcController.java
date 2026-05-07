@@ -162,7 +162,7 @@ public class GeoJsonForMvcController {
     }
 	
 	@GetMapping("/proposal/{idMeta}")
-	// chnager la signature et avoir l'ID meta projet
+	// changer la signature et avoir l'ID meta projet
 	public GeoJsonRoot getParkProposalByArea(
 			@PathVariable("idMeta") Long idMeta
 		) {

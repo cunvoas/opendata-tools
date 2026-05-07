@@ -33,7 +33,7 @@ spring:
     session.cookie.name: PHPSESSID
     multipart:
         max-file-size: 8MB
-        max-request-size: 10MB
+        max-request-size: 8MB
   reactive:
     session.cookie.name: PHPSESSID
     
