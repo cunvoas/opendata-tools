@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- ISOCHRONE CONFIG LOG -->
+    <!-- Explicit converter registration required for Logback 1.4+ (Spring Boot 3.x) -->
+    <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wEx" class="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+
+    <!-- Include Spring Boot defaults: registers %clr, %wEx converters, base appenders, etc. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+     <include resource="logback-properties.xml"/>
+
+    <!-- ============================= -->
+    <!--  Variables communes           -->
+    <!-- ============================= -->
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="isochrone"/>
+    <springProperty scope="context" name="logPath"  source="logging.file.path"      defaultValue="/var/log"/>
+    
+    
+  <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <property name="LOG_PATTERN_CONSOLE"
+              value="%clr(%d{HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"/>
+
+    <property name="LOG_PATTERN_FILE"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"/>
+
+<!-- 
+	<property name="LOG_DIR" value="/var/log" />
+	<appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	    <file>${LOG_DIR}/isochrone.log</file>
+	    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+	        <fileNamePattern>isochrone.%d{yyyy-MM-dd}.gz</fileNamePattern>
+          <maxFileSize>100MB</maxFileSize>
+          <maxHistory>30</maxHistory>
+          <totalSizeCap>500MB</totalSizeCap>
+	    </rollingPolicy>
+      <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+          <pattern>${LOG_PATTERN_FILE}</pattern>
+      </encoder>
+	</appender> 
+ -->
+	
+<!-- 
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <http>
+            <url>http://loki:3100/loki/api/v1/push</url>
+        </http>
+        
+        <format>
+            <label>
+                <pattern>application=${appName},host=${HOSTNAME},level=%level</pattern>
+            </label>
+            <sortByTime>true</sortByTime>
+        </format>
+    </appender>
+ -->
+ 
+   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+       <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+           <pattern>${LOG_PATTERN_CONSOLE}</pattern>
+       </encoder>
+   </appender>
+	
+	
+  <logger name="com.zaxxer.hikari.HikariConfig" level="INFO"/>
+  <logger name="com.zaxxer.hikari" level="ERROR" />
+  <logger name="org.springframework.web.client.RestTemplate" level="ERROR"/>
+  <logger name="com.github.cunvoas.geoserviceisochrone" level="WARN"/>
+  <logger name="com.github.cunvoas.geoserviceisochrone.GeoserviceIsochroneApplication" level="INFO"/>
+
+  <!-- deployed environments -->
+  <springProfile name="prod,pi,pi_nuc">
+  
+    <!-- ============================= -->
+    <!--  LOG MONITORING DÉDIÉ        -->
+    <!--  (prometheus & awake HEAD)  -->
+    <!-- ============================= -->
+    <appender name="MONITOR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+         <file>${logPath}/monitor.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+             <fileNamePattern>${logPath}/monitor.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n</pattern>
+        </encoder>
+    </appender>
+    
+      <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+          <file>${logPath}/${appName}.log</file>
+          <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+              <fileNamePattern>${logPath}/${appName}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+              <maxFileSize>20MB</maxFileSize>
+              <maxHistory>30</maxHistory>
+              <totalSizeCap>100MB</totalSizeCap>
+          </rollingPolicy>
+          <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+              <pattern>${LOG_PATTERN_FILE}</pattern>
+          </encoder>
+      </appender>
+
+    <!-- Logger dédié pour les appels prometheus (adapter le nom de classe si besoin) 
+    <logger name="com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.ClientIsoChroneApiV2" level="INFO" additivity="false">
+        <appender-ref ref="MONITOR_FILE"/>
+    </logger>
+-->
+
+    <!-- Logger dédié pour le filter Prometheus (tous accès prometheus) -->
+    <logger name="com.github.cunvoas.geoserviceisochrone.monitor.PrometheusFilter" level="INFO" additivity="false">
+        <appender-ref ref="MONITOR_FILE"/>
+    </logger>
+    <!-- Logger dédié pour HEAD /awake (RootController) -->
+    <logger name="com.github.cunvoas.geoserviceisochrone.controller.RootController" level="INFO" additivity="false">
+        <appender-ref ref="MONITOR_FILE"/>
+    </logger>
+
+    <root level="ERROR">
+      <appender-ref ref="LOG_FILE"/>
+    <!--   <appender-ref ref="LOKI"/> -->
+    </root>
+  </springProfile>
+
+  <!-- Local & CI environment (local-custom is a reference to application-local-custom.yml -> see : .gitignore) -->
+  <springProfile name="local,compose,dev,rep">
+    <root level="INFO">
+      <appender-ref ref="CONSOLE"/>
+    </root>
+  </springProfile>
+
+    <!-- ============================= -->
+    <!--  Fallback (aucun profil actif) -->
+    <!-- ============================= -->
+    <springProfile name="!dev &amp; !prod">
+
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>${LOG_PATTERN_CONSOLE}</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+
+    </springProfile>
+</configuration>
