@@ -114,7 +114,7 @@ public class StatsSurfaceService {
 		if (opt.isEmpty()) {
 			log.warn("Communauté de commune with id {} not found", com2CoId);
 			return null;
-		} else {	
+		} else {
 			ret.setNom(opt.get().getName() +" - Urbain");
 			
 			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2CoDense(annee, com2CoId);
