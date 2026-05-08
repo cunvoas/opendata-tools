@@ -48,11 +48,18 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Service métier pour la gestion des parcs.
- * <p>
- * Ce service fournit des méthodes pour la création, la mise à jour, l'import/export,
- * la gestion des entrées de parcs, et l'association avec les types de parcs et les communes.
- * Les dépendances sont injectées via l'annotation @Autowired de Spring.
+ * Service métier pour la gestion des parcs et leurs entrées.
+ *
+ * <p>Ce service orchestre l'importation de données sources (CSV, Overpass, MEL),
+ * la création/mise à jour des entités ParcEtJardin / ParkArea / ParkEntrance,
+ * et le rafraîchissement des isochrones via le client IGN. Les opérations
+ * pouvant modifier l'état de la base sont annotées transactionnellement.
+ * </p>
+ *
+ * <p>Les méthodes exposées combinent logique métier et appels vers des
+ * repositories et clients externes. Les changements sont intentionnellement
+ * limités à la documentation pour améliorer la compréhension sans impact
+ * fonctionnel.</p>
  */
 @Service
 @Slf4j

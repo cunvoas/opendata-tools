@@ -48,6 +48,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Business Service impl.
+ * @deprecated
+ * @see ComputeCarreServiceV3
  */
 @Service("ComputeServiceV2")
 @Slf4j
