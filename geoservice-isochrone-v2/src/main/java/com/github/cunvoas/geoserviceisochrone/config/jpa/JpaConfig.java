@@ -1,0 +1,34 @@
+package com.github.cunvoas.geoserviceisochrone.config.jpa;
+
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+/**
+ * Configuration de JPA, gestion des transactions et du modèle de données.
+ */
+@Configuration
+@EntityScan("com.github.cunvoas.geoserviceisochrone.model")
+@EnableJpaRepositories(
+	basePackages = { 
+			"com.github.cunvoas.geoserviceisochrone.repo"
+})
+@EnableTransactionManagement
+//(mode = AdviceMode.ASPECTJ)
+public class JpaConfig {
+
+
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        Map<String, String> errors = new HashMap<>();
+//        ex.getBindingResult().getAllErrors().forEach((error) -> {
+//            String fieldName = ((FieldError) error).getField();
+//            String errorMessage = error.getDefaultMessage();
+//            errors.put(fieldName, errorMessage);
+//        });
+//        return errors;
+//    }
+
+}

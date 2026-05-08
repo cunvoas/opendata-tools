@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{fragments/fragment-head :: head(#{contributor.title})}"></head>
+
+<body class="sb-nav-fixed">
+	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<!-- debut MAIN -->
+			<main>
+				<div class="container">
+					<div class="col-lg-7">
+
+						<div class="container-fluid px-4">
+							<h3 class="mt-4" th:text="#{contributor.title}">title</h3>
+						</div>
+
+						<div class="row">
+							<form th:action="@{/mvc/management/contrib/edit}" th:object="${editContributeur}" method="post">
+
+								<div class="row mb-3">
+									<p th:if="${errorMessage}" th:class="error" th:text="${errorMessage}">Error</p>
+
+									<div class="col-md-6">
+										<div class="form-floating mb-3 mb-md-0">
+											<input class="form-control" required="required" id="login" name="login" type="text" th:attr="placeholder=#{contributor.nickname.placeholder}" th:field="*{login}" /> <label for="login"
+												th:text="#{contributor.nickname}">nickname</label>
+											<p th:if="${#fields.hasErrors('login')}" th:class="${#fields.hasErrors('login')}? error:invisibleError" th:errors="*{login}">Error</p>
+											<p th:if="${errorMsg_RG_LOGIN_EXISTS}" th:class="error" th:text="${errorMessage}">Error</p>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="form-floating">
+											<select class="form-control" required="required" id="role" name="role" th:field="*{role}">
+												<option value="" selected disabled th:text="#{contributor.role.placeholder}">Choose here</option>
+												<option th:value="'ASSOCIATION_CONSTRIBUTOR'" th:text="#{contributor.role.ASSOCIATION_CONSTRIBUTOR}"></option>
+												<option th:value="'ASSOCIATION_MANAGER'" th:text="#{contributor.role.ASSOCIATION_MANAGER}"></option>
+												<option th:value="'SUPPORT'" th:text="#{contributor.role.SUPPORT}"></option>
+												<option th:value="'JOURNALIST'" th:text="#{contributor.role.JOURNALIST}"></option>
+												<option th:value="'ADMINISTRATOR'" th:text="#{contributor.role.ADMINISTRATOR}"></option>
+											</select> <label for="role" th:text="#{contributor.role}">Role</label>
+											<p th:if="${#fields.hasErrors('role')}" th:class="${#fields.hasErrors('role')}? error:invisibleError" th:errors="*{role}">Error</p>
+										</div>
+									</div>
+								</div>
+
+								<div class="row mb-3">
+									<div class="col-md-6">
+										<div class="form-floating mb-3 mb-md-0">
+											<input class="form-control" id="prenom" name="prenom" type="text" th:attr="placeholder=#{contributor.firstname.placeholder}" th:field="*{prenom}" /> <label for="prenom"
+												th:text="#{contributor.firstname}">First name</label> <input id="id" name="id" type="hidden" th:field="*{id}" />
+											<p th:if="${#fields.hasErrors('prenom')}" th:class="${#fields.hasErrors('prenom')}? error:invisibleError" th:errors="*{prenom}">Error</p>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="form-floating">
+											<input class="form-control" id="nom" name="nom" type="text" th:attr="placeholder=#{contributor.lastname.placeholder}" th:field="*{nom}" /> <label for="nom"
+												th:text="#{contributor.lastname}">Last name</label>
+											<p th:if="${#fields.hasErrors('nom')}" th:class="${#fields.hasErrors('nom')}? error:invisibleError" th:errors="*{nom}">Error</p>
+										</div>
+									</div>
+								</div>
+
+								<div class="form-floating mb-3">
+									<input class="form-control" required="required" id="email" name="email" type="email" th:attr="placeholder=#{contributor.email.placeholder}" th:field="*{email}" /> <label for="email"
+										th:text="#{contributor.email}">Email address</label>
+									<p th:if="${#fields.hasErrors('email')}" th:class="${#fields.hasErrors('email')}? error:invisibleError" th:errors="*{email}">Error</p>
+									<p th:if="${errorMsg_RG_EMAIL_EXISTS}" th:class="error" th:text="${errorMessage}">Error</p>
+								</div>
+
+								<div class="form-floating mb-3">
+									<select class="form-select" required="required" id="idAsso" name="idAsso" th:field="*{idAsso}">
+										<option value="" selected disabled th:text="#{contributor.asso.placeholder}">Choose here</option>
+										<option th:each="asso : ${assos}" th:value="${asso.id}" th:text="${asso.nom}" th:selected="${asso.id==idAsso}"></option>
+									</select> <label for="idAsso" th:text="#{contributor.asso}">asso</label>
+									<p th:if="${#fields.hasErrors('idAsso')}" th:class="${#fields.hasErrors('idAsso')}? error:invisibleError" th:errors="*{idAsso}">Error</p>
+								</div>
+
+
+								<div class="row">
+									<div class="col-12">
+										<p th:text="#{contributor.preset.location}" />
+									</div>
+								</div>
+
+								<div class="row  mb-3">
+									<!-- row commune -->
+
+									<div class="col-3">
+										<div class="card border-0 shadow-sm" style="text-align: center">
+											<!-- region -->
+											<div class="form-floating">
+												<select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+													<option value="" selected disabled th:text="#{entrance.region.placeholder}">Choose here</option>
+													<option th:each="region : ${regions}" th:value="${region.id}" th:text="${region.name}" th:selected="${region.id==idRegion}"></option>
+												</select>
+												<label for="idRegion"><i class="fas fa-map me-2"></i><span th:text="#{entrance.region}">region</span></label>
+											</div>
+										</div>
+									</div>
+									<div class="col-3">
+										<div class="card border-0 shadow-sm" style="text-align: center">
+											<!-- comm2co -->
+											<fieldset id="fsComm2co" disabled="disabled">
+												<div class="form-floating">
+													<select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+														<option value="" th:text="#{entrance.communateDeCommunes.placeholder}">Choose here</option>
+														<option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}" th:selected="${commDeCo.id==idCommunauteDeCommunes}"></option>
+													</select>
+													<label for="idCommunauteDeCommunes"><i class="fas fa-building me-2"></i><span th:text="#{entrance.communateDeCommunes}">Comm de Co</span></label>
+												</div>
+											</fieldset>
+										</div>
+									</div>
+									<div class="col-6">
+										<div class="card border-0 shadow-sm" style="text-align: center">
+											<fieldset id="fsCity" disabled="disabled">
+												<div class="mb-3 text-start px-3">
+													<label for="idCommune" class="form-label"><i class="fas fa-city me-2"></i><span th:text="#{entrance.commune}">ville</span></label>
+													<select class="form-select" id="idCommune" name="idCommune" th:field="*{idCommune}"></select>
+												</div>
+											</fieldset>
+										</div>
+									</div>
+								</div>
+								<!-- row commune -->
+
+								<div class="row mb-3">
+									<div class="col-md-6">
+										<div class="form-floating mb-3 mb-md-0">
+											<input class="form-control" id="password" name="password" type="password" th:attr="placeholder=#{contributor.password.placeholder}" /> <label for="password"
+												th:text="#{contributor.password}">Password</label>
+											<p th:if="${#fields.hasErrors('password')}" th:class="${#fields.hasErrors('password')}? error:invisibleError" th:errors="*{password}">Error</p>
+											<p th:if="${errorMsg_RG_PWD_NOT_SAFE}" th:class="error" th:text="${errorMessage}">Error</p>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="form-floating mb-3 mb-md-0">
+											<input class="form-control" id="passwordConfirm" name="passwordConfirm" type="password" th:attr="placeholder=#{contributor.confirmPassword.placeholder}" /> <label for="passwordConfirm"
+												th:text="#{contributor.confirmPassword}">Confirm Password</label>
+										</div>
+									</div>
+								</div>
+								<div class="mt-4 mb-0">
+									<div class="d-grid">
+										<input class="btn btn-primary btn-block" type="submit" th:value="#{contributor.submit}" />
+									</div>
+								</div>
+								<div class="mt-4 mb-0">
+									<div class="d-grid">
+										<p></p>
+									</div>
+								</div>
+
+								<div class="mt-4 mb-0" sec:authorize="isAuthenticated()" th:if="${#authentication.getPrincipal().getId()}==*{id}">
+									<div class="d-grid">
+										<p th:text="#{contributor.resetPasswpord.text}">reset pwd</p>
+										<input class="btn btn-primary btn-block" type="button" th:value="#{contributor.resetPasswpord}" onclick="resetPwd()" />
+									</div>
+								</div>
+
+							</form>
+						</div>
+					</div>
+				</div>
+			</main>
+			<!-- fin MAIN -->
+
+			<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+		</div>
+
+	</div>
+	<div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+
+	<script th:inline="javascript">  
+
+   function resetPwd() {
+       if (confirm([[#{contributor.resetPasswpord.text}]])) {
+           sUrl= window.location.protocol + "//" + window.location.host + [[@{/mvc/management/contrib/resetMyPassword}]];
+           document.location.href=sUrl;
+       }
+   }
+   
+   $(document).ready(function(){
+	   function formatOutput (item) {
+		   const $state = $(item.element).data('id') + ' ' + item.data('text');
+		    return $state;
+		};
+		
+	    $('#idRegion').on('change', function() {
+	    	console.log("change region");
+	    	const idRegion=document.getElementById('idRegion');
+	    	const r = idRegion.options[idRegion.selectedIndex].value;
+	        if(r){
+	            $.ajax({
+	                type:'GET',
+	                url: [[@{/mvc/ajax/dropdown/search_c2c}]],
+	                data: 'mode=reg&r='+r ,  //+"&q="+label,
+	                success:function(jsonResp){
+	                	const data = $.map(jsonResp, function (obj) {
+	                		  obj.text = obj.text || obj.name; // replace name with the property used for the text
+
+	                		  return obj;
+	                		});
+	                	$("#idCommunauteDeCommunes").empty();
+	                	$("#idCommunauteDeCommunes").append("<option value=\"\">&nbsp;</option>");
+                        $.each(jsonResp, function(i, val) {
+                            $("#idCommunauteDeCommunes").append(
+                                    "<option value=" + val.id + ">" + val.text+ "</option>");
+                        });
+                        $("#idCommune").empty();
+	                    //$('#idCommune').html('<option value="">Sélectionner la communauté de communes en premier.</option>'); 
+	                }
+	            }); 
+	        }else{
+	        	$('#idCommunauteDeCommunes').html('<option value="">Sélectionner la région en premier.</option>'); 
+	        	$("#idCommune").empty();
+	        	//$('#idCommune').html('<option value="">Sélectionner la communauté de communes en premier.</option>'); 
+	        }
+	    });  // on idRegion
+	
+	    
+	    $('#idCommunauteDeCommunes').on('change', function(){
+            console.log("change CommunauteDeCommunes");
+
+            const idCommunauteDeCommunes=document.getElementById('idCommunauteDeCommunes');
+            const c = idCommunauteDeCommunes.options[idCommunauteDeCommunes.selectedIndex].value;
+            const label = $(this).val();
+	        if(c){
+	        	console.log("mode:c2c,c:"+c);
+	        	/*
+	            $.ajax({
+	                type:'GET',
+	                url: [[@{/mvc/ajax/dropdown/search_city}]],
+                    data:'mode=c2c&c='+c,//+"&q="+label,
+	                success : function(jsonResp) {
+	                    $.each(jsonResp, function(i, val) {
+	                        $("#idCommune").append("<option value=" + val.id + ">" + val.text+ "</option>");
+	                    });
+	                }
+	            }); 
+	        	*/
+	        }else{
+	        	$("#idCommune").empty();
+	           // $('#idCommune').html('<option value="">Sélectionner la communauté de communes en premier.</option>'); 
+	        }
+
+	    });
+
+	    // Enable/disable fieldsets based on selection
+	    manageDisabled();
+	    function manageDisabled() {
+	    	const rVal = document.getElementById("idRegion").value;
+	    	const cVal = document.getElementById("idCommunauteDeCommunes").value;
+	    	document.getElementById("fsComm2co").disabled = (rVal === null || rVal === "");
+	    	document.getElementById("fsCity").disabled = (cVal === null || cVal === "");
+	    }
+
+	    $('#idRegion').on('change', function(){
+	    	manageDisabled();
+	    });
+	    $('#idCommunauteDeCommunes').on('change', function(){
+	    	manageDisabled();
+	    });
+	    
+ // https://select2.org/data-sources/ajax
+    $("#idCommune").select2({
+		ajax: {
+			delay: 350,
+			language: "fr",
+			placeholder: 'Choisir une commune',
+			minimumInputLength: 2,
+			url: function (params) {
+			    console.log("select2 change Commune ");
+			    const idRegion=document.getElementById('idRegion');
+			    const r = idRegion.options[idRegion.selectedIndex].value;
+			    const idCommunauteDeCommunes=document.getElementById('idCommunauteDeCommunes');
+			    const c = idCommunauteDeCommunes.options[idCommunauteDeCommunes.selectedIndex].value;
+			    console.log('search ?mode=city&r='+r +'&c='+c  +'&q='+ params.term);
+			    return  [[@{/mvc/ajax/dropdown/search_city}]] +'?mode=city&r='+r +'&c='+c+'&q1='+ params.term;
+			},
+			dataType: 'json',
+			processResults: function (data) {
+				return {
+			         "results": data
+			       };  
+			},
+		 }
+
+	}); // select2 commune
+
+	// selected item in option list fails
+	const idC=[[${idCommune}]];
+	if (typeof idC === 'number') {
+		const txtC=[[${txtCommune}]];
+		const selectedCity = new Option(txtC, idC, true, true);
+	    $('#idCommune').append(selectedCity).trigger('change');
+	}
+	    
+  });  // doc ready
+	
+</script>
+</body>
+</html>

@@ -11,6 +11,8 @@ target
 **/*-pi*.yml
 **/*-dev.yml
 **/*-rep.yml
+**/*-nuc.yml
+**/*-pi_nuc.yml
 **/:wq
 **/secret.env
 **/.env
@@ -74,4 +76,4 @@ libs/**/test-integ/coverage/**
 
 
 #Ignore vscode AI rules
-..github/instructions/codacy.instructions.md
+.github/instructions/codacy.instructions.md
