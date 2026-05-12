@@ -142,6 +142,26 @@ public class ProjectSimulatorController {
             form.setIdCommune(ps.getIdCommune());
             form.setName(ps.getName());
             
+            // Forcer le territoire correspondant au projet
+            if (ps.getIdCommune() != null) {
+                City city = serviceReadReferences.getCityById(ps.getIdCommune());
+                if (city != null) {
+                    form.setIdCommune(city.getId());
+                    form.setNameCommune(city.getName());
+                    if (city.getCommunauteCommune() != null) {
+                        form.setIdCommunauteDeCommunes(city.getCommunauteCommune().getId());
+                        form.setNameCommunauteDeCommunes(city.getCommunauteCommune().getName());
+                        if (city.getCommunauteCommune().getRegion() != null) {
+                            form.setIdRegion(city.getCommunauteCommune().getRegion().getId());
+                            form.setNameRegion(city.getCommunauteCommune().getRegion().getName());
+                        }
+                    } else if (city.getRegion() != null) {
+                        form.setIdRegion(city.getRegion().getId());
+                        form.setNameRegion(city.getRegion().getName());
+                    }
+                }
+            }
+            
             if (ps.getCenterArea()!=null) {
             	 form.setMapLng(String.valueOf(ps.getCenterArea().getX()));
                  form.setMapLat(String.valueOf(ps.getCenterArea().getY()));
