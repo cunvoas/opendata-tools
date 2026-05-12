@@ -240,7 +240,7 @@ public class ProjectSimulatorController {
         // Traitement du simulateur avec la géométrie (comme pour NewPark)
         ProjectSimulator bo = mapToBo(form, geometry);
         bo = projectSimulatorService.simulate(bo);
-        
+        model.addAttribute("simulationResult", bo);
         return show(form, model);
     }
     

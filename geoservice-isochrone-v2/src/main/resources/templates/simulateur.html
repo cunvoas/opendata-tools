@@ -444,14 +444,14 @@
                                      data-new-surface=${work.newSurface ?: 0},
                                      data-new-surface-per-capita=${work.newSurfacePerCapita ?: 0}">
                           <td th:text="${work.idInspire ?: '(sans nom)'}">Nom</td>
-                          <td class="text-end" th:text="${work.localPopulation != null ? #numbers.formatDecimal(work.localPopulation, 0, 0) : '-'}">-</td>
-                          <td class="text-end" th:text="${work.accessingPopulation != null ? #numbers.formatDecimal(work.accessingPopulation, 0, 0) : '-'}">-</td>
-                          <td class="text-end" th:text="${work.accessingSurface != null ? (work.accessingSurface > 10000 ? #numbers.formatDecimal(work.accessingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.accessingSurface, 0, 0) + ' m²') : '-'}">-</td>
-                          <td class="text-end" th:text="${work.missingSurface != null ? (work.missingSurface > 10000 ? #numbers.formatDecimal(work.missingSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.missingSurface, 0, 0) + ' m²') : '-'}">-</td>
-                          <td class="text-end" th:text="${work.surfacePerCapita != null ? #numbers.formatDecimal(work.surfacePerCapita, 0, 2) + ' m²' : '-'}"
+                          <td class="text-end" th:text="${work.localPopulation != null ? #numbers.formatDecimal(work.localPopulation, 1, 0) : '-'}">-</td>
+                          <td class="text-end" th:text="${work.accessingPopulation != null ? #numbers.formatDecimal(work.accessingPopulation, 1, 0) : '-'}">-</td>
+                          <td class="text-end" th:text="${work.accessingSurface != null ? (work.accessingSurface > 10000 ? #numbers.formatDecimal(work.accessingSurface / 10000, 1, 2) + ' ha' : #numbers.formatDecimal(work.accessingSurface, 1, 0) + ' m²') : '-'}">-</td>
+                          <td class="text-end" th:text="${work.missingSurface != null ? (work.missingSurface > 10000 ? #numbers.formatDecimal(work.missingSurface / 10000, 1, 2) + ' ha' : #numbers.formatDecimal(work.missingSurface, 1, 0) + ' m²') : '-'}">-</td>
+                          <td class="text-end" th:text="${work.surfacePerCapita != null ? #numbers.formatDecimal(work.surfacePerCapita, 1, 2) + ' m²' : '-'}"
                               th:attr="data-density=${work.surfacePerCapita}">-</td>
-                          <td class="text-end" th:text="${work.newSurface != null ? (work.newSurface > 10000 ? #numbers.formatDecimal(work.newSurface / 10000, 0, 2) + ' ha' : #numbers.formatDecimal(work.newSurface, 0, 0) + ' m²') : '-'}">-</td>
-                          <td class="text-end" th:text="${work.newSurfacePerCapita != null ? #numbers.formatDecimal(work.newSurfacePerCapita, 0, 2) + ' m²' : '-'}"
+                          <td class="text-end" th:text="${work.newSurface != null ? (work.newSurface > 10000 ? #numbers.formatDecimal(work.newSurface / 10000, 1, 2) + ' ha' : #numbers.formatDecimal(work.newSurface, 0, 0) + ' m²') : '-'}">-</td>
+                          <td class="text-end" th:text="${work.newSurfacePerCapita != null ? #numbers.formatDecimal(work.newSurfacePerCapita, 1, 2) + ' m²' : '-'}"
                               th:attr="data-density=${work.newSurfacePerCapita}">-</td>
                         </tr>
                       </tbody>
@@ -722,9 +722,9 @@ function getSurfacePerCapitaClass(densite, zoneDense, colorblindMode = false) {
     p25 = 3;   p50 = 6;
     densiteMin = 10; densiteMax = 12;
   } else {
-    // Seuil OMS générique : 9 m²/hab (recommandation minimale)
+    // Seuil OMS générique : 10 m²/hab (recommandation minimale)
     p25 = 3;   p50 = 6;
-    densiteMin = 9; densiteMax = 12;
+    densiteMin = 10; densiteMax = 12;
   }
 
   if (val >= densiteMax)    return 'density-level-5' + suffix; // Excellent
