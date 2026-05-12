@@ -42,17 +42,21 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Service métier pour le calcul des carrés de 200m (version 3).
- * <p>
- * Ce service permet de réaliser différents calculs et traitements sur les entités de type carré 200m,
- * notamment en fonction des codes postaux, codes INSEE ou identifiants Inspire.
- * Il gère également l'activité des parcs pour une année donnée.
- * <ul>
- *   <li>Calculs par code postal, code INSEE ou identifiant Inspire (méthodes commentées)</li>
- *   <li>Vérification de l'activité d'un parc pour une année donnée</li>
- * </ul>
+ * Service métier pour le calcul des métriques liées aux carrés INSEE de 200m (implémentation v3).
  *
- * Les dépendances sont injectées via l'annotation @Autowired de Spring.
+ * <p>Ce service contient la logique pour :
+ * - agréger les surfaces et populations sur des isochrones et carrés INSEE,
+ * - calculer la surface de parc disponible par habitant,
+ * - produire les entités calculées persistées (InseeCarre200mComputedV2).
+ *
+ * <p>Il est activé uniquement lorsque la propriété
+ * {@code application.feature-flipping.carre200m-impl=v3} est définie (voir
+ * l'annotation {@code @ConditionalOnProperty}).</p>
+ *
+ * <p>Les méthodes de ce service sont principalement orientées lecture/calcul
+ * et utilisent des repositories pour accéder aux données sources (INSEE,
+ * cadastre, parcs). Les calculs sont documentés directement dans les méthodes
+ * les plus complexes.</p>
  */
 @Service
 @Slf4j

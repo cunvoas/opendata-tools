@@ -18,14 +18,16 @@ import org.locationtech.jts.geom.Polygon;
 
 /**
  * Utilitaire de rendu graphique pour les objets géométriques JTS (Java Topology Suite).
- * <p>
- * Permet de générer des images (BufferedImage) ou des chaînes SVG représentant des géométries JTS
- * (Polygon, MultiPolygon, LineString, Point, etc.) pour l'affichage ou l'export.
- * <ul>
- *   <li>Conversion Geometry → BufferedImage</li>
- *   <li>Conversion Geometry → SVG (une ou deux géométries, couleurs personnalisées)</li>
- * </ul>
- * </p>
+ *
+ * <p>Fournit des méthodes utilitaires statiques pour convertir des objets
+ * {@link org.locationtech.jts.geom.Geometry} en {@link java.awt.image.BufferedImage}
+ * ou en chaîne SVG. Utile pour la génération d'aperçus visuels côté serveur
+ * (export, diagnostics) sans dépendance à la couche UI.</p>
+ *
+ * <p>Rien dans cette classe ne modifie l'état des entités projet ; elle est
+ * strictement utilitaire et non thread-safe si les objets Graphics2D sont
+ * réutilisés extérieurement.</p>
+ *
  * @author cunvoas
  */
 public class GeoPolygonRenderer {

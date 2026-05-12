@@ -12,8 +12,8 @@
   </parent>
   
   <groupId>com.github.cunvoas</groupId>
-  <artifactId>geoservice-isochrone-v2</artifactId>
-  <version>2.0.0</version>
+  <artifactId>geoservice-isochrone</artifactId>
+  <version>2.0.1</version>
   <name>geoservice-isochrone-v2</name>
   
   <description>Isochrone service – migration Spring Boot 4</description>

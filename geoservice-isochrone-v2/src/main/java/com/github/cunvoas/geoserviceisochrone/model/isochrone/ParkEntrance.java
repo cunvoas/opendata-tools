@@ -16,8 +16,12 @@ import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 
 /**
- * Modèle représentant une entrée d'accès à une zone de parc.
- * Contient les informations géographiques et descriptives d'une entrée, ainsi que les liens avec la zone de parc associée.
+ * Entité représentant une entrée d'accès à une zone de parc.
+ *
+ * <p>Stocke les informations géographiques (point d'entrée, polygone IGN éventuel),
+ * les dates liées aux données IGN, et une référence vers la {@link ParkArea} associée.
+ * Fournit des méthodes utilitaires pour récupérer la longitude/latitude sous forme
+ * de chaîne lorsque le point est présent.</p>
  */
 @Data
 @Entity(name = "park_entrance")

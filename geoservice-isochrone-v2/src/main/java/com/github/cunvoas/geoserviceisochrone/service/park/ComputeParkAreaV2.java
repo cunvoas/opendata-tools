@@ -33,7 +33,13 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * compute service for ParkAreaComputed.
+ * Service de calculs pour les objets ParkAreaComputed.
+ *
+ * <p>Fournit les routines pour estimer la population desservie par un parc,
+ * calculer la surface par habitant en s'appuyant sur les carrés INSEE de 200m
+ * et les indics IRIS. Les méthodes utilisent des intersections géométriques
+ * et des proratisations de population pour obtenir des estimations robustes.
+ * </p>
  */
 @Service
 @Slf4j

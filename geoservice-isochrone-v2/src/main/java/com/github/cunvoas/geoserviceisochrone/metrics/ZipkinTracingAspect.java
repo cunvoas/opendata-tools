@@ -11,9 +11,15 @@ import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 
 /**
- * Aspect AOP pour la surveillance Zipkin.
- * Permet de tracer l'exécution des méthodes du package geoserviceisochrone
- * via l'observation Micrometer et Zipkin si l'option est activée.
+ * Aspect AOP pour le traçage (tracing) des méthodes.
+ *
+ * <p>Lorsque la propriété {@code management.tracing.enabled} est activée,
+ * cet aspect enveloppe l'exécution des méthodes du package principal et publie
+ * des observations dans {@link ObservationRegistry}. Ces observations peuvent être
+ * exportées vers Zipkin ou un autre système de traçage supporté par Micrometer.</p>
+ *
+ * <p>Le point d'interception cible les méthodes du package racine
+ * {@code com.github.cunvoas.geoserviceisochrone}.</p>
  */
 @Aspect
 @Component
