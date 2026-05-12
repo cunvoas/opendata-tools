@@ -24,8 +24,11 @@ import lombok.Data;
 import lombok.ToString;
 
 /**
- * Modèle représentant une zone d'accessibilité d'un parc.
- * Contient les informations géographiques et descriptives d'une zone accessible autour d'un parc ou jardin.
+ * Entité représentant une zone d'accessibilité d'un parc.
+ *
+ * <p>Contient la géométrie isochrone (polygone), le point central, le type du parc
+ * et la liste des entrées. Utilisée pour persister les zones calculées et
+ * pour effectuer des requêtes spatiales (index sur point et polygone).</p>
  */
 @Data
 @ToString(onlyExplicitlyIncluded = true)

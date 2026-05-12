@@ -8,8 +8,14 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.QueryByExampleExecutor;
 
 /**
- * @param <T>
- * @param <ID>
+ * Interface de repository en lecture seule étendue.
+ *
+ * <p>Expose un sous-ensemble des opérations Spring Data limitées à la lecture
+ * (find, count, exists) et au paging. Marquée {@link NoRepositoryBean} car elle
+ * sert de parent pour des repositories spécifiques.</p>
+ *
+ * @param <T>  type de l'entité
+ * @param <ID> type de l'identifiant
  */
 @NoRepositoryBean
 public interface ReadOnlyRepository<T, ID> extends Repository<T, ID>, ListPagingAndSortingRepository<T, ID>, QueryByExampleExecutor<T> {

@@ -13,11 +13,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Modèle Iris calculé.
- * <p>
- * Représente les données démographiques et d'accès aux parcs pour un IRIS donné.
- * Voir la documentation INSEE : https://www.insee.fr/fr/statistiques/7704076#dictionnaire
- * </p>
+ * Entité représentant les données calculées pour un IRIS (unité statistique INSEE).
+ *
+ * <p>Cette classe stocke les agrégats produits par les calculs d'accessibilité aux parcs
+ * pour un IRIS : population totale, population couverte par les aires accessibles,
+ * surfaces de parcs accessibles, indicateurs OMS, etc.</p>
+ *
+ * <p>Les liens entre champs suivent les conventions INSEE pour l'identification des IRIS.
+ * Voir la documentation INSEE pour les définitions des codes et variables utilisés.</p>
  */
 @Data
 @Entity(name = "iris_data_computed")

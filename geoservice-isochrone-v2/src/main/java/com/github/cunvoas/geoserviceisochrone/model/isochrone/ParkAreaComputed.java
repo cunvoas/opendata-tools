@@ -13,8 +13,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Modèle représentant les indicateurs calculés pour une zone d'accessibilité de parc.
- * Contient les résultats de calculs démographiques et surfaciques pour une zone donnée et une année.
+ * Entité représentant les indicateurs calculés pour une zone d'accessibilité d'un parc.
+ *
+ * <p>Stocke les mesures agrégées (surface, population, indicateurs OMS, etc.) calculées
+ * pour une zone donnée et une année. L'identité de l'entité est la paire (id, annee) via
+ * {@link ParkAreaComputedId}.</p>
+ *
+ * <p>Les valeurs numériques utilisent {@link java.math.BigDecimal} afin de préserver la
+ * précision lors des opérations d'agrégation et de division.</p>
  */
 @Data
 @Entity(name = "park_area_computed")

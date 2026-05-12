@@ -44,7 +44,7 @@ server.tomcat:
     prefix: access_log
     file-date-format: .yyyy-MM-dd
     pattern: common
-    directory: /var/log/jvm
+    directory: /var/log
 #  basedir: /var/log/jvm
   
 logging:

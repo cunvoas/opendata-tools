@@ -12,9 +12,14 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkOverpassReposit
 
 /**
  * Service dédié à la gestion des espaces verts et parcs issus de la source Overpass (OpenStreetMap).
- * <p>
- * Fournit des méthodes de recherche des parcs par code INSEE ou par zone géographique (polygone).
- * </p>
+ *
+ * <p>Ce service expose des méthodes de lecture simples pour récupérer les parcs
+ * liés à une commune (par code INSEE) ou à une zone géographique (polygone).
+ * Les méthodes retournent des entités JPA/Domain et ne modifient pas l'état de
+ * la base de données.</p>
+ *
+ * <p>Documentation courte et non invasive : modifications limitées au niveau des
+ * commentaires pour améliorer la lisibilité du code.</p>
  */
 @Service
 public class ParkOverpassService {
