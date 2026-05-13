@@ -107,6 +107,25 @@
 
      <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
 
+    <script th:inline="javascript">
+        window.addEventListener('DOMContentLoaded', event => {
+            const datatablesSimple = document.getElementById('datatablesSimple');
+            if (datatablesSimple) {
+                new simpleDatatables.DataTable(datatablesSimple, {
+                    labels: {
+                        placeholder: "Rechercher...",
+                        perPage: "{select} entrées par page",
+                        noRows: "Aucune entrée trouvée",
+                        info: "Affichage de {start} à {end} sur {rows} entrées",
+                    },
+                    perPage: 25,
+                    searchable: true,
+                    sortable: true
+                });
+            }
+        });
+    </script>
+
 	<style>
 		/* Custom styles for enhanced design */
 		.bg-gradient {
