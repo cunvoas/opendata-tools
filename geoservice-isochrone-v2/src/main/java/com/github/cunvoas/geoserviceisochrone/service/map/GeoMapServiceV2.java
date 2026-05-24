@@ -1236,7 +1236,7 @@ public class GeoMapServiceV2 {
 						.add(dataIris.getPop1117()!=null?dataIris.getPop1117():BigDecimal.ZERO);
 
 
-				// pop 18-64 : somme des classes d'âge pertinentes (18-24,25-39,30-44,45-59,55-64)
+				// pop 18-64 : somme des classes d'âge pertinentes 
 				BigDecimal pop18to65 = 
 						    (dataIris.getPop1824()!=null?dataIris.getPop1824():BigDecimal.ZERO)
 						.add(dataIris.getPop2539()!=null?dataIris.getPop2539():BigDecimal.ZERO)

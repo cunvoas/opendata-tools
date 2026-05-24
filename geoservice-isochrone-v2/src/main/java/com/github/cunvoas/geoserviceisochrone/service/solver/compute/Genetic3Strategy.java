@@ -27,7 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Algorithme Genetique  pour un calcul de proposition de parc avec commons-math3.
+ * Algorithme Genetique  pour uncalcule de proposition de parc avec commons-math3.
  *
  * <p><strong>Encodage du chromosome :</strong><br>
  * Chaque gène est un {@code Double} représentant la surface de parc (en m²)
@@ -44,36 +44,29 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p><strong>Paramètres AG :</strong></p>
  * <ul>
- *   <li>Taille de population : max(200, nombre de carrés)</li>
+ *   <li>Taille de population : 100</li>
  *   <li>Taux de croisement : 0.9</li>
- *   <li>Taux de mutation : 0.25</li>
- *   <li>Élitisme : 5 %</li>
- *   <li>Générations : 300</li>
- *   <li>Sélection : tournoi de taille 5</li>
+ *   <li>Taux de mutation : 0.05</li>
+ *   <li>Élitisme : 10 %</li>
+ *   <li>Générations : 200</li>
+ *   <li>Sélection : tournoi de taille 3</li>
  *   <li>Croisement : uniforme</li>
  * </ul>
  */
 @Slf4j
-public class Genetic1Strategy extends AbstractComputationtrategy {
+public class Genetic3Strategy extends AbstractComputationtrategy {
 
     // ── Paramètres AG ──────────────────────────────────────────────────────────
-    // POPULATION_SIZE est calculé dynamiquement dans compute() : max(200, nb_carrés).
+    private static final int    POPULATION_SIZE      = 400;
     private static final double CROSSOVER_RATE       = 0.9;
     private static final double MUTATION_RATE        = 0.25;
     private static final double ELITISM_RATE         = 0.05;
     private static final int    MAX_GENERATIONS      = 300;
     private static final int    TOURNAMENT_ARITY     = 5;
-    /**
-     * Facteur de pénalité de parcimonie appliqué à la fitness.
-     * Pénalise les gènes superflus : zones déjà couvertes par propagation
-     * et surface au-delà du déficit recommandé. Crée une pression sélective
-     * qui pousse ces gènes vers 0, réduisant les sur-propositions en décodage.
-     */
-    private static final double SPARSITY_FACTOR      = 0.05;
 
     private final double minParkSurface;
 
-    public Genetic1Strategy(double minParkSurface) {
+    public Genetic3Strategy(double minParkSurface) {
         this.minParkSurface = minParkSurface;
     }
 
@@ -156,6 +149,9 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
          * <p>L'évaluation reproduit fidèlement la procédure de
          * {@code decodeChromosome}, dans le même ordre et avec les mêmes règles :
          * <ol>
+         *   <li><strong>Encodage binaire :</strong> un gène &lt; 0.5 signifie
+         *       "ne pas proposer de parc" ; un gène ≥ 0.5 signifie "proposer un parc".
+         *       L'AG optimise la <em>décision de placement</em>, pas la surface.</li>
          *   <li>Un carré dont la densité simulée courante ({@code simulatedAccess[i]/pop})
          *       atteint déjà {@code minSpc} est ignoré : la propagation cumulative
          *       des parcs précédemment ajoutés peut avoir comblé son déficit.</li>
@@ -180,11 +176,6 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
             double[] simulatedAccess = Arrays.copyOf(initAccessingSurface, n);
 
             // ── Phase 1 : simulation séquentielle ────────────────────────────
-            // totalExcessPenalty accumule la surface « gaspillée » :
-            //   - gènes pour zones déjà couvertes par propagation (satellites)
-            //   - surface au-dessus du déficit recommandé (gènes surdimensionnés)
-            // Cette valeur alimente la pénalité de parcimonie retournée en Phase 2.
-            double totalExcessPenalty = 0.0;
             for (int i = 0; i < n; i++) {
                 double pop = initPopulation[i];
                 if (pop == 0) continue;
@@ -198,20 +189,12 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
                 // Vérification sur l'état simulé courant : la propagation
                 // cumulative des parcs précédents peut avoir comblé ce déficit.
                 double currentSpc = simulatedAccess[i] / pop;
-                if (currentSpc >= minSpc) {
-                    // Zone déjà couverte : le gène est entièrement superflu.
-                    // Comptabiliser la totalité comme excès pour la pénalité.
-                    totalExcessPenalty += geneVal;
-                    continue;
-                }
+                if (currentSpc >= minSpc) continue;
 
                 // Plafonnement au déficit vers recoSpc (cohérent avec decodeChromosome
                 // et avec la stratégie itérative qui propose (recoSpc−spc)×pop).
                 double recoDeficit   = Math.max((recoSpc - currentSpc) * pop, 0.0);
                 double effectiveGene = Math.min(geneVal, Math.max(recoDeficit, minParkSurface));
-
-                // Surface au-delà du déficit utile : contribue à la pénalité.
-                totalExcessPenalty += (geneVal - effectiveGene);
 
                 // Appliquer le parc sur ce carré
                 simulatedAccess[i] += effectiveGene;
@@ -238,9 +221,7 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
 
                 totalDeficitReduction += (deficitBefore - deficitAfter) * pop;
             }
-            // Pénalité de parcimonie : favorise les chromosomes compacts
-            // (gènes superflus proches de 0) à réduction de déficit égale.
-            return totalDeficitReduction - totalExcessPenalty * SPARSITY_FACTOR;
+            return totalDeficitReduction;
         }
 
         @Override
@@ -291,7 +272,7 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
         RandomGenerator rng  = GeneticAlgorithm.getRandomGenerator();
         int    idx         = rng.nextInt(genes.size());
         double currentGene = genes.get(idx);
-        double sigma = Math.max(currentGene * 0.15, AbstractComputationtrategy.CARRE_SURFACE * 0.001);
+        double sigma = Math.max(currentGene * 0.15, AbstractComputationtrategy.CARRE_SURFACE * 0.01);
         double mutated = currentGene + rng.nextGaussian() * sigma;
         mutated = Math.max(0, Math.min(CARRE_SURFACE, mutated));
         genes.set(idx, mutated);
@@ -355,15 +336,10 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
         List<List<Integer>> neighborIdx = buildNeighborIndex(carres, urbanDistance);
 
         // ── Population initiale ───────────────────────────────────────────────
-        // Taille de population proportionnelle au nombre de carrés.
-        // L'expérimentation montre qu'une population de taille N (nb de carrés)
-        // réduit l'écart avec la stratégie itérative vs une taille fixe.
-        // Plancher 200, plafond 2000 pour maîtriser la consommation mémoire.
-        int populationSize = Math.max(200, Math.min(n, 2_000));
-        List<Chromosome> chromosomes = new ArrayList<>(populationSize);
+        List<Chromosome> chromosomes = new ArrayList<>(POPULATION_SIZE);
         RandomGenerator rng = GeneticAlgorithm.getRandomGenerator();
 
-        for (int p = 0; p < populationSize; p++) {
+        for (int p = 0; p < POPULATION_SIZE; p++) {
             List<Double> genes = new ArrayList<>(n);
             for (ParkProposalWork carre : carres) {
                 double pop = carre.getAccessingPopulation().doubleValue();
@@ -384,7 +360,7 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
         }
 
         Population initialPopulation = new ElitisticListPopulation(
-                chromosomes, populationSize, ELITISM_RATE);
+                chromosomes, POPULATION_SIZE, ELITISM_RATE);
 
         // ── Algorithme génétique ──────────────────────────────────────────────
         GeneticAlgorithm ga = new GeneticAlgorithm(

@@ -155,8 +155,13 @@ public class IterativeComputationDeficit1Strategy extends AbstractComputationtra
 					} else {
 						neighbor.setNewSurfacePerCapita(null);
 					}
-					neighbor.setNewSurface(new BigDecimal(String.valueOf(neighborNewTotalSurface)));
-					neighbor.setNewMissingSurface( toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)).max(BigDecimal.ZERO));
+					// accessingSurface doit être mis à jour pour que les itérations suivantes
+					// calculent correctement le newTotalSurface de ce voisin quand il devient toProcess.
+					neighbor.setAccessingSurface(BigDecimal.valueOf(neighborNewTotalSurface));
+					// setNewSurface stocke le delta (surface du parc ajouté), pas le total accessible.
+					neighbor.setNewSurface(BigDecimal.valueOf(newParkSurface));
+					// setNewMissingSurface doit utiliser le déficit du voisin, pas celui de toProcess.
+					neighbor.setNewMissingSurface(neighbor.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)).max(BigDecimal.ZERO));
 				}
 				
 				log.error("Proposition pour le carré {} : ajout de parc (surface proposée: {}).", 
