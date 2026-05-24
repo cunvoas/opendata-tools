@@ -15,68 +15,90 @@ import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Strategie d'estimation globale par moindres carres (chi2) sur les deficits.
- * <p>Objectif: estimer une addition moyenne de surface de parc par habitant
- * qui reduit au mieux, au sens des moindres carres ponderes, les deficits
- * observes dans les carres les plus en manque.</p>
+ * Strategie hybride chi2 + deficit complet, iterative carreau par carreau.
  *
- * <p><strong>Principe statistique :</strong></p>
+ * <p><strong>Role du chi2 (moindres carres ponderes) :</strong></p>
  * <ul>
- *   <li>Chaque carre fournit une observation: deficit_par_hab = max(0, reco - densite)</li>
- *   <li>Le poids de l'observation est la population ayant acces au carre (chi2)</li>
- *   <li>Un ajusteur de degree 0 (modele constant) renvoie le deficit moyen pondere</li>
- *   <li>Le resultat est borne par la recommandation pour eviter tout depassement</li>
+ *   <li>Le chi2 est utilise comme <em>filtre de convergence</em> : quand plus aucun carreau
+ *       deficitaire ne fournit d'observations, la boucle s'arrete.</li>
+ *   <li>Le chi2 n'est <strong>pas</strong> utilise pour plafonner le montant propose :
+ *       la moyenne ponderee est systematiquement inferieure au deficit du pire carreau,
+ *       ce qui sous-evaluerait chaque preconisation.</li>
  * </ul>
  *
- * <p><strong>Algorithme :</strong></p>
+ * <p><strong>Montant propose par iteration :</strong></p>
+ * <ul>
+ *   <li>Pour le carreau selectionne, on applique son <strong>deficit complet</strong> :
+ *       {@code surface = (reco - surfaceParHab) * population}, borne a {@code CARRE_SURFACE}.</li>
+ *   <li>Ce comportement est aligne sur {@link IterativeComputationDeficit1Strategy} (D1),
+ *       ce qui elimine l'ecart de ~38 % observe avec l'ancienne formule.</li>
+ * </ul>
+ *
+ * <p><strong>Algorithme (par iteration) :</strong></p>
  * <ol>
- *   <li>Filtrer les carres avec population > 0 et densite <= seuil minimal</li>
- *   <li>Construire les observations (population, deficit_par_hab)</li>
- *   <li>Ajuster un modele constant via {@link PolynomialCurveFitter#create(int)} avec degree 0</li>
- *   <li>En deduire additionParHab = min(max(coeff0, 0), recoSquareMeterPerCapita)</li>
- *   <li>Pour chaque carre deficit, proposer surface = additionParHab * population (borne a 40 000 m2)</li>
- *   <li>Ignorer les propositions < 1000 m2 (MIN_PARK_SURFACE)</li>
- *   <li>Mettre a jour newSurface / newSurfacePerCapita / newMissingSurface pour le carre</li>
- *   <li>Propager l'impact aux voisins dans le rayon urbanDistance (accessibilite)</li>
+ *   <li>Construire les observations chi2 : carreaux avec population &gt; 0
+ *       et {@code surfaceParHab &lt;= minSquareMeterPerCapita}.</li>
+ *   <li>Si aucune observation, arret (plus de deficit).</li>
+ *   <li>Ajuster un modele constant (degre 0) — resultat loggue, non utilise comme montant.</li>
+ *   <li>Selectionner le carreau avec le plus grand deficit ({@code newMissingSurface} decroissant).</li>
+ *   <li>Calculer {@code newParkSurface = deficitParHab * population}, borne a {@code CARRE_SURFACE}.
+ *       Si {@code < MIN_PARK_SURFACE}, arret.</li>
+ *   <li>Creer la {@link ParkProposal} et mettre a jour le carreau central
+ *       ({@code newSurface}, {@code accessingSurface}, {@code surfacePerCapita},
+ *       {@code newMissingSurface}).</li>
+ *   <li>Propager {@code newParkSurface} aux voisins dans le rayon {@code urbanDistance}
+ *       (memes mises a jour ; {@code newMissingSurface} borne a 0).</li>
+ *   <li>Repeter jusqu'a epuisement des deficits ou atteinte de {@code maxIterations}.</li>
  * </ol>
+ *
+ * <p><strong>Invariant cle :</strong> {@code accessingSurface} est le seul accumulateur de
+ * surface totale (originale + tous les parcs ajoutes comme carreau central ou voisin).
+ * Il est mute a chaque etape 6 ET etape 7 pour garantir la coherence des iterations futures.</p>
  *
  * <p><strong>Effets de bord :</strong></p>
  * <ul>
- *   <li>Modifie in-place les instances {@link ParkProposalWork} (newSurface*, surfacePerCapita)</li>
- *   <li>Retourne la liste des {@link ParkProposal} retenues (>= 1000 m2)</li>
- *   <li>Ne boucle pas iterativement: applique une estimation globale, puis mise a jour directe</li>
+ *   <li>Modifie in-place les instances {@link ParkProposalWork}
+ *       ({@code newSurface}, {@code accessingSurface}, {@code surfacePerCapita},
+ *       {@code newMissingSurface}).</li>
+ *   <li>Retourne la liste des {@link ParkProposal} retenues (&ge; {@code MIN_PARK_SURFACE} m²).</li>
  * </ul>
  *
- * @see IterativeComputationDeficit1Strategy pour l'approche iterative pas-a-pas
+ * @see IterativeComputationDeficit1Strategy pour l'approche iterative de reference (D1)
  */
 @Slf4j
 public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
 
     /**
-     * Calcule les propositions de parcs de façon iterative, carreau par carreau.
+     * Calcule les propositions de parcs de facon iterative, carreau par carreau.
      *
-     * <p><strong>Principe :</strong> A chaque iteration :</p>
+     * <p>Chaque iteration traite le carreau le plus deficitaire et lui propose un parc
+     * couvrant son <strong>deficit complet</strong> ({@code (reco - surfaceParHab) * population}).
+     * Le chi2 sert uniquement a detecter la convergence (etape 1-2).</p>
+     *
      * <ol>
-     *   <li>Construire les observations chi2 sur les carreaux encore deficitaires
-     *       (population > 0 et surface/hab &lt;= minSquareMeterPerCapita) :
-     *       poids = population, valeur = deficit_par_hab = max(0, reco - surface/hab).</li>
-     *   <li>Ajuster un modele constant (degre 0) par moindres carres pour estimer
-     *       l'addition moyenne par habitant ({@code additionPerCapita}), bornee entre 0 et reco.</li>
-     *   <li>Selectionner le carreau avec le plus grand deficit (tri decroissant).</li>
-     *   <li>Si son deficit est inferieur ou egal au seuil minimum, arreter : tous les carreaux sont traites.</li>
-     *   <li>Calculer la surface a ajouter = min(deficit_carreau, additionPerCapita) * population,
-     *       bornee par CARRE_SURFACE. Si &lt; MIN_PARK_SURFACE, passer au suivant.</li>
-     *   <li>Appliquer la proposition sur le carreau central (newSurface, surfacePerCapita, newMissingSurface).</li>
-     *   <li>Propager la surface ajoutee aux voisins dans le rayon urbanDistance
-     *       (mise a jour de newSurface, surfacePerCapita, newMissingSurface pour chaque voisin).</li>
-     *   <li>Recommencer jusqu'a ce qu'il n'y ait plus de deficit ou que tous les carreaux soient traites.</li>
+     *   <li><strong>Observations chi2</strong> : carreaux avec population &gt; 0
+     *       et {@code surfacePerCapita &le; minSquareMeterPerCapita} ;  
+     *       si vide → arret (convergence).</li>
+     *   <li><strong>Fit chi2</strong> (degre 0) : calcule la moyenne ponderee des deficits
+     *       — loggue uniquement, non utilise comme montant.</li>
+     *   <li><strong>Selection</strong> : carreau avec le plus grand {@code newMissingSurface}.</li>
+     *   <li><strong>Garde deficitaire</strong> : si {@code surfacePerCapita > minSquareMeterPerCapita},
+     *       arret.</li>
+     *   <li><strong>Montant</strong> : {@code newParkSurface = deficitParHab * population},
+     *       borne a {@code CARRE_SURFACE} ; si {@code < MIN_PARK_SURFACE}, arret.</li>
+     *   <li><strong>Carreau central</strong> : cree la {@link ParkProposal} ; met a jour
+     *       {@code newSurface}, {@code accessingSurface} (accumulateur), {@code surfacePerCapita},
+     *       {@code newMissingSurface}.</li>
+     *   <li><strong>Voisins</strong> : propage {@code newParkSurface} a tous les carreaux
+     *       dans le rayon {@code urbanDistance} (memes mises a jour ;
+     *       {@code newMissingSurface} borne a 0).</li>
      * </ol>
      *
-     * @param carreMap               carte des carreaux indexee par idInspire (modifiee in-place)
-     * @param minSquareMeterPerCapita seuil en dessous duquel un carreau est considere deficitaire (m²/hab)
-     * @param recoSquareMeterPerCapita objectif de surface par habitant a atteindre (m²/hab, ex: 12 m²/hab OMS)
-     * @param urbanDistance           rayon d'accessibilite pour la propagation aux voisins (metres)
-     * @return liste des {@link ParkProposal} retenues (&gt;= MIN_PARK_SURFACE m²)
+     * @param carreMap                carte des carreaux indexee par idInspire (modifiee in-place)
+     * @param minSquareMeterPerCapita  seuil en dessous duquel un carreau est deficitaire (m²/hab)
+     * @param recoSquareMeterPerCapita objectif OMS de surface par habitant (m²/hab, ex : 12)
+     * @param urbanDistance            rayon d'accessibilite pour la propagation aux voisins (metres)
+     * @return liste des {@link ParkProposal} retenues (&ge; {@code MIN_PARK_SURFACE} m²)
      */
     @Override
     public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
@@ -145,10 +167,12 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
             }
 
             // --- Etape 5 : Calculer la surface a ajouter ---
-            // On applique l'addition estimee par chi2, plafonnee au deficit reel du carreau
+            // On applique le deficit complet du carreau selectionne (aligne avec D1).
+            // additionPerCapita (chi2) est la moyenne ponderee de tous les deficits : elle est
+            // toujours inferieure au deficit du pire carreau, ce qui sous-evalue chaque preconisation.
+            // Le chi2 garde son role de filtre (etape 1) mais n'est plus utilise comme plafond du montant.
             double deficitPerCapita = Math.max(0d, recoSquareMeterPerCapita - surfacePerCapita);
-            double appliedPerCapita = Math.min(deficitPerCapita, additionPerCapita);
-            double newParkSurface = Math.min(appliedPerCapita * population, CARRE_SURFACE);
+            double newParkSurface = Math.min(deficitPerCapita * population, CARRE_SURFACE);
 
             if (newParkSurface < MIN_PARK_SURFACE) {
                 log.info("Iteration {} : surface proposee {} m2 < MIN_PARK_SURFACE pour le carreau {}, arret.",
@@ -170,35 +194,50 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
             // newMissingSurface diminue du parc ajoute (pas de max(0) : conforme a la reference)
             toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
 
-            // Recalcul surface/hab depuis la base initiale accessingSurface (les attributs sans New ne changent pas)
+            // Recalcul surface/hab : accessingSurface est mute comme pour les voisins
+            // pour rester coherent si ce carreau redevient voisin dans une iteration future.
+            // Sans cette mutation, une propagation entrante recalculerait la base sans la contribution
+            // de cet iteration et ferait baisser surfacePerCapita en dessous de sa vraie valeur.
             double newTotalSurface = toProcess.getAccessingSurface().doubleValue() + newParkSurface;
+            toProcess.setAccessingSurface(BigDecimal.valueOf(newTotalSurface));
             double newSurfacePerCapita = newTotalSurface / population;
-            // setSurfacePerCapita mis a jour uniquement pour piloter le tri a l'iteration suivante
             toProcess.setSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
 
             // --- Etape 7 : Propager la surface ajoutee aux voisins dans le rayon d'accessibilite ---
             // La nouvelle surface est positionnee sur le centre et recalculee vis-a-vis de la population de chaque voisin
             List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), carreMap, urbanDistance);
             for (ParkProposalWork neighbor : neighbors) {
-                // Base initiale du voisin : accessingSurface (jamais modifie)
+                // Alignement D1: accessingSurface est mute comme accumulateur de surface totale accessible.
+                // Quand ce voisin devient carreau central, newTotalSurface = accessingSurface (enrichi) + delta → juste.
+                // Sans cette mutation, newTotalSurface ignore les enrichissements recus via propagation → sous-estimation.
                 double neighborTotalSurface = neighbor.getAccessingSurface().doubleValue() + newParkSurface;
+                neighbor.setAccessingSurface(BigDecimal.valueOf(neighborTotalSurface));
+                // newSurface = delta du parc ajoute (meme semantique que D1, pas le total)
+                neighbor.setNewSurface(BigDecimal.valueOf(newParkSurface));
 
-                neighbor.setNewSurface(new BigDecimal(String.valueOf(neighborTotalSurface)));
-
-                double neighborPopulation = neighbor.getAccessingPopulation().doubleValue();
+                // null-check sur accessingPopulation
+                double neighborPopulation = neighbor.getAccessingPopulation() != null
+                    ? neighbor.getAccessingPopulation().doubleValue() : 0d;
                 if (neighborPopulation != 0) {
-                    // surface/hab recalculee vis-a-vis de la population du voisin
                     double neighborSurfacePerCapita = neighborTotalSurface / neighborPopulation;
                     neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborSurfacePerCapita));
+                    // FIX (D): Mettre a jour surfacePerCapita pour que les observations chi2 futures
+                    // excluent ce voisin si son deficit est comble (etape 1 filtre sur surfacePerCapita)
+                    neighbor.setSurfacePerCapita(BigDecimal.valueOf(neighborSurfacePerCapita));
                 } else {
                     neighbor.setNewSurfacePerCapita(null);
                 }
 
-                // newMissingSurface du voisin base sur le missing du carreau CENTRAL (apres soustraction)
+                // FIX (C): Baser la mise a jour sur le newMissingSurface propre au voisin
+                // L'ancien code utilisait toProcess.getNewMissingSurface() (valeur du carreau CENTRAL
+                // apres soustraction a l'etape 6) puis soustrayait newParkSurface une 2e fois.
+                BigDecimal neighborFallbackMissing = neighbor.getMissingSurface() != null
+                    ? neighbor.getMissingSurface() : BigDecimal.ZERO;
+                BigDecimal neighborCurrentMissing = neighbor.getNewMissingSurface() != null
+                    ? neighbor.getNewMissingSurface() : neighborFallbackMissing;
                 neighbor.setNewMissingSurface(
-                    toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)).max(BigDecimal.ZERO)
+                    neighborCurrentMissing.subtract(BigDecimal.valueOf(newParkSurface)).max(BigDecimal.ZERO)
                 );
-                // setSurfacePerCapita du voisin non modifie : seul le carreau central pilote le tri
             }
 
             log.info("Iteration {} : carreau {} traite, ajout {} m2, {} voisins mis a jour.",
