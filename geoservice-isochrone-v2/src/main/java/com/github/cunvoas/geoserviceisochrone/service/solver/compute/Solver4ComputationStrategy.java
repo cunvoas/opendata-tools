@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
  * <p>Complexité : O(k × n) avec k ≤ {@value #MAX_ITER}, contre exponentiel pour le solver global.</p>
  */
 @Slf4j
-public class Solver3ComputationStrategy extends AbstractComputationtrategy {
+public class Solver4ComputationStrategy extends AbstractComputationtrategy {
 
     /** Unité de discrétisation en m². */
     private static final int UNIT_M2 = 500;
