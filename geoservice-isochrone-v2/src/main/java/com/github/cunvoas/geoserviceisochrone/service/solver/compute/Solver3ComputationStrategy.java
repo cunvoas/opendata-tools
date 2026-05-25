@@ -24,19 +24,30 @@ import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Global computation using Choco solver with iterative MWIS decomposition.
+ * Stratégie de calcul CP itérative utilisant une décomposition MWIS (Maximum Weight
+ * Independent Set) pour placer les parcs proposés dans les carrés de la grille.
  *
  * <p><strong>Algorithme :</strong></p>
  * <ol>
- *   <li>Pré-calcul du besoin propre de chaque carré en unités de {@value #UNIT_M2} m².</li>
- *   <li>Sélection MWIS gloutonne : carrés avec le plus grand déficit résiduel,
- *       mutuellement non-voisins — garantit des variables CP décorrélées.</li>
- *   <li>Résolution CP sur le sous-ensemble (~10% de la grille, quelques ms).</li>
- *   <li>Propagation de couverture : mise à jour du déficit résiduel pour tous les carrés.</li>
+ *   <li>Pré-calcul du <em>besoin propre</em> de chaque carré en unités de {@value #UNIT_M2} m²
+ *       : {@code ceil((pop × reco − surfExist) / UNIT_M2)}.</li>
+ *   <li>Sélection MWIS gloutonne : carrés avec le plus grand <em>besoinZone</em>
+ *       (= max(besoin propre, max besoin des voisins)), mutuellement non-voisins
+ *       — garantit que les variables CP du sous-ensemble sont décorrélées et que
+ *       les zones sans déficit propre mais adjacentes à des zones déficitaires
+ *       sont également éligibles.</li>
+ *   <li>Résolution CP sur le sous-ensemble (~20 % max de la grille, quelques ms).</li>
+ *   <li>Propagation : recalcul du déficit résiduel pour tous les carrés en tenant
+ *       compte des parcs nouvellement placés et de leurs voisins à portée.</li>
  *   <li>Itération jusqu'à déficit nul ou {@value #MAX_ITER} atteint.</li>
+ *   <li>Passe finale directe si des zones restent déficitaires après la boucle
+ *       (cas dense : voisinage élevé bloquant la sélection MWIS).</li>
  * </ol>
  *
- * <p>Complexité : O(k × n) avec k ≤ {@value #MAX_ITER}, contre exponentiel pour le solver global.</p>
+ * <p>Complexité : O(k × n) avec k ≤ {@value #MAX_ITER}, contre exponentiel pour un
+ * modèle CP global.</p>
+ *
+ * @see SolverV3ComputationStrategy modèle CP global de référence (ne pas modifier)
  */
 @Slf4j
 public class Solver3ComputationStrategy extends AbstractComputationtrategy {
@@ -50,6 +61,16 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
     /** Nombre maximal d'itérations MWIS (garde-fou de convergence). */
     private static final int MAX_ITER = 20;
 
+    /**
+     * Calcule les propositions de parcs pour combler les déficits de surface verte
+     * par habitant sur l'ensemble des carrés de la zone d'étude.
+     *
+     * @param carreMap                 carrés de la grille, indexés par idInspire
+     * @param minSquareMeterPerCapita  seuil minimal de surface verte par habitant (m²/hab)
+     * @param recoSquareMeterPerCapita objectif recommandé de surface verte par habitant (m²/hab)
+     * @param urbanDistance            rayon de voisinage en mètres (portée d'un parc)
+     * @return liste des propositions de parcs, une entrée par carré recevant un ajout de surface
+     */
     @Override
     public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
             Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
@@ -69,25 +90,28 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
             voisinages.put(id, findNeighbors(id, carreMap, urbanDistance));
         }
 
-        // Passe 1 : besoin propre initial de chaque carré (en unités)
+        // --- Passe initiale : besoin propre de chaque carré (en unités de UNIT_M2) ---
         Map<String, Integer> besoinPropreMap = computeBesoinPropre(carreIds, carreMap, recoSquareMeterPerCapita);
         log.info("Besoin propre calculé : {} zones déficitaires sur {} carrés",
             besoinPropreMap.values().stream().filter(b -> b >= MIN_UNITS).count(), carreIds.size());
 
-        // Surface ajoutée cumulée par carré sur toutes les itérations (en m²)
+        // Surface ajoutée cumulée (m²) par carré, toutes itérations confondues.
         Map<String, Integer> additionsM2 = new HashMap<>();
         for (String id : carreIds) additionsM2.put(id, 0);
 
-        // Déficit résiduel en unités, mis à jour après chaque itération de couverture
+        // Déficit résiduel en unités, recalculé après chaque itération.
+        // Initialisé à besoinPropre, puis décrémenté au fil des placements de parcs.
         Map<String, Integer> residualUnitsMap = new HashMap<>(besoinPropreMap);
 
-        // Boucle MWIS itérative
+        // --- Boucle MWIS itérative ---
         int iter = 0;
         while (iter < MAX_ITER) {
             long nbDeficit = residualUnitsMap.values().stream().filter(b -> b >= MIN_UNITS).count();
             if (nbDeficit == 0) break;
 
-            // Sélection MWIS : carrés isolés avec le plus grand déficit résiduel (~20% max)
+            // Sélection MWIS : jusqu'à 20 % des carrés, mutuellement non-voisins,
+            // classés par besoinZone décroissant (inclut les zones sans déficit propre
+            // mais utiles comme support pour couvrir un voisin déficitaire).
             int maxSelect = Math.max(1, carreIds.size() / 5);
             List<String> selectedIds = selectMwisIsolated(residualUnitsMap, voisinages, maxSelect);
             if (selectedIds.isEmpty()) break;
@@ -95,10 +119,10 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
             log.info("Itération {}/{} : {} zones isolées sélectionnées / {} déficitaires",
                 iter + 1, MAX_ITER, selectedIds.size(), nbDeficit);
 
-            // CP solver sur le sous-ensemble (variables décorrélées → convergence en quelques ms)
+            // Résolution CP sur le sous-ensemble (variables décorrélées → solution en quelques ms).
             Map<String, Integer> batchM2 = solveSubset(selectedIds, residualUnitsMap, voisinages);
 
-            // Accumulation des propositions
+            // Accumulation : fusion des surfaces proposées dans le résultat global.
             boolean improved = false;
             for (Map.Entry<String, Integer> e : batchM2.entrySet()) {
                 if (e.getValue() > 0) {
@@ -106,9 +130,11 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
                     improved = true;
                 }
             }
+            // Aucune amélioration → convergence atteinte prématurément, sortie de boucle.
             if (!improved) break;
 
-            // Propagation : recalcul du déficit résiduel pour tous les carrés (couverture à 300m)
+            // Propagation : recalcul du déficit résiduel global en tenant compte
+            // de la portée de voisinage (urbanDistance + 100 m dans findNeighbors).
             updateResidualDeficits(residualUnitsMap, additionsM2, carreIds, carreMap,
                 voisinages, recoSquareMeterPerCapita);
 
@@ -121,9 +147,10 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
         } else {
             log.warn("Qualité PARTIELLE après {} itération(s) : {} zones encore déficitaires.",
                 iter, residualZones);
-            // Passe finale : attribution directe pour les zones non atteintes par la boucle MWIS.
-            // Survient quand le voisinage est dense (urbanDistance élevé) et que MAX_ITER est
-            // insuffisant pour laisser toutes les zones être sélectionnées.
+            // Passe finale de rattrapage : attribution directe du déficit résiduel.
+            // Cause typique : voisinage très dense (urbanDistance élevé) → une zone X est
+            // exclue de la sélection MWIS à chaque itération par ses nombreux voisins déjà
+            // sélectionnés → MAX_ITER atteint sans que X soit jamais couverte.
             log.info("Passe finale : {} zones résiduelles → attribution directe.", residualZones);
             for (String id : carreIds) {
                 int residual = residualUnitsMap.getOrDefault(id, 0);
@@ -150,6 +177,17 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
     // Passe 1 : besoin propre
     // -------------------------------------------------------------------------
 
+    /**
+     * Calcule le besoin initial de chaque carré en unités de {@value #UNIT_M2} m².
+     *
+     * <p>Formule : {@code ceil((pop × reco − surfExist) / UNIT_M2)}, borné dans
+     * {@code [0, MAX_UNITS]}. Retourne 0 pour les carrés sans population.</p>
+     *
+     * @param carreIds liste des identifiants à traiter
+     * @param carreMap données des carrés (population, surface existante)
+     * @param reco     objectif recommandé en m² par habitant
+     * @return map idInspire → besoin propre en unités (0 si pas de déficit)
+     */
     private Map<String, Integer> computeBesoinPropre(
             List<String> carreIds, Map<String, ParkProposalWork> carreMap, double reco) {
         Map<String, Integer> result = new HashMap<>();
@@ -170,23 +208,29 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
     // -------------------------------------------------------------------------
 
     /**
-     * Sélectionne les carrés avec le plus grand déficit résiduel en garantissant
-     * qu'aucun carré sélectionné n'est dans le voisinage d'un autre sélectionné.
-     * Cette propriété assure que les variables CP du sous-ensemble sont décorrélées
-     * et que le solver converge en millisecondes.
+     * Sélection MWIS gloutonne : retourne un ensemble indépendant (aucun carré
+     * sélectionné n'est voisin d'un autre) trié par <em>besoinZone</em> décroissant.
      *
-     * <p>Utilise le <em>besoinZone</em> = max(déficit propre, max(déficit voisins))
-     * pour que les carrés sans déficit propre mais adjacents à des zones fortement
-     * déficitaires soient également éligibles à la sélection (un parc placé dans
-     * une zone non-déficitaire peut couvrir le voisin déficitaire).</p>
+     * <p>{@code besoinZone(X) = max(résiduel(X), max résiduel(voisins(X)))} : cela
+     * permet de sélectionner des zones sans déficit propre (résiduel = 0) dont un
+     * parc couvrirait un voisin fortement déficitaire. Sans cette règle, ces zones
+     * ne seraient jamais éligibles et certains déficits resteraient irrésolus.</p>
+     *
+     * <p>La propriété d'ensemble indépendant garantit que les variables CP associées
+     * sont décorrélées, ce qui rend le sous-problème trivial pour le solver Choco.</p>
+     *
+     * @param residualUnitsMap déficit résiduel courant en unités par carré
+     * @param voisinages       voisinage pré-calculé (idInspire → liste voisins)
+     * @param maxSelect        nombre maximal de carrés à sélectionner
+     * @return liste ordonnée par besoinZone décroissant, au plus {@code maxSelect} éléments
      */
     private List<String> selectMwisIsolated(
             Map<String, Integer> residualUnitsMap,
             Map<String, List<ParkProposalWork>> voisinages,
             int maxSelect) {
 
-        // besoinZone dynamique : max(propre, max voisins)
-        // Permet de sélectionner les zones non-déficitaires adjacentes à des zones déficitaires
+        // besoinZone = max(propre, max voisins) : rend éligibles les zones sans déficit
+        // propre mais utiles comme support de parc pour couvrir un voisin déficitaire.
         Map<String, Integer> besoinZoneMap = new HashMap<>();
         for (Map.Entry<String, Integer> e : residualUnitsMap.entrySet()) {
             String id = e.getKey();
@@ -197,23 +241,29 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
             besoinZoneMap.put(id, bz);
         }
 
+        // Candidats triés par besoinZone décroissant, seuil MIN_UNITS appliqué.
+        // Seuls les carrés avec besoinZone ≥ MIN_UNITS sont retenus : en dessous,
+        // le solver ne peut pas placer de parc (taille minimale imposée).
         List<String> sorted = besoinZoneMap.entrySet().stream()
-            .filter(e -> e.getValue() >= MIN_UNITS)
-            .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+            .filter(e -> e.getValue() >= MIN_UNITS)     // exclut les zones sans besoin significatif
+            .sorted(Map.Entry.<String, Integer>comparingByValue().reversed()) // priorité au déficit max
             .map(Map.Entry::getKey)
             .collect(Collectors.toList());
 
+        // Construction de l'ensemble indépendant (greedy MWIS) :
+        // selected = carrés retenus (mutuellement non-voisins)
+        // excluded = carrés déjà sélectionnés + tous leurs voisins (ne peuvent plus être choisis)
         List<String> selected = new ArrayList<>();
         Set<String> excluded  = new HashSet<>();
 
         for (String id : sorted) {
-            if (excluded.contains(id)) continue;
+            if (excluded.contains(id)) continue; // id déjà bloqué par un voisin sélectionné
             selected.add(id);
-            excluded.add(id);
+            excluded.add(id);                    // id lui-même ne peut plus être repris
             for (ParkProposalWork v : voisinages.get(id)) {
-                excluded.add(v.getIdInspire());
+                excluded.add(v.getIdInspire()); // voisins bloqués : garantit l'indépendance
             }
-            if (selected.size() >= maxSelect) break;
+            if (selected.size() >= maxSelect) break; // quota atteint → s'arrêter
         }
         return selected;
     }
@@ -223,11 +273,27 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
     // -------------------------------------------------------------------------
 
     /**
-     * Résout le sous-problème CP pour les carrés sélectionnés.
-     * Garantie MWIS : les carrés sont mutuellement non-voisins → variables indépendantes
-     * → solver trivial en quelques millisecondes quelle que soit la taille du sous-ensemble.
+     * Résout le sous-problème CP pour les carrés sélectionnés par la sélection MWIS.
      *
-     * @return map idInspire → surface ajoutée en m²
+     * <p>Grâce à la garantie MWIS (carrés mutuellement non-voisins), les variables
+     * CP sont indépendantes et le solver converge en quelques millisecondes quelle
+     * que soit la taille du sous-ensemble.</p>
+     *
+     * <p>Modèle CP :</p>
+     * <ul>
+     *   <li>{@code addVar ∈ {0} ∪ [MIN_UNITS, besoinZone]} pour chaque carré.</li>
+     *   <li>{@code gap + addVar = besoinZone} avec {@code gap ≥ 0} (déviation résiduelle).</li>
+     *   <li>Objectif : minimiser {@code bigM × Σgap + ΣaddVar} → maximise la couverture
+     *       tout en préférant les parcs les plus petits.</li>
+     * </ul>
+     * <p>Note : la cible {@code gap = besoinZone} (et non {@code résiduel}) est critique
+     * pour les zones sans déficit propre : avec {@code résiduel=0}, une cible {@code 0}
+     * forcerait {@code addVar=0}, empêchant tout placement.</p>
+     *
+     * @param selectedIds      identifiants des carrés sélectionnés (ensemble indépendant MWIS)
+     * @param residualUnitsMap déficit résiduel courant en unités par carré
+     * @param voisinages       voisinage pré-calculé (idInspire → liste voisins)
+     * @return map idInspire → surface ajoutée en m² (0 si aucun parc proposé)
      */
     private Map<String, Integer> solveSubset(
             List<String> selectedIds,
@@ -237,13 +303,23 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
         if (selectedIds.isEmpty()) return new HashMap<>();
 
         Model model = new Model("Subset-" + selectedIds.size());
+
+        // addVars  : variable CP principale — unités de UNIT_M2 à ajouter dans le carré i.
+        //            domaine : {0} ∪ [MIN_UNITS, besoinZone(i)]
         Map<String, IntVar> addVars = new HashMap<>();
-        List<IntVar> gapVars = new ArrayList<>();  // gap = résiduel - addVar ≥ 0 (déviation)
+
+        // gapVars  : variable d'écart — gap(i) = besoinZone(i) - addVar(i) ∈ [0, besoinZone(i)].
+        //            gap=0 signifie déficit comblé, gap>0 signifie déficit résiduel.
+        List<IntVar> gapVars = new ArrayList<>();
+
+        // maxObj       : somme des besoinZone → borne haute de sumGap (toutes les variables gap)
+        // actualMaxAdd : somme des domainUB → borne haute de sumAdd (toutes les variables addVar)
         int maxObj       = 0;
         int actualMaxAdd = 0;
 
-        // Recalcul des besoinZone pour le sous-ensemble sélectionné
-        // (un carré sélectionné peut avoir résiduel propre=0 mais besoinZone>0 via ses voisins)
+        // besoinZoneSubset : recalcul pour les seuls carrés sélectionnés.
+        // Un carré peut avoir résiduel propre=0 mais besoinZone>0 s'il est adjacent
+        // à un carré déficitaire → son addVar doit pouvoir prendre une valeur > 0.
         Map<String, Integer> besoinZoneSubset = new HashMap<>();
         for (String id : selectedIds) {
             int bz = residualUnitsMap.getOrDefault(id, 0);
@@ -254,56 +330,109 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
         }
 
         for (String id : selectedIds) {
-            int residual = residualUnitsMap.getOrDefault(id, 0);
-            int besoinZone = besoinZoneSubset.getOrDefault(id, residual);
-            int domainUB = besoinZone >= MIN_UNITS ? besoinZone : 0;
+            // residual   : déficit propre du carré (en unités). Peut être 0 si le carré
+            //              est sélectionné pour son besoinZone (support d'un voisin déficitaire).
+            int residual   = residualUnitsMap.getOrDefault(id, 0);
 
+            // besoinZone : max(residual, max des residuals voisins).
+            //              Représente l'utilité de placer un parc ici, que ce soit pour
+            //              couvrir le carré lui-même ou pour couvrir un voisin via propagation.
+            int besoinZone = besoinZoneSubset.getOrDefault(id, residual);
+
+            // domainUB   : borne haute de addVar.
+            //              Mis à 0 si besoinZone < MIN_UNITS : on ne peut pas placer un parc
+            //              sous la surface minimale autorisée → variable fixée à 0 d'office.
+            int domainUB   = besoinZone >= MIN_UNITS ? besoinZone : 0;
+
+            // addVar     : nombre d'unités (×UNIT_M2) à ajouter dans ce carré.
+            //              Domaine [0, domainUB] avant ajout de la contrainte binaire.
             IntVar addVar = model.intVar("a_" + id, 0, domainUB);
             if (domainUB >= MIN_UNITS) {
-                // Contrainte : 0 (pas de parc) OU >= MIN_UNITS (parc minimal)
+                // Contrainte de seuil minimal : soit pas de parc (0), soit un parc d'au
+                // moins MIN_UNITS unités. Interdit les valeurs intermédiaires [1, MIN_UNITS-1]
+                // qui correspondraient à des parcs inférieurs à AT_LEAST_PARK_SURFACE.
                 model.or(
                     model.arithm(addVar, "=", 0),
                     model.arithm(addVar, ">=", MIN_UNITS)
                 ).post();
             }
             addVars.put(id, addVar);
-            actualMaxAdd += domainUB;
+            actualMaxAdd += domainUB; // accumulation de la borne haute globale de sumAdd
 
-            // gap = besoinZone - addVar ∈ [0, besoinZone].
-            // Pour les zones sans déficit propre mais sélectionnées via besoinZone (résiduel=0),
-            // on utilise besoinZone comme cible afin que le CP puisse assigner addVar > 0.
-            int gapTarget = besoinZone;  // ≥ residual toujours
+            // gapTarget  : cible de la contrainte d'écart = besoinZone (et non residual).
+            //              Critique pour les zones support (residual=0, besoinZone>0) :
+            //              avec gapTarget=residual=0 on forcerait addVar=0 → aucun parc placé.
+            //              Avec gapTarget=besoinZone, addVar peut prendre n'importe quelle
+            //              valeur dans [0, besoinZone] → le CP peut choisir de placer un parc.
+            int gapTarget = besoinZone; // toujours ≥ residual
+
+            // gap        : déviation résiduelle après placement.
+            //              gap=0 → déficit (besoinZone) entièrement couvert.
+            //              gap>0 → déficit partiellement couvert, réduit à gap unités.
             IntVar gap = model.intVar("g_" + id, 0, gapTarget);
-            model.arithm(gap, "+", addVar, "=", gapTarget).post();
+            model.arithm(gap, "+", addVar, "=", gapTarget).post(); // gap + addVar = besoinZone
             gapVars.add(gap);
-            maxObj += gapTarget;
+            maxObj += gapTarget; // contribution à la borne haute de sumGap
         }
 
-        // Objectif lexicographique : bigM * sumGap + sumAdd
-        int safeMaxObj   = Math.max(maxObj, 1);
-        long idealBigML  = (long) actualMaxAdd + 1L;
+        // --- Construction de la fonction objectif (lexicographique encodée en scalaire) ---
+        //
+        // But : minimiser bigM × Σgap + ΣaddVar
+        //
+        //   • Σgap   (priorité haute) : somme des déviations résiduelles.
+        //             Minimiser Σgap = maximiser la couverture des déficits.
+        //   • ΣaddVar (priorité basse) : somme des surfaces ajoutées.
+        //             À couverture égale, préférer les parcs les plus petits.
+        //
+        //   bigM garantit la lexicographie : réduire Σgap d'1 unité vaut toujours plus
+        //   qu'augmenter ΣaddVar de n'importe quelle valeur.
+        //   Valeur idéale : bigM = actualMaxAdd + 1 (toujours > ΣaddVar max).
+
+        // safeMaxObj : borne haute de sumGap (= maxObj = Σ besoinZone). Minimum 1 pour éviter /0.
+        int safeMaxObj = Math.max(maxObj, 1);
+
+        // idealBigML : bigM idéal = actualMaxAdd + 1.
+        //              Garantit bigM × (Σgap - 1) > ΣaddVar max → vraie lexicographie.
+        long idealBigML = (long) actualMaxAdd + 1L;
+
+        // combinedChk : valeur maximale possible de l'objectif avec bigM idéal.
+        //               Si elle dépasse Integer.MAX_VALUE, on réduit bigM pour éviter l'overflow.
         long combinedChk = idealBigML * safeMaxObj + actualMaxAdd;
-        int safeBigM     = combinedChk <= Integer.MAX_VALUE
+        int safeBigM = combinedChk <= Integer.MAX_VALUE
             ? (int) idealBigML
-            : (int) (Integer.MAX_VALUE / Math.max(safeMaxObj, 1));
+            : (int) (Integer.MAX_VALUE / Math.max(safeMaxObj, 1)); // bigM réduit anti-overflow
+
+        // maxCombined : borne haute de la variable objectif obj (en tenant compte du bigM effectif).
         long maxCombinedL = (long) safeBigM * safeMaxObj + actualMaxAdd;
         int maxCombined   = (int) Math.min(maxCombinedL, Integer.MAX_VALUE);
 
+        // sumGap  : agrégat Σgap(i), domaine [0, safeMaxObj].
         IntVar sumGap = model.intVar("sg", 0, safeMaxObj);
         model.sum(gapVars.toArray(new IntVar[0]), "=", sumGap).post();
+
+        // sumAdd  : agrégat ΣaddVar(i), domaine [0, actualMaxAdd].
         IntVar sumAdd = model.intVar("sa", 0, Math.max(actualMaxAdd, 1));
         model.sum(addVars.values().toArray(new IntVar[0]), "=", sumAdd).post();
+
+        // obj     : variable objectif scalaire — encode bigM×sumGap + sumAdd.
+        //           Minimiser obj = résoudre la lexicographie (couverture d'abord, économie ensuite).
         IntVar obj = model.intVar("obj", 0, maxCombined);
         model.scalar(new IntVar[]{sumGap, sumAdd}, new int[]{safeBigM, 1}, "=", obj).post();
         model.setObjective(Model.MINIMIZE, obj);
 
         Solver solver = model.getSolver();
-        // Filtre les variables déjà fixées à 0 (domainUB=0) — évite les nœuds triviaux
+
+        // decisionVars : seules les variables avec domaine non trivial (UB > 0) nécessitent
+        //                du branchement. Les variables fixées à 0 (domainUB=0) sont ignorées
+        //                pour éviter des nœuds de recherche inutiles.
         IntVar[] decisionVars = addVars.values().stream()
             .filter(v -> v.getUB() > 0)
             .toArray(IntVar[]::new);
+
+        // Stratégie : FirstFail (variable de plus petit domaine en premier = moins de backtrack)
+        //           + IntDomainMax (essayer la valeur max en premier = tenter de placer un grand parc).
         solver.setSearch(Search.intVarSearch(new FirstFail(model), new IntDomainMax(), decisionVars));
-        solver.limitTime(10_000); // 10s max par sous-problème (largement suffisant)
+        solver.limitTime(10_000); // garde-fou : 10 s max par sous-problème (ms en pratique)
 
         Solution best = null;
         while (solver.solve()) {
@@ -334,10 +463,16 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
     }
 
     /**
-     * Affectation gloutonne de secours : attribue directement le besoinZone résiduel.
-     * Le paramètre {@code besoinZoneMap} est max(résiduel propre, max résiduel voisins)
-     * afin que les zones non-déficitaires sélectionnées via un voisin puissent
-     * recevoir un parc.
+     * Affectation gloutonne de secours, utilisée quand le solver CP ne trouve pas
+     * de solution pour le sous-ensemble considéré.
+     *
+     * <p>Attribue directement {@code besoinZone × UNIT_M2} à chaque carré dont le
+     * besoinZone est ≥ {@value #MIN_UNITS}. Garantit une couverture minimale même
+     * en cas d'échec du solver (timeout, contradiction inattendue).</p>
+     *
+     * @param ids           identifiants des carrés à traiter
+     * @param besoinZoneMap besoinZone par carré (max résiduel propre + max voisins)
+     * @param result        map de résultat à alimenter (idInspire → m² ajoutés)
      */
     private void fallbackGreedy(List<String> ids, Map<String, Integer> besoinZoneMap,
             Map<String, Integer> result) {
@@ -352,9 +487,24 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
     // -------------------------------------------------------------------------
 
     /**
-     * Recalcule le déficit résiduel pour tous les carrés après placement des parcs.
-     * totalSurface(X) = surfaceExist(X) + Σ additionsM2 pour X et ses voisins
-     * residualUnits(X) = max(0, ceil(pop × reco / UNIT_M2) − totalUnits(X))
+     * Recalcule le déficit résiduel pour tous les carrés après chaque itération
+     * de placement de parcs, en tenant compte de la couverture croisée par voisinage.
+     *
+     * <p>Formule :
+     * <pre>
+     *   totalSurface(X) = surfExist(X) + additionsM2(X) + Σ additionsM2(voisins(X))
+     *   résiduel(X)     = max(0, ceil((pop(X) × reco − totalSurface(X)) / UNIT_M2))
+     * </pre>
+     * La même fraction est utilisée d'un bout à l'autre (pas de double arrondi)
+     * pour être cohérent avec {@code computeBesoinPropre} et éviter une sous-estimation
+     * qui laisserait des zones définitivement ignorées.</p>
+     *
+     * @param residualUnitsMap déficit résiduel à mettre à jour (modifié en place)
+     * @param additionsM2      surfaces ajoutées cumulées par carré (en m²)
+     * @param carreIds         liste complète des identifiants
+     * @param carreMap         données des carrés (population, surface existante)
+     * @param voisinages       voisinage pré-calculé (idInspire → liste voisins)
+     * @param reco             objectif recommandé en m² par habitant
      */
     private void updateResidualDeficits(
             Map<String, Integer> residualUnitsMap,
@@ -376,19 +526,29 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
             for (ParkProposalWork v : voisinages.get(id)) {
                 totalAddedM2 += additionsM2.getOrDefault(v.getIdInspire(), 0);
             }
-            // Formule cohérente avec computeBesoinPropre :
-            // ceil((pop×reco - surf - totalAdded) / UNIT_M2)
-            // NB: ceil(A-B) ≠ ceil(A)-ceil(B) → utiliser une seule fraction pour éviter
-            // la sous-estimation qui laisse des zones définitivement ignorées.
+            // Formule identique à computeBesoinPropre, appliquée sur la surface totale
+            // (existante + voisinage) pour éviter le double arrondi ceil(A)-ceil(B) ≠ ceil(A-B)
+            // qui sous-estime et peut rendre un résiduel = 1 invisible (< MIN_UNITS = 2).
             double trueDeficitM2 = (pop * reco) - surf - totalAddedM2;
             residualUnitsMap.put(id, Math.min(Math.max(0, (int) Math.ceil(trueDeficitM2 / UNIT_M2)), MAX_UNITS));
         }
     }
 
     // -------------------------------------------------------------------------
-    // Construction des résultats 
+    // Construction des résultats
     // -------------------------------------------------------------------------
 
+    /**
+     * Construit la liste finale des propositions de parcs à partir des surfaces
+     * accumulées et met à jour les métriques des carrés (surface/habitant, déficit
+     * résiduel).
+     *
+     * @param carreIds    liste des identifiants à traiter
+     * @param carreMap    données des carrés (modifiées en place pour les métriques)
+     * @param additionsM2 surface ajoutée cumulée par carré (en m²)
+     * @param voisinages  voisinage pré-calculé (idInspire → liste voisins)
+     * @return liste des {@link ParkProposal} pour les carrés recevant un ajout > 0
+     */
     private List<ParkProposal> buildProposals(
             List<String> carreIds,
             Map<String, ParkProposalWork> carreMap,
