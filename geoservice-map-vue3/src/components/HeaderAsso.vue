@@ -84,6 +84,13 @@
                 active-class="bg-yellow-50 text-black font-bold">
                 Aide en vidéo
             </router-link>
+            <a 
+                href="https://github.com/cunvoas/opendata-tools"
+                target="_blank" 
+                rel="noopener noreferrer"
+                class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors font-medium no-underline">
+                Code Source (AGPLv3)
+            </a>
         </nav>
         
         <!-- Router View -->

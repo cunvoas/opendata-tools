@@ -84,7 +84,7 @@
                 améliorations.
                 <br />
                 Le programme peut aussi être copié en respectant la <a target="_blank" rel="noopener noreferrer"
-                    href="https://www.gnu.org/licenses/gpl-3.0.fr.html" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">licence GPLv3</a>.
+                    href="https://www.gnu.org/licenses/agpl-3.0.html" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">licence AGPLv3</a>.
                 <br />
                 Pour plus d'information, vous pouvez consulter la documentation sur le site du projet.
             </p>
