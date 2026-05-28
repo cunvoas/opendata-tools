@@ -88,6 +88,15 @@
                 <br />
                 Pour plus d'information, vous pouvez consulter la documentation sur le site du projet.
             </p>
+            <div class="mt-4 flex flex-wrap gap-4">
+                <a 
+                    href="https://github.com/cunvoas/opendata-tools"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors font-medium no-underline">
+                    Code Source (AGPLv3)
+                </a>
+            </div>
 
             <h2 class="font-bold underline my-4">Contribution à la saisie</h2>
             <p>
