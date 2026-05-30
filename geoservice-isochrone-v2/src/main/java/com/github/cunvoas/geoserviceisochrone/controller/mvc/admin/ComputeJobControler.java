@@ -111,6 +111,7 @@ public class ComputeJobControler {
 		// Auto-preset par contexte utilisateur si aucune région n'est encore sélectionnée
 		if (form.getIdRegion() == null) {
 			form.autoLocate();
+			form.setIdCommune(null);
 		}
 
 		log.debug("populate() - idRegion={}, idEpci={}, idCommune={}, annee={}",
