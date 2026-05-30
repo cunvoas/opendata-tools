@@ -13,10 +13,119 @@
                     <h1 class="mt-4" th:text="#{compute.progress.title}">Progression des Calculs</h1>
                     
                     <ol class="breadcrumb mb-4">
-                        <li class="breadcrumb-item"><a th:href="@{/mvc/dashboard}" th:text="#{menu.dashboard}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/mvc/dashboard}" th:text="#{menu.compute.progress}">Dashboard</a></li>
                         <li class="breadcrumb-item active" th:text="#{compute.progress.title}">Progression</li>
                     </ol>
 
+                    <!-- Bandeau de filtres : Région / EPCI / Ville / Année -->
+                    <div class="card mb-3 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="row g-3">
+
+                                <!-- Région -->
+                                <div class="col-md-3">
+                                    <form th:action="@{/mvc/management/jobs/progress/region}" method="post"
+                                          th:object="${progressForm}" onchange="this.submit();" class="w-100">
+                                        <div class="form-floating">
+                                            <select class="form-select" id="idRegion" name="idRegion">
+                                                <option value="">Région...</option>
+                                                <option th:each="r : ${progressForm.regions}"
+                                                        th:value="${r.id}"
+                                                        th:text="${r.name}"
+                                                        th:selected="${r.id == progressForm.idRegion}"></option>
+                                            </select>
+                                            <label for="idRegion"><i class="fas fa-map me-2"></i>
+                                                <span th:text="#{compute.progress.filter.region}">Région</span>
+                                            </label>
+                                        </div>
+                                        <!-- conserver l'année sélectionnée -->
+                                        <input type="hidden" name="annee" th:value="${progressForm.annee}" />
+                                    </form>
+                                </div>
+
+                                <!-- EPCI -->
+                                <div class="col-md-3">
+                                    <form th:action="@{/mvc/management/jobs/progress/epci}" method="post"
+                                          th:object="${progressForm}" onchange="this.submit();" class="w-100">
+                                        <fieldset th:disabled="${progressForm.idRegion == null}">
+                                            <div class="form-floating">
+                                                <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes">
+                                                    <option value="">EPCI...</option>
+                                                    <option th:each="c : ${progressForm.communautesDeCommunes}"
+                                                            th:value="${c.id}"
+                                                            th:text="${c.name}"
+                                                            th:selected="${c.id == progressForm.idCommunauteDeCommunes}"></option>
+                                                </select>
+                                                <label for="idCommunauteDeCommunes"><i class="fas fa-building me-2"></i>
+                                                    <span th:text="#{compute.progress.filter.epci}">EPCI</span>
+                                                </label>
+                                            </div>
+                                        </fieldset>
+                                        <input type="hidden" name="idRegion" th:value="${progressForm.idRegion}" />
+                                        <input type="hidden" name="annee" th:value="${progressForm.annee}" />
+                                    </form>
+                                </div>
+
+                                <!-- Ville (uniquement si EPCI sélectionné) -->
+                                <div class="col-md-3">
+                                    <form th:action="@{/mvc/management/jobs/progress/city}" method="post"
+                                          th:object="${progressForm}" class="w-100">
+                                        <fieldset th:disabled="${progressForm.idCommunauteDeCommunes == null}">
+                                            <div class="form-floating">
+                                                <input class="form-select" list="communesList"
+                                                       id="idCommune-filter" name="idCommune-filter"
+                                                       placeholder="Commune..."
+                                                       th:value="${progressForm.nameCommune}" />
+                                                <label for="idCommune-filter"><i class="fas fa-city me-2"></i>
+                                                    <span th:text="#{compute.progress.filter.city}">Commune</span>
+                                                </label>
+                                                <datalist id="communesList">
+                                                    <option th:each="v : ${progressForm.communes}"
+                                                            th:value="${v.name}"
+                                                            th:attr="data-value=${v.id}"></option>
+                                                </datalist>
+                                                <input type="hidden" id="idCommune" name="idCommune"
+                                                       th:value="${progressForm.idCommune}" />
+                                            </div>
+                                        </fieldset>
+                                        <input type="hidden" name="idRegion" th:value="${progressForm.idRegion}" />
+                                        <input type="hidden" name="idCommunauteDeCommunes" th:value="${progressForm.idCommunauteDeCommunes}" />
+                                        <input type="hidden" name="annee" th:value="${progressForm.annee}" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary mt-1"
+                                                th:disabled="${progressForm.idCommunauteDeCommunes == null}"
+                                                th:text="#{compute.progress.filter.apply}">OK</button>
+                                    </form>
+                                </div>
+
+                                <!-- Année -->
+                                <div class="col-md-3">
+                                    <form th:action="@{/mvc/management/jobs/progress/year}" method="post"
+                                          th:object="${progressForm}" onchange="this.submit();" class="w-100">
+                                        <div class="form-floating">
+                                            <select class="form-select" id="annee" name="annee">
+                                                <option value="" th:selected="${progressForm.annee == null}">
+                                                    <span th:text="#{compute.progress.filter.allyears}">Toutes les années</span>
+                                                </option>
+                                                <option th:each="a : ${progressForm.annees}"
+                                                        th:value="${a}"
+                                                        th:text="${a}"
+                                                        th:selected="${a == progressForm.annee}"></option>
+                                            </select>
+                                            <label for="annee"><i class="fas fa-calendar me-2"></i>
+                                                <span th:text="#{compute.progress.filter.year}">Année</span>
+                                            </label>
+                                        </div>
+                                        <input type="hidden" name="idRegion" th:value="${progressForm.idRegion}" />
+                                        <input type="hidden" name="idCommunauteDeCommunes" th:value="${progressForm.idCommunauteDeCommunes}" />
+                                        <input type="hidden" name="idCommune" th:value="${progressForm.idCommune}" />
+                                    </form>
+                                </div>
+
+                            </div><!-- /row -->
+                        </div><!-- /card-body -->
+                    </div><!-- /card filtres -->
+
+                    <!-- Tableau des résultats -->
                     <div class="card mb-4">
                         <div class="card-header">
                             <i class="fas fa-table me-1"></i>
@@ -27,7 +136,7 @@
                                 <thead>
                                     <tr>
                                         <th th:text="#{compute.progress.epci}">EPCI</th>
-                                        <th th:text="#{compute.progress.city}">Ville</th>
+                                        <th th:text="#{compute.progress.city}" th:if="${progressForm.idCommunauteDeCommunes == null || progressForm.idCommune != null}">Ville</th>
                                         <th th:text="#{compute.progress.year}">Année</th>
                                         <th th:text="#{compute.progress.to_process}">À traiter</th>
                                         <th th:text="#{compute.progress.in_process}">En cours</th>
@@ -38,9 +147,9 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="stat : ${stats}">
+                                    <tr th:each="stat : ${progressForm.stats}">
                                         <td th:text="${stat.epciName}">EPCI</td>
-                                        <td th:text="${stat.cityName}">Ville</td>
+                                        <td th:text="${stat.cityName}" th:if="${progressForm.idCommunauteDeCommunes == null || progressForm.idCommune != null}">Ville</td>
                                         <td th:text="${stat.annee}">Year</td>
                                         <td th:text="${#numbers.formatInteger(stat.toProcess, 1, 'POINT')}">0</td>
                                         <td th:text="${#numbers.formatInteger(stat.inProcess, 1, 'POINT')}">0</td>
@@ -69,5 +178,22 @@
         </div>
     </div>
     <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+
+    <script>
+        // Synchronisation du champ texte commune → champ hidden idCommune
+        document.getElementById('idCommune-filter') && document.getElementById('idCommune-filter').addEventListener('change', function () {
+            var input = this;
+            var list  = document.getElementById('communesList');
+            if (!list) return;
+            var options = list.options;
+            for (var i = 0; i < options.length; i++) {
+                if (options[i].value === input.value) {
+                    document.getElementById('idCommune').value = options[i].getAttribute('data-value');
+                    input.closest('form').submit();
+                    return;
+                }
+            }
+        });
+    </script>
 </body>
 </html>

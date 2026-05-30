@@ -680,6 +680,40 @@ public class BatchJobService implements DisposableBean{
 		}
 		return stats;
 	}
+
+	/**
+	 * Statistiques d'avancement au niveau ville avec filtres optionnels.
+	 * Utilisé quand une commune est sélectionnée ou en vue générale.
+	 */
+	public List<ComputeJobProgressStat> getProgressStatsCityLevel(Long idCommune, Long idEpci, Long idRegion, Integer annee) {
+		List<Object[]> rawStats = computeJobCarreRepository.getProgressStatsCityLevel(idCommune, idEpci, idRegion, annee);
+		return mapProgressStats(rawStats, true);
+	}
+
+	/**
+	 * Statistiques d'avancement au niveau EPCI (sans détail par ville).
+	 * Utilisé quand un EPCI est sélectionné sans commune.
+	 */
+	public List<ComputeJobProgressStat> getProgressStatsEpciLevel(Long idEpci, Long idRegion, Integer annee) {
+		List<Object[]> rawStats = computeJobCarreRepository.getProgressStatsEpciLevel(idEpci, idRegion, annee);
+		return mapProgressStats(rawStats, false);
+	}
+
+	private List<ComputeJobProgressStat> mapProgressStats(List<Object[]> rawStats, boolean hasCityName) {
+		List<ComputeJobProgressStat> stats = new ArrayList<>();
+		for (Object[] row : rawStats) {
+			ComputeJobProgressStat stat = new ComputeJobProgressStat();
+			stat.setEpciName((String) row[0]);
+			stat.setCityName(hasCityName ? (String) row[1] : null);
+			stat.setAnnee(((Number) row[2]).intValue());
+			stat.setToProcess(((Number) row[3]).longValue());
+			stat.setInProcess(((Number) row[4]).longValue());
+			stat.setProcessed(((Number) row[5]).longValue());
+			stat.setInError(((Number) row[6]).longValue());
+			stats.add(stat);
+		}
+		return stats;
+	}
 	
 	@Override
 	public void destroy() throws Exception {
