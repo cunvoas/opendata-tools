@@ -59,6 +59,11 @@ public class ComputeJobRestControler {
 		
 		ComputeJobResponse resp = new ComputeJobResponse(req);
 		
+		Integer requestedYear=null;
+		if (req.getRequestedYear()!=null ) {
+			requestedYear = req.getRequestedYear();
+		}
+		
 		if (req.getParkId()!=null) {
 			ParcEtJardin pj = new ParcEtJardin();
 			pj.setId(Long.valueOf(req.getParkId()));
@@ -68,14 +73,15 @@ public class ComputeJobRestControler {
 			
 		} else if (req.getCityId()!=null) {
 			City n = cityRepository.getReferenceById(Long.valueOf(req.getCityId()));
+			
 			resp.setCityId(req.getCityId());
-			resp.setNbCarre(batchJobService.requestProcessCity(n));
+			resp.setNbCarre(batchJobService.requestProcessCity(n, requestedYear));
 			code= HttpStatus.ACCEPTED;
 			
 		} else if (req.getCom2coId()!=null) {
 			CommunauteCommune com2co = communauteCommuneRepository.getReferenceById(Long.valueOf(req.getCom2coId()));
 			resp.setCom2coId(req.getCom2coId());
-			resp.setNbCarre(batchJobService.requestProcessCom2Co(com2co));
+			resp.setNbCarre(batchJobService.requestProcessCom2Co(com2co, requestedYear));
 			code= HttpStatus.ACCEPTED;
 			
 		} else {

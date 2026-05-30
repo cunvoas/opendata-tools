@@ -68,9 +68,21 @@
                 <div class="row mt-3" th:if="${editCommunauteCommune.id != null}">
                     <div class="col-12">
                         <sec:authorize access="hasRole('ADMINISTRATOR')">
-                            <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.compute}">Calculer</button>
-                            <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
-                                <span class="visually-hidden">Loading...</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="form-floating" style="min-width: 200px;">
+                                    <select class="form-select" id="requestedYear" name="requestedYear">
+                                        <option value="" th:text="#{cityassociation.edit.allyears}">Toutes</option>
+                                        <option th:each="year : ${years}" 
+                                                th:value="${year}" 
+                                                th:text="${year}"
+                                                th:selected="${year == defaultYear}"></option>
+                                    </select>
+                                    <label for="requestedYear" th:text="#{cityassociation.edit.chooseyear}">Année</label>
+                                </div>
+                                <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.compute}">Calculer</button>
+                                <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
                             </div>
                         </sec:authorize>
                     </div>
@@ -93,10 +105,11 @@
         
         <script th:inline="javascript">
         /*<![CDATA[*/
-        async function doPost(requestPrms) {
+        async function doPost(requestPrms, requestedYear) {
             const payload = {
                 token: [[${token}]],
-                com2coId: requestPrms
+                com2coId: requestPrms,
+                requestedYear: requestedYear
             };
         
             let rawResponse = await fetch([[@{/mvc/ajax/jobs/api/request}]], {
@@ -134,8 +147,10 @@
                 objBtnCompute.classList.remove('btn-outline-secondary');
                 objBtnCompute.classList.add('btn-secondary');
                 
+                const requestedYear = document.getElementById("requestedYear").value || null;
+                
                 // async call controler compute
-                this.doPost(document.getElementById("id").value);
+                this.doPost(document.getElementById("id").value, requestedYear);
             }
         }
         /*]]>*/

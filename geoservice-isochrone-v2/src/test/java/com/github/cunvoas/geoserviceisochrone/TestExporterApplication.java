@@ -98,9 +98,10 @@ class TestExporterApplication {
 //			servicePublicationExporter.writeGeoJsonCarreaux();
 			
 			CommunauteCommune com2co=serviceReadReferences.getCommunauteCommuneById(1l);
-			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2019);
-			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2017);
-			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2015);
+			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2021);
+//			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2019);
+//			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2017);
+//			servicePublicationExporter.writeGeoJsonCarreaux(com2co, 2015);
 
 
 		} catch (IOException e) {
@@ -114,27 +115,21 @@ class TestExporterApplication {
 //	@Disabled
 	@Order(100)
 	void writeLiveDataByCom2coAndYear() {
-		
-		Integer[] annees= {2015,2017,2019};
-//		Integer annee=2019;
+
 		Long com2coId=1l;
-		
+//		Integer[] annees= {2015,2017,2019, 2021};
+
+		Integer[] annees= {2021};
+
 		CommunauteCommune com2co=serviceReadReferences.getCommunauteCommuneById(com2coId);
-
-//		Integer annee=2019;
-//		export( com2co, annee);
-		
 		try {
-
 			for (Integer anneeIter : annees) {
 				export( com2co, anneeIter);
 			}
-			
 
 		} catch (IOException e) {
 			fail(e.getMessage());
 		}
-
  	}
 	
 	private void  export(CommunauteCommune com2co, Integer annee) throws IOException {
@@ -151,7 +146,7 @@ class TestExporterApplication {
 	}
 
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(22)
 	void writeGeoJsonParkOutline() {
 		try {
@@ -203,6 +198,7 @@ class TestExporterApplication {
 			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2015);
 			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2017);
 			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2019);
+			statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(1l, 2021);
 
 		} catch (IOException e) {
 			System.err.println(e);

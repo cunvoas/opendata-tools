@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.TokenManagement;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
@@ -37,12 +38,17 @@ public class CommunauteCommuneControler {
 	private final CommunauteCommuneService communauteCommuneService;
 	private final ServiceReadReferences serviceReadReferences;
 	private final TokenManagement tokenManagement;
+	private final ApplicationBusinessProperties applicationBusinessProperties;
 
 	@Autowired
-	public CommunauteCommuneControler(CommunauteCommuneService communauteCommuneService, ServiceReadReferences serviceReadReferences, TokenManagement tokenManagement) {
+	public CommunauteCommuneControler(CommunauteCommuneService communauteCommuneService, 
+			ServiceReadReferences serviceReadReferences, 
+			TokenManagement tokenManagement,
+			ApplicationBusinessProperties applicationBusinessProperties) {
 		this.communauteCommuneService = communauteCommuneService;
 		this.serviceReadReferences = serviceReadReferences;
 		this.tokenManagement = tokenManagement;
+		this.applicationBusinessProperties = applicationBusinessProperties;
 	}
 
 	/**
@@ -110,6 +116,8 @@ public class CommunauteCommuneControler {
 		
 		model.addAttribute("isAdmin", isAdmin);
 		model.addAttribute("token", tokenManagement.getValidToken());
+		model.addAttribute("years", applicationBusinessProperties.getInseeAnnees());
+		model.addAttribute("defaultYear", applicationBusinessProperties.getDerniereAnnee());
 		return formName;
 	}
 	
@@ -141,6 +149,8 @@ public class CommunauteCommuneControler {
 		
 		model.addAttribute("isAdmin", isAdmin);
 		model.addAttribute("token", tokenManagement.getValidToken());
+		model.addAttribute("years", applicationBusinessProperties.getInseeAnnees());
+		model.addAttribute("defaultYear", applicationBusinessProperties.getDerniereAnnee());
 		return formName;
 	}
 
@@ -189,6 +199,8 @@ public class CommunauteCommuneControler {
 		}
 		model.addAttribute("isAdmin", isAdmin);
 		model.addAttribute("token", tokenManagement.getValidToken());
+		model.addAttribute("years", applicationBusinessProperties.getInseeAnnees());
+		model.addAttribute("defaultYear", applicationBusinessProperties.getDerniereAnnee());
 		
 		return formName;
 	}

@@ -86,7 +86,7 @@ public class BatchJobService implements DisposableBean{
 	
 	
 	/**
-	 * request for a park.
+	 * request for a park and all years.
 	 * @param pj ParcEtJardin
 	 */
 	public int requestProcessParc(ParcEtJardin pj) {
@@ -98,11 +98,12 @@ public class BatchJobService implements DisposableBean{
 		Date upd= pa.getUpdated();
 		
 		List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(geo));
-		appendCarre(carreShapes, upd);
+		// pour un parc, on recalculte toutes les années
+		appendCarre(carreShapes, upd, null);
 		nbShapes = carreShapes.size();
 		
 		List<IrisShape> irisSpape = irisShapeRepository.findIrisInMapArea(GeometryQueryHelper.toText(geo));
-		appendIris(irisSpape, upd);
+		appendIris(irisSpape, upd, null);
 		nbShapes += irisSpape.size();
 		
 		return nbShapes;
@@ -113,13 +114,15 @@ public class BatchJobService implements DisposableBean{
 	 * appendIris: factorization method.
 	 * @param shapes list of IrisShape
 	 */
-	protected void appendIris(List<IrisShape> shapes, Date upd) {
+	protected void appendIris(List<IrisShape> shapes, Date upd, Integer requestedYear) {
 		log.info("appendIris");
 		List<ComputeIrisJob> jobs = new ArrayList<>();	
 		List<Integer> annes = List.of(applicationBusinessProperties.getInseeAnnees());
+		if (annes!=null) {
+			annes = List.of(requestedYear);
+		}
 
 		for (Integer anne : annes) {
-			
 			for (IrisShape carreShape : shapes) {
 				IrisId id = new IrisId();
 				id.setIris(carreShape.getIris());
@@ -171,12 +174,16 @@ public class BatchJobService implements DisposableBean{
 	 * appendCarre: factorization method.
 	 * @param shapes list of InseeCarre200mOnlyShape
 	 */
-	protected void appendCarre(List<InseeCarre200mOnlyShape> shapes, Date upd) {
+	protected void appendCarre(List<InseeCarre200mOnlyShape> shapes, Date upd, Integer requestedYear) {
 		log.info("appendCarre");
 		List<ComputeJob> jobs = new ArrayList<>();	
+
 		List<Integer> annes = List.of(applicationBusinessProperties.getInseeAnnees());
 
-		//TODO Optim here, do not recompute old years.
+		if (requestedYear!=null) {
+			annes = List.of(requestedYear);
+		}
+		
 		for (Integer anne : annes) {
 			
 			for (InseeCarre200mOnlyShape carreShape : shapes) {
@@ -222,11 +229,11 @@ public class BatchJobService implements DisposableBean{
 	 * @param city city
 	 * @return nb carre
 	 */
-	public int requestProcessCom2Co(CommunauteCommune com2co) {
+	public int requestProcessCom2Co(CommunauteCommune com2co, Integer requestedYear) {
 		log.info("requestProcessCom2Co");
 		int t=0;
 		for (City c : com2co.getCities()) {
-			t += this.requestProcessCity(c);
+			t += this.requestProcessCity(c, requestedYear);
 		}
 		return t;
 	}
@@ -236,11 +243,11 @@ public class BatchJobService implements DisposableBean{
 	 * @param city city
 	 * @return nb carre
 	 */
-	public int requestProcessCity(City city) {
+	public int requestProcessCity(City city, Integer requestedYear) {
 		log.info("requestProcessCity");
 		
 		String inseeCode = city.getInseeCode();
-		return this.requestProcessCity(inseeCode);
+		return this.requestProcessCity(inseeCode, requestedYear);
 	}
 	
 	/**
@@ -248,18 +255,18 @@ public class BatchJobService implements DisposableBean{
 	 * @returncity
 	 * @return nb carre
 	 */
-	public int requestProcessCity(String inseeCode) {
+	public int requestProcessCity(String inseeCode, Integer requestedYear) {
 		log.info("requestProcessCity");
 		
 		int nbShapes=0;
 		
 		//Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
 		List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findByCodeInsee(inseeCode);
-		appendCarre(carreShapes, null);
+		appendCarre(carreShapes, null, requestedYear);
 		nbShapes = carreShapes.size();
 		
 		List<IrisShape> irisShapes = irisShapeRepository.findByCodeInsee(inseeCode);
-		appendIris(irisShapes, null);
+		appendIris(irisShapes, null, requestedYear);
 		nbShapes += irisShapes.size();
 		
 		return nbShapes;

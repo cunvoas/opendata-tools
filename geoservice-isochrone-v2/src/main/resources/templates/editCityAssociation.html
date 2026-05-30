@@ -171,9 +171,23 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient text-white py-3">
-                            <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i><span th:text="#{cityassociation.edit.associatedcities}">Villes associées</span>
-                                <span class="badge bg-light text-dark ms-2" th:text="${associatedCities != null ? associatedCities.size() : 0}">0</span>
-                            </h5>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i><span th:text="#{cityassociation.edit.associatedcities}">Villes associées</span>
+                                    <span class="badge bg-light text-dark ms-2" th:text="${associatedCities != null ? associatedCities.size() : 0}">0</span>
+                                </h5>
+                                <div class="d-flex align-items-center gap-2" th:if="${isAdmin && !readOnly && associatedCities != null && !associatedCities.isEmpty()}">
+                                    <div class="form-floating" style="min-width: 150px;">
+                                        <select class="form-select form-select-sm text-dark" id="requestedYear" name="requestedYear" style="padding-top: 1.625rem; padding-bottom: 0.625rem; height: auto;">
+                                            <option value="" th:text="#{cityassociation.edit.allyears}">Toutes</option>
+                                            <option th:each="year : ${years}" 
+                                                    th:value="${year}" 
+                                                    th:text="${year}"
+                                                    th:selected="${year == defaultYear}"></option>
+                                        </select>
+                                        <label for="requestedYear" class="text-dark" th:text="#{cityassociation.edit.chooseyear}" style="font-size: 0.75rem;">Année</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body p-0">
                             <div th:if="${associatedCities == null || associatedCities.isEmpty()}" class="text-muted p-3">
@@ -194,15 +208,24 @@
                                             <td th:text="${city.name}">Ville</td>
                                             <td><span class="badge bg-light text-dark" th:text="${city.postalCode}">Code</span></td>
                                             <td>
-                                                <form th:if="${!readOnly}" th:action="@{/mvc/management/cityassoc/dissociate}" method="post" style="display: inline;">
-                                                    <input type="hidden" name="cityId" th:value="${city.id}" />
-                                                    <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
-                                                    <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" th:text="#{cityassociation.edit.remove}">
-                                                        Retirer
+                                                <div class="d-flex gap-2">
+                                                    <form th:if="${!readOnly}" th:action="@{/mvc/management/cityassoc/dissociate}" method="post" style="display: inline;">
+                                                        <input type="hidden" name="cityId" th:value="${city.id}" />
+                                                        <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
+                                                        <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" th:text="#{cityassociation.edit.remove}">
+                                                            Retirer
+                                                        </button>
+                                                    </form>
+                                                    <button th:if="${isAdmin}" type="button" class="btn btn-sm btn-outline-secondary" 
+                                                            th:onclick="'requestCityCompute(\'' + ${city.id} + '\', this)'">
+                                                        <i class="fas fa-calculator me-1"></i><span th:text="#{communautecommune.compute}">Calculer</span>
+                                                        <div class="spinner-border spinner-border-sm text-success" role="status" style="display:none;">
+                                                            <span class="visually-hidden">Loading...</span>
+                                                        </div>
                                                     </button>
-                                                </form>
-                                                <span th:if="${readOnly}" class="text-muted">-</span>
+                                                </div>
+                                                <span th:if="${readOnly && !isAdmin}" class="text-muted">-</span>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -404,6 +427,67 @@
             if (communauteSelect) {
                 communauteSelect.addEventListener('change', syncRegionWithCommunaute);
             }
+        </script>
+        
+        <script th:inline="javascript">
+        /*<![CDATA[*/
+        async function doPostCity(cityId, btnElement) {
+            const requestedYear = document.getElementById("requestedYear") ? document.getElementById("requestedYear").value : null;
+            const payload = {
+                token: [[${token}]],
+                cityId: cityId,
+                requestedYear: requestedYear || null
+            };
+        
+            const spinner = btnElement.querySelector('.spinner-border');
+            const icon = btnElement.querySelector('.fa-calculator');
+            
+            try {
+                let rawResponse = await fetch([[@{/mvc/ajax/jobs/api/request}]], {
+                    method: "POST", 
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if ( rawResponse.status == 202 || rawResponse.status == 200 )  {
+                    const content = await rawResponse.json();
+                    alert("Calcul demandé pour " + content.nbCarre + " carrés.");
+                } else {
+                    alert("Erreur lors de la demande de calcul.");
+                }
+            } catch (error) {
+                console.error("Error during compute request:", error);
+                alert("Erreur lors de la communication avec le serveur.");
+            } finally {
+                // Masquer le spinner
+                if (spinner) spinner.style.display = "none";
+                if (icon) icon.style.display = "inline-block";
+                btnElement.classList.remove('btn-secondary');
+                btnElement.classList.add('btn-outline-secondary');
+                btnElement.disabled = false;
+            }
+        }
+        
+        function requestCityCompute(cityId, btnElement) {
+            console.log("requestCityCompute", cityId);
+            
+            // Afficher le spinner
+            const spinner = btnElement.querySelector('.spinner-border');
+            const icon = btnElement.querySelector('.fa-calculator');
+            if (spinner) spinner.style.display = "inline-block";
+            if (icon) icon.style.display = "none";
+            
+            btnElement.classList.remove('btn-outline-secondary');
+            btnElement.classList.add('btn-secondary');
+            btnElement.disabled = true;
+            
+            // async call controler compute
+            doPostCity(cityId, btnElement);
+        }
+        /*]]>*/
         </script>
         
         <style>
