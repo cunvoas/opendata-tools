@@ -108,6 +108,11 @@ public class ComputeJobControler {
 	// -------------------------------------------------------------------------
 
 	private void populate(FormComputeProgress form) {
+		// Auto-preset par contexte utilisateur si aucune région n'est encore sélectionnée
+		if (form.getIdRegion() == null) {
+			form.autoLocate();
+		}
+
 		log.debug("populate() - idRegion={}, idEpci={}, idCommune={}, annee={}",
 			form.getIdRegion(), form.getIdCommunauteDeCommunes(), form.getIdCommune(), form.getAnnee());
 
@@ -130,27 +135,19 @@ public class ComputeJobControler {
 		// années disponibles
 		form.setAnnees(List.of(applicationBusinessProperties.getInseeAnnees()));
 
-		// calcul des stats selon le niveau de granularité sélectionné
+		// calcul des stats uniquement si un EPCI est sélectionné
 		List<ComputeJobProgressStat> stats;
-		if (form.getIdCommune() != null) {
-			// ville sélectionnée → détail par ville (1 ville)
+		if (form.getIdCommunauteDeCommunes() == null) {
+			// pas d'EPCI → aucun résultat affiché
+			stats = new ArrayList<>();
+		} else if (form.getIdCommune() != null) {
+			// ville sélectionnée → détail par ville
 			stats = batchJobService.getProgressStatsCityLevel(
 				form.getIdCommune(), null, null, form.getAnnee());
-		} else if (form.getIdCommunauteDeCommunes() != null) {
+		} else {
 			// EPCI sélectionné sans ville → agrégation EPCI (1 ligne par EPCI+année)
 			stats = batchJobService.getProgressStatsEpciLevel(
 				form.getIdCommunauteDeCommunes(), null, form.getAnnee());
-		} else if (form.getIdRegion() != null) {
-			// région sélectionnée sans EPCI → agrégation EPCI pour toute la région
-			stats = batchJobService.getProgressStatsEpciLevel(
-				null, form.getIdRegion(), form.getAnnee());
-		} else if (form.getAnnee() != null) {
-			// seulement un filtre année → vue ville complète filtrée par année
-			stats = batchJobService.getProgressStatsCityLevel(
-				null, null, null, form.getAnnee());
-		} else {
-			// aucun filtre → vue complète
-			stats = batchJobService.getGroupedProgressStats();
 		}
 		form.setStats(stats);
 	}
