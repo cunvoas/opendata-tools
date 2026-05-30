@@ -5,18 +5,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.github.cunvoas.geoserviceisochrone.controller.form.FormComputeJob;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Association;
-import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
 import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 
 /**
@@ -30,59 +24,34 @@ public class ComputeJobControler {
 	private String formName = "manageJobs";
 	
 	private final BatchJobService batchJobService;
-	private final RegionRepository regionRepository;
-	private final CommunauteCommuneRepository communauteCommuneRepository;
-	private final CityRepository cityRepository;
 
 	@Autowired
-	public ComputeJobControler(BatchJobService batchJobService,
-	                          RegionRepository regionRepository,
-	                          CommunauteCommuneRepository communauteCommuneRepository,
-	                          CityRepository cityRepository) {
+	public ComputeJobControler(BatchJobService batchJobService) {
 		this.batchJobService = batchJobService;
-		this.regionRepository = regionRepository;
-		this.communauteCommuneRepository = communauteCommuneRepository;
-		this.cityRepository = cityRepository;
 	}
 	
+
+	/**
+	 * Affiche la page de progression des jobs de calcul.
+	 * @param model Modèle de la vue
+	 * @return Nom de la page de progression
+	 */
+	@GetMapping("/progress")
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
+	public String getProgress(Model model) {
+		model.addAttribute("stats", batchJobService.getGroupedProgressStats());
+		return "computeProgress";
+	}
+
 
 	/**
 	 * Affiche la page de gestion des jobs de calcul pour l'utilisateur connecté.
-	 * @param model Modèle de la vue
-	 * @return Nom de la page de gestion
 	 */
 	@GetMapping
-	@PreAuthorize("hasRole('ADMINISTRATOR') OR hasRole('ASSO_MANAGER')")
+	@PreAuthorize("hasAuthority('ADMINISTRATOR') OR hasAuthority('ASSO_MANAGER')")
 	public String getMyForm(Model model) {
-		
-		Contributeur contribConnected =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		
-//		Contributeur contrib = contributeurService.get(contribConnected.getId());
-//		model.addAttribute(formName, cloneToForm(contrib, model));
-		
 		List<Association> assos = new ArrayList<>(1);
-		//assos.add(contrib.getAssociation());
 		model.addAttribute( "assos", assos );
-		
 		return formName;
-	}
-	
-	
-	/**
-	 * populate model & form.
-	 * @param model page model
-	 * @param form page form
-	 * @return form
-	 */
-	private FormComputeJob populateForm(Model model, FormComputeJob form) {
-		if (form==null) {
-			form = new FormComputeJob();
-		}
-		
-		if (!form.hasStats()) {
-			form.setStats(batchJobService.getGlobalStats());
-		}
-		
-		return form;
 	}
 }

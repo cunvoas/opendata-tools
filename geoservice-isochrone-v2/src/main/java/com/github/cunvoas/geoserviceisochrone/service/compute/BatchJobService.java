@@ -22,6 +22,7 @@ import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusines
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeIrisJob;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJob;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobProgressStat;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStat;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
@@ -657,6 +658,27 @@ public class BatchJobService implements DisposableBean{
 				throw new IllegalArgumentException("Unexpected value: " + idx);
 		}
 		return theEnum;
+	}
+	
+	/**
+	 * Get grouped progress stats.
+	 * @return List of ComputeJobProgressStat
+	 */
+	public List<ComputeJobProgressStat> getGroupedProgressStats() {
+		List<Object[]> rawStats = computeJobCarreRepository.getGroupedProgressStats();
+		List<ComputeJobProgressStat> stats = new ArrayList<>();
+		for (Object[] row : rawStats) {
+			ComputeJobProgressStat stat = new ComputeJobProgressStat();
+			stat.setEpciName((String) row[0]);
+			stat.setCityName((String) row[1]);
+			stat.setAnnee(((Number) row[2]).intValue());
+			stat.setToProcess(((Number) row[3]).longValue());
+			stat.setInProcess(((Number) row[4]).longValue());
+			stat.setProcessed(((Number) row[5]).longValue());
+			stat.setInError(((Number) row[6]).longValue());
+			stats.add(stat);
+		}
+		return stats;
 	}
 	
 	@Override

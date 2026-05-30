@@ -112,7 +112,7 @@ class TestExporterApplication {
 	
 	
 	@Test
-//	@Disabled
+	@Disabled
 	@Order(100)
 	void writeLiveDataByCom2coAndYear() {
 
@@ -231,6 +231,33 @@ class TestExporterApplication {
 			} catch (DatabindException e) {
 				fail(e.getMessage());
 			} catch (IOException e) {
+				fail(e.getMessage());
+			}
+			
+	}
+	@Test
+//	@Disabled
+	@Order(101)
+	void writeStatsSurfaceByInseeIdAndAnneeAll() {
+
+		Integer annee = 2021;
+		String insee="59350";
+		
+			try {
+				
+
+//				servicePublicationExporter.writeGeoJsonCarreaux(com2co, annee);
+//				servicePublicationExporter.writeGeoJsonIris(com2co, annee);
+				
+			statsSurfaceService.getStatsSurfaceByInseeAndAnnee(insee, annee);
+
+//			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(annee, 1L);
+//			statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(annee, 1L);
+				
+				
+			} catch (StreamWriteException e) {
+				fail(e.getMessage());
+			} catch (DatabindException e) {
 				fail(e.getMessage());
 			}
 			

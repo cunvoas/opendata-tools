@@ -4,18 +4,42 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJob;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 
-
+@SpringBootTest
+@ActiveProfiles({"pi_nuc"})
 @DisplayName("Tests pour ComputeCarreServiceV3")
-class TestComputeServiceV3 extends BaseUnitTest {
+class TestComputeServiceV3 {
 
-	private ComputeCarreServiceV3 tested = new ComputeCarreServiceV3();
+	@Autowired
+	private ComputeCarreServiceV3 tested;
 	
+
+	@Test
+//	@Disabled
+	@DisplayName("calcul de surface d'un carreau: test_computeCarreByComputeJob")
+	void test_computeCarreByComputeJob() {
+		ComputeJob job = new ComputeJob();
+		job.setDemand(new Date());
+		job.setStatus(ComputeJobStatusEnum.TO_PROCESS);
+		job.setCodeInsee("59350");
+		job.setAnnee(2021);
+		job.setIdInspire("CRS3035RES200mN3079600E3834800");
+		
+		Boolean ret = tested.computeCarreByComputeJob(job);
+		assertTrue(ret);
+		
+	}
 
 	@Test
 	@DisplayName("calcul de la population par surface avec arrondi correcte")
