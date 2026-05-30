@@ -88,16 +88,16 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 	
 	/**
 	 * Compute the surface of parks available per capita in the square.
-	 * @param carreShape shape
+	 * @param irisShape shape
 	 * @param isDense witch density
 	 * @TODO make optim to not recompute all years ( before 2027 )
 	 */
-	protected void computeIrisShape(ComputeIrisJob job, IrisShape carreShape, Boolean isDense) {
+	protected void computeIrisShape(ComputeIrisJob job, IrisShape irisShape, Boolean isDense) {
 		
-		log.warn(">> computeIrisShape {}", carreShape.getIris());
+		log.warn(">> computeIrisShape {}", irisShape.getIris());
 		
 		// find parks in iris shape
-		List<ParkArea> parkAreasInIris = parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(carreShape.getContour()));
+		List<ParkArea> parkAreasInIris = parkAreaRepository.findParkInMapArea(GeometryQueryHelper.toText(irisShape.getContour()));
 		parkTypeService.populate(parkAreasInIris);
 		
 //		Map<Integer, ComputeIrisDto> mapDto = new HashMap<>();
@@ -108,7 +108,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		Integer annee = job.getAnnee();
 		
 		int count4checkOms=parkAreasInIris.size();
-		ComputeIrisDto dto = new ComputeIrisDto(carreShape);
+		ComputeIrisDto dto = new ComputeIrisDto(irisShape);
 		dto.isDense = isDense;
 		dto.annee=annee;
 		
@@ -179,7 +179,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		
 		// si shapeParkOnSquare est null; pas de parc OMS, on considère un point
 		if (shapeParkOnIris==null) {
-			shapeParkOnIris = carreShape.getCoordonnee();
+			shapeParkOnIris = irisShape.getCoordonnee();
 		}
 		
 		
@@ -206,11 +206,11 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 //		ComputeIrisDto dto = mapDto.get(annee);	
 		
 		// get already computed square results
-		IrisDataComputed irisComputed = inseeCarre200mComputedV2Repository.findByAnneeAndIris(annee, carreShape.getIris());
+		IrisDataComputed irisComputed = inseeCarre200mComputedV2Repository.findByAnneeAndIris(annee, irisShape.getIris());
 		if (irisComputed==null) {
 			// or create it
 			irisComputed = new IrisDataComputed();
-			irisComputed.setIris(carreShape.getIris());
+			irisComputed.setIris(irisShape.getIris());
 			irisComputed.setAnnee(annee);	
 		}
 		irisComputed.setIsDense(isDense);
@@ -222,7 +222,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		//Compute all the population which is present in the isochrones of the current square.
 		// and the park surface of these isochrones.
 		// then, I compute the surface per capita (m²/inhabitant)
-		this.computePopAndDensity(dto, carreShape, shapeParkOnIris);
+		this.computePopAndDensity(dto, irisShape, shapeParkOnIris);
 		
 		irisComputed.setSurfaceParkPerCapita(dto.result.surfaceParkPerCapita);
 		irisComputed.setSurfaceTotalPark(dto.result.surfaceTotalParks);
@@ -258,19 +258,19 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 	 * computePopAndDensityDetail.
 	 * @param dto DTO with source data
 	 * @param crDto DTO with result data
-	 * @param carreShape square on process
+	 * @param irisShape square on process
 	 * @param geometryToAnalyse analysed
-	 * @param shapeParkOnSquare shape of park isochrones
+	 * @param shapeParkOnIris shape of park isochrones
 	 * @return ComputeResultDto
 	 */
 	protected ComputeResultDto computePopAndDensityDetail(
 			ComputeIrisDto dto, 
 			ComputeResultDto crDto,
-			IrisShape carreShape,
+			IrisShape irisShape,
 			Geometry geometryToAnalyse, 
-			Geometry shapeParkOnSquare) {
+			Geometry shapeParkOnIris) {
 		
-		if (carreShape==null) {
+		if (irisShape==null) {
 			return crDto;
 		}
 		
@@ -286,7 +286,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 			if (irisData!=null) {
 				log.info("Filosofil200m     found,{},{}", dto.annee, carreWithIso.getIris());
 				// nb habitant au carre
-				if (carreShape.getIris().equals(irisData.getIris())) {
+				if (irisShape.getIris().equals(irisData.getIris())) {
 					dto.popAll = irisData.getPop();
 				}
 				
@@ -312,11 +312,11 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		
 		
 		// compute surface with accessible parks
-		Geometry parkOnCarre = carreShape.getContour().intersection(shapeParkOnSquare);
+		Geometry parkOnCarre = irisShape.getContour().intersection(shapeParkOnIris);
 		Long surfaceParkAccess = getSurface(parkOnCarre);
 
 		// protata des surfaces pour habitants avec un parc
-		Long popIn = Math.round(inhabitant*surfaceParkAccess/carreShape.getSurface());
+		Long popIn = Math.round(inhabitant*surfaceParkAccess/irisShape.getSurface());
 		
 		crDto.popInc = new BigDecimal(popIn);
 		crDto.popExc = new BigDecimal(inhabitant-popIn);
@@ -325,12 +325,12 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		Long surfaceSustainable = 0L;
 		// compute surface with accessible parks
 		if (dto.polygonParkAreasSustainableOms!=null) {
-			Geometry parkSustainable = carreShape.getContour().intersection(dto.polygonParkAreasSustainableOms);
+			Geometry parkSustainable = irisShape.getContour().intersection(dto.polygonParkAreasSustainableOms);
 			surfaceSustainable = getSurface(parkSustainable);
 		}
 
 		// protata des surfaces pour habitants avec un parc
-		Long popSustainable = Math.round(inhabitant*surfaceSustainable/carreShape.getSurface());
+		Long popSustainable = Math.round(inhabitant*surfaceSustainable/irisShape.getSurface());
 		dto.popWithSufficient = new BigDecimal(popSustainable);
 		
 		return crDto;
@@ -339,20 +339,20 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 	/**
 	 * computePopAndDensity.
 	 * @param dto ComputeIrisDto
-	 * @param carreShape shap
+	 * @param irisShape shap
 	 * @param shapeParkOnIris shape
 	 */
-	protected void computePopAndDensity(ComputeIrisDto dto, IrisShape carreShape, Geometry shapeParkOnIris) {
+	protected void computePopAndDensity(ComputeIrisDto dto, IrisShape irisShape, Geometry shapeParkOnIris) {
 
 		Geometry geometryToAnalyse =dto.polygonParkAreas;
-		ComputeResultDto rDto = this.computePopAndDensityDetail(dto, dto.result, carreShape, geometryToAnalyse, shapeParkOnIris);
+		ComputeResultDto rDto = this.computePopAndDensityDetail(dto, dto.result, irisShape, geometryToAnalyse, shapeParkOnIris);
 		dto.result = rDto;
 		
 		if (dto.allAreOms) {
 			dto.resultOms = rDto;
 		} else {
 			geometryToAnalyse =dto.polygonParkAreasOms;
-			rDto = this.computePopAndDensityDetail(dto, dto.resultOms, carreShape, geometryToAnalyse, shapeParkOnIris);
+			rDto = this.computePopAndDensityDetail(dto, dto.resultOms, irisShape, geometryToAnalyse, shapeParkOnIris);
 			dto.resultOms = rDto;
 		}
 	}
@@ -371,6 +371,12 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		if (oIris.isPresent()) {
 			try {
 				IrisShape irisShape = oIris.get();
+				if (irisShape.getSurface()==null) {
+					Long surface = this.getSurface(irisShape.getContour());
+					irisShape.setSurface(Double.valueOf(surface));
+					irisShapeRepository.save(irisShape);
+				}
+				
 				Boolean isDense = serviceOpenData.isDistanceDense(irisShape.getCodeInsee());
 				this.computeIrisShape(job, irisShape, isDense);
 				ret = Boolean.TRUE;
