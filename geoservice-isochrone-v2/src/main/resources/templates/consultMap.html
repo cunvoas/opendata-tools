@@ -4,9 +4,9 @@
 
 
 <body class="sb-nav-fixed">
-    <div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+    <div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
     <div id="layoutSidenav">
-        <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+        <div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
 
         <div id="layoutSidenav_content">
         
@@ -150,8 +150,8 @@
   </div>
 </div>
 
-<div th:insert="~{fragments/fragment-footer :: footer}"></div>
-<div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
+<div th:replace="~{fragments/fragment-footer :: footer}"></div>
+<div th:replace="~{fragments/fragment-jslibs :: newMap}"></div>
 <script th:src="@{/mvc/static/js/scripts.js}"></script>
 
 <script th:inline="javascript">

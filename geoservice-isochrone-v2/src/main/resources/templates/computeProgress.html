@@ -3,9 +3,9 @@
 <head th:replace="~{fragments/fragment-head :: head(#{compute.progress.title})}"></head>
 
 <body class="sb-nav-fixed">
-    <div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+    <div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
     <div id="layoutSidenav">
-        <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+        <div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
 
         <div id="layoutSidenav_content">
             <main>
@@ -177,7 +177,7 @@
             <footer th:replace="~{fragments/fragment-footer :: footer}"></footer>
         </div>
     </div>
-    <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+    <div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
 
     <script>
         // Synchronisation du champ texte commune → champ hidden idCommune
