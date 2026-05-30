@@ -80,7 +80,7 @@ export default {
     return {
       dataBar:  {},
       dataPie:  {},
-      annee: 2019,
+      annee: 2021,
       loaded: false,
       villeNom: '',
       locationType: null,

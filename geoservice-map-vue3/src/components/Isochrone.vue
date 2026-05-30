@@ -398,7 +398,7 @@ export default {
       geojsonCarre: null,
       geojsonIsochrone: null,
       geojsonParcs: null,
-      annee: "2019",
+      annee: "2021",
       region: "9",
       com2co: "1",
       shareableUrl: null,
