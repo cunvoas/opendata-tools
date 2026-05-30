@@ -264,6 +264,13 @@
                     </div>
                 </div>
             </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <sec:authorize access="hasRole('ADMINISTRATOR')">
+                        <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{park.new.requestCompute}">Calculer le parc</button>
+                    </sec:authorize>
+                </div>
+            </div>
             
         </div>
         
@@ -488,8 +495,37 @@
         }
     }
     manageDisabled();
-	
-</script>
-
-</body>
-</html>
+    
+    // ========== CALCUL DU PARC - requestCompute() ==========
+    async function doPost(requestPrms) {
+        const payload = {
+            token: [[${token}]],
+            parkId: requestPrms
+        };
+        
+        let rawResponse = await fetch([[@{/mvc/ajax/jobs/api/request}]], {
+            method: "POST", 
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (rawResponse.status == 202 || rawResponse.status == 200) {
+            const content = await rawResponse.json();
+            alert("Calcul demandé pour " + content.nbCarre + " carrés.");
+        }
+    }
+    
+    function requestCompute() {
+        console.log("requestCompute");
+        if (document.getElementById("idPark").value === "") {
+            console.log("requestCompute hasError - no park ID");
+            return;
+        } else {
+            console.log("requestCompute no hasError");
+            // async call to controller compute
+            this.doPost(document.getElementById("idPark").value);
+        }
+    }

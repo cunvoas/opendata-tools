@@ -174,6 +174,11 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 			Optional<ParkAreaComputed> opac = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
 			if (opac.isPresent()) {
 				pac = opac.get();
+				if (pac.getSurface()==null) {
+
+					// rebuid
+					pac = this.computeParkArea(parkArea, annee);
+				}
 			} else {
 				// rebuid
 				pac = this.computeParkArea(parkArea, annee);
@@ -427,7 +432,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 				ret = Boolean.TRUE;
 				
 			} catch (Exception e) {
-				log.error("computeCarre in error: {} {}", job.getIdInspire(), job.getAnnee());
+				log.error("computeCarre in error: {} {}", job.getIdInspire(), job.getAnnee(), e);
 			}
 		}
 		

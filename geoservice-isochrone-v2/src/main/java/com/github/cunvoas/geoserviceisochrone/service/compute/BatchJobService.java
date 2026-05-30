@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -118,8 +119,10 @@ public class BatchJobService implements DisposableBean{
 	protected void appendIris(List<IrisShape> shapes, Date upd, Integer requestedYear) {
 		log.info("appendIris");
 		List<ComputeIrisJob> jobs = new ArrayList<>();	
-		List<Integer> annes = List.of(applicationBusinessProperties.getInseeAnnees());
-		if (annes!=null) {
+		Integer[] inseeAnnees = applicationBusinessProperties.getInseeAnnees();
+		List<Integer> annes = inseeAnnees != null ? Arrays.asList(inseeAnnees) : new ArrayList<>();
+		
+		if (requestedYear!=null) {
 			annes = List.of(requestedYear);
 		}
 
@@ -179,7 +182,8 @@ public class BatchJobService implements DisposableBean{
 		log.info("appendCarre");
 		List<ComputeJob> jobs = new ArrayList<>();	
 
-		List<Integer> annes = List.of(applicationBusinessProperties.getInseeAnnees());
+		Integer[] inseeAnnees = applicationBusinessProperties.getInseeAnnees();
+		List<Integer> annes = inseeAnnees != null ? Arrays.asList(inseeAnnees) : new ArrayList<>();
 
 		if (requestedYear!=null) {
 			annes = List.of(requestedYear);
@@ -198,7 +202,7 @@ public class BatchJobService implements DisposableBean{
 					job = ojob.get();
 
 					// check if update on source, if not, skip
-					boolean skip = upd!=null?upd.before(job.getProcessed()):false;
+					boolean skip = upd!=null && job.getProcessed()!=null ? upd.before(job.getProcessed()) : false;
 					
 					// if already processed, relaunch
 					if (!skip && ComputeJobStatusEnum.PROCESSED.equals(job.getStatus()) ) {
