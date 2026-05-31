@@ -77,20 +77,30 @@ public class PublishRestControler {
 		
 		if (req.getCom2coId()!=null) {
 			Long c2cId = Long.valueOf(req.getCom2coId());
-			CommunauteCommune com2co = communauteCommuneRepository.getReferenceById(c2cId);
 			resp.setCom2coId(req.getCom2coId());
 			
 			List<ComputeJobProgressStat> stats =  batchJobService.getProgressStatsEpciLevel(
 					c2cId, null, requestedYear);
 			if (stats!=null && stats.size()==1) {
-				resp.setNbCarre(stats.get(0).getProcessed().intValue());
+				ComputeJobProgressStat stat = stats.get(0);
+				resp.setNbCarre(stat.getProcessed().intValue());
 				
-				// Lancement du traitement de publication en asynchrone
-				publishService.publishAsync(com2co, requestedYear);
+				// Vérification que tout est complet (aucun en cours, aucun en erreur, aucun à traiter)
+				boolean canPublish = stat.getToProcess() == 0 && stat.getInProcess() == 0 && stat.getInError() == 0 && stat.getProcessed() > 0;
+				resp.setCanPublish(canPublish);
+				
+				if (canPublish) {
+					CommunauteCommune com2co = communauteCommuneRepository.getReferenceById(c2cId);
+					// Lancement du traitement de publication en asynchrone
+					publishService.publishAsync(com2co, requestedYear);
+					code= HttpStatus.ACCEPTED;
+				} else {
+					log.warn("Publication request ignored: jobs not complete for com2co {} and year {}", c2cId, requestedYear);
+					code= HttpStatus.PRECONDITION_FAILED;
+				}
+			} else {
+				code = HttpStatus.NOT_FOUND;
 			}
-			
-			
-			code= HttpStatus.ACCEPTED;
 			
 		} else {
 			log.error("ComputeJobRequest without valid id: {}", req);
@@ -98,5 +108,35 @@ public class PublishRestControler {
 		}
 		
 		return new ResponseEntity<ComputeJobResponse>(resp, code);
+	}
+
+	/**
+	 * Vérifie le statut de publication pour une communauté de communes et une année.
+	 * 
+	 * @param req Requête contenant le token, l'id de la com2co et l'année
+	 * @return Réponse contenant les statistiques et si la publication est possible
+	 */
+	@PostMapping("/status")
+	public ResponseEntity<ComputeJobResponse> status(@RequestBody ComputeJobRequest req) {
+		Boolean isValid = tokenManagement.isTokenValid(req.getToken());
+		if (!isValid) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		
+		ComputeJobResponse resp = new ComputeJobResponse(req);
+		if (req.getCom2coId() != null) {
+			Long c2cId = Long.valueOf(req.getCom2coId());
+			List<ComputeJobProgressStat> stats = batchJobService.getProgressStatsEpciLevel(
+					c2cId, null, req.getRequestedYear());
+			
+			if (stats != null && stats.size() == 1) {
+				ComputeJobProgressStat stat = stats.get(0);
+				resp.setNbCarre(stat.getProcessed().intValue());
+				boolean canPublish = stat.getToProcess() == 0 && stat.getInProcess() == 0 && stat.getInError() == 0 && stat.getProcessed() > 0;
+				resp.setCanPublish(canPublish);
+			}
+			return new ResponseEntity<>(resp, HttpStatus.OK);
+		}
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 }

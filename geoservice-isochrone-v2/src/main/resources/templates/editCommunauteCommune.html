@@ -81,7 +81,7 @@
                                 </div>
                                 <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.compute}">Calculer</button>
                                 
-                                <button id="btnPublish" onclick="requestPublish()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.publish}">Publier</button>
+                                <button id="btnPublish" onclick="requestPublish()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.publish}" th:disabled="${!canPublish}">Publier</button>
                                 
                                 <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
                                     <span class="visually-hidden">Loading...</span>
@@ -108,6 +108,36 @@
         
         <script th:inline="javascript">
         /*<![CDATA[*/
+        // Listener pour le changement d'année
+        document.getElementById("requestedYear").addEventListener("change", checkPublishStatus);
+
+        async function checkPublishStatus() {
+            const com2coId = document.getElementById("id").value;
+            if (!com2coId) return;
+
+            const requestedYear = document.getElementById("requestedYear").value || null;
+            const payload = {
+                token: [[${token}]],
+                com2coId: com2coId,
+                requestedYear: requestedYear
+            };
+
+            try {
+                let response = await fetch([[@{/mvc/ajax/publish/api/status}]], {
+                    method: "POST",
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    const status = await response.json();
+                    document.getElementById("btnPublish").disabled = !status.canPublish;
+                }
+            } catch (error) {
+                console.error("Error checking publish status:", error);
+            }
+        }
+
         async function doPostCompute(requestPrms, requestedYear) {
             const payload = {
                 token: [[${token}]],
@@ -134,6 +164,8 @@
                 const content = await rawResponse.json();
                 alert("Calcul demandé pour " + content.nbCarre + " carrés.");
             }
+            // Re-vérifier l'état de publication après un calcul
+            checkPublishStatus();
         }
         
         function requestCompute() {
