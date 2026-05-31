@@ -33,13 +33,11 @@ git status
 
  */
 class TestExporterApplication {
-	
-	@Autowired
-	private ServicePublicationExporter servicePublicationExporter;
 
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
-	
+	@Autowired
+	private ServicePublicationExporter servicePublicationExporter;
 
 	@Autowired
 	private StatsSurfaceService statsSurfaceService;

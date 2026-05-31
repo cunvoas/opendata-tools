@@ -80,6 +80,9 @@
                                     <label for="requestedYear" th:text="#{cityassociation.edit.chooseyear}">Année</label>
                                 </div>
                                 <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.compute}">Calculer</button>
+                                
+                                <button id="btnPublish" onclick="requestPublish()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.compute}">Calculer</button>
+                                
                                 <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
@@ -105,7 +108,7 @@
         
         <script th:inline="javascript">
         /*<![CDATA[*/
-        async function doPost(requestPrms, requestedYear) {
+        async function doPostCompute(requestPrms, requestedYear) {
             const payload = {
                 token: [[${token}]],
                 com2coId: requestPrms,
@@ -144,6 +147,56 @@
                 // Afficher le spinner
                 document.getElementById("computeSpinner").style = "display:inline-block;";
                 const objBtnCompute = document.getElementById("btnCompute");
+                objBtnCompute.classList.remove('btn-outline-secondary');
+                objBtnCompute.classList.add('btn-secondary');
+                
+                const requestedYear = document.getElementById("requestedYear").value || null;
+                
+                // async call controler compute
+                this.doPostCompute(document.getElementById("id").value, requestedYear);
+            }
+        }
+        
+
+        async function doPostPublish(requestPrms, requestedYear) {
+            const payload = {
+                token: [[${token}]],
+                com2coId: requestPrms,
+                requestedYear: requestedYear
+            };
+        
+            let rawResponse = await fetch([[@{/mvc/ajax/publish/api/request}]], {
+                method: "POST", 
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            // Masquer le spinner
+            document.getElementById("computeSpinner").style = "display:none;";
+            const objBtnCompute = document.getElementById("btnPublish");
+            objBtnCompute.classList.remove('btn-secondary');
+            objBtnCompute.classList.add('btn-outline-secondary');
+            
+            if ( rawResponse.status == 202 || rawResponse.status == 200 )  {
+                const content = await rawResponse.json();
+                alert("Publication demandée pour " + content.nbCarre + " carrés.");
+            }
+        }
+        
+        function requestPublish() {
+            console.log("requestPublish");
+            if (document.getElementById("id").value === "" ) {
+                console.log("requestPublish hasError");
+                return;
+            } else {
+                console.log("requestPublish no hasError");
+                
+                // Afficher le spinner
+                document.getElementById("computeSpinner").style = "display:inline-block;";
+                const objBtnCompute = document.getElementById("btnPublish");
                 objBtnCompute.classList.remove('btn-outline-secondary');
                 objBtnCompute.classList.add('btn-secondary');
                 
