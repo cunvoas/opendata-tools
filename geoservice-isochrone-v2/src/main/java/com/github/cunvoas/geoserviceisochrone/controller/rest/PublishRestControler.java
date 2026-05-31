@@ -86,13 +86,12 @@ public class PublishRestControler {
 				resp.setNbCarre(stat.getProcessed().intValue());
 				
 				// Vérification que tout est complet (aucun en cours, aucun en erreur, aucun à traiter)
-				boolean canPublish = stat.getToProcess() == 0 && stat.getInProcess() == 0 && stat.getInError() == 0 && stat.getProcessed() > 0;
+				Boolean canPublish = this.canPublish(stat);
 				resp.setCanPublish(canPublish);
 				
 				if (canPublish) {
-					CommunauteCommune com2co = communauteCommuneRepository.getReferenceById(c2cId);
-					// Lancement du traitement de publication en asynchrone
-					publishService.publishAsync(com2co, requestedYear);
+					// Lancement du traitement de publication en asynchrone via l'ID
+					publishService.publishAsync(c2cId, requestedYear);
 					code= HttpStatus.ACCEPTED;
 				} else {
 					log.warn("Publication request ignored: jobs not complete for com2co {} and year {}", c2cId, requestedYear);
@@ -132,11 +131,21 @@ public class PublishRestControler {
 			if (stats != null && stats.size() == 1) {
 				ComputeJobProgressStat stat = stats.get(0);
 				resp.setNbCarre(stat.getProcessed().intValue());
-				boolean canPublish = stat.getToProcess() == 0 && stat.getInProcess() == 0 && stat.getInError() == 0 && stat.getProcessed() > 0;
-				resp.setCanPublish(canPublish);
+				resp.setCanPublish(this.canPublish(stat));
 			}
 			return new ResponseEntity<>(resp, HttpStatus.OK);
 		}
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	}
+	
+	/**
+	 * Vérification que tout est complet (aucun en cours, aucun en erreur, aucun à traiter)
+	 * @param stat
+	 * @return
+	 */
+	protected Boolean canPublish(ComputeJobProgressStat stat) {
+		boolean canPublish = stat.getToProcess() == 0 && stat.getInProcess() == 0 && stat.getInError() == 0 && stat.getProcessed() > 0;
+		return canPublish;
+		
 	}
 }
