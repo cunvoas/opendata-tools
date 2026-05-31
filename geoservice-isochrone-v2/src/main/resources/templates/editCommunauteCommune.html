@@ -81,7 +81,7 @@
                                 </div>
                                 <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.compute}">Calculer</button>
                                 
-                                <button id="btnPublish" onclick="requestPublish()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.compute}">Calculer</button>
+                                <button id="btnPublish" onclick="requestPublish()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.publish}">Publier</button>
                                 
                                 <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
                                     <span class="visually-hidden">Loading...</span>
@@ -203,7 +203,7 @@
                 const requestedYear = document.getElementById("requestedYear").value || null;
                 
                 // async call controler compute
-                this.doPost(document.getElementById("id").value, requestedYear);
+                this.doPostPublish(document.getElementById("id").value, requestedYear);
             }
         }
         /*]]>*/

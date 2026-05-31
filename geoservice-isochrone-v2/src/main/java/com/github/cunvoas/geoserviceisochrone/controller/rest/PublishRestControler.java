@@ -18,13 +18,15 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceService;
 import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
+import com.github.cunvoas.geoserviceisochrone.service.export.PublishService;
 import com.github.cunvoas.geoserviceisochrone.service.export.ServicePublicationExporter;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Contrôleur REST pour la gestion des jobs de calcul (isochrones, carreaux, etc.).
- * Permet de lancer des traitements batch sur une ville, une communauté de communes ou un parc.
+ * Contrôleur REST pour la gestion des jobs de publication.
+ * Permet de lancer des traitements d'exportation de données et de génération de statistiques.
+ * Les traitements sont exécutés de manière asynchrone pour ne pas bloquer l'appelant.
  */
 @RestController
 @RequestMapping("/mvc/ajax/publish/api")
@@ -42,12 +44,17 @@ public class PublishRestControler {
 	private BatchJobService batchJobService;
 	@Autowired
 	private CommunauteCommuneRepository communauteCommuneRepository;
+	@Autowired
+	private PublishService publishService;
 	
 	/**
-	 * Lance un job de calcul en fonction des paramètres fournis (parc, ville ou communauté de communes).
+	 * Lance un job de publication en arrière-plan pour une communauté de communes.
+	 * 
+	 * Le traitement est asynchrone : si la requête est valide, elle renvoie un statut 202 (Accepted)
+	 * et le travail continue en tâche de fond.
 	 *
-	 * @param req Requête contenant les identifiants nécessaires (parc, ville, communauté de communes)
-	 * @return Réponse contenant le nombre de carreaux traités et le statut HTTP
+	 * @param req Requête contenant le token de sécurité, l'id de la communauté de communes (com2coId) et l'année (requestedYear)
+	 * @return Réponse avec le statut HTTP 202 si lancé, ou 401/400 en cas d'erreur
 	 */
 	@PostMapping("/request")
 	public ResponseEntity<ComputeJobResponse> request(@RequestBody ComputeJobRequest req) {
@@ -78,15 +85,8 @@ public class PublishRestControler {
 			if (stats!=null && stats.size()==1) {
 				resp.setNbCarre(stats.get(0).getProcessed().intValue());
 				
-				// mettre ce bloc traitement dans une future task
-				try {
-					servicePublicationExporter.writeGeoJsonCarreaux(com2co, requestedYear);
-					statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(requestedYear, c2cId);
-					statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(requestedYear, c2cId);
-					statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(requestedYear, c2cId);
-				} catch (Exception e) {
-					log.error("Publish exception", e);
-				}
+				// Lancement du traitement de publication en asynchrone
+				publishService.publishAsync(com2co, requestedYear);
 			}
 			
 			
