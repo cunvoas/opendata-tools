@@ -104,15 +104,20 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
         if (oCarre.isPresent()) {
             InseeCarre200mOnlyShape carre = oCarre.get();
             Integer annee = job.getAnnee();
+            String idInspire = job.getIdInspire();
             String wktPolygon = GeometryQueryHelper.toText(carre.getGeoShape());
-            Map<String, Filosofil200m> filosofilMap = loadFilosofilBatch(wktPolygon, annee);
+            
+            Map<String, Filosofil200m> filosofilMap = loadByIdFilosofil(idInspire, annee);
+            
             SurfaceCache surfaceCache = new SurfaceCache();
             // Construction du DTO
             ComputeDto dto = new ComputeDto(carre);
             dto.annee = annee;
             dto.isDense = serviceOpenData.isDistanceDense(carre.getCodeInsee());
+            
             // Appel du calcul mutualisé
             computePopAndDensityMutualised(dto, carre, dto.polygonParkAreas, filosofilMap, surfaceCache);
+            
             // Sauvegarde du résultat (exemple)
             InseeCarre200mComputedV2 computed = new InseeCarre200mComputedV2();
             computed.setIdInspire(carre.getIdInspire());
@@ -195,9 +200,6 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
         return inseeCarre200mOnlyShapeRepository.getSurface(geom);
     }
 
-    private void somePrivateMethod() {
-        // ...existing code from ComputeCarreServiceV3...
-    }
 
     // --- OPTIMISATION : Batch population Filosofil ---
     /**
@@ -210,6 +212,12 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
         for (Filosofil200m f : list) {
             map.put(f.getIdInspire(), f);
         }
+        return map;
+    }
+    private Map<String, Filosofil200m> loadByIdFilosofil(String idInspire, Integer annee) {
+    	Filosofil200m f = filosofil200mRepository.findByAnneeAndIdInspire(annee, idInspire);
+        Map<String, Filosofil200m> map = new HashMap<>();
+        map.put(f.getIdInspire(), f);
         return map;
     }
     // --- FIN OPTIMISATION ---

@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @ConditionalOnProperty(
-		name="application.feature-flipping.carre200m-impl", 
+		name="application.feature-flipping.iris-impl", 
 		havingValue="v3")
 public class ComputeIrisServiceIris extends AbstractComputeService implements IComputeIrisService {
 	
