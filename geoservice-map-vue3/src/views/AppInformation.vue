@@ -43,7 +43,11 @@
             <p class="font-semibold">
                 L'algorithme de calcul de la zone d'accessibilité est le suivant :
             </p>
-            <ol class="list-decimal list-inside space-y-2 ml-4">
+            <div class="flex gap-2 my-4">
+                <button @click="showDiagram = false" :class="['px-4 py-1.5 text-sm rounded transition-colors', showDiagram ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-blue-900 text-white']">Détail</button>
+                <button @click="showDiagram = true" :class="['px-4 py-1.5 text-sm rounded transition-colors', showDiagram ? 'bg-blue-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200']">Diagramme</button>
+            </div>
+            <ol v-if="!showDiagram" class="list-decimal list-inside space-y-2 ml-4">
                 <li class="font-medium">Détermination des carreaux de la commune à partir du cadastre</li>
                 
                 <li class="font-medium">Pour chaque carreau, calcul de l'accessibilité :
@@ -68,7 +72,51 @@
                     </ul>
                 </li>
             </ol>
-            <br />
+            <div v-else class="flex justify-center my-8">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 560" class="w-full max-w-lg">
+                    <defs>
+                        <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+                            <path d="M0,0 L10,4 L0,8 Z" fill="#94a3b8" />
+                        </marker>
+                    </defs>
+
+                    <circle cx="300" cy="30" r="12" fill="#3b82f6" />
+                    <text x="300" y="35" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold" font-family="sans-serif">Début</text>
+
+                    <line x1="300" y1="42" x2="300" y2="60" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)" />
+
+                    <rect x="70" y="65" width="460" height="55" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5" />
+                    <text x="85" y="88" fill="#1e40af" font-size="14" font-weight="bold" font-family="sans-serif">1. Détermination des carreaux de la commune</text>
+                    <text x="85" y="108" fill="#334155" font-size="13" font-family="sans-serif">à partir du cadastre</text>
+
+                    <line x1="300" y1="120" x2="300" y2="145" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)" />
+
+                    <rect x="70" y="150" width="460" height="105" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5" />
+                    <text x="85" y="173" fill="#1e40af" font-size="14" font-weight="bold" font-family="sans-serif">2. Pour chaque carreau, calcul de l'accessibilité :</text>
+                    <text x="100" y="198" fill="#334155" font-size="13" font-family="sans-serif">• Recherche des isochrones d’accessibilité</text>
+                    <text x="100" y="218" fill="#334155" font-size="13" font-family="sans-serif">• Fusion des polygones des isochrones</text>
+                    <text x="100" y="238" fill="#334155" font-size="13" font-family="sans-serif">• Détermination des carreaux avec intersection</text>
+
+                    <line x1="300" y1="255" x2="300" y2="280" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)" />
+
+                    <rect x="70" y="285" width="460" height="85" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5" />
+                    <text x="85" y="308" fill="#1e40af" font-size="14" font-weight="bold" font-family="sans-serif">3. Calcul de la population couverte :</text>
+                    <text x="100" y="333" fill="#334155" font-size="13" font-family="sans-serif">• Complètement recouverts : population totale</text>
+                    <text x="100" y="353" fill="#334155" font-size="13" font-family="sans-serif">• Partiellement recouverts : prorata de surface</text>
+
+                    <line x1="300" y1="370" x2="300" y2="395" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)" />
+
+                    <rect x="70" y="400" width="460" height="85" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5" />
+                    <text x="85" y="423" fill="#1e40af" font-size="14" font-weight="bold" font-family="sans-serif">4. Calcul de la densité d’espaces verts :</text>
+                    <text x="100" y="448" fill="#334155" font-size="13" font-family="sans-serif">• Surface totale des parcs accessibles</text>
+                    <text x="100" y="468" fill="#334155" font-size="13" font-family="sans-serif">• m²/habitant calculé</text>
+
+                    <line x1="300" y1="485" x2="300" y2="505" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)" />
+
+                    <rect x="260" y="510" width="80" height="30" rx="15" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" />
+                    <text x="300" y="530" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold" font-family="sans-serif">Fin</text>
+                </svg>
+            </div>
             <p>
                 Ce calcul est réalisé avec les dernières données de l'INSEE rendues publiques.
             </p>
@@ -130,7 +178,7 @@
                     <h3 class="text-lg font-semibold">Isochrone</h3>
                     <p class="mt-2 text-sm leading-relaxed">Surface représentant la zone atteignable à pied en un temps donné depuis une entrée de parc. Nous utilisons 5 minutes en zone urbaine et 20 minutes en zone rurale.</p>
                 </div>
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm cursor-pointer" @click="showM2Detail = true">
                     <h3 class="text-lg font-semibold">m² / habitant</h3>
                     <p class="mt-2 text-sm leading-relaxed">Indicateur de densité d'espaces verts publics. Il correspond au ratio entre la surface totale des parcs accessibles et la population couverte.</p>
                 </div>
@@ -190,6 +238,19 @@
                 </div>
             </div>
 
+            <div v-if="showM2Detail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showM2Detail = false">
+                <div class="mx-4 max-w-lg rounded-lg bg-white p-6 shadow-xl">
+                    <div class="flex items-start justify-between">
+                        <h3 class="text-lg font-semibold">m² / habitant</h3>
+                        <button @click="showM2Detail = false" class="ml-4 text-slate-400 hover:text-slate-600">&times;</button>
+                    </div>
+                    <p class="mt-4 text-sm leading-relaxed text-slate-700">
+                        Le ratio <strong>m² / habitant</strong> est l'indicateur clé pour mesurer la desserte en espaces verts publics d'un territoire. Il se calcule en divisant la surface totale des espaces verts publics de proximité accessibles par la population résidente du territoire considéré. Cet indicateur permet de comparer des quartiers, des communes ou des métropoles entre eux, indépendamment de leur taille. L'OMS recommande un minimum de 10 m²/habitant en zone urbaine et 25 m²/habitant en zone périurbaine. Dans cette application, le calcul intègre uniquement les parcs accessibles à pied depuis chaque carreau INSEE, via le réseau de rues, dans le temps de marche préconisé par l'OMS.
+                    </p>
+                    <button @click="showM2Detail = false" class="mt-4 rounded bg-slate-800 px-4 py-2 text-sm text-white hover:bg-slate-700">Fermer</button>
+                </div>
+            </div>
+
             <div v-if="showZoneDetail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showZoneDetail = false">
                 <div class="mx-4 max-w-lg rounded-lg bg-white p-6 shadow-xl">
                     <div class="flex items-start justify-between">
@@ -217,9 +278,11 @@ export default {
     },
     data() {
         return {
+            showDiagram: false,
             showIsochroneDetail: false,
             showCarreauDetail: false,
             showEspacesVertsDetail: false,
+            showM2Detail: false,
             showZoneDetail: false,
             inseeCarreauUrl: 'https://www.insee.fr/fr/statistiques/8272002'
         }
