@@ -141,7 +141,7 @@
                     href="https://github.com/cunvoas/opendata-tools"
                     target="_blank" 
                     rel="noopener noreferrer"
-                    class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors font-medium no-underline">
+                    class="px-4 py-1.5 text-sm rounded transition-colors bg-blue-900 text-white no-underline">
                     Code Source (AGPLv3)
                 </a>
             </div>
@@ -204,6 +204,9 @@
                     </div>
                     <p class="mt-4 text-sm leading-relaxed text-slate-700">
                         Les isochrones sont des indicateurs d'accessibilité spatiale prenant la forme de surfaces correspondant à la zone géographique accessible depuis un point choisi, dans une durée de déplacement prédéfinie. Elles offrent une représentation cartographique relativement simple du temps de parcours nécessaire pour se déplacer vers un lieu ou une ressource particulière. Le principal intérêt des isochrones est de délimiter les espaces disposant d'un accès facile à certaines opportunités.
+                    </p>
+                    <p class="mt-2 text-sm leading-relaxed text-slate-700">
+                        Pour aller plus loin : <a href="https://capamob.cerema.fr/territoire/mesurer-laccessibilite-territoire" target="_blank" rel="noopener noreferrer" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">Mesurer l'accessibilité du territoire - Cerema</a>
                     </p>
                     <button @click="showIsochroneDetail = false" class="mt-4 rounded bg-slate-800 px-4 py-2 text-sm text-white hover:bg-slate-700">Fermer</button>
                 </div>
