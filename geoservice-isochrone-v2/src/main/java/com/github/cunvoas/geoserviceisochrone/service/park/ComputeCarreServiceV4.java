@@ -37,15 +37,24 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Version optimisée V4 du service métier pour le calcul des métriques liées aux carrés INSEE de 200m.
- *
- * Optimisations :
- * - Batch des accès population (Filosofil)
- * - Cache local des surfaces/intersections
- * - Mutualisation des calculs result/resultOms
- * - Réduction des appels redondants (populate, findById, isDistanceDense)
- *
- * Activée par : application.feature-flipping.carre200m-impl=v4
+ * Version optimisée V4 du service de calcul des métriques carrés INSEE 200m.
+ * <p>
+ * Objectif : réduire les doublons de requêtes géographiques, batcher les accès
+ * population Filosofil, mutualiser les calculs result/resultOms, et mettre en
+ * cache les surfaces d'intersection. Activée par le toggle
+ * {@code application.feature-flipping.carre200m-impl=v4}.
+ * </p>
+ * 
+ * <p>Optimisations clés par rapport à V3 :</p>
+ * <ul>
+ *   <li>Batch Filosofil : {@link #loadFilosofilBatch} remplace les N appels
+ *       {@code findByAnneeAndIdInspire} par une seule requête SQL JOIN</li>
+ *   <li>Cache local surfaces : {@link SurfaceCache} évite de recalculer
+ *       {@code ST_Area(ST_Intersection(...))} pour la même paire de géométries</li>
+ *   <li>Mutualisation result/resultOms : si tous les parcs sont OMS, le calcul
+ *       est fait une seule fois ({@link #computePopAndDensityMutualised})</li>
+ *   <li>Surface des carrés constante {@link #SURFACE_CARRE} factorisée</li>
+ * </ul>
  */
 @Service
 @Slf4j
@@ -53,8 +62,19 @@ import lombok.extern.slf4j.Slf4j;
         name="application.feature-flipping.carre200m-impl",
         havingValue="v4")
 public class ComputeCarreServiceV4 implements IComputeCarreService {
+
+	// tip validé
+	private static final String PICTO_SUFFICIENT	="\u2713 ";
+	// tip croix
+	private static final String PICTO_REFUSED		="\u2716 ";
 	
-    // Dépendances injectées via constructeur pour faciliter les tests
+    /**
+     * Surface d'un carré INSEE 200m × 200m (40 000 m²).
+     * Utilisée pour proratiser la population selon la surface d'intersection
+     * entre un carré et une zone (isochrone, parc).
+     */
+    private static final Double SURFACE_CARRE = 40_000d;
+
     private final ApplicationBusinessProperties properties;
     private final ParkAreaRepository parkAreaRepository;
     private final ParkAreaComputedRepository parkAreaComputedRepository;
@@ -65,8 +85,8 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
     private final InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;
     private final ParkJardinRepository parkJardinRepository;
     private final ServiceOpenData serviceOpenData;
-    private final GeometryQueryHelper geometryQueryHelper;
     private final ParkTypeService parkTypeService;
+    private final ParkService parkService;
 
     public ComputeCarreServiceV4(
         ApplicationBusinessProperties properties,
@@ -79,8 +99,8 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
         InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository,
         ParkJardinRepository parkJardinRepository,
         ServiceOpenData serviceOpenData,
-        GeometryQueryHelper geometryQueryHelper,
-        ParkTypeService parkTypeService
+        ParkTypeService parkTypeService,
+        ParkService parkService
     ) {
         this.properties = properties;
         this.parkAreaRepository = parkAreaRepository;
@@ -92,56 +112,210 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
         this.inseeCarre200mOnlyShapeRepository = inseeCarre200mOnlyShapeRepository;
         this.parkJardinRepository = parkJardinRepository;
         this.serviceOpenData = serviceOpenData;
-        this.geometryQueryHelper = geometryQueryHelper;
         this.parkTypeService = parkTypeService;
+        this.parkService = parkService;
     }
 
-    // Méthode computeCarreByComputeJob (obligatoire)
+    /**
+     * Point d'entrée principal du batch de calcul.
+     * <p>
+     * Pour un carré INSEE et une année donnés, cette méthode :
+     * <ol>
+     *   <li>Recherche les parcs ({@link ParkArea}) qui intersectent le carré</li>
+     *   <li>Pour chaque parc actif, récupère ou calcule {@link ParkAreaComputed}</li>
+     *   <li>Fusionne les polygones des parcs pour créer l'isochrone globale</li>
+     *   <li>Applique les règles OMS (surface minimale, durable)</li>
+     *   <li>Calcule la population dans l'isochrone et proratise</li>
+     *   <li>Calcule les surfaces manquantes selon les normes OMS</li>
+     *   <li>Persiste le résultat {@link InseeCarre200mComputedV2}</li>
+     * </ol>
+     * </p>
+     */
     @Override
     public Boolean computeCarreByComputeJob(ComputeJob job) {
-        // Exécution optimisée du calcul pour un job donné
-        Optional<InseeCarre200mOnlyShape> oCarre = inseeCarre200mOnlyShapeRepository.findById(job.getIdInspire());
-        if (oCarre.isPresent()) {
-            InseeCarre200mOnlyShape carre = oCarre.get();
-            Integer annee = job.getAnnee();
-            String idInspire = job.getIdInspire();
-            String wktPolygon = GeometryQueryHelper.toText(carre.getGeoShape());
-            
-            Map<String, Filosofil200m> filosofilMap = loadByIdFilosofil(idInspire, annee);
-            
-            SurfaceCache surfaceCache = new SurfaceCache();
-            // Construction du DTO
-            ComputeDto dto = new ComputeDto(carre);
-            dto.annee = annee;
-            dto.isDense = serviceOpenData.isDistanceDense(carre.getCodeInsee());
-            
-            // Appel du calcul mutualisé
-            computePopAndDensityMutualised(dto, carre, dto.polygonParkAreas, filosofilMap, surfaceCache);
-            
-            // Sauvegarde du résultat (exemple)
-            InseeCarre200mComputedV2 computed = new InseeCarre200mComputedV2();
-            computed.setIdInspire(carre.getIdInspire());
-            computed.setAnnee(annee);
-            computed.setIsDense(dto.isDense);
-            computed.setUpdated(new Date());
-            computed.setSurfaceParkPerCapita(dto.result.surfaceParkPerCapita);
-            computed.setSurfaceTotalPark(dto.result.surfaceTotalParks);
-            computed.setPopulationInIsochrone(dto.result.populationInIsochrone);
-            computed.setPopIncluded(dto.result.popInc);
-            computed.setPopExcluded(dto.result.popExc);
-            computed.setSurfaceParkPerCapitaOms(dto.resultOms.surfaceParkPerCapita);
-            computed.setSurfaceTotalParkOms(dto.resultOms.surfaceTotalParks);
-            computed.setPopulationInIsochroneOms(dto.resultOms.populationInIsochrone);
-            computed.setPopIncludedOms(dto.resultOms.popInc);
-            computed.setPopExcludedOms(dto.resultOms.popExc);
-            computed.setComments(dto.parcName);
-            inseeCarre200mComputedV2Repository.save(computed);
-            return Boolean.TRUE;
+        log.info("begin computeCarre v4 {}", job.getIdInspire());
+        try {
+            Optional<InseeCarre200mOnlyShape> oCarre = inseeCarre200mOnlyShapeRepository.findById(job.getIdInspire());
+            if (oCarre.isPresent()) {
+                InseeCarre200mOnlyShape carre = oCarre.get();
+                Integer annee = job.getAnnee();
+                Boolean isDense = serviceOpenData.isDistanceDense(carre.getCodeInsee());
+
+                // Phase 1 : trouver les parcs dans la zone du carré
+                List<ParkArea> parkAreas = parkAreaRepository.findParkInMapArea(
+                    GeometryQueryHelper.toText(carre.getGeoShape()));
+                parkTypeService.populate(parkAreas);
+
+                // Phase 2 : charger les données population Filosofil en batch
+                // AVERTISSEMENT : la zone utilisée pour charger Filosofil DOIT couvrir
+                // TOUS les carreaux que les zones d'accès des parcs peuvent atteindre,
+                // pas seulement le carré courant (200m). Un parc a une zone d'influence
+                // (isochrone piéton 300-1200m) bien plus grande que le carré.
+                // → on pré-fusionne les polygones des parcs (+ le carré) pour définir
+                //   la zone de requête Filosofil, qui correspond à l'isochrone finale.
+                Geometry shapeParkOnSquare = null;
+                Geometry filosofilLoadArea = carre.getGeoShape();
+                for (ParkArea parkArea : parkAreas) {
+                    filosofilLoadArea = filosofilLoadArea.union(parkArea.getPolygon());
+                }
+                Map<String, Filosofil200m> filosofilMap = loadFilosofilBatch(
+                    GeometryQueryHelper.toText(filosofilLoadArea), annee);
+                SurfaceCache surfaceCache = new SurfaceCache();
+
+                ComputeDto dto = new ComputeDto(carre);
+                dto.isDense = isDense;
+                dto.annee = annee;
+
+                // Phase 3 : boucle sur chaque parc pour accumuler les surfaces OMS et non-OMS
+                // count4checkOms sert à détecter si TOUS les parcs sont conformes OMS
+                // (décrémenté pour chaque parc, incrémenté quand OMS → allAreOms si == taille liste)
+                int count4checkOms = parkAreas.size();
+
+                for (ParkArea parkArea : parkAreas) {
+                    log.info("\tcompose {}", parkArea);
+
+                    if (!isActive(parkArea, annee)) {
+                        continue;
+                    }
+
+                    ParkAreaComputed pac;
+                    Optional<ParkAreaComputed> opac = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
+                    if (opac.isPresent()) {
+                        pac = opac.get();
+                        if (pac.getSurface() == null) {
+                            pac = computeParkAreaOptim(parkArea, annee, filosofilMap);
+                        }
+                    } else {
+                        pac = computeParkAreaOptim(parkArea, annee, filosofilMap);
+                    }
+
+                    // Tous les parcs sont candidats OMS, on décrémente pour suivre
+                    count4checkOms--;
+
+                    // Cumul des surfaces pour le résultat "tous parcs"
+                    dto.result.surfaceTotalParks = dto.result.surfaceTotalParks.add(pac.getSurface());
+                    dto.polygonParkAreas = dto.polygonParkAreas.union(parkArea.getPolygon());
+
+                    // Si le parc est conforme OMS, on l'ajoute au périmètre OMS
+                    if (pac.getOms()) {
+                        if (shapeParkOnSquare == null) {
+                            shapeParkOnSquare = parkArea.getPolygon();
+                        } else {
+                            shapeParkOnSquare = shapeParkOnSquare.union(parkArea.getPolygon());
+                        }
+
+                        // Vérification surface minimale OMS (ex: 5000 m² recommandé)
+                        String sufficient = "";
+                        Double rs = properties.getRecoAtLeastParkSurface();
+                        if (rs <= pac.getSurface().doubleValue()) {
+                            sufficient = PICTO_SUFFICIENT;
+                            dto.withSufficient = Boolean.TRUE;
+                            if (dto.polygonParkAreasSustainableOms == null) {
+                                dto.polygonParkAreasSustainableOms = parkArea.getPolygon();
+                            } else {
+                                dto.polygonParkAreasSustainableOms =
+                                    dto.polygonParkAreasSustainableOms.union(parkArea.getPolygon());
+                            }
+                        }
+
+                        dto.parcNames.add(sufficient + parkArea.getName());
+                        // Incrémente car ce parc est OMS → compense la décrémentation initiale
+                        count4checkOms++;
+                        dto.resultOms.surfaceTotalParks = dto.resultOms.surfaceTotalParks.add(pac.getSurface());
+                        dto.polygonParkAreasOms = dto.polygonParkAreasOms.union(parkArea.getPolygon());
+                    } else {
+                        dto.parcNames.add(PICTO_REFUSED + parkArea.getName());
+                    }
+                }
+
+                // Si count4checkOms == taille liste → tous les parcs sont OMS
+                dto.allAreOms = count4checkOms == parkAreas.size();
+
+                // Si aucun parc OMS, on utilise le centroïde du carré comme shapeParkOnSquare
+                if (shapeParkOnSquare == null) {
+                    shapeParkOnSquare = carre.getGeoPoint2d();
+                }
+
+                // Construction du commentaire HTML avec la liste des parcs
+                StringBuilder sbParcName = new StringBuilder();
+                if (!dto.parcNames.isEmpty()) {
+                    Collections.sort(dto.parcNames);
+                    for (String name : dto.parcNames) {
+                        if (name != null) {
+                            if (sbParcName.length() > 0) {
+                                sbParcName.append("<br />");
+                            }
+                            sbParcName.append(" - ");
+                            sbParcName.append(name);
+                        }
+                    }
+                    dto.parcName = sbParcName.toString();
+                }
+
+                log.info("\tprocess merge isochrone v4");
+
+                // Phase 4 : calcul mutualisé population + densité
+                computePopAndDensityMutualised(dto, carre, shapeParkOnSquare, filosofilMap, surfaceCache);
+
+                // Phase 5 : persistance du résultat
+                InseeCarre200mComputedV2 computed = null;
+                Optional<InseeCarre200mComputedV2> opt =
+                    inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, carre.getIdInspire());
+                if (opt.isPresent()) {
+                    computed = opt.get();
+                } else {
+                    computed = new InseeCarre200mComputedV2();
+                    computed.setIdInspire(carre.getIdInspire());
+                    computed.setAnnee(annee);
+                }
+                computed.setIsDense(isDense);
+                computed.setUpdated(new Date());
+
+                computed.setSurfaceParkPerCapita(dto.result.surfaceParkPerCapita);
+                computed.setSurfaceTotalPark(dto.result.surfaceTotalParks);
+                computed.setPopulationInIsochrone(dto.result.populationInIsochrone);
+                computed.setPopIncluded(dto.result.popInc);
+                computed.setPopExcluded(dto.result.popExc);
+
+                computed.setSurfaceParkPerCapitaOms(dto.resultOms.surfaceParkPerCapita);
+                computed.setSurfaceTotalParkOms(dto.resultOms.surfaceTotalParks);
+                computed.setPopulationInIsochroneOms(dto.resultOms.populationInIsochrone);
+                computed.setPopIncludedOms(dto.resultOms.popInc);
+                computed.setPopExcludedOms(dto.resultOms.popExc);
+
+                // Surface manquante pour atteindre les normes OMS (min et recommandé)
+                computed.setMissingSurfaceMini(computeMissingSurface(dto, carre,
+                    properties.getMinUrbSquareMeterPerCapita(),
+                    properties.getMinSubUrbSquareMeterPerCapita()));
+                computed.setMissingSurfaceAdvised(computeMissingSurface(dto, carre,
+                    properties.getRecoUrbSquareMeterPerCapita(),
+                    properties.getRecoSubUrbSquareMeterPerCapita()));
+
+                if (Boolean.TRUE.equals(dto.withSufficient)) {
+                    computed.setIsSustainablePark(Boolean.TRUE);
+                    computed.setPopulationWithSustainablePark(null);
+                } else {
+                    computed.setIsSustainablePark(Boolean.FALSE);
+                    computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
+                }
+
+                computed.setComments(dto.parcName);
+
+                log.info("\tsave computed v4 {}", computed.getIdInspire());
+                inseeCarre200mComputedV2Repository.save(computed);
+                return Boolean.TRUE;
+            }
+            return Boolean.FALSE;
+        } catch (Exception e) {
+            log.error("computeCarre v4 in error: {} {}", job.getIdInspire(), job.getAnnee(), e);
+            return Boolean.FALSE;
         }
-        return Boolean.FALSE;
     }
 
-    // Méthode obligatoire : refreshParkEntrances(String)
+    /**
+     * Rafraîchit les entrées de parc pour un code INSEE donné.
+     * Délègue à {@link #refreshParkEntrances(Cadastre)} après avoir chargé le cadastre.
+     */
     @Override
     public void refreshParkEntrances(String inseeCode) {
         Optional<Cadastre> cadastreOpt = cadastreRepository.findById(inseeCode);
@@ -152,10 +326,21 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
         }
     }
 
-    // Méthode obligatoire : refreshParkEntrances(Cadastre)
+    /**
+     * Recalcule les isochrones d'accès piéton pour tous les parcs d'une commune.
+     * <p>
+     * Pour chaque parc de la commune :
+     * <ol>
+     *   <li>Récupère la distance piétonne selon la densité (300m urbain, 1200m périurbain)</li>
+     *   <li>Pour chaque entrée du parc, appelle l'API IGN pour recalculer l'isochrone</li>
+     *   <li>Fusionne les polygones des entrées pour former le polygone global du parc</li>
+     * </ol>
+     * </p>
+     */
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void refreshParkEntrances(Cadastre cadastre) {
+        log.warn(">> refreshParkEntrances v4");
         City city = cityRepository.findByInseeCode(cadastre.getIdInsee());
         if (city == null) {
             log.warn("Aucune ville trouvée pour le code INSEE cadastre : {}", cadastre.getIdInsee());
@@ -166,66 +351,60 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
         for (ParcEtJardin parcEtJardin : pjs) {
             ParkArea pa = parkAreaRepository.findByIdParcEtJardin(parcEtJardin.getId());
             for (ParkEntrance pe : pa.getEntrances()) {
-                // Appel du service pour refresh
-                // parkService.refreshIsochrone(pe, distance);
+                parkService.refreshIsochrone(pe, distance);
             }
-            // parkService.mergeParkAreaEntrance(pa);
+            parkService.mergeParkAreaEntrance(pa);
         }
+        log.warn("<< refreshParkEntrances v4");
     }
 
-    // Méthode obligatoire : computeParkArea(ParkArea)
+    /**
+     * Calcule {@link ParkAreaComputed} pour un {@link ParkArea} donné.
+     * <p>
+     * Itère sur toutes les années INSEE configurées (contrairement à la version
+     * buggée initiale qui ne traitait que la première année). Pour chaque année,
+     * charge les données Filosofil en batch et calcule la population proratisée.
+     * </p>
+     */
     @Override
     public ParkAreaComputed computeParkArea(ParkArea park) {
-        // Appel version optimisée avec batch population sur le parc
         if (park == null || park.getPolygon() == null) {
             return null;
         }
-        Integer annee = null;
         Integer[] annees = properties.getInseeAnnees();
-        if (annees != null && annees.length > 0) {
-            annee = annees[0];
-        } else {
-            // Valeur par défaut ou gestion d'erreur
-            log.warn("Aucune année INSEE configurée dans ApplicationBusinessProperties, valeur par défaut 2020 utilisée");
-            annee = 2021;
+        ParkAreaComputed last = null;
+        for (Integer annee : annees) {
+            String wktPolygon = GeometryQueryHelper.toText(park.getPolygon());
+            Map<String, Filosofil200m> filosofilMap = loadFilosofilBatch(wktPolygon, annee);
+            last = computeParkAreaOptim(park, annee, filosofilMap);
         }
-        String wktPolygon = GeometryQueryHelper.toText(park.getPolygon());
-        Map<String, Filosofil200m> filosofilMap = loadFilosofilBatch(wktPolygon, annee);
-        return computeParkAreaOptim(park, annee, filosofilMap);
+        return last;
     }
 
-    // Méthode obligatoire : getSurface(Geometry)
+    /**
+     * Calcule la surface d'une géométrie via PostGIS (ST_Area).
+     * Délègue au repository pour une précision géodésique (true ellipsoid).
+     */
     @Override
     public Long getSurface(Geometry geom) {
         return inseeCarre200mOnlyShapeRepository.getSurface(geom);
     }
 
-
-    // --- OPTIMISATION : Batch population Filosofil ---
     /**
-     * Récupère en une seule requête tous les objets Filosofil200m nécessaires pour une zone et une année.
-     * Retourne une Map idInspire -> Filosofil200m pour accès rapide en mémoire.
-     */
-    private Map<String, Filosofil200m> loadFilosofilBatch(String wktPolygon, Integer annee) {
-        List<Filosofil200m> list = filosofil200mRepository.getAllCarreInMap(wktPolygon, annee);
-        Map<String, Filosofil200m> map = new HashMap<>();
-        for (Filosofil200m f : list) {
-            map.put(f.getIdInspire(), f);
-        }
-        return map;
-    }
-    private Map<String, Filosofil200m> loadByIdFilosofil(String idInspire, Integer annee) {
-    	Filosofil200m f = filosofil200mRepository.findByAnneeAndIdInspire(annee, idInspire);
-        Map<String, Filosofil200m> map = new HashMap<>();
-        map.put(f.getIdInspire(), f);
-        return map;
-    }
-    // --- FIN OPTIMISATION ---
-
-    // --- OPTIMISATION : Utilisation du batch Filosofil dans computePopAndDensityDetail ---
-    /**
-     * Version optimisée utilisant le cache batché Filosofil pour éviter les accès N+1.
-     * Ajout du cache local des surfaces/intersections.
+     * Calcule la population dans l'isochrone et la surface de parc disponible par habitant.
+     * <p>
+     * Algorithme :
+     * <ol>
+     *   <li>Récupère tous les carrés INSEE intersectant la zone à analyser</li>
+     *   <li>Pour chaque carré, récupère sa population dans la map Filosofil (batch)</li>
+     *   <li>Proratise la population selon la surface d'intersection carré/isochrone</li>
+     *   <li>Calcule la surface de parc accessible dans le carré actuel</li>
+     *   <li>Calcule popIn/popExc (population avec/sans accès parc)</li>
+     *   <li>Calcule popWithSufficient (population avec parc ≥ seuil OMS durable)</li>
+     * </ol>
+     * Le cache local {@link SurfaceCache} évite de ré-interroger PostGIS pour
+     * des paires de géométries déjà rencontrées.
+     * </p>
      */
     protected ComputeResultDto computePopAndDensityDetailOptim(
             ComputeDto dto,
@@ -235,9 +414,11 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
             Geometry shapeParkOnSquare,
             Map<String, Filosofil200m> filosofilMap,
             SurfaceCache surfaceCache) {
-    	
+
         Long surfacePopulationIso = 0L;
-        List<InseeCarre200mOnlyShape> shapesWithIso = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(geometryToAnalyse));
+        List<InseeCarre200mOnlyShape> shapesWithIso =
+            inseeCarre200mOnlyShapeRepository.findCarreInMapArea(
+                GeometryQueryHelper.toText(geometryToAnalyse));
         for (InseeCarre200mOnlyShape carreWithIso : shapesWithIso) {
             Filosofil200m carreData = filosofilMap.get(carreWithIso.getIdInspire());
             if (carreData != null) {
@@ -245,43 +426,62 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
                     dto.popAll = carreData.getNbIndividus();
                 }
                 Double nbHabCarre = carreData.getNbIndividus().doubleValue();
-                Long surfaceIsoSurCarre = surfaceCache.getOrCompute(carreWithIso.getGeoShape(), geometryToAnalyse, this::getSurface);
-                surfacePopulationIso += Math.round(nbHabCarre * surfaceIsoSurCarre / 40000d);
+                // Proratisation : surface_intersection / 40000 × population_du_carré
+                Long surfaceIsoSurCarre = surfaceCache.getOrCompute(
+                    carreWithIso.getGeoShape(), geometryToAnalyse, this::getSurface);
+                surfacePopulationIso += Math.round(nbHabCarre * surfaceIsoSurCarre / SURFACE_CARRE);
             }
         }
         if (surfacePopulationIso != 0L) {
-            crDto.surfaceParkPerCapita = crDto.surfaceTotalParks.divide(BigDecimal.valueOf(surfacePopulationIso), RoundingMode.HALF_EVEN);
+            crDto.surfaceParkPerCapita = crDto.surfaceTotalParks.divide(
+                BigDecimal.valueOf(surfacePopulationIso), RoundingMode.HALF_EVEN);
         }
         crDto.populationInIsochrone = BigDecimal.valueOf(surfacePopulationIso);
+
         Double inhabitant = dto.popAll.doubleValue();
         Geometry parkOnCarre = carreShape.getGeoShape().intersection(shapeParkOnSquare);
         Long surfaceParkAccess = getSurface(parkOnCarre);
-        Long popIn = Math.round(inhabitant * surfaceParkAccess / 40000d);
+        Long popIn = Math.round(inhabitant * surfaceParkAccess / SURFACE_CARRE);
         crDto.popInc = new BigDecimal(popIn);
         crDto.popExc = new BigDecimal(inhabitant - popIn);
+
         Long surfaceSustainable = 0L;
         if (dto.polygonParkAreasSustainableOms != null) {
-            Geometry parkSustainable = carreShape.getGeoShape().intersection(dto.polygonParkAreasSustainableOms);
+            Geometry parkSustainable = carreShape.getGeoShape().intersection(
+                dto.polygonParkAreasSustainableOms);
             surfaceSustainable = getSurface(parkSustainable);
         }
-        Long popSustainable = Math.round(inhabitant * surfaceSustainable / 40000d);
+        Long popSustainable = Math.round(inhabitant * surfaceSustainable / SURFACE_CARRE);
         dto.popWithSufficient = new BigDecimal(popSustainable);
+
         return crDto;
     }
-    // --- FIN OPTIMISATION ---
 
-    // --- OPTIMISATION : Utilisation du batch Filosofil dans computeParkArea ---
     /**
-     * Version optimisée utilisant le cache batché Filosofil pour éviter les accès N+1 dans le calcul population parc.
+     * Calcule (ou récupère) les métriques {@link ParkAreaComputed} pour un parc
+     * et une année donnés, en utilisant les données Filosofil déjà chargées en mémoire.
+     * <p>
+     * Algorithme :
+     * <ol>
+     *   <li>Récupère les carrés INSEE intersectant le polygone du parc</li>
+     *   <li>Pour chaque carré, calcule l'intersection de surface et proratise la population</li>
+     *   <li>Additionne les populations proratisées pour obtenir la population totale du parc</li>
+     *   <li>Calcule la surface par habitant (surface_parc / population)</li>
+     * </ol>
+     * Optimisation : utilise la map Filosofil batchée au lieu de N requêtes individuelles.
+     * </p>
      */
-    protected ParkAreaComputed computeParkAreaOptim(ParkArea park, Integer annee, Map<String, Filosofil200m> filosofilMap) {
+    protected ParkAreaComputed computeParkAreaOptim(ParkArea park, Integer annee,
+            Map<String, Filosofil200m> filosofilMap) {
         ParkAreaComputed parcCpu = null;
         if (park.getPolygon() == null) {
             return null;
         }
         parkTypeService.populate(park);
-        List<InseeCarre200mOnlyShape> shapes = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(GeometryQueryHelper.toText(park.getPolygon()));
-        Optional<ParkAreaComputed> parcCpuOpt = parkAreaComputedRepository.findByIdAndAnnee(park.getId(), annee);
+        List<InseeCarre200mOnlyShape> shapes = inseeCarre200mOnlyShapeRepository.findCarreInMapArea(
+            GeometryQueryHelper.toText(park.getPolygon()));
+        Optional<ParkAreaComputed> parcCpuOpt = parkAreaComputedRepository.findByIdAndAnnee(
+            park.getId(), annee);
         if (parcCpuOpt.isPresent()) {
             parcCpu = parcCpuOpt.get();
         } else {
@@ -307,43 +507,34 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
         }
         BigDecimal population = BigDecimal.ZERO;
         for (InseeCarre200mOnlyShape carreShape : shapes) {
-            Long surfIntersect = getSurface(carreShape.getGeoShape().intersection(park.getPolygon()));
+            Long surfIntersect = getSurface(
+                carreShape.getGeoShape().intersection(park.getPolygon()));
             Filosofil200m carre = filosofilMap.get(carreShape.getIdInspire());
             Long popCar = 0L;
             if (carre != null) {
                 popCar = Math.round(carre.getNbIndividus().doubleValue());
             }
-            Long popIntersect = Math.round(popCar * surfIntersect / 40000d);
+            Long popIntersect = Math.round(popCar * surfIntersect / SURFACE_CARRE);
             population = population.add(new BigDecimal(popIntersect));
         }
         parcCpu.setPopulation(population);
         if (!BigDecimal.ZERO.equals(population)) {
-            parcCpu.setSurfacePerInhabitant(parcCpu.getSurface().divide(population, 1, RoundingMode.HALF_EVEN));
+            parcCpu.setSurfacePerInhabitant(
+                parcCpu.getSurface().divide(population, 1, RoundingMode.HALF_EVEN));
         }
         parcCpu.setUpdated(new Date());
         parcCpu = parkAreaComputedRepository.save(parcCpu);
         return parcCpu;
     }
-    // --- FIN OPTIMISATION ---
 
-    // --- OPTIMISATION : Cache local des surfaces/intersections ---
     /**
-     * Cache local pour les surfaces/intersections géométriques lors d'un calcul.
-     * La clé est une concaténation des WKT des deux géométries.
-     */
-    private static class SurfaceCache {
-        private final Map<String, Long> cache = new HashMap<>();
-        public Long getOrCompute(Geometry a, Geometry b, java.util.function.Function<Geometry, Long> surfaceFunction) {
-            String key = a.toText() + "#" + b.toText();
-            return cache.computeIfAbsent(key, k -> surfaceFunction.apply(a.intersection(b)));
-        }
-    }
-    // --- FIN OPTIMISATION ---
-
-    // --- OPTIMISATION : Mutualisation des calculs result/resultOms ---
-    /**
-     * Calcule une seule fois les intersections et surfaces, puis applique les règles pour result et resultOms.
-     * Utilise le cache local pour toutes les opérations géométriques.
+     * Calcule la densité de population et la surface de parc par habitant,
+     * en mutualisant le calcul pour les résultats "tous parcs" et "parcs OMS".
+     * <p>
+     * Si tous les parcs sont conformes OMS ({@code dto.allAreOms == true}),
+     * le calcul {@code result} est réutilisé pour {@code resultOms},
+     * évitant ainsi une double exécution de {@link #computePopAndDensityDetailOptim}.
+     * </p>
      */
     protected void computePopAndDensityMutualised(
             ComputeDto dto,
@@ -351,34 +542,75 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
             Geometry shapeParkOnSquare,
             Map<String, Filosofil200m> filosofilMap,
             SurfaceCache surfaceCache) {
-    	
-        // Calcul principal sur tous les parcs
+
         ComputeResultDto rDto = computePopAndDensityDetailOptim(
-            dto, dto.result, carreShape, dto.polygonParkAreas, shapeParkOnSquare, filosofilMap, surfaceCache);
+            dto, dto.result, carreShape, dto.polygonParkAreas,
+            shapeParkOnSquare, filosofilMap, surfaceCache);
         dto.result = rDto;
-        // Si tous les parcs sont OMS, on réutilise le calcul
+
         if (dto.allAreOms) {
             dto.resultOms = rDto;
         } else {
-            // Sinon, on ne refait que la partie spécifique OMS (sur la géométrie OMS)
             rDto = computePopAndDensityDetailOptim(
-                dto, dto.resultOms, carreShape, dto.polygonParkAreasOms, shapeParkOnSquare, filosofilMap, surfaceCache);
+                dto, dto.resultOms, carreShape, dto.polygonParkAreasOms,
+                shapeParkOnSquare, filosofilMap, surfaceCache);
             dto.resultOms = rDto;
         }
     }
-    // --- FIN OPTIMISATION ---
 
-    // Méthode utilitaire : compute(ComputeDto) (non interface)
+    /**
+     * Calcule la surface de parc manquante pour atteindre un standard OMS
+     * (minimum ou recommandé) dans ce carré.
+     * <p>
+     * Formule : MAX(0, standard × population - surface_existante)
+     * </p>
+     * Le standard est choisi selon la densité (urbain/périurbain).
+     */
+    protected BigDecimal computeMissingSurface(ComputeDto dto,
+            InseeCarre200mOnlyShape carreShape,
+            Double urbStandard, Double subUrbStandard) {
+        Double standard = dto.isDense ? urbStandard : subUrbStandard;
+        BigDecimal requiredSurface = BigDecimal.valueOf(
+            standard * dto.resultOms.populationInIsochrone.doubleValue());
+        BigDecimal missingSurface = requiredSurface.subtract(dto.resultOms.surfaceTotalParks);
+        if (missingSurface.compareTo(BigDecimal.ZERO) > 0) {
+            return missingSurface.setScale(2, RoundingMode.HALF_EVEN);
+        }
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * Calcule et persist {@link InseeCarre200mComputedV2} pour un {@link ComputeDto}
+     * déjà préparé par l'appelant.
+     * <p>
+     * ATTENTION : l'appelant doit avoir préparé le DTO (polygons fusionnés,
+     * surfaceTotalParks, etc.). Cette méthode ne fait pas la phase de préparation
+     * des parcs (contrairement à {@link #computeCarreByComputeJob}).
+     * Elle charge les données Filosofil en batch et applique le calcul mutualisé,
+     * puis persist le résultat complet (incluant missingSurface et sustainablePark).
+     * </p>
+     */
     public void compute(ComputeDto computeDto, InseeCarre200mOnlyShape carreShape) {
         Integer annee = computeDto.annee;
         String wktPolygon = GeometryQueryHelper.toText(computeDto.polygonParkAreas);
         Map<String, Filosofil200m> filosofilMap = loadFilosofilBatch(wktPolygon, annee);
         SurfaceCache surfaceCache = new SurfaceCache();
-        computePopAndDensityMutualised(computeDto, carreShape, computeDto.polygonParkAreas, filosofilMap, surfaceCache);
-        // Sauvegarde du résultat
-        InseeCarre200mComputedV2 computed = new InseeCarre200mComputedV2();
-        computed.setIdInspire(carreShape.getIdInspire());
-        computed.setAnnee(annee);
+
+        Geometry shapeParkOnSquare = computeDto.polygonParkAreas;
+        computePopAndDensityMutualised(computeDto, carreShape, shapeParkOnSquare,
+            filosofilMap, surfaceCache);
+
+        InseeCarre200mComputedV2 computed = null;
+        Optional<InseeCarre200mComputedV2> opt =
+            inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(
+                annee, carreShape.getIdInspire());
+        if (opt.isPresent()) {
+            computed = opt.get();
+        } else {
+            computed = new InseeCarre200mComputedV2();
+            computed.setIdInspire(carreShape.getIdInspire());
+            computed.setAnnee(annee);
+        }
         computed.setIsDense(computeDto.isDense);
         computed.setUpdated(new Date());
         computed.setSurfaceParkPerCapita(computeDto.result.surfaceParkPerCapita);
@@ -391,11 +623,34 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
         computed.setPopulationInIsochroneOms(computeDto.resultOms.populationInIsochrone);
         computed.setPopIncludedOms(computeDto.resultOms.popInc);
         computed.setPopExcludedOms(computeDto.resultOms.popExc);
+
+        computed.setMissingSurfaceMini(computeMissingSurface(computeDto, carreShape,
+            properties.getMinUrbSquareMeterPerCapita(),
+            properties.getMinSubUrbSquareMeterPerCapita()));
+        computed.setMissingSurfaceAdvised(computeMissingSurface(computeDto, carreShape,
+            properties.getRecoUrbSquareMeterPerCapita(),
+            properties.getRecoSubUrbSquareMeterPerCapita()));
+
+        if (Boolean.TRUE.equals(computeDto.withSufficient)) {
+            computed.setIsSustainablePark(Boolean.TRUE);
+            computed.setPopulationWithSustainablePark(null);
+        } else {
+            computed.setIsSustainablePark(Boolean.FALSE);
+            computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
+        }
+
         computed.setComments(computeDto.parcName);
         inseeCarre200mComputedV2Repository.save(computed);
     }
 
-    // Méthode utilitaire pour la compatibilité (copiée de V3)
+    /**
+     * Vérifie si un parc est actif pour une année donnée.
+     * <p>
+     * Un parc est actif si l'année demandée est comprise dans l'intervalle
+     * [dateDebut, dateFin]. Si dateDebut est null → 1900 (actif depuis toujours).
+     * Si dateFin est null → 2100 (actif jusqu'à nouvel ordre).
+     * </p>
+     */
     protected Boolean isActive(ParkArea pa, Integer annee) {
         Boolean active = false;
         Optional<ParcEtJardin> oPj = parkJardinRepository.findById(pa.getIdParcEtJardin());
@@ -419,5 +674,45 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
         return active;
     }
 
-    // Other methods and logic from ComputeCarreServiceV3
+    /**
+     * Charge en une seule requête SQL tous les {@link Filosofil200m} intersectant
+     * une zone polygonale pour une année donnée.
+     * <p>
+     * Optimisation clé V4 : remplace le N+1 de V3 ({@code findByAnneeAndIdInspire}
+     * dans la boucle) par une unique requête avec JOIN spatial entre
+     * {@code carre200onlyshape} et {@code filosofi_200m}.
+     * Retourne une Map idInspire → Filosofil200m pour accès O(1) en mémoire.
+     * </p>
+     */
+    Map<String, Filosofil200m> loadFilosofilBatch(String wktPolygon, Integer annee) {
+        List<Filosofil200m> list = filosofil200mRepository.getAllCarreInMap(wktPolygon, annee);
+        Map<String, Filosofil200m> map = new HashMap<>();
+        for (Filosofil200m f : list) {
+            map.put(f.getIdInspire(), f);
+        }
+        return map;
+    }
+
+
+    /**
+     * Cache local pour les résultats de {@code ST_Area(ST_Intersection(a, b))}.
+     * <p>
+     * La clé est {@code hashCode(a) + "#" + hashCode(b)} (hash JTS de la géométrie,
+     * plus léger que le WKT complet). Évite les appels SQL redondants quand la même
+     * paire de géométries est rencontrée plusieurs fois (ex: même isochrone analysée
+     * pour plusieurs carrés).
+     * </p>
+     * <p>
+     * Non thread-safe par choix : une nouvelle instance est créée par job.
+     * </p>
+     */
+    static class SurfaceCache {
+        private final Map<String, Long> cache = new HashMap<>();
+        public Long getOrCompute(Geometry a, Geometry b,
+                java.util.function.Function<Geometry, Long> surfaceFunction) {
+            String key = a.hashCode() + "#" + b.hashCode();
+            return cache.computeIfAbsent(key, k -> surfaceFunction.apply(a.intersection(b)));
+        }
+    }
+
 }
