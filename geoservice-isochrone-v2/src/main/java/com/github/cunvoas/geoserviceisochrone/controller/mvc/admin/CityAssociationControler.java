@@ -67,7 +67,7 @@ public class CityAssociationControler {
 		
 		// Si non-admin, rediriger directement vers la page d'édition
 		if (!isAdmin) {
-			return "redirect:/mvc/management/cityassoc/edit";
+			return "redirect:/mvc/dashboard";
 		}
 		
 		// Si aucune région n'est spécifiée, utiliser la région du profil de l'admin
@@ -167,8 +167,6 @@ public class CityAssociationControler {
 		model.addAttribute("isAdmin", isAdmin);
 		model.addAttribute("readOnly", readOnly);
 		model.addAttribute("token", tokenManagement.getValidToken());
-		model.addAttribute("years", applicationBusinessProperties.getInseeAnnees());
-		model.addAttribute("defaultYear", applicationBusinessProperties.getDerniereAnnee());
 		
 		return formName;
 	}

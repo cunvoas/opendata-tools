@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr" 
+    xmlns:th="http://www.thymeleaf.org" 
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+    <head th:replace="~{fragments/fragment-head :: head(#{compute.request.title})}"></head>
+    
+    <body class="sb-nav-fixed">
+        <div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
+        <div id="layoutSidenav">
+            <div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+            <div id="layoutSidenav_content">
+                <main>
+
+  <div class="container">
+     <div class="col-lg-8">
+     
+            <div class="container-fluid px-4">
+                <h3 class="mt-4" th:text="#{compute.request.title}">Lancement de calcul</h3>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-gradient text-white py-3">
+                            <h5 class="mb-0"><i class="fas fa-sliders me-2"></i><span th:text="#{compute.request.selectors}">Sélection</span></h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="idRegion">
+                                            <option value="" th:text="#{compute.request.choose.region}">-- Choisir une région --</option>
+                                            <option th:each="region : ${regions}" 
+                                                    th:value="${region.id}" 
+                                                    th:text="${region.name}"></option>
+                                        </select>
+                                        <label for="idRegion" th:text="#{compute.request.region}">Région</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="idCommunauteDeCommunes">
+                                            <option value="" th:text="#{compute.request.choose.epci}">-- Choisir un EPCI --</option>
+                                        </select>
+                                        <label for="idCommunauteDeCommunes" th:text="#{compute.request.epci}">EPCI</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="idCity">
+                                            <option value="" th:text="#{compute.request.choose.city}">-- Choisir une ville --</option>
+                                        </select>
+                                        <label for="idCity" th:text="#{compute.request.city}">Ville</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="requestedYear">
+                                            <option value="" th:text="#{compute.request.allyears}">Toutes les années</option>
+                                            <option th:each="year : ${years}" 
+                                                    th:value="${year}" 
+                                                    th:text="${year}"
+                                                    th:selected="${year == defaultYear}"></option>
+                                        </select>
+                                        <label for="requestedYear" th:text="#{compute.request.year}">Année</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex gap-2 mt-4">
+                                <sec:authorize access="hasRole('ADMINISTRATOR')">
+                                    <button id="btnComputeEpci" onclick="requestComputeEpci()" type="button" class="btn btn-outline-secondary">
+                                        <i class="fas fa-building me-1"></i><span th:text="#{compute.request.btn.epci}">Calculer l'EPCI</span>
+                                    </button>
+                                    <button id="btnComputeCity" onclick="requestComputeCity()" type="button" class="btn btn-outline-secondary">
+                                        <i class="fas fa-city me-1"></i><span th:text="#{compute.request.btn.city}">Calculer la ville</span>
+                                    </button>
+                                    <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </sec:authorize>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+     </div>
+  </div>
+                </main>
+                
+               <div th:replace="~{fragments/fragment-footer :: footer}"></div> 
+            </div>
+            
+        </div>
+        <div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
+
+        <script th:src="@{/mvc/static/js/scripts.js}"></script>
+        
+        <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        const regionSelect = document.getElementById("idRegion");
+        const c2cSelect = document.getElementById("idCommunauteDeCommunes");
+        const citySelect = document.getElementById("idCity");
+        const yearSelect = document.getElementById("requestedYear");
+        const spinner = document.getElementById("computeSpinner");
+
+        regionSelect.addEventListener("change", function() {
+            const regionId = this.value;
+            c2cSelect.innerHTML = '<option value="">-- Choisir un EPCI --</option>';
+            citySelect.innerHTML = '<option value="">-- Choisir une ville --</option>';
+            if (regionId) {
+                fetch("/mvc/ajax/dropdown/search_c2c?r=" + regionId, {
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    data.forEach(function(item) {
+                        const opt = document.createElement("option");
+                        opt.value = item.id;
+                        opt.textContent = item.libelle;
+                        c2cSelect.appendChild(opt);
+                    });
+                });
+            }
+        });
+
+        c2cSelect.addEventListener("change", function() {
+            const c2cId = this.value;
+            const regionId = regionSelect.value;
+            citySelect.innerHTML = '<option value="">-- Choisir une ville --</option>';
+            if (c2cId && regionId) {
+                fetch("/mvc/ajax/dropdown/search_city?r=" + regionId + "&c=" + c2cId, {
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    data.forEach(function(item) {
+                        const opt = document.createElement("option");
+                        opt.value = item.id;
+                        opt.textContent = item.libelle;
+                        citySelect.appendChild(opt);
+                    });
+                });
+            }
+        });
+
+        function showSpinner() {
+            spinner.style.display = "inline-block";
+        }
+
+        function hideSpinner() {
+            spinner.style.display = "none";
+        }
+
+        async function doPostCompute(payload) {
+            showSpinner();
+            try {
+                let response = await fetch("/mvc/ajax/jobs/api/request", {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (response.status == 202 || response.status == 200) {
+                    const content = await response.json();
+                    alert("Calcul demandé pour " + content.nbCarre + " carr\u00e9s.");
+                } else {
+                    alert("Erreur lors de la demande de calcul.");
+                }
+            } catch (error) {
+                console.error("Error during compute request:", error);
+                alert("Erreur lors de la communication avec le serveur.");
+            } finally {
+                hideSpinner();
+            }
+        }
+
+        function requestComputeEpci() {
+            const c2cId = c2cSelect.value;
+            if (!c2cId) {
+                alert("Veuillez s\u00e9lectionner un EPCI.");
+                return;
+            }
+            const year = yearSelect.value || null;
+            doPostCompute({
+                token: [[${token}]],
+                com2coId: c2cId,
+                requestedYear: year
+            });
+        }
+
+        function requestComputeCity() {
+            const cityId = citySelect.value;
+            if (!cityId) {
+                alert("Veuillez s\u00e9lectionner une ville.");
+                return;
+            }
+            const year = yearSelect.value || null;
+            doPostCompute({
+                token: [[${token}]],
+                cityId: cityId,
+                requestedYear: year
+            });
+        }
+        /*]]>*/
+        </script>
+        
+        <style>
+            .bg-gradient {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            .card {
+                transition: all 0.3s ease;
+            }
+            .card:hover {
+                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+            }
+            .form-select:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            }
+        </style>
+    </body>
+</html>
