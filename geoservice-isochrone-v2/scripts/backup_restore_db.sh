@@ -15,10 +15,22 @@ DB=""
 HOST="localhost"
 PORT="5432"
 USER="postgres"
-OUTDIR="./db_dump"
+OUTDIR="./${DB}/$(date +%Y%m%d)"
 BATCH=1000
+OPENDATA=false
 
 # ─── Topological order for restore (parents before children) ──────────────
+# Level OPENDATA: no FK dependencies
+TABLES_OPENDATA="
+  cadastre
+  laposte
+  insee_densite_city
+  filosofi_200m
+  park_overpass
+  carre200onlyshape
+  ign_topo_vegetal
+"
+
 # Level 0: no FK dependencies
 TABLES_L0="
   adm_region
@@ -28,15 +40,7 @@ TABLES_L0="
   dashboard_cache
   parc_photo
   cadastre_proche
-  iris_shape
-  iris_data
-  laposte
-  insee_densite_city
-  filosofi_200m
-  park_overpass
-  carre200onlyshape
   z_stats_surface
-  ign_topo_vegetal
   compute_job
   compute_iris_job
   adm_activity_stats
@@ -48,7 +52,6 @@ TABLES_L0="
   project_simul_isochrone
   project_simul_work
   park_proposal_work
-  cadastre
 "
 # Level 1: FK to Level 0
 TABLES_L1="
@@ -87,7 +90,8 @@ while [ $# -gt 0 ]; do
     -s) SCHEMA="$2"; shift 2 ;;
     -o) OUTDIR="$2"; shift 2 ;;
     -b) BATCH="$2"; shift 2 ;;
-    *)  echo "Usage: $0 {backup|restore|list} -d DB -h HOST -p PORT -U USER [-s SCHEMA] [-o OUTDIR] [-b BATCH]"; exit 1 ;;
+    --opendata) OPENDATA=true; shift ;;
+    *)  echo "Usage: $0 {backup|restore|list} -d DB -h HOST -p PORT -U USER [-s SCHEMA] [-o OUTDIR] [-b BATCH] [--opendata]"; exit 1 ;;
   esac
 done
 
@@ -95,6 +99,12 @@ done
 [ -z "$MODE" ] && { echo "ERROR: specify backup|restore|list"; exit 1; }
 
 PG_OPTS="-h $HOST -p $PORT -U $USER -d $DB"
+
+# Include OPENDATA tables when flag is set
+if [ "$OPENDATA" = true ]; then
+  ALL_TABLES="${TABLES_OPENDATA}" ${TABLES_L0} ${TABLES_L1} ${TABLES_L2} ${TABLES_L3} ${TABLES_L4} 
+  RESTORE_ORDER="${TABLES_OPENDATA}" ${TABLES_L0} ${TABLES_L1} ${TABLES_L2} ${TABLES_L3} ${TABLES_L4} 
+fi
 
 # ─── List tables in topological order ──────────────────────────────────────
 list_tables() {
@@ -126,8 +136,7 @@ do_backup() {
       --rows-per-insert="${BATCH}" \
       --no-owner \
       --no-acl \
-      --no-comments \
-      "$DB" > "$outfile"
+      --no-comments  > "$outfile"
 
     gzip -f "$outfile"
     echo "    → ${outfile}.gz ($(stat -c%s "${outfile}.gz" 2>/dev/null || stat -f%z "${outfile}.gz" 2>/dev/null) bytes)"
@@ -139,8 +148,7 @@ do_backup() {
     --schema="$SCHEMA" \
     --schema-only \
     --no-owner \
-    --no-acl \
-    "$DB" > "$OUTDIR/00_schema.sql"
+    --no-acl > "$OUTDIR/00_schema.sql"
   gzip -f "$OUTDIR/00_schema.sql"
   echo "  Done: $(ls -1 ${OUTDIR}/*.sql.gz 2>/dev/null | wc -l) files"
 }
