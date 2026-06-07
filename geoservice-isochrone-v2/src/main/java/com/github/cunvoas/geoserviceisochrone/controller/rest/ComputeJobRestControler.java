@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.controller.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.TokenManagement;
 import com.github.cunvoas.geoserviceisochrone.controller.rest.bo.ComputeJobRequest;
 import com.github.cunvoas.geoserviceisochrone.controller.rest.bo.ComputeJobResponse;
+import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
@@ -56,6 +59,8 @@ public class ComputeJobRestControler {
 			log.error("Invalid token for ComputeJobRequest: {}", req);
 			return new ResponseEntity<ComputeJobResponse>(HttpStatus.UNAUTHORIZED);
 		}
+		Contributeur contrib =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		
 		
 		ComputeJobResponse resp = new ComputeJobResponse(req);
 		
@@ -71,18 +76,24 @@ public class ComputeJobRestControler {
 			resp.setNbCarre(batchJobService.requestProcessParc(pj));
 			code= HttpStatus.ACCEPTED;
 			
-		} else if (req.getCityId()!=null) {
+		} else if (req.getCityId()!=null && ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
 			City n = cityRepository.getReferenceById(Long.valueOf(req.getCityId()));
 			
 			resp.setCityId(req.getCityId());
 			resp.setNbCarre(batchJobService.requestProcessCity(n, requestedYear));
 			code= HttpStatus.ACCEPTED;
 			
-		} else if (req.getCom2coId()!=null) {
+		} else if (req.getCom2coId()!=null && ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
 			CommunauteCommune com2co = communauteCommuneRepository.getReferenceById(Long.valueOf(req.getCom2coId()));
 			resp.setCom2coId(req.getCom2coId());
 			resp.setNbCarre(batchJobService.requestProcessCom2Co(com2co, requestedYear));
 			code= HttpStatus.ACCEPTED;
+			
+		} else if (! ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
+			resp.setCom2coId(req.getCom2coId());
+			resp.setCityId(req.getCityId());
+			resp.setNbCarre(0);
+			code= HttpStatus.FORBIDDEN;
 			
 		} else {
 			log.error("ComputeJobRequest without valid id: {}", req);
