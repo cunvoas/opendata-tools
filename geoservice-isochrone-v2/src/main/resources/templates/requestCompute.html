@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{fragments/fragment-head :: head(#{compute.request.title})}"></head>
+
+<body class="sb-nav-fixed">
+    <div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
+    <div id="layoutSidenav">
+        <div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-4" th:text="#{compute.request.title}">Lancement de calcul</h1>
+
+                    <ol class="breadcrumb mb-4">
+                        <li class="breadcrumb-item"><a th:href="@{/mvc/dashboard}" th:text="#{menu.abstract.dashboard}">Dashboard</a></li>
+                        <li class="breadcrumb-item active" th:text="#{compute.request.title}">Lancement</li>
+                    </ol>
+
+                    <!-- Bandeau de filtres : Région / EPCI / Ville / Année -->
+                    <div class="card mb-3 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="row g-3">
+
+                                <!-- Région -->
+                                <div class="col-md-3">
+                                    <form th:action="@{/mvc/management/compute/region}" method="post"
+                                          onchange="this.submit();" class="w-100">
+                                        <div class="form-floating">
+                                            <select class="form-select" id="idRegion" name="idRegion">
+                                                <option value="" th:text="#{compute.request.choose.region}">Région...</option>
+                                                <option th:each="r : ${regions}"
+                                                        th:value="${r.id}"
+                                                        th:text="${r.name}"
+                                                        th:selected="${form != null and r.id == form.idRegion}"></option>
+                                            </select>
+                                            <label for="idRegion"><i class="fas fa-map me-2"></i>
+                                                <span th:text="#{compute.request.region}">Région</span>
+                                            </label>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- EPCI -->
+                                <div class="col-md-3">
+                                    <form th:action="@{/mvc/management/compute/epci}" method="post"
+                                          onchange="this.submit();" class="w-100">
+                                        <fieldset th:disabled="${form == null or form.idRegion == null}">
+                                            <div class="form-floating">
+                                                <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes">
+                                                    <option value="" th:text="#{compute.request.choose.epci}">EPCI...</option>
+                                                    <option th:each="c : ${epcis}"
+                                                            th:value="${c.id}"
+                                                            th:text="${c.name}"
+                                                            th:selected="${form != null and c.id == form.idCommunauteDeCommunes}"></option>
+                                                </select>
+                                                <label for="idCommunauteDeCommunes"><i class="fas fa-building me-2"></i>
+                                                    <span th:text="#{compute.request.epci}">EPCI</span>
+                                                </label>
+                                            </div>
+                                        </fieldset>
+                                        <input type="hidden" name="idRegion" th:value="${form != null ? form.idRegion : ''}" />
+                                    </form>
+                                </div>
+
+                                <!-- Ville -->
+                                <div class="col-md-3">
+                                    <form th:action="@{/mvc/management/compute/city}" method="post" class="w-100">
+                                        <fieldset th:disabled="${form == null or form.idCommunauteDeCommunes == null}">
+                                            <div class="form-floating">
+                                                <select class="form-select" id="idCity" name="idCommune" onchange="this.submit()">
+                                                    <option value="" th:text="#{compute.request.choose.city}">Ville...</option>
+                                                    <option th:each="v : ${cities}"
+                                                            th:value="${v.id}"
+                                                            th:text="${v.name}"
+                                                            th:selected="${form != null and v.id == form.idCommune}"></option>
+                                                </select>
+                                                <label for="idCity"><i class="fas fa-city me-2"></i>
+                                                    <span th:text="#{compute.request.city}">Ville</span>
+                                                </label>
+                                            </div>
+                                        </fieldset>
+                                        <input type="hidden" name="idRegion" th:value="${form != null ? form.idRegion : ''}" />
+                                        <input type="hidden" name="idCommunauteDeCommunes" th:value="${form != null ? form.idCommunauteDeCommunes : ''}" />
+                                    </form>
+                                </div>
+
+                                <!-- Année -->
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="requestedYear" name="requestedYear">
+                                            <option value="" th:text="#{compute.request.allyears}">Toutes les années</option>
+                                            <option th:each="year : ${years}"
+                                                    th:value="${year}"
+                                                    th:text="${year}"
+                                                    th:selected="${year == defaultYear}"></option>
+                                        </select>
+                                        <label for="requestedYear"><i class="fas fa-calendar me-2"></i>
+                                            <span th:text="#{compute.request.year}">Année</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div><!-- /row -->
+                        </div><!-- /card-body -->
+                    </div><!-- /card filtres -->
+
+                    <!-- Boutons de lancement -->
+                    <sec:authorize access="hasRole('ADMINISTRATOR')">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-play me-1"></i>
+                            <span th:text="#{compute.request.launch}">Lancer un calcul</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex gap-2 align-items-center">
+                                <button id="btnComputeEpci" onclick="requestComputeEpci()" type="button" class="btn btn-outline-secondary">
+                                    <i class="fas fa-building me-1"></i><span th:text="#{compute.request.btn.epci}">Calculer l'EPCI</span>
+                                </button>
+                                <button id="btnComputeCity" onclick="requestComputeCity()" type="button" class="btn btn-outline-secondary">
+                                    <i class="fas fa-city me-1"></i><span th:text="#{compute.request.btn.city}">Calculer la ville</span>
+                                </button>
+                                <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </sec:authorize>
+
+                </div>
+            </main>
+            <div th:replace="~{fragments/fragment-footer :: footer}"></div>
+        </div>
+    </div>
+    <div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
+
+    <script th:src="@{/mvc/static/js/scripts.js}"></script>
+
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+    const endpointCompute = /*[[@{/mvc/ajax/jobs/api/request}]]*/ '/mvc/ajax/jobs/api/request';
+    const spinner = document.getElementById("computeSpinner");
+
+    function showSpinner() { if (spinner) spinner.style.display = "inline-block"; }
+    function hideSpinner() { if (spinner) spinner.style.display = "none"; }
+
+    async function doPostCompute(payload) {
+        showSpinner();
+        try {
+            let response = await fetch(endpointCompute, {
+                method: "POST",
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (response.status == 202 || response.status == 200) {
+                const content = await response.json();
+                alert("Calcul demand\u00e9 pour " + content.nbCarre + " carr\u00e9s.");
+            } else {
+                alert("Erreur lors de la demande de calcul.");
+            }
+        } catch (error) {
+            console.error("Error during compute request:", error);
+            alert("Erreur lors de la communication avec le serveur.");
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    function requestComputeEpci() {
+        const sel = document.getElementById("idCommunauteDeCommunes");
+        if (!sel || !sel.value) { alert("Veuillez s\u00e9lectionner un EPCI."); return; }
+        const yearSel = document.getElementById("requestedYear");
+        doPostCompute({
+            token: [[${token}]],
+            com2coId: sel.value,
+            requestedYear: yearSel ? (yearSel.value || null) : null
+        });
+    }
+
+    function requestComputeCity() {
+        const sel = document.getElementById("idCity");
+        if (!sel || !sel.value) { alert("Veuillez s\u00e9lectionner une ville."); return; }
+        const yearSel = document.getElementById("requestedYear");
+        doPostCompute({
+            token: [[${token}]],
+            cityId: sel.value,
+            requestedYear: yearSel ? (yearSel.value || null) : null
+        });
+    }
+    /*]]>*/
+    </script>
+</body>
+</html>

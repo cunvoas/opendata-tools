@@ -1,5 +1,16 @@
 package com.github.cunvoas.geoserviceisochrone.extern.helper;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.stream.Stream;
+
+import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -48,24 +59,24 @@ public class GitHelper {
 			throw new IllegalArgumentException("Repository root invalid or .git missing: " + repositoryRoot);
 		}
 
-		try (org.eclipse.jgit.api.Git git = org.eclipse.jgit.api.Git.open(repoDir)) {
+		try (Git git = Git.open(repoDir)) {
 			stageFolder(git, folderPath);
-			commit(git);
+			commit(git, folderPath);
 			push(git);
 		}
 	}
 
-	private void stageFolder(org.eclipse.jgit.api.Git git, String folderPath) throws Exception {
+	private void stageFolder(Git git, String folderPath) throws Exception {
 		// Ajout récursif : on parcourt les fichiers si pattern unique insuffisant
-		java.nio.file.Path base = java.nio.file.Paths.get(git.getRepository().getWorkTree().getAbsolutePath(), folderPath);
-		if (!java.nio.file.Files.exists(base)) {
+		Path base = Paths.get(git.getRepository().getWorkTree().getAbsolutePath(), folderPath);
+		if (!Files.exists(base)) {
 			throw new IllegalArgumentException("Folder does not exist: " + folderPath);
 		}
 
-		org.eclipse.jgit.api.AddCommand add = git.add();
+		AddCommand add = git.add();
 		// Ajouter chaque fichier relatif au repo
-		try (java.util.stream.Stream<java.nio.file.Path> stream = java.nio.file.Files.walk(base)) {
-			stream.filter(java.nio.file.Files::isRegularFile).forEach(p -> {
+		try (Stream<Path> stream = Files.walk(base)) {
+			stream.filter(Files::isRegularFile).forEach(p -> {
 				String rel = git.getRepository().getWorkTree().toPath().relativize(p).toString().replace('\\', '/');
 				add.addFilepattern(rel);
 			});
@@ -73,17 +84,18 @@ public class GitHelper {
 		add.call();
 	}
 
-	private void commit(org.eclipse.jgit.api.Git git) throws Exception {
-		String date = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ISO_DATE_TIME);
+	private void commit(Git git, String folderPath) throws Exception {
+		String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+		String message = String.format("chore(%s): automatic data update %s", folderPath, timestamp);
 		git.commit()
-				.setMessage("chore: data " + date)
+				.setMessage(message)
 				.setAuthor(username, username + "@local")
 				.call();
 	}
 
-	private void push(org.eclipse.jgit.api.Git git) throws Exception {
-		org.eclipse.jgit.transport.CredentialsProvider cp =
-				new org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider(username, token);
+	private void push(Git git) throws Exception {
+		CredentialsProvider cp =
+				new UsernamePasswordCredentialsProvider(username, token);
 		git.push()
 				.setRemote("origin")
 				.setCredentialsProvider(cp)

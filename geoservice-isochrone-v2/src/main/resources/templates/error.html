@@ -49,9 +49,9 @@
                     </div>
                 </main>
             </div>
-           <div th:insert="~{fragments/fragment-footer :: footer}"></div> 
+           <div th:replace="~{fragments/fragment-footer :: footer}"></div> 
         </div>
-        <div th:insert="~{fragments/fragment-jslibs :: loginPage}"></div>
+        <div th:replace="~{fragments/fragment-jslibs :: loginPage}"></div>
         <script th:src="@{/mvc/static/js/scripts.js}"></script>
     </body>
 </html>

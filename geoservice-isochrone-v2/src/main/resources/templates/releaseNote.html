@@ -4,9 +4,9 @@
 <head th:replace="~{fragments/fragment-head :: head(#{releaseNote.title})}" />
 
 <body class="sb-nav-fixed">
-	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
 	<div id="layoutSidenav">
-		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+		<div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
 
 		<div id="layoutSidenav_content">
 			<!-- debut MAIN -->
@@ -47,6 +47,46 @@
                             </div> 
                             
                             
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V2.0.5-202619
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Revue de mailing et gestion utilisateur</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V2.0.4-202612
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Moteur de calcul V4</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V2.0.3-20260530
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajout des du suivi des calculs</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="release-card timeline-item border-left">
+                                <div class="release-version badge bg-primary mb-3">
+                                    <i class="fas fa-tag me-2"></i>V2.0.2-20260529
+                                </div>
+                                <div class="release-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Ajout des données filosofil 2021</li>
+                                    </ul>
+                                </div>
+                            </div> 
                             <div class="release-card timeline-item border-left">
                                 <div class="release-version badge bg-primary mb-3">
                                     <i class="fas fa-tag me-2"></i>V2.0.1-20260512
@@ -542,12 +582,12 @@
 			</main>
 			<!-- fin MAIN -->
 
-			<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+			<div th:replace="~{fragments/fragment-footer :: footer}"></div>
 		</div>
 
 	</div>
 
-	<div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+	<div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
 
 	<script th:src="@{/mvc/static/js/scripts.js}"></script>
 	

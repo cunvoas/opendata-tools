@@ -10,6 +10,8 @@
         <span>Répartition des habitants par seuil de surface de parc et jardin public accessible</span>
       </div>
     </div>
+    <!-- Alternative textuelle pour les agents IA et l'accessibilité -->
+    <StatsTableAccessibility :villeNom="villeNom" :dataPie="dataPie" :loaded="loaded" />
   </div>
   <div v-else class="text-center">Chargement en cours...</div>
 </template>
@@ -30,6 +32,7 @@ import {
     Legend} from 'chart.js';
 import { Bar, Pie } from 'vue-chartjs';
 import { toRaw } from 'vue'
+import StatsTableAccessibility from './StatsTableAccessibility.vue';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
@@ -77,7 +80,7 @@ export default {
     return {
       dataBar:  {},
       dataPie:  {},
-      annee: 2019,
+      annee: 2021,
       loaded: false,
       villeNom: '',
       locationType: null,

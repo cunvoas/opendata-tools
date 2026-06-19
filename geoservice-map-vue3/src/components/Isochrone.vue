@@ -2,7 +2,8 @@
   <div>
     <label for="annee">Année</label>
     <select id="annee" @change="onAnnee" class="compact-select" v-model="annee">
-      <option value="2019" selected="selected">2019</option>
+      <option value="2021" selected="selected">2021</option>
+      <option value="2019">2019</option>
       <option value="2017">2017</option>
       <option value="2015">2015</option>
     </select>
@@ -397,7 +398,7 @@ export default {
       geojsonCarre: null,
       geojsonIsochrone: null,
       geojsonParcs: null,
-      annee: "2019",
+      annee: "2021",
       region: "9",
       com2co: "1",
       shareableUrl: null,

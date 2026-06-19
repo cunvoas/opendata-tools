@@ -3,9 +3,9 @@
 <head th:replace="~{fragments/fragment-head :: head(#{communautecommune.title})}"></head>
 
 <body class="sb-nav-fixed">
-	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
 	<div id="layoutSidenav">
-		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+		<div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
 
 		<div id="layoutSidenav_content">
 			<main>
@@ -103,9 +103,28 @@
 	</div> <!-- layoutSidenav -->
 	
 
-	<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+	<div th:replace="~{fragments/fragment-footer :: footer}"></div>
 
-     <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+     <div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
+
+    <script th:inline="javascript">
+        window.addEventListener('DOMContentLoaded', event => {
+            const datatablesSimple = document.getElementById('datatablesSimple');
+            if (datatablesSimple) {
+                new simpleDatatables.DataTable(datatablesSimple, {
+                    labels: {
+                        placeholder: "Rechercher...",
+                        perPage: "{select} entrées par page",
+                        noRows: "Aucune entrée trouvée",
+                        info: "Affichage de {start} à {end} sur {rows} entrées",
+                    },
+                    perPage: 25,
+                    searchable: true,
+                    sortable: true
+                });
+            }
+        });
+    </script>
 
 	<style>
 		/* Custom styles for enhanced design */

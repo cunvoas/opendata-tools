@@ -14,13 +14,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.TokenManagement;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobProgressStat;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import com.github.cunvoas.geoserviceisochrone.service.admin.CommunauteCommuneService;
+import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 
 /**
@@ -37,12 +40,20 @@ public class CommunauteCommuneControler {
 	private final CommunauteCommuneService communauteCommuneService;
 	private final ServiceReadReferences serviceReadReferences;
 	private final TokenManagement tokenManagement;
+	private final ApplicationBusinessProperties applicationBusinessProperties;
+	private final BatchJobService batchJobService;
 
 	@Autowired
-	public CommunauteCommuneControler(CommunauteCommuneService communauteCommuneService, ServiceReadReferences serviceReadReferences, TokenManagement tokenManagement) {
+	public CommunauteCommuneControler(CommunauteCommuneService communauteCommuneService, 
+			ServiceReadReferences serviceReadReferences, 
+			TokenManagement tokenManagement,
+			ApplicationBusinessProperties applicationBusinessProperties,
+			BatchJobService batchJobService) {
 		this.communauteCommuneService = communauteCommuneService;
 		this.serviceReadReferences = serviceReadReferences;
 		this.tokenManagement = tokenManagement;
+		this.applicationBusinessProperties = applicationBusinessProperties;
+		this.batchJobService = batchJobService;
 	}
 
 	/**
@@ -110,6 +121,9 @@ public class CommunauteCommuneControler {
 		
 		model.addAttribute("isAdmin", isAdmin);
 		model.addAttribute("token", tokenManagement.getValidToken());
+		model.addAttribute("years", applicationBusinessProperties.getInseeAnnees());
+		model.addAttribute("defaultYear", applicationBusinessProperties.getDerniereAnnee());
+		model.addAttribute("canPublish", false); // Pas de publication sur un nouvel élément
 		return formName;
 	}
 	
@@ -141,6 +155,19 @@ public class CommunauteCommuneControler {
 		
 		model.addAttribute("isAdmin", isAdmin);
 		model.addAttribute("token", tokenManagement.getValidToken());
+		model.addAttribute("years", applicationBusinessProperties.getInseeAnnees());
+		model.addAttribute("defaultYear", applicationBusinessProperties.getDerniereAnnee());
+		
+		// Vérification si la publication est possible pour l'année par défaut
+		boolean canPublish = false;
+		Integer defaultYear = applicationBusinessProperties.getDerniereAnnee();
+		java.util.List<ComputeJobProgressStat> stats = batchJobService.getProgressStatsEpciLevel(id, null, defaultYear);
+		if (stats != null && stats.size() == 1) {
+			ComputeJobProgressStat stat = stats.get(0);
+			canPublish = stat.getToProcess() == 0 && stat.getInProcess() == 0 && stat.getInError() == 0 && stat.getProcessed() > 0;
+		}
+		model.addAttribute("canPublish", canPublish);
+		
 		return formName;
 	}
 
@@ -189,6 +216,20 @@ public class CommunauteCommuneControler {
 		}
 		model.addAttribute("isAdmin", isAdmin);
 		model.addAttribute("token", tokenManagement.getValidToken());
+		model.addAttribute("years", applicationBusinessProperties.getInseeAnnees());
+		model.addAttribute("defaultYear", applicationBusinessProperties.getDerniereAnnee());
+		
+		// Vérification si la publication est possible pour l'année par défaut
+		boolean canPublish = false;
+		if (comm2co.getId() != null) {
+			Integer defaultYear = applicationBusinessProperties.getDerniereAnnee();
+			java.util.List<ComputeJobProgressStat> stats = batchJobService.getProgressStatsEpciLevel(comm2co.getId(), null, defaultYear);
+			if (stats != null && stats.size() == 1) {
+				ComputeJobProgressStat stat = stats.get(0);
+				canPublish = stat.getToProcess() == 0 && stat.getInProcess() == 0 && stat.getInError() == 0 && stat.getProcessed() > 0;
+			}
+		}
+		model.addAttribute("canPublish", canPublish);
 		
 		return formName;
 	}

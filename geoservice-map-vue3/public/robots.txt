@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://autmel.github.io/parcs-et-jardins/sitemap.xml

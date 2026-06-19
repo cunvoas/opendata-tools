@@ -1201,33 +1201,55 @@ public class GeoMapServiceV2 {
 			iId.setIris(irisShape.getIris());
 			Optional<IrisData> oIris = irisDataRepository.findById(iId);
 			if (oIris.isPresent()) {
-				IrisData iIris = oIris.get();
+				IrisData dataIris = oIris.get();
 
-				if (iIris.getPop()!=null) {
-					v.setPeople(formatInt(iIris.getPop()));
+				if (dataIris.getPop()!=null) {
+					v.setPeople(formatInt(dataIris.getPop()));
 				} else {
 					v.setPeople("0");
 				}
-//				if (irisShape.getSurface()!=null) {
-//					v.setSurface((irisShape.getSurface().intValue());
-//				} else {
-//					v.setSurface(0);
+
+//				// recherche des données calculées existante
+//				IrisDataComputed idc = irisDataComputedRepository.findByAnneeAndIris(annee, irisShape.getIris());
+//				if (idc!=null) {
+//					v.setPeople(formatInt(idc.getPopAll()));
+//					v.setSurfaceTotalPark(formatInt(idc.getSurfaceTotalPark()));
+//					//v.setOms(idc.getOms());
+//					//v.setDense(iIris.getIsDense());
+//                    
+//					//v.setFillColor(this.getFillColorIris(v, idc));
+//                    
+//					if (idc.getComments()!=null) {
+//						v.setCommentParks(idc.getComments());
+//					}
 //				}
+
+				// On utilise les données brutes d'INSEE (IrisData) si disponibles. Si idc fournit une population totale
+				// plus pertinente on la privilégie pour le total.
+				BigDecimal totalPop = (dataIris.getPop()!=null?dataIris.getPop():BigDecimal.ZERO);
+
+				// pop 0-17 : somme des classes d'âge 0-2,3-5,6-10,11-17
+				BigDecimal pop0to17 = 
+						    (dataIris.getPop0002()!=null?dataIris.getPop0002():BigDecimal.ZERO)
+						.add(dataIris.getPop0305()!=null?dataIris.getPop0305():BigDecimal.ZERO)
+						.add(dataIris.getPop0610()!=null?dataIris.getPop0610():BigDecimal.ZERO)
+						.add(dataIris.getPop1117()!=null?dataIris.getPop1117():BigDecimal.ZERO);
+
+
+				// pop 18-64 : somme des classes d'âge pertinentes 
+				BigDecimal pop18to65 = 
+						    (dataIris.getPop1824()!=null?dataIris.getPop1824():BigDecimal.ZERO)
+						.add(dataIris.getPop2539()!=null?dataIris.getPop2539():BigDecimal.ZERO)
+						.add(dataIris.getPop4054()!=null?dataIris.getPop4054():BigDecimal.ZERO)
+						.add(dataIris.getPop5564()!=null?dataIris.getPop5564():BigDecimal.ZERO);
+
+				// pop 65+
+				BigDecimal pop65p = dataIris.getPop65p()!=null?dataIris.getPop65p():BigDecimal.ZERO;
 				
-				// recherche des données calculées existante
-				IrisDataComputed idc = irisDataComputedRepository.findByAnneeAndIris(annee, irisShape.getIris());
-				if (idc!=null) {
-					v.setPeople(formatInt(idc.getPopAll()));
-					v.setSurfaceTotalPark(formatInt(idc.getSurfaceTotalPark()));
-					//v.setOms(idc.getOms());
-					//v.setDense(iIris.getIsDense());
-					
-					//v.setFillColor(this.getFillColorIris(v, idc));
-					
-					if (idc.getComments()!=null) {
-						v.setCommentParks(idc.getComments());
-					}
-				}
+				v.setPopulationTotal(formatInt(totalPop));
+				v.setPop0to17(formatInt(pop0to17));
+				v.setPop18to65(formatInt(pop18to65));
+				v.setPop65Plus(formatInt(pop65p));
 			
 				
 			}
