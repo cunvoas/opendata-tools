@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",
-    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitejs/plugin-vue": "^6.0.7",
     "@vitest/coverage-v8": "^4.1.4",
     "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vue/cli-plugin-router": "~5.0.0",
@@ -44,9 +44,9 @@
     "sass-embedded": "^1.80.6",
     "sonarqube-scanner": "^4.2.3",
     "tailwindcss": "^3.4.18",
-    "vite": "^6.4.1",
+    "vite": "^8.0.16",
     "vite-plugin-prerender": "^1.0.8",
-    "vite-plugin-pwa": "^1.2.0",
+    "vite-plugin-pwa": "^1.3.0",
     "vite-plugin-static-copy": "^4.1.0",
     "vitest": "^4.1.4"
   }
