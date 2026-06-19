@@ -39,7 +39,7 @@ public interface Filosofil200mRepository extends JpaRepository< Filosofil200m,  
 	 * @return list Filosofil200m
 	 */
 	@Query(nativeQuery = true, 
-			   value = "SELECT fi.* FROM carre200shape cs inner join filosofi_200m fi on fi.annee=:annee and cs.id_carre_hab=fi.idcar_200m "
+			   value = "SELECT fi.* FROM carre200onlyshape cs inner join filosofi_200m fi on fi.annee=:annee and cs.id_inspire=fi.idcar_200m "
 				+ "WHERE ST_Intersects(cs.geo_shape, :polygon)")
 	List<Filosofil200m> getAllCarreInMap(@Param("polygon")String polygon, @Param("annee")Integer annee);
 	

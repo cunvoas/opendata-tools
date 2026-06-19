@@ -105,7 +105,7 @@ public class ServicePublicationExporter {
 		File file = new File(path);
 		file.mkdirs();
 		
-		// check if park data are changed !
+		// check if park data was changed !
 		// TODO
 		
 		GeoJsonRoot geojson = geoMapServiceV2.findAllIrisByCommunauteCommune(com2co, annee);

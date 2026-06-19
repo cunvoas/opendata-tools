@@ -1,0 +1,37 @@
+# Parcs & Jardins – Analyse géographique MEL
+
+Cette application cartographique interactive analyse l'accès aux parcs, jardins et espaces verts dans la Métropole Européenne de Lille (MEL), selon les standards de l'Organisation mondiale de la santé (OMS).
+
+## Objectifs
+L'objectif est de permettre aux habitants de visualiser sur une carte les parcs et jardins accessibles à pied. L'application identifie les territoires respectant les préconisations de l'OMS :
+- **Surface minimale** : 10 m²/habitant en zone urbaine, 25 m²/habitant en zone périurbaine.
+- **Accessibilité** : 5 minutes à pied (300m) en ville, 20 minutes (1200m) à la campagne.
+
+## Parcs et Jardins inclus
+L'application se concentre sur les espaces verts publics de proximité (détente, promenade, jeux). Elle exclut explicitement des calculs de surface :
+- Les cimetières
+- Les bosquets isolés
+- Les places minéralisées
+*Note : Ces lieux apparaissent sur la carte avec une croix et leur nom, mais leur surface n'est pas comptabilisée pour rester cohérent avec les critères de santé de l'OMS.*
+
+## Fonctionnement de l'algorithme
+L'application utilise une méthodologie rigoureuse pour évaluer la couverture :
+1. **Source des données** : OpenData (villes et MEL) enrichi par un recensement collaboratif des entrées de parcs.
+2. **Calcul d'isochrone** : Utilisation du service de l'IGN pour déterminer les zones atteignables à pied depuis chaque entrée.
+3. **Analyse démographique** : Croisement avec les données carroyées de l'INSEE (carreaux de 200m x 200m) pour estimer la population couverte au prorata de la surface d'intersection.
+4. **Indicateur de densité** : Calcul du ratio m²/habitant basé sur la surface totale des parcs accessibles à une population donnée.
+
+## Lexique Technique (Thésaurus)
+- **Isochrone** : Zone atteignable à pied en un temps donné depuis un point d'entrée. 
+- **Carreau INSEE** : Maille de 200m × 200m utilisée pour agréger les données de population.
+- **m² / habitant** : Ratio entre la surface totale des parcs accessibles et la population couverte par les isochrones.
+
+## Technologies et Sources
+- **Cartographie** : Leaflet, Vue 3, Tailwind CSS.
+- **Données** : IGN (isochrones), INSEE (population et densité), Gouvernement (cadastre), OpenData MEL.
+- **Licence** : Opensource sous licence ****.
+
+## Liens Utiles
+- **Site web** : https://autmel.github.io/parcs-et-jardins/
+- **Code source** : https://github.com/cunvoas/opendata-tools
+

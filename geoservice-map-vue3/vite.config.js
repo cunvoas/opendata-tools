@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import fs from 'fs'
+import path from 'path'
+// import VitePrerender from 'vite-plugin-prerender' // Temporairement désactivé cause bug ESM
 
 // Plugin to generate version.json from package.json
 const versionPlugin = {
@@ -99,7 +101,20 @@ export default defineConfig({
           }
         ]
       }
-    })
+    }),
+    /* VitePrerender({
+      staticDir: path.join(__dirname, 'dist'),
+      routes: ['/', '/stats', '/map', '/methodo', '/info'],
+      postProcess(renderedRoute) {
+        // Optimize for LLMs: Ensure any sr-only tables are visible or better marked
+        renderedRoute.html = renderedRoute.html.replace(
+          'class="sr-only"',
+          'class="sr-only-hidden-from-visual-but-visible-to-ai" style="display:none !important;"'
+        );
+        return renderedRoute;
+      },
+      puppeteerArgs: ['--no-sandbox', '--disable-setuid-sandbox'],
+    }), */
   ],
   build: {
     target: "ES2022"

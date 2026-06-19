@@ -8,6 +8,13 @@
     <artifactId>dbf2csv</artifactId>
     <version>1.0.0</version>
 
+    <licenses>
+        <license>
+            <name>GNU Affero General Public License v3.0</name>
+            <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
+        </license>
+    </licenses>
+
 
     <properties>
         <java.version>11</java.version>

@@ -59,7 +59,7 @@ class TestIrisApplication {
 	@Disabled
 	void addIrisJob() {
 		try {
-			int nb = batchJobService.requestProcessCity("59350");
+			int nb = batchJobService.requestProcessCity("59350", null);
 			assertNotEquals(0, nb, "no job add");
 
 		} catch (Exception e) {

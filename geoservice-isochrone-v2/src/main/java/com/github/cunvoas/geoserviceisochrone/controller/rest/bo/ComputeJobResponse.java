@@ -6,6 +6,7 @@ import lombok.Data;
 public class ComputeJobResponse extends ComputeJobRequest {
 	private Integer nbCarre;
 	private Integer nbIris;
+	private boolean canPublish;
 	
 	public ComputeJobResponse(ComputeJobRequest reg) {
 		this.setCom2coId(reg.getCom2coId());

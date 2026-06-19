@@ -36,5 +36,15 @@ public class IrisView extends GeoJsonProperty {
 	
 	private String areaPerPeople="";
 	private String area="";
+
+	// Données agrégées issues de IrisData
+	/** population totale (issue de IrisData.pop) */
+	private String populationTotal = "";
+	/** population 0-18 ans (somme des classes d'âge correspondantes) */
+	private String pop0to17 = "";
+	/** population 18-64 ans (somme des classes d'âge correspondantes) */
+	private String pop18to65 = "";
+	/** population 65 ans et plus */
+	private String pop65Plus = "";
 	
 }

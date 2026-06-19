@@ -460,6 +460,7 @@ FROM public.carre200onlyshape
 WHERE code_insee='59346'
 
  */
+			
 			// v'ascq
 			//computeServiceV2.computeCarreByInseeCode("59009");
 //			computeServiceV2.computeCarreByInseeCode("59328");
@@ -488,6 +489,7 @@ WHERE code_insee='59346'
 	void computeParkAreAndEntranceFix() {
 
 		try {
+			
 			computeService.refreshParkEntrances("59350");
 			computeService.refreshParkEntrances("59328");
 			computeService.refreshParkEntrances("59128");

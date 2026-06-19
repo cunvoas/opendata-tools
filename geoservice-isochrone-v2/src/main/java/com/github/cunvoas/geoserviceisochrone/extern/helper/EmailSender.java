@@ -98,7 +98,7 @@ public class EmailSender {
 			String tpl = readTemplate("passwordByAdmin.htm");
 			String msg = applyData(tpl, values);
 			
-			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"/logo-autmel_150.png");
+			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"logo-autmel_150.png");
 			String logoFile = Paths.get(f.getAbsolutePath()).toString();
 			
 			EmailToContributor toSend = new EmailToContributor();
@@ -137,7 +137,7 @@ public class EmailSender {
 			String tpl = readTemplate("password.htm");
 			String msg = applyData(tpl, values);
 			
-			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"mailjet/logo-autmel.png");
+			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"logo-autmel.png");
 			String logoFile = Paths.get(f.getAbsolutePath()).toString();
 			
 			EmailToContributor toSend = new EmailToContributor();
@@ -175,7 +175,7 @@ public class EmailSender {
 			String tpl = readTemplate("welcome.htm");
 			String msg = applyData(tpl, values);
 
-			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"mailjet/logo-autmel.png");
+			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"logo-autmel_150.png");
 			String logoFile = Paths.get(f.getAbsolutePath()).toString();
 			
 			

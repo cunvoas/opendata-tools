@@ -4,9 +4,9 @@
 <head th:replace="~{fragments/fragment-head :: head(#{videoHelp.title})}" />
 
 <body class="sb-nav-fixed">
-	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
 	<div id="layoutSidenav">
-		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+		<div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
 
 		<div id="layoutSidenav_content">
 			<!-- debut MAIN -->
@@ -41,15 +41,15 @@
 
 
 				</div>
-			</main>
-			<!-- fin MAIN -->
+		</main>
+		<!-- fin MAIN -->
 
-			<div th:insert="~{fragments/fragment-footer :: footer}"></div>
-		</div>
+		<div th:replace="~{fragments/fragment-footer :: footer}"></div>
+	</div>
 
 	</div>
 
-	<div th:insert="~{fragments/fragment-jslibs :: appVideo}"></div>
+	<div th:replace="~{fragments/fragment-jslibs :: appVideo}"></div>
 
 	<script th:src="@{/mvc/static/js/scripts.js}"></script>
 </body>

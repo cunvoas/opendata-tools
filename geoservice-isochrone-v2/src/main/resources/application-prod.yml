@@ -54,6 +54,8 @@ application:
     salaryAnalysisEnabled: false
     pollutionAnalysisEnabled: false
     isochrone-impl: ign-api-v2
+    carre200m-impl: v3
+    iris-impl: v3
     
   admin:
     photo-path: ${MOUNT_PATH}/isochrone/photo
