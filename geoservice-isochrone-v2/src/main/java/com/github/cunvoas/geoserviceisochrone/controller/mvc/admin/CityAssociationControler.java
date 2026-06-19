@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.TokenManagement;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
@@ -36,11 +38,18 @@ public class CityAssociationControler {
 
 	private final CityAssociationService cityAssociationService;
 	private final ServiceReadReferences serviceReadReferences;
+	private final ApplicationBusinessProperties applicationBusinessProperties;
+	private final TokenManagement tokenManagement;
 
 	@Autowired
-	public CityAssociationControler(CityAssociationService cityAssociationService, ServiceReadReferences serviceReadReferences) {
+	public CityAssociationControler(CityAssociationService cityAssociationService, 
+			ServiceReadReferences serviceReadReferences,
+			ApplicationBusinessProperties applicationBusinessProperties,
+			TokenManagement tokenManagement) {
 		this.cityAssociationService = cityAssociationService;
 		this.serviceReadReferences = serviceReadReferences;
+		this.applicationBusinessProperties = applicationBusinessProperties;
+		this.tokenManagement = tokenManagement;
 	}
 
 	/**
@@ -58,7 +67,7 @@ public class CityAssociationControler {
 		
 		// Si non-admin, rediriger directement vers la page d'édition
 		if (!isAdmin) {
-			return "redirect:/mvc/management/cityassoc/edit";
+			return "redirect:/mvc/dashboard";
 		}
 		
 		// Si aucune région n'est spécifiée, utiliser la région du profil de l'admin
@@ -157,6 +166,7 @@ public class CityAssociationControler {
 		model.addAttribute("selectedRegionId", regionId);
 		model.addAttribute("isAdmin", isAdmin);
 		model.addAttribute("readOnly", readOnly);
+		model.addAttribute("token", tokenManagement.getValidToken());
 		
 		return formName;
 	}

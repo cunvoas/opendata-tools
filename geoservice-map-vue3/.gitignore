@@ -2,7 +2,6 @@
 # push build for github pages
 dist
 node_modules
-public
 .git
 
 

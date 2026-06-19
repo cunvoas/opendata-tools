@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head th:replace="~{fragments/fragment-head :: head(#{proposal.title})}"></head>
+
 <body class="sb-nav-fixed">
-<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
-<div id="layoutSidenav">
-  <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
-  <div id="layoutSidenav_content">
+	<div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+ 		<div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+    <div id="layoutSidenav_content">
     <main>
       <div class="container-fluid">
         <h4 class="mt-3">Proposition de parcs et jardin</h4>
@@ -263,8 +265,8 @@
   </div>
 </div>
 
-<div th:insert="~{fragments/fragment-footer :: footer}"></div>
-<div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
+<div th:replace="~{fragments/fragment-footer :: footer}"></div>
+<div th:replace="~{fragments/fragment-jslibs :: newMap}"></div>
 <script th:src="@{/mvc/static/js/scripts.js}"></script>
 
 <style>

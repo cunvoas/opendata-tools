@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org"
-	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
 <head th:replace="~{fragments/fragment-head :: head(#{dashboard.title})}" />
 
 <body class="sb-nav-fixed">
-	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
 	<div id="layoutSidenav">
-		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+		<div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
 
 		<div id="layoutSidenav_content">
 			<!-- debut MAIN -->
@@ -266,25 +265,26 @@
 						</div>
 						
 						
-                        <div class="col-sm-3 col-md-3 col-lg-3">
-                            <div
-                                class="card bg-info text-white  border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col-auto">
-                                            <i class="fas fa-clock fa-2x text-gray-300"></i>
-                                        </div>
-                                        <div class="col mr-2">
-                                            <div
-                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
-                                                th:text="#{association.nbComputeJobPending}">
-                                                nbComputeJobPending</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                th:text="${#numbers.formatInteger(dashboard.nbComputeJobPending, 1, 'POINT')}"></div>
+                        <div class="col-sm-3 col-md-3 col-lg-3" sec:authorize="hasAuthority('ADMINISTRATOR')">
+                            <a th:href="@{/mvc/management/jobs/progress}" style="text-decoration: none;">
+                                <div class="card bg-info text-white shadow h-100 py-2 border-left-primary">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col-auto">
+                                                <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                            </div>
+                                            <div class="col mr-2">
+                                                <div
+                                                    class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+                                                    th:text="#{association.nbComputeJobPending}">
+                                                    nbComputeJobPending</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800"
+                                                    th:text="${#numbers.formatInteger(dashboard.nbComputeJobPending, 1, 'POINT')}"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                                         
 
@@ -315,12 +315,12 @@
 			</main>
 			<!-- fin MAIN -->
 
-			<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+			<div th:replace="~{fragments/fragment-footer :: footer}"></div>
 		</div>
 
 	</div>
 
-	<div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+	<div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
 
 	<script th:src="@{/mvc/static/js/scripts.js}"></script>
 

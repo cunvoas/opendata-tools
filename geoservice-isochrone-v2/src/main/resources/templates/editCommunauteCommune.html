@@ -5,9 +5,9 @@
     <head th:replace="~{fragments/fragment-head :: head(#{communautecommune.title})}"></head>
     
     <body class="sb-nav-fixed">
-        <div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+        <div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
         <div id="layoutSidenav">
-            <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+            <div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
 
             <div id="layoutSidenav_content" >
  <!-- debut MAIN -->
@@ -68,9 +68,24 @@
                 <div class="row mt-3" th:if="${editCommunauteCommune.id != null}">
                     <div class="col-12">
                         <sec:authorize access="hasRole('ADMINISTRATOR')">
-                            <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.compute}">Calculer</button>
-                            <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
-                                <span class="visually-hidden">Loading...</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="form-floating" style="min-width: 200px;">
+                                    <select class="form-select" id="requestedYear" name="requestedYear">
+                                        <option value="" th:text="#{cityassociation.edit.allyears}">Toutes</option>
+                                        <option th:each="year : ${years}" 
+                                                th:value="${year}" 
+                                                th:text="${year}"
+                                                th:selected="${year == defaultYear}"></option>
+                                    </select>
+                                    <label for="requestedYear" th:text="#{cityassociation.edit.chooseyear}">Année</label>
+                                </div>
+                                <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.compute}">Calculer</button>
+                                
+                                <button id="btnPublish" onclick="requestPublish()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.publish}" th:disabled="${!canPublish}">Publier</button>
+                                
+                                <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
                             </div>
                         </sec:authorize>
                     </div>
@@ -83,20 +98,51 @@
                 </main>
  <!-- fin MAIN -->
                
-               <div th:insert="~{fragments/fragment-footer :: footer}"></div> 
+               <div th:replace="~{fragments/fragment-footer :: footer}"></div> 
             </div>
             
         </div>
-        <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+        <div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
 
         <script th:src="@{/mvc/static/js/scripts.js}"></script>
         
         <script th:inline="javascript">
         /*<![CDATA[*/
-        async function doPost(requestPrms) {
+        // Listener pour le changement d'année
+        document.getElementById("requestedYear").addEventListener("change", checkPublishStatus);
+
+        async function checkPublishStatus() {
+            const com2coId = document.getElementById("id").value;
+            if (!com2coId) return;
+
+            const requestedYear = document.getElementById("requestedYear").value || null;
             const payload = {
                 token: [[${token}]],
-                com2coId: requestPrms
+                com2coId: com2coId,
+                requestedYear: requestedYear
+            };
+
+            try {
+                let response = await fetch([[@{/mvc/ajax/publish/api/status}]], {
+                    method: "POST",
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    const status = await response.json();
+                    document.getElementById("btnPublish").disabled = !status.canPublish;
+                }
+            } catch (error) {
+                console.error("Error checking publish status:", error);
+            }
+        }
+
+        async function doPostCompute(requestPrms, requestedYear) {
+            const payload = {
+                token: [[${token}]],
+                com2coId: requestPrms,
+                requestedYear: requestedYear
             };
         
             let rawResponse = await fetch([[@{/mvc/ajax/jobs/api/request}]], {
@@ -118,6 +164,8 @@
                 const content = await rawResponse.json();
                 alert("Calcul demandé pour " + content.nbCarre + " carrés.");
             }
+            // Re-vérifier l'état de publication après un calcul
+            checkPublishStatus();
         }
         
         function requestCompute() {
@@ -134,8 +182,60 @@
                 objBtnCompute.classList.remove('btn-outline-secondary');
                 objBtnCompute.classList.add('btn-secondary');
                 
+                const requestedYear = document.getElementById("requestedYear").value || null;
+                
                 // async call controler compute
-                this.doPost(document.getElementById("id").value);
+                this.doPostCompute(document.getElementById("id").value, requestedYear);
+            }
+        }
+        
+
+        async function doPostPublish(requestPrms, requestedYear) {
+            const payload = {
+                token: [[${token}]],
+                com2coId: requestPrms,
+                requestedYear: requestedYear
+            };
+        
+            let rawResponse = await fetch([[@{/mvc/ajax/publish/api/request}]], {
+                method: "POST", 
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            // Masquer le spinner
+            document.getElementById("computeSpinner").style = "display:none;";
+            const objBtnCompute = document.getElementById("btnPublish");
+            objBtnCompute.classList.remove('btn-secondary');
+            objBtnCompute.classList.add('btn-outline-secondary');
+            
+            if ( rawResponse.status == 202 || rawResponse.status == 200 )  {
+                const content = await rawResponse.json();
+                alert("Publication demandée pour " + content.nbCarre + " carrés.");
+            }
+        }
+        
+        function requestPublish() {
+            console.log("requestPublish");
+            if (document.getElementById("id").value === "" ) {
+                console.log("requestPublish hasError");
+                return;
+            } else {
+                console.log("requestPublish no hasError");
+                
+                // Afficher le spinner
+                document.getElementById("computeSpinner").style = "display:inline-block;";
+                const objBtnCompute = document.getElementById("btnPublish");
+                objBtnCompute.classList.remove('btn-outline-secondary');
+                objBtnCompute.classList.add('btn-secondary');
+                
+                const requestedYear = document.getElementById("requestedYear").value || null;
+                
+                // async call controler compute
+                this.doPostPublish(document.getElementById("id").value, requestedYear);
             }
         }
         /*]]>*/

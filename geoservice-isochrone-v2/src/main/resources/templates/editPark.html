@@ -3,9 +3,9 @@
 <head th:replace="~{fragments/fragment-head :: head(#{park.edit.title})}"></head>
 
 <body class="sb-nav-fixed">
-	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
 	<div id="layoutSidenav">
-		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+		<div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
 		<div id="layoutSidenav_content">
 		<main>
 		<div class="container">
@@ -264,6 +264,13 @@
                     </div>
                 </div>
             </div>
+            <div class="col">
+                <div class="card border" style="text-align: center">
+                    <sec:authorize access="hasRole('ADMINISTRATOR')">
+                        <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{park.new.requestCompute}">Calculer le parc</button>
+                    </sec:authorize>
+                </div>
+            </div>
             
         </div>
         
@@ -310,9 +317,9 @@
 	</div> <!-- layoutSidenav -->
 	
 
-	<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+	<div th:replace="~{fragments/fragment-footer :: footer}"></div>
 
-	<div th:insert="~{fragments/fragment-jslibs :: appMap}"></div>
+	<div th:replace="~{fragments/fragment-jslibs :: appMap}"></div>
 
 
 	<script th:src="@{/mvc/static/js/scripts.js}"></script>
@@ -488,8 +495,37 @@
         }
     }
     manageDisabled();
-	
-</script>
-
-</body>
-</html>
+    
+    // ========== CALCUL DU PARC - requestCompute() ==========
+    async function doPost(requestPrms) {
+        const payload = {
+            token: [[${token}]],
+            parkId: requestPrms
+        };
+        
+        let rawResponse = await fetch([[@{/mvc/ajax/jobs/api/request}]], {
+            method: "POST", 
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (rawResponse.status == 202 || rawResponse.status == 200) {
+            const content = await rawResponse.json();
+            alert("Calcul demandé pour " + content.nbCarre + " carrés.");
+        }
+    }
+    
+    function requestCompute() {
+        console.log("requestCompute");
+        if (document.getElementById("idPark").value === "") {
+            console.log("requestCompute hasError - no park ID");
+            return;
+        } else {
+            console.log("requestCompute no hasError");
+            // async call to controller compute
+            this.doPost(document.getElementById("idPark").value);
+        }
+    }

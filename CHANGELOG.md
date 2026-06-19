@@ -1,7 +1,26 @@
 # Changelog
 
 
+## V2.0.5 - 2026-06.19
 
+ - Revue de mailing et gestion utilisateur
+ 
+## V2.0.4 - 2026-06.12
+
+ - Moteur de calcul V4
+ 
+## V2.0.3 - 2026-05-30
+
+ - Ajout des du suivi des calculs
+ 
+## V2.0.2 - 2026-05-29
+
+ - Ajout des données filosofil 2021
+ 
+## V2.0.1 - 2026-05-12
+
+ - Correction de la fonction couleur en simulation
+    
 ## V2.0.0 - 2026-05-02
 
  - Migration technique
