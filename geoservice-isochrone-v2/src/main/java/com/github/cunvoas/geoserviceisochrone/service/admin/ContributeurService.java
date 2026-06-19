@@ -100,6 +100,14 @@ public class ContributeurService {
 		return oUser;
 	}
 	
+	/**
+	 * delete Contributeur by id.
+	 * @param id Contributeur
+	 */
+	public void delete(Long id) {
+		contributeurRepository.deleteById(id);
+	}
+
 	public void updateLoginDate(Contributeur contributeur) {
 		contributeur.setLastLoginDate(new Date());
 		contributeurRepository.save(contributeur);
