@@ -1,7 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.extern.helper;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,8 +18,6 @@ import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
-
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionAdmin;
 import com.github.cunvoas.geoserviceisochrone.model.tools.EmailToContributor;
@@ -98,8 +95,7 @@ public class EmailSender {
 			String tpl = readTemplate("passwordByAdmin.htm");
 			String msg = applyData(tpl, values);
 			
-			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"logo-autmel_150.png");
-			String logoFile = Paths.get(f.getAbsolutePath()).toString();
+			String logoFile = resolveLogo("logo-autmel_150.png");
 			
 			EmailToContributor toSend = new EmailToContributor();
 			toSend.setEmail(email);
@@ -109,11 +105,8 @@ public class EmailSender {
 			
 			mailjetSender.send(toSend);
 			
-		} catch (FileNotFoundException e) {
-			log.error("logo not found");
-			throw new ExceptionAdmin("logo not found");
 		} catch (IOException e) {
-			log.error("logo not found");
+			log.error("logo not found", e);
 			throw new ExceptionAdmin("logo not found");
 		} catch (MailjetException e) {
 			log.error("MailjetException", e);
@@ -137,8 +130,7 @@ public class EmailSender {
 			String tpl = readTemplate("password.htm");
 			String msg = applyData(tpl, values);
 			
-			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"logo-autmel.png");
-			String logoFile = Paths.get(f.getAbsolutePath()).toString();
+			String logoFile = resolveLogo("logo-autmel.png");
 			
 			EmailToContributor toSend = new EmailToContributor();
 			toSend.setEmail(email);
@@ -148,11 +140,8 @@ public class EmailSender {
 			
 			mailjetSender.send(toSend);
 			
-		} catch (FileNotFoundException e) {
-			log.error("logo not found");
-			throw new ExceptionAdmin("logo not found");
 		} catch (IOException e) {
-			log.error("logo not found");
+			log.error("logo not found", e);
 			throw new ExceptionAdmin("logo not found");
 		} catch (MailjetException e) {
 			log.error("MailjetException", e);
@@ -175,9 +164,7 @@ public class EmailSender {
 			String tpl = readTemplate("welcome.htm");
 			String msg = applyData(tpl, values);
 
-			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"logo-autmel_150.png");
-			String logoFile = Paths.get(f.getAbsolutePath()).toString();
-			
+			String logoFile = resolveLogo("logo-autmel_150.png");
 			
 			EmailToContributor toSend = new EmailToContributor();
 			toSend.setEmail(email);
@@ -187,11 +174,8 @@ public class EmailSender {
 			
 			mailjetSender.send(toSend);
 			
-		} catch (FileNotFoundException e) {
-			log.error("logo not found", e);
-			throw new ExceptionAdmin("ERR_EMAIL_ERROR");
 		} catch (IOException e) {
-			log.error("logo inaccessible", e);
+			log.error("logo not found", e);
 			throw new ExceptionAdmin("ERR_EMAIL_ERROR");
 		} catch (MailjetException e) {
 			log.error("Mailjet error", e.getMessage());
@@ -208,9 +192,6 @@ public class EmailSender {
 			byte[] bytes = Files.readAllBytes(theTpl);
 			return new String(bytes, Charset.forName("UTF8"));
 			
-		} catch (FileNotFoundException e) {
-			log.error("template not found", e);
-			throw new ExceptionAdmin("ERR_EMAIL_ERROR");
 		} catch (IOException e) {
 			log.error("template not readable", e);
 			throw new ExceptionAdmin("ERR_EMAIL_ERROR");
@@ -234,6 +215,30 @@ public class EmailSender {
 		return ret;
 	}
 	
-	
+	/**
+	 * Résout le chemin d'un logo : d'abord sur le filesystem (chemin configuré),
+	 * puis copie depuis le classpath vers un fichier temporaire (compatible JAR).
+	 * @param logoName nom du fichier logo
+	 * @return chemin absolu du logo
+	 * @throws IOException si introuvable
+	 */
+	private String resolveLogo(String logoName) throws IOException {
+		File f = new File(applicationBusinessProperties.getMailjetAttachementPath(), logoName);
+		if (f.exists() && f.canRead()) {
+			return f.getAbsolutePath();
+		}
+		log.warn("logo not found on fs, copying from classpath: {}", f.getAbsolutePath());
+		try (var in = getClass().getClassLoader().getResourceAsStream("mailjet/" + logoName)) {
+			if (in == null) {
+				log.error("logo not found on classpath: mailjet/{}", logoName);
+				throw new IOException("logo not found: " + logoName);
+			}
+			Path tmp = Files.createTempFile("autmel-", logoName);
+			Files.copy(in, tmp, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			tmp.toFile().deleteOnExit();
+			log.info("logo extracted to tmp: {}", tmp);
+			return tmp.toAbsolutePath().toString();
+		}
+	}
 
 }

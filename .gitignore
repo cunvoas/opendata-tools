@@ -13,6 +13,7 @@ target
 **/*-rep.yml
 **/*-nuc.yml
 **/*-pi_nuc.yml
+**/*-secret.yml
 **/:wq
 **/secret.env
 **/.env
