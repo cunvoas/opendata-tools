@@ -68,6 +68,14 @@ public interface InseeCarre200mOnlyShapeRepository extends JpaRepository<InseeCa
 	List<InseeCarre200mOnlyShape> findCarreInMapArea(Geometry geometry, Boolean withPop);
 
 	/**
+	 * Compte le nombre de carré d'une commune.
+	 * @param codeInsee
+	 * @return
+	 */
+	@Query(nativeQuery = true, value =  "SELECT count(*) FROM carre200onlyshape WHERE code_insee like ?1")
+	Integer count(String codeInsee);
+	
+	/**
 	 * getSurface.
 	 * @param polygon shape
 	 * @return surface of shape

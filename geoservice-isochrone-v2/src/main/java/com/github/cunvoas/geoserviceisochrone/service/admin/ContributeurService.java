@@ -100,6 +100,14 @@ public class ContributeurService {
 		return oUser;
 	}
 	
+	/**
+	 * delete Contributeur by id.
+	 * @param id Contributeur
+	 */
+	public void delete(Long id) {
+		contributeurRepository.deleteById(id);
+	}
+
 	public void updateLoginDate(Contributeur contributeur) {
 		contributeur.setLastLoginDate(new Date());
 		contributeurRepository.save(contributeur);
@@ -118,7 +126,7 @@ public class ContributeurService {
 		String myPassword="";
 		
 		Contributeur toBeSaved = null;
-		Optional<Contributeur> oUser = Optional.of(new Contributeur());
+		Optional<Contributeur> oUser = Optional.empty();
 		if (contributeur.getId()!=null) {
 			oUser = contributeurRepository.findById(contributeur.getId());
 		}
@@ -166,11 +174,12 @@ public class ContributeurService {
 				if (!passwordService.isSafe(contributeur.getPassword())) {
 					throw new ExceptionAdmin(ExceptionAdmin.RG_PWD_NOT_SAFE);
 				}
+				newPassword=true;
+				// clone the password
+				myPassword = String.valueOf(contributeur.getPassword());
 				toBeSaved.setPassword(
 						passwordService.securizePassword(contributeur.getPassword())
 					);
-				newPassword=true;
-				myPassword = contributeur.getPassword();
 			} else {
 				pwdGenNeeded=true;
 			}

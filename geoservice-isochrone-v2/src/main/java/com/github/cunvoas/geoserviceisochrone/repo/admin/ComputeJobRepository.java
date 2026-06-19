@@ -65,6 +65,88 @@ public interface ComputeJobRepository extends JpaRepository<ComputeJob, InseeCar
     		value="SELECT count(id_inspire), status, insee FROM public.compute_job WHERE insee=:codeInsee group by status, insee order by status" )
     List<Object[]> getStatsByCodeInsee(@Param("codeInsee") String codeInsee);
     
+    @Query(nativeQuery=true,
+            value = "SELECT " +
+                    "  epci.name as epciName, " +
+                    "  c.name as cityName, " +
+                    "  all_jobs.annee, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 0 THEN 1 END) as toProcess, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 1 THEN 1 END) as inProcess, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 2 THEN 1 END) as processed, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 3 THEN 1 END) as inError " +
+                    "FROM ( " +
+                    "  SELECT annee, status, insee FROM public.compute_job " +
+                    "  UNION ALL " +
+                    "  SELECT annee, status, insee FROM public.compute_iris_job " +
+                    ") all_jobs " +
+                    "JOIN public.city c ON all_jobs.insee = c.insee_code " +
+                    "LEFT JOIN public.adm_com2commune epci ON c.id_comm2co = epci.id " +
+                    "GROUP BY epci.name, c.name, all_jobs.annee " +
+                    "ORDER BY epci.name, c.name, all_jobs.annee")
+    List<Object[]> getGroupedProgressStats();
+
+    /**
+     * Statistiques d'avancement agrégées au niveau VILLE avec filtres optionnels.
+     * Utilisé quand une commune est sélectionnée, ou en vue générale avec filtre région/EPCI/année.
+     */
+    @Query(nativeQuery=true,
+            value = "SELECT " +
+                    "  epci.name as epciName, " +
+                    "  c.name as cityName, " +
+                    "  all_jobs.annee, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 0 THEN 1 END) as toProcess, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 1 THEN 1 END) as inProcess, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 2 THEN 1 END) as processed, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 3 THEN 1 END) as inError " +
+                    "FROM ( " +
+                    "  SELECT annee, status, insee FROM public.compute_job " +
+                    "  UNION ALL " +
+                    "  SELECT annee, status, insee FROM public.compute_iris_job " +
+                    ") all_jobs " +
+                    "JOIN public.city c ON all_jobs.insee = c.insee_code " +
+                    "LEFT JOIN public.adm_com2commune epci ON c.id_comm2co = epci.id " +
+                    "WHERE (:idCommune IS NULL OR c.id = :idCommune) " +
+                    "  AND (:idEpci    IS NULL OR c.id_comm2co = :idEpci) " +
+                    "  AND (:idRegion  IS NULL OR epci.id_region = :idRegion) " +
+                    "  AND (:annee     IS NULL OR all_jobs.annee = :annee) " +
+                    "GROUP BY epci.name, c.name, all_jobs.annee " +
+                    "ORDER BY epci.name, c.name, all_jobs.annee")
+    List<Object[]> getProgressStatsCityLevel(
+            @Param("idCommune") Long idCommune,
+            @Param("idEpci")    Long idEpci,
+            @Param("idRegion")  Long idRegion,
+            @Param("annee")     Integer annee);
+
+    /**
+     * Statistiques d'avancement agrégées au niveau EPCI (sans détail par ville).
+     * Utilisé quand un EPCI est sélectionné sans commune.
+     */
+    @Query(nativeQuery=true,
+            value = "SELECT " +
+                    "  epci.name as epciName, " +
+                    "  NULL      as cityName, " +
+                    "  all_jobs.annee, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 0 THEN 1 END) as toProcess, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 1 THEN 1 END) as inProcess, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 2 THEN 1 END) as processed, " +
+                    "  COUNT(CASE WHEN all_jobs.status = 3 THEN 1 END) as inError " +
+                    "FROM ( " +
+                    "  SELECT annee, status, insee FROM public.compute_job " +
+                    "  UNION ALL " +
+                    "  SELECT annee, status, insee FROM public.compute_iris_job " +
+                    ") all_jobs " +
+                    "JOIN public.city c ON all_jobs.insee = c.insee_code " +
+                    "LEFT JOIN public.adm_com2commune epci ON c.id_comm2co = epci.id " +
+                    "WHERE (:idEpci   IS NULL OR epci.id = :idEpci) " +
+                    "  AND (:idRegion IS NULL OR epci.id_region = :idRegion) " +
+                    "  AND (:annee    IS NULL OR all_jobs.annee = :annee) " +
+                    "GROUP BY epci.name, all_jobs.annee " +
+                    "ORDER BY epci.name, all_jobs.annee")
+    List<Object[]> getProgressStatsEpciLevel(
+            @Param("idEpci")   Long idEpci,
+            @Param("idRegion") Long idRegion,
+            @Param("annee")    Integer annee);
+
     /**
      * countByStatus.
      * @param status enum

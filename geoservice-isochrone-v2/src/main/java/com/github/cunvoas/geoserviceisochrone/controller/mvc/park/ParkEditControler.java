@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkEdit;
+import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.TokenManagement;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
@@ -38,12 +39,14 @@ public class ParkEditControler {
 	private final ServiceReadReferences serviceReadReferences;
 	private final ServiceParcPrefecture serviceParcPrefecture;
 	private final ParkTypeService parkTypeService;
+	private final TokenManagement tokenManagement;
 
 	@Autowired
-	public ParkEditControler(ServiceReadReferences serviceReadReferences, ServiceParcPrefecture serviceParcPrefecture, ParkTypeService parkTypeService) {
+	public ParkEditControler(ServiceReadReferences serviceReadReferences, ServiceParcPrefecture serviceParcPrefecture, ParkTypeService parkTypeService, TokenManagement tokenManagement) {
 		this.serviceReadReferences = serviceReadReferences;
 		this.serviceParcPrefecture = serviceParcPrefecture;
 		this.parkTypeService = parkTypeService;
+		this.tokenManagement = tokenManagement;
 	}
 
 	/**
@@ -166,6 +169,7 @@ public class ParkEditControler {
 		model.addAttribute("regions", regions);
 		model.addAttribute("communautesDeCommunes", com2cos);
 		model.addAttribute("communes", form.getCommunes());
+		model.addAttribute("token", tokenManagement.getValidToken());
 		
 		return formName;
 	}

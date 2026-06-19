@@ -5,9 +5,9 @@
     <head th:replace="~{fragments/fragment-head :: head(#{cityassociation.edit.title})}"></head>
     
     <body class="sb-nav-fixed">
-        <div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+        <div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
         <div id="layoutSidenav">
-            <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+            <div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
 
             <div id="layoutSidenav_content">
  <!-- debut MAIN -->
@@ -171,9 +171,11 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient text-white py-3">
-                            <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i><span th:text="#{cityassociation.edit.associatedcities}">Villes associées</span>
-                                <span class="badge bg-light text-dark ms-2" th:text="${associatedCities != null ? associatedCities.size() : 0}">0</span>
-                            </h5>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i><span th:text="#{cityassociation.edit.associatedcities}">Villes associées</span>
+                                    <span class="badge bg-light text-dark ms-2" th:text="${associatedCities != null ? associatedCities.size() : 0}">0</span>
+                                </h5>
+                            </div>
                         </div>
                         <div class="card-body p-0">
                             <div th:if="${associatedCities == null || associatedCities.isEmpty()}" class="text-muted p-3">
@@ -194,15 +196,18 @@
                                             <td th:text="${city.name}">Ville</td>
                                             <td><span class="badge bg-light text-dark" th:text="${city.postalCode}">Code</span></td>
                                             <td>
-                                                <form th:if="${!readOnly}" th:action="@{/mvc/management/cityassoc/dissociate}" method="post" style="display: inline;">
-                                                    <input type="hidden" name="cityId" th:value="${city.id}" />
-                                                    <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
-                                                    <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" th:text="#{cityassociation.edit.remove}">
-                                                        Retirer
-                                                    </button>
-                                                </form>
-                                                <span th:if="${readOnly}" class="text-muted">-</span>
+                                                <div class="d-flex gap-2">
+                                                    <form th:if="${!readOnly}" th:action="@{/mvc/management/cityassoc/dissociate}" method="post" style="display: inline;">
+                                                        <input type="hidden" name="cityId" th:value="${city.id}" />
+                                                        <input type="hidden" name="communauteCommuneId" th:value="${selectedCommunaute.id}" />
+                                                        <input type="hidden" name="regionId" th:value="${selectedRegionId}" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" th:text="#{cityassociation.edit.remove}">
+                                                            Retirer
+                                                        </button>
+                                                    </form>
+
+                                                </div>
+                                                <span th:if="${readOnly && !isAdmin}" class="text-muted">-</span>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -330,11 +335,11 @@
                 </main>
  <!-- fin MAIN -->
                
-               <div th:insert="~{fragments/fragment-footer :: footer}"></div> 
+               <div th:replace="~{fragments/fragment-footer :: footer}"></div> 
             </div>
             
         </div>
-        <div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+        <div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
 
         <script th:src="@{/mvc/static/js/scripts.js}"></script>
         <script>
@@ -405,6 +410,7 @@
                 communauteSelect.addEventListener('change', syncRegionWithCommunaute);
             }
         </script>
+        
         
         <style>
             /* Custom styles for enhanced design */

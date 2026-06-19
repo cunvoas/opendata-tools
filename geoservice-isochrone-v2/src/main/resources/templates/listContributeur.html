@@ -10,11 +10,17 @@
 				document.location.href = sUrl;
 			}
 		}
+		function deleteContrib(uId) {
+			if (confirm([[#{contributor.delete.text}]])) {
+				sUrl = window.location.protocol + "//" + window.location.host + [[@{/mvc/management/contrib/delete}]] + '?id=' + uId;
+				document.location.href = sUrl;
+			}
+		}
 	</script>
 
-	<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
+	<div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
 	<div id="layoutSidenav">
-		<div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
+		<div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
 
 		<div id="layoutSidenav_content">
 			<main>
@@ -77,6 +83,9 @@
 															</a>
 															<a href="#" th:onclick="'javascript:resetPwd(\''+ ${contrib.id} +'\');'" th:attr="userid=${contrib.id}" class="btn btn-sm btn-outline-warning" th:title="#{contributor.table.resetPwd}" title="Réinitialiser le mot de passe">
 																<i class="fas fa-key"></i>
+															</a>
+															<a th:if="${isAdmin}" href="#" th:onclick="'javascript:deleteContrib(\''+ ${contrib.id} +'\');'" class="btn btn-sm btn-outline-danger" th:title="#{contributor.table.delete}" title="Supprimer">
+																<i class="fas fa-trash"></i>
 															</a>
 														</div>
 													</td>
@@ -164,9 +173,9 @@
 		}
 	</style>
 
-	<div th:insert="~{fragments/fragment-footer :: footer}"></div>
+	<div th:replace="~{fragments/fragment-footer :: footer}"></div>
 
-	<div th:insert="~{fragments/fragment-jslibs :: appPage}"></div>
+	<div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
 
 	<script th:src="@{/mvc/static/js/scripts.js}"></script>
 	<script th:inline="javascript">

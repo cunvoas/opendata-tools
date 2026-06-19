@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head th:replace="~{fragments/fragment-head :: head(#{consultMap.title})}"></head>
+
+
 <body class="sb-nav-fixed">
-<div th:insert="~{fragments/fragment-navUp :: navUp}"></div>
-<div id="layoutSidenav">
-  <div th:insert="~{fragments/fragment-navLeft :: navLeft}"></div>
-  <div id="layoutSidenav_content">
+    <div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
+    <div id="layoutSidenav">
+        <div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+        <div id="layoutSidenav_content">
+        
+
+  
+  
     <main>
       <div class="container-fluid">
         <h4 class="mt-3">Consultation Cartographique</h4>
@@ -143,8 +150,8 @@
   </div>
 </div>
 
-<div th:insert="~{fragments/fragment-footer :: footer}"></div>
-<div th:insert="~{fragments/fragment-jslibs :: newMap}"></div>
+<div th:replace="~{fragments/fragment-footer :: footer}"></div>
+<div th:replace="~{fragments/fragment-jslibs :: newMap}"></div>
 <script th:src="@{/mvc/static/js/scripts.js}"></script>
 
 <script th:inline="javascript">
@@ -427,7 +434,7 @@ const overlayConfig = {
   // Cadastre dynamique: rechargé à chaque mouvement avec cache et debounce
   'Cadastre': { endpoint: endpointCadastre, style: { color:'#7a7c00', fillColor:'#d6d900', weight:1, fillOpacity:0.18 } },
   'Végétation IGN': { endpoint: endpointVegetation, style: { color:'#0f4d0f', fillColor:'#2fa42f', weight:1, fillOpacity:0.45 } },
-  'Parcs Overpass': { endpoint: endpointParkOverpass, style: { color:'#0e3d0c', fillColor:'#4ac6ef', weight:1, fillOpacity:0.35 } }
+  'Parcs OSM (Overpass)': { endpoint: endpointParkOverpass, style: { color:'#0e3d0c', fillColor:'#4ac6ef', weight:1, fillOpacity:0.35 } }
 };
 console.log('[ConsultMap] overlayConfig:', overlayConfig);
 
@@ -539,12 +546,14 @@ function createPopupContent(feat, layerName) {
   }
 
 
-  // Infos spécifiques Cadastre - ajouter idInsee entre parenthèses
+  // Infos spécifiques IRIS - ajouter idInsee entre parenthèses
   if (layerName === 'IRIS' && feat.properties.idIris) {
     nm += `: ${feat.properties.idIris}`;
   }
   
   let popupContent = `<strong>${nm}</strong>`;
+  
+ 
 
   // Lien édition parcs
   if (layerName === 'Parcs' && feat.properties.id) {
@@ -554,13 +563,15 @@ function createPopupContent(feat, layerName) {
     // changer la couleur si feat.properties.oms=true => #3aa637
     // changer la couleur si feat.properties.oms=false => #e96020
     // changer la couleur si feat.properties.actif=false => #DC20E9
-
   }
 
   // Infos spécifiques IRIS
   if (layerName === 'IRIS') {
     if (feat.properties.commune) popupContent += `<p>Commune: ${feat.properties.commune}</p>`;
-    if (feat.properties.people) popupContent += `<p>Population: ${feat.properties.people}</p>`;
+    if (feat.properties.populationTotal) popupContent += `<p>Population: <b>${feat.properties.populationTotal}</b></p>`;
+    if (feat.properties.pop0to17) popupContent += `<p>0-17 ans: <b>${feat.properties.pop0to17}</b></p>`;
+    if (feat.properties.pop18to65) popupContent += `<p>18-64 ans: <b>${feat.properties.pop18to65}</b></p>`;
+    if (feat.properties.pop65Plus) popupContent += `<p>65+ ans: <b>${feat.properties.pop65Plus}</b></p>`;
   }
 
   // Infos spécifiques Carrés

@@ -86,7 +86,26 @@ public class ContributeurControler {
 			contribs = contributeurService.findByAssociation(contrib.getAssociation());
 		}
 		model.addAttribute(listName, contribs);
+		model.addAttribute("isAdmin", ContributeurRole.ADMINISTRATOR.equals(contrib.getRole()));
 		return listName;
+	}
+
+	/**
+	 * Supprime un contributeur (admin uniquement).
+	 * @param id Identifiant du contributeur
+	 * @return Redirection vers la liste
+	 */
+	@GetMapping("/delete")
+	public String delete(@RequestParam("id") Long id) {
+		Contributeur contribConnected = (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (!ContributeurRole.ADMINISTRATOR.equals(contribConnected.getRole())) {
+			return "redirect:/mvc/management/contrib/list";
+		}
+		if (contribConnected.getId().equals(id)) {
+			return "redirect:/mvc/management/contrib/list";
+		}
+		contributeurService.delete(id);
+		return "redirect:/mvc/management/contrib/list";
 	}
 	
 	

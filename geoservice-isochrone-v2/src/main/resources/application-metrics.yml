@@ -51,7 +51,7 @@ logging:
   level:    
     org.apache.tomcat: ERROR
     org.apache.catalina: ERROR
-    org.springframework.web: DEBUG
+    org.springframework.web: INFO
     com.github.cunvoas.geoserviceisochrone: DEBUG
   pattern.level: "%5p [${spring.application.name},%X{traceId:-},%X{spanId:-}] [%t] %C{2} - %m%n"
   

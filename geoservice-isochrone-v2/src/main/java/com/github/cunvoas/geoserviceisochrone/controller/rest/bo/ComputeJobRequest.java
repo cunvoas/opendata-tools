@@ -9,5 +9,7 @@ public class ComputeJobRequest {
 	private String com2coId;
 	private String cityId;
 	private String parkId;
+	
+	private Integer requestedYear;
 
 }

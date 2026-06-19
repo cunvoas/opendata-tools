@@ -8,8 +8,8 @@ public enum ProposalComputationTypeAlgo {
     PPC_2("Solveur PPC v2"),
     PPC_3("Solveur PPC v3"),
     CHI2_5("χ² avec voisins v1"),
-    CHI2_6("χ² avec voisins v2"),
-    GENETIC_7("Genetique v1");
+    CHI2_6("χ² avec voisins v3"),
+    GENETIC_7("Genetique v2");
 
     private String displayName;
 
