@@ -175,7 +175,7 @@ public class EmailSender {
 			String tpl = readTemplate("welcome.htm");
 			String msg = applyData(tpl, values);
 
-			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"mailjet/logo-autmel.png");
+			File f = ResourceUtils.getFile(applicationBusinessProperties.getMailjetAttachementPath()+"mailjet/logo-autmel_150.png");
 			String logoFile = Paths.get(f.getAbsolutePath()).toString();
 			
 			

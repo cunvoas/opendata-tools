@@ -204,9 +204,9 @@ public class ContributeurService {
 		
 		toBeSaved = contributeurRepository.save(toBeSaved);
 		
-		if (newAccount) {
-			emailSender.sendWelcome(toBeSaved.getEmail(), toBeSaved.getFullName(), toBeSaved.getLogin());
-		}
+//		if (newAccount) {
+//			emailSender.sendWelcome(toBeSaved.getEmail(), toBeSaved.getFullName(), toBeSaved.getLogin());
+//		}
 		
 		if (newPassword) {
 			log.error("send email with password");

@@ -144,7 +144,7 @@ application:
     salaryAnalysisEnabled: false
     pollutionAnalysisEnabled: false
     isochrone-impl: ign-api-v2
-    carre200m-impl: v3
+    carre200m-impl: v4
     sample.zipkin.enable: false
     
   admin:
