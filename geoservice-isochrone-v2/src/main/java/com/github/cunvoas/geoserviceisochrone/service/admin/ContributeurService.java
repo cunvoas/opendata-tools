@@ -118,7 +118,7 @@ public class ContributeurService {
 		String myPassword="";
 		
 		Contributeur toBeSaved = null;
-		Optional<Contributeur> oUser = Optional.of(new Contributeur());
+		Optional<Contributeur> oUser = Optional.empty();
 		if (contributeur.getId()!=null) {
 			oUser = contributeurRepository.findById(contributeur.getId());
 		}
@@ -166,11 +166,12 @@ public class ContributeurService {
 				if (!passwordService.isSafe(contributeur.getPassword())) {
 					throw new ExceptionAdmin(ExceptionAdmin.RG_PWD_NOT_SAFE);
 				}
+				newPassword=true;
+				// clone the password
+				myPassword = String.valueOf(contributeur.getPassword());
 				toBeSaved.setPassword(
 						passwordService.securizePassword(contributeur.getPassword())
 					);
-				newPassword=true;
-				myPassword = contributeur.getPassword();
 			} else {
 				pwdGenNeeded=true;
 			}
@@ -204,9 +205,9 @@ public class ContributeurService {
 		
 		toBeSaved = contributeurRepository.save(toBeSaved);
 		
-//		if (newAccount) {
-//			emailSender.sendWelcome(toBeSaved.getEmail(), toBeSaved.getFullName(), toBeSaved.getLogin());
-//		}
+		if (newAccount) {
+			emailSender.sendWelcome(toBeSaved.getEmail(), toBeSaved.getFullName(), toBeSaved.getLogin());
+		}
 		
 		if (newPassword) {
 			log.error("send email with password");
