@@ -117,7 +117,7 @@ export default defineConfig({
     }), */
   ],
   build: {
-    target: "ES2022"
+    target: "es2021"
   },
   base: '/parcs-et-jardins/',
   server: {
