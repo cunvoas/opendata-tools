@@ -7,10 +7,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  * et d'afficher une page d'erreur personnalisée avec le message d'erreur et le statut HTTP.
  * </p>
  */
-//@ControllerAdvice
+@ControllerAdvice
 @Slf4j
 public class ErrorController  extends ResponseEntityExceptionHandler{
 
@@ -55,13 +61,19 @@ public class ErrorController  extends ResponseEntityExceptionHandler{
             null, "HTTP " + status.value(), LocaleContextHolder.getLocale()
         );
 
+        boolean isAdmin = false;
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof Contributeur contrib) {
+            isAdmin = ContributeurRole.ADMINISTRATOR.equals(contrib.getRole());
+        }
+
         model.addAttribute("errorMessage", errorMessage);
         model.addAttribute("exception", throwable != null ? throwable.getClass().getName() : "Unknown");
         model.addAttribute("trace", stackTrace);
         model.addAttribute("httpStatus", status);
         model.addAttribute("status", status.value());
         model.addAttribute("httpStatusLabel", statusLabel);
-        model.addAttribute("showStacktrace", showStacktraceOnError);
+        model.addAttribute("showStacktrace", isAdmin);
 
         return "error";
     }
