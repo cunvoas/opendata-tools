@@ -56,6 +56,9 @@ application:
     isochrone-impl: ign-api-v2
     carre200m-impl: v3
     iris-impl: v3
+    cpu-temp-threshold: 75
+    cpu-metrics-url: http://192.168.1.30:1081/metrics
+    cpu-metrics-timeout-ms: 2000
     
   admin:
     photo-path: ${MOUNT_PATH}/isochrone/photo

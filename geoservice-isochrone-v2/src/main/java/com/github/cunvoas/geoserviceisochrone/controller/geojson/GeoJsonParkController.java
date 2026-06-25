@@ -149,10 +149,6 @@ public class GeoJsonParkController {
     		annee=applicationBusinessProperties.getDerniereAnnee();
     	}
     	Polygon polygon = factory.createPolygon();
-    	//Lille 50, 3.
-    	Point p = GeoShapeHelper.parsePointLatLng(coords);
-    	
-    	//TODO compute a rectangle shape with point at the center
         return geoMapService.findAllParkByArea(polygon, annee);
     }
 

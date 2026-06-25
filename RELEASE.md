@@ -1,4 +1,8 @@
 
+V2.0.6-20260625
+
+    - Ajout d'un contrôle température avant lancement des calculs
+    
 V2.0.5-20260619
 
     - Revue de mailing et gestion utilisateur

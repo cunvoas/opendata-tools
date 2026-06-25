@@ -1,6 +1,10 @@
 # Changelog
 
 
+## V2.0.6 - 2026-06.25
+
+ - Ajout d'un contrôle température avant lancement des calculs
+ 
 ## V2.0.5 - 2026-06.19
 
  - Revue de mailing et gestion utilisateur

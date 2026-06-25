@@ -145,6 +145,9 @@ application:
     pollutionAnalysisEnabled: false
     isochrone-impl: ign-api-v2
     carre200m-impl: v4
+    cpu-temp-threshold: 75
+    cpu-metrics-url: http://192.168.1.30:1081/metrics
+    cpu-metrics-timeout-ms: 2000
     sample.zipkin.enable: false
     
   admin:
