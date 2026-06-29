@@ -85,6 +85,12 @@ public interface CityRepository extends JpaRepository<City, Long>{
 	
 	
 	/**
+	 * findByCommunauteCommuneIsNull.
+	 * @return list of City without EPCI
+	 */
+	List<City> findByCommunauteCommuneIsNull();
+
+	/**
 	 * findNearMeCities.
 	 * @param lng longitude
 	 * @param lat latitude
