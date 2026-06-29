@@ -40,6 +40,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.ComputeJobRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
+import com.github.cunvoas.geoserviceisochrone.service.park.ComputeCarreServiceV4;
 import com.github.cunvoas.geoserviceisochrone.service.park.IComputeCarreService;
 import com.github.cunvoas.geoserviceisochrone.service.park.IComputeIrisService;
 

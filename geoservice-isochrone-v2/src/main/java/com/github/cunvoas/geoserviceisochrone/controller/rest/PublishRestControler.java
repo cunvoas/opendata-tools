@@ -14,7 +14,6 @@ import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.TokenMana
 import com.github.cunvoas.geoserviceisochrone.controller.rest.bo.ComputeJobRequest;
 import com.github.cunvoas.geoserviceisochrone.controller.rest.bo.ComputeJobResponse;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobProgressStat;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceService;
 import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;

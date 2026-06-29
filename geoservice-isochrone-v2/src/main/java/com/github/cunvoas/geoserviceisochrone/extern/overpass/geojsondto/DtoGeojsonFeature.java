@@ -1,7 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.extern.overpass.geojsondto;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Représente une entité GeoJSON de type Feature issue d'un export Overpass.

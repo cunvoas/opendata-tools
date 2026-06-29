@@ -37,7 +37,6 @@ import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ProjetSimu
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.IrisDataComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;

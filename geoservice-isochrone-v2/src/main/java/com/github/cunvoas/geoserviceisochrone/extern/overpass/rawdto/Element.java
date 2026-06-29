@@ -3,8 +3,6 @@ package com.github.cunvoas.geoserviceisochrone.extern.overpass.rawdto;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.util.List;
-
 /**
  * Élément abstrait Overpass (node, way, relation).
  * <p>

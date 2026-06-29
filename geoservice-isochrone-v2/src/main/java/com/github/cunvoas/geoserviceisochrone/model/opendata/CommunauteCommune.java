@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Polygon;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
