@@ -12,6 +12,7 @@ import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.cunvoas.geoserviceisochrone.extern.gouv.adress.dto.AdressBo;
 
 import tools.jackson.databind.JsonNode;

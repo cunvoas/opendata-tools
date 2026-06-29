@@ -40,6 +40,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.ComputeJobRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
+import com.github.cunvoas.geoserviceisochrone.service.park.ComputeCarreServiceV4;
 import com.github.cunvoas.geoserviceisochrone.service.park.IComputeCarreService;
 import com.github.cunvoas.geoserviceisochrone.service.park.IComputeIrisService;
 
@@ -114,6 +116,7 @@ public class BatchJobService implements DisposableBean{
 	private final IComputeCarreService computeCarreService;
 	private final ComputeJobIrisRepository computeJobIrisRepository;
 	private final IComputeIrisService computeIrisService;
+	private final CpuTemperatureService cpuTemperatureService;
 
 	public BatchJobService(ApplicationBusinessProperties applicationBusinessProperties,
 			CadastreRepository cadastreRepository,
@@ -123,7 +126,8 @@ public class BatchJobService implements DisposableBean{
 			ParkAreaRepository parkAreaRepository,
 			IComputeCarreService computeCarreService,
 			ComputeJobIrisRepository computeJobIrisRepository,
-			IComputeIrisService computeIrisService) {
+			IComputeIrisService computeIrisService,
+			CpuTemperatureService cpuTemperatureService) {
 		this.applicationBusinessProperties = applicationBusinessProperties;
 		this.cadastreRepository = cadastreRepository;
 		this.inseeCarre200mOnlyShapeRepository = inseeCarre200mOnlyShapeRepository;
@@ -133,6 +137,7 @@ public class BatchJobService implements DisposableBean{
 		this.computeCarreService = computeCarreService;
 		this.computeJobIrisRepository = computeJobIrisRepository;
 		this.computeIrisService = computeIrisService;
+		this.cpuTemperatureService = cpuTemperatureService;
 	}
 
 	/** Pose le flag d'arrêt gracieux. */
@@ -486,6 +491,11 @@ public class BatchJobService implements DisposableBean{
 	 * @param idInspire identifiant Inspire du carreau
 	 */
 	public void processCarres(Integer annee, String idInspire) {
+		
+		if (cpuTemperatureService.isCpuOverheated()) {
+			log.warn("CPU overheat detected, skip processCarres");
+			return;
+		}
 
 		InseeCarre200mComputedId id = new InseeCarre200mComputedId();
 		id.setAnnee(annee);
@@ -655,6 +665,13 @@ public class BatchJobService implements DisposableBean{
 			return;
 		}
 
+		if (cpuTemperatureService.isCpuOverheated()) {
+			log.warn("CPU overheat detected, skip processShapes");
+			return;
+		} else {
+			log.info("CPU temperature OK: processShapes,");
+		}
+
 		int pageSize=10;
 
 		log.error("processShapes at {}", DF.format(new Date()));
@@ -754,7 +771,6 @@ public class BatchJobService implements DisposableBean{
 		}
 		return ret;
 	}
-
 
 	/**
 	 * Retourne les statistiques globales d'avancement des jobs carreau.

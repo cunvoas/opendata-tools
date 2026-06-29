@@ -13,7 +13,8 @@ package com.github.cunvoas.geoserviceisochrone.model.opendata;
 public enum ParcSourceEnum {
 	OPENDATA("opendata"),
 	PREFECTURE("prefecture"),
-	AUTMEL("autmel");
+	AUTMEL("autmel"),
+	OSM("OSM Overpass");
 	
 
 	private String source;

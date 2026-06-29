@@ -63,7 +63,7 @@ public class ParcEtJardin {
 
 	@Column(name = "sous_type", length = 50)
 	private String sousType;
-	@Column(name = "etat_ouverture", length = 50)
+	@Column(name = "etat_ouverture", length = 500)
 	private String etatOuverture;
 
 	@Column(name = "aire_jeux", length = 50)
