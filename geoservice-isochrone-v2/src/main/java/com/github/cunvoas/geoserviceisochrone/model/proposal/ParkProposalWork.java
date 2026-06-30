@@ -5,9 +5,12 @@ import java.math.BigDecimal;
 import org.locationtech.jts.geom.Point;
 
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedId;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import lombok.Data;
@@ -23,7 +26,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(of = {"annee", "idInspire"})
 @Entity(name = "park_proposal_work")
-@IdClass(InseeCarre200mComputedId.class)
+@IdClass(ParkProposalWorkId.class)
 public class ParkProposalWork {
 
 	/** Année de la donnée. */
@@ -35,6 +38,12 @@ public class ParkProposalWork {
 	@Id
 	@Column(name="idInspire",length=30)
 	private String idInspire;
+	
+	@Id 
+	/** Identifiant du type d'algo (ParkProposalMeta). */
+	@Enumerated(EnumType.STRING)
+	@Column(name="type_algo",length=30)
+	private ProposalComputationTypeAlgo typeAlgo;
 	
 	/**
 	 * Surface manquante pour atteindre le seuil OMS.

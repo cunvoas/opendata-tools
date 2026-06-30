@@ -18,6 +18,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyS
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalMeta;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWorkId;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalMetaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
@@ -79,18 +80,34 @@ public class ServicePropositionParc {
 	}
 	
 	public void deleteParkProposal(Long metaId) {
-		List<ParkProposal> props = parkProposalRepository.findParkProposalByIdMeta(metaId);
 		
-		List<InseeCarre200mComputedId> ids = props.stream().map(p -> {
-			InseeCarre200mComputedId id = new InseeCarre200mComputedId();
-			id.setAnnee(p.getAnnee());
-			id.setIdInspire(p.getIdInspire());
-			return id;
-		}).collect(java.util.stream.Collectors.toList());
+		Optional<ParkProposalMeta> oMeta = parkProposalMetaRepository.findById(metaId);
+		if (oMeta.isPresent()) {
+			ParkProposalMeta meta = oMeta.get();
+			
+			// list des idInspire par insee
+			List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findByCodeInsee( meta.getInsee());
+			List<ParkProposalWorkId> idWorks = carreShapes.stream().map(p -> {
+				ParkProposalWorkId id = new ParkProposalWorkId();
+				id.setAnnee(meta.getAnnee());
+				id.setIdInspire(p.getIdInspire());
+				id.setTypeAlgo(meta.getTypeAlgo());
+				return id;
+			}).collect(java.util.stream.Collectors.toList());
+			parkProposalWorkRepository.deleteAllById(idWorks);
+			
+			
+			List<ParkProposal> props = parkProposalRepository.findParkProposalByIdMeta(metaId);
+			List<InseeCarre200mComputedId> ids = props.stream().map(p -> {
+				InseeCarre200mComputedId id = new InseeCarre200mComputedId();
+				id.setAnnee(p.getAnnee());
+				id.setIdInspire(p.getIdInspire());
+				return id;
+			}).collect(java.util.stream.Collectors.toList());
+			parkProposalRepository.deleteAll(props);
+			parkProposalMetaRepository.deleteById(metaId);
 
-		parkProposalWorkRepository.deleteAllById(ids);
-		parkProposalRepository.deleteAll(props);
-		parkProposalMetaRepository.deleteById(metaId);
+		}
 	}
 	
 	/**
@@ -130,6 +147,7 @@ public class ServicePropositionParc {
 				ParkProposalWork parkProposal = new ParkProposalWork();
 				parkProposal.setAnnee(annee);
 				parkProposal.setIdInspire(shape.getIdInspire());
+				parkProposal.setTypeAlgo(typeAlgo);
 				parkProposal.setCentre(shape.getGeoPoint2d());
 				parkProposal.setIsDense(dense);
 				parkProposal.setSurfacePerCapita(carreCputd.getSurfaceParkPerCapitaOms());
@@ -197,6 +215,7 @@ public class ServicePropositionParc {
 			
 			parkProposalRepository.saveAll(proposals);
 			parkProposalMetaRepository.save(ppm);
+			parkProposalWorkRepository.saveAll(carreMap.values());
 		} else {
 			log.warn("Aucune proposition calculée pour la commune {} en {}", insee, annee);
 		}

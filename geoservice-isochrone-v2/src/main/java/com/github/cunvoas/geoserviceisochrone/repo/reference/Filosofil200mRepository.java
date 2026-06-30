@@ -23,6 +23,7 @@ public interface Filosofil200mRepository extends JpaRepository< Filosofil200m,  
 	 * @return Filosofil200m
 	 */
 	Filosofil200m findByAnneeAndIdInspire(Integer annee, String idInspire);
+
 	
 	/**
 	 * findByIdInspire.
