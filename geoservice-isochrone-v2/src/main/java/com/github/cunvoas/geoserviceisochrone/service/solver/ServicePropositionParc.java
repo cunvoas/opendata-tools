@@ -142,7 +142,7 @@ public class ServicePropositionParc {
 			Optional<InseeCarre200mComputedV2> oCarreCputd = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
 			if (oCarreCputd.isPresent()) {
 				InseeCarre200mComputedV2 carreCputd = oCarreCputd.get();
-				Filosofil200m filo = filosofil200mRepository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
+//				Filosofil200m filo = filosofil200mRepository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
 				
 				ParkProposalWork parkProposal = new ParkProposalWork();
 				parkProposal.setAnnee(annee);
@@ -155,23 +155,24 @@ public class ServicePropositionParc {
 				// ( Seuil OMS – MAX (0, surface disponible  - seuil OMS) ) * Nb Habitant qui ont accès
 				Double densiteMissing = Math.max(recoSquareMeterPerCapita - carreCputd.getSurfaceParkPerCapitaOms().doubleValue(), 0);
 				
-				BigDecimal popAll =carreCputd.getPopAll();
-				if (popAll==null) {
-					popAll=BigDecimal.ZERO;
+				BigDecimal popToAnalyse = carreCputd.getPopAll();
+				if (popToAnalyse==null) {
+					popToAnalyse=BigDecimal.ZERO;
 				}
-				parkProposal.setMissingSurface(BigDecimal.valueOf(densiteMissing*popAll.doubleValue())); 
+				parkProposal.setMissingSurface(BigDecimal.valueOf(densiteMissing*popToAnalyse.doubleValue())); 
+				parkProposal.setLocalPopulation(carreCputd.getPopAll());
 				parkProposal.setAccessingPopulation(carreCputd.getPopAll());
 				parkProposal.setAccessingSurface(carreCputd.getSurfaceTotalParkOms());
 				
 
-				try {
-					parkProposal.setLocalPopulation(filo!=null?filo.getNbIndividus():BigDecimal.ZERO);
-				} catch (Exception e) {
-					log.warn("CRASH: Filosofil {}",  shape.getIdInspire());
-				}
-				parkProposal.setNewSurface(parkProposal.getAccessingSurface()); 
-				parkProposal.setNewSurfacePerCapita(parkProposal.getSurfacePerCapita()); 
-				parkProposal.setNewMissingSurface(parkProposal.getMissingSurface()); 
+//				try {
+//					parkProposal.setLocalPopulation(filo!=null?filo.getNbIndividus():BigDecimal.ZERO);
+//				} catch (Exception e) {
+//					log.warn("CRASH: Filosofil {}",  shape.getIdInspire());
+//				}
+				parkProposal.setNewSurface(cloneBigDecimal(parkProposal.getAccessingSurface())); 
+				parkProposal.setNewSurfacePerCapita(cloneBigDecimal(parkProposal.getSurfacePerCapita())); 
+				parkProposal.setNewMissingSurface(cloneBigDecimal(parkProposal.getMissingSurface())); 
 				carreMap.put(shape.getIdInspire(), parkProposal);
 			} else {
 				log.info("Pas de données Filosofil pour le carré {} en {}", shape.getIdInspire(), annee);
@@ -226,4 +227,11 @@ public class ServicePropositionParc {
 		return ProposalComputationStrategyFactory.getAvailableTypes();
 	}
 	
+	private BigDecimal cloneBigDecimal(BigDecimal toClone) {
+	    if (toClone == null) {
+	        return null;
+	    }
+	    return new BigDecimal(toClone.unscaledValue(), toClone.scale());
+	}
+
 }

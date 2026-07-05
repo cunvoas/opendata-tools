@@ -250,6 +250,9 @@
                   <div id="mapSimulator" style="width:100%; height:600px;"></div>
                 </div>
                 <div class="card-footer text-muted small d-flex justify-content-between align-items-center">
+                  <span>
+                    <a id="aGMapLinkProposal" href="#" target="_blank" rel="noopener noreferrer">Google Map</a>
+                  </span>
                   <span>Les propositions calculées s'affichent sur la carte.</span>
                   <label class="small mb-0" style="cursor:pointer;">
                     <input type="checkbox" id="colorblindToggleProposal" onchange="toggleColorblindProposal()">
@@ -657,6 +660,17 @@ function toggleColorblindProposal() {
   });
 }
 
+function getGMapUrl(clkLat, clkLng) {
+  return "https://www.google.com/maps/@" + clkLat + "," + clkLng + ",18.03z";
+}
+
+function updateGMapLink() {
+  const center = map.getCenter();
+  const lnk = getGMapUrl(center.lat, center.lng);
+  const el = document.getElementById("aGMapLinkProposal");
+  if (el) el.href = lnk;
+}
+
 /**
  * Détermine le style dynamique d'un parc en fonction de ses propriétés
  */
@@ -708,8 +722,10 @@ function loadParcs() {
 // Chargement initial et au déplacement
 map.on('moveend', function() {
   loadParcs();
+  updateGMapLink();
 });
 loadParcs();
+updateGMapLink();
 // Ne pas charger loadProposal() au démarrage, sera chargé par le bouton de visualisation
 
 console.log('[Simulateur] Carte initialisée');
@@ -922,32 +938,31 @@ function viewProposition(button) {
           L.geoJSON(geojson, {
             style: getSquareWorkStyle,
             onEachFeature: function(feature, layer) {
-              let popupContent = '<strong>' + (feature.properties.idInspire || 'Carreau') + '</strong>';
-              if (feature.properties.surfacePerCapita && feature.properties.surfacePerCapita !== '') {
-                popupContent += '<p>Densité: <b>' + parseFloat(feature.properties.surfacePerCapita).toFixed(2) + ' m²/hab</b></p>';
-              }
+              let popupContent = '<strong>' + (feature.properties.idInspire || 'Carreau') + '</strong><p>';
+
               if (feature.properties.accessingPopulation && feature.properties.accessingPopulation !== '') {
-                popupContent += '<p>Population accès: <b>' + feature.properties.accessingPopulation + '</b></p>';
+                popupContent += '<br />Population en partage: <b>' + feature.properties.accessingPopulation + '</b>';
               }
               if (feature.properties.localPopulation && feature.properties.localPopulation !== '') {
-                popupContent += '<p>Population locale: <b>' + feature.properties.localPopulation + '</b></p>';
+                popupContent += '<br />Population du carreau: <b>' + feature.properties.localPopulation + '</b>';
+              }
+              popupContent += '<br /><br /><strong>Avant</strong> | <strong>Après</strong>';
+              if (feature.properties.surfacePerCapita && feature.properties.surfacePerCapita !== '') {
+                popupContent += '<br /><b>Densité</b> ' + parseFloat(feature.properties.surfacePerCapita).toFixed(2) + ' m²/hab'
+                  + ' | ' + (feature.properties.newSurfacePerCapita && feature.properties.newSurfacePerCapita !== ''
+                    ? parseFloat(feature.properties.newSurfacePerCapita).toFixed(2) + ' m²/hab' : '-');
               }
               if (feature.properties.surface && feature.properties.surface !== '') {
-                popupContent += '<p>Surface accès: <b>' + parseFloat(feature.properties.surface).toFixed(0) + ' m²</b></p>';
+                popupContent += '<br /><b>Surface accès</b> ' + parseFloat(feature.properties.surface).toFixed(0) + ' m²'
+                  + ' | ' + (feature.properties.newSurface && feature.properties.newSurface !== ''
+                    ? parseFloat(feature.properties.newSurface).toFixed(0) + ' m²' : '-');
               }
               if (feature.properties.missingSurface && feature.properties.missingSurface !== '') {
-                popupContent += '<p>Manquant: <b>' + parseFloat(feature.properties.missingSurface).toFixed(0) + ' m²</b></p>';
+                popupContent += '<br /><b>Surface manquante</b> ' + parseFloat(feature.properties.missingSurface).toFixed(0) + ' m²'
+                  + ' | ' + (feature.properties.newMissingSurface && feature.properties.newMissingSurface !== ''
+                    ? parseFloat(feature.properties.newMissingSurface).toFixed(0) + ' m²' : '-');
               }
-              if (feature.properties.newSurface && feature.properties.newSurface !== '') {
-                popupContent += '<p>Nouvelle surface: <b>' + parseFloat(feature.properties.newSurface).toFixed(0) + ' m²</b></p>';
-              }
-              if (feature.properties.newSurfacePerCapita && feature.properties.newSurfacePerCapita !== '') {
-                popupContent += '<p>Nouvelle densité: <b>' + parseFloat(feature.properties.newSurfacePerCapita).toFixed(2) + ' m²/hab</b></p>';
-              }
-              if (feature.properties.newMissingSurface && feature.properties.newMissingSurface !== '') {
-                popupContent += '<p>Reste manquant: <b>' + parseFloat(feature.properties.newMissingSurface).toFixed(0) + ' m²</b></p>';
-              }
-              popupContent += '<p>Zone ' + (feature.properties.isDense === 'true' ? 'dense' : 'non dense') + '</p>';
+              popupContent += '<br /><br />Zone ' + (feature.properties.isDense === 'true' ? 'dense' : 'non dense') + '</p>';
               layer.bindPopup(popupContent);
               layer._isProposalWork = true;
             }
