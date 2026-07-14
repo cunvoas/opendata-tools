@@ -23,7 +23,7 @@
     "chartjs": "^0.3.24",
     "leaflet-fullscreen": "^1.0.2",
     "lodash": "^4.18.1",
-    "video.js": "^8.23.6",
+    "video.js": "^8.23.9",
     "vue": "^3.5.39",
     "vue-chartjs": "^5.3.3",
     "vue-matomo": "^4.2.0",
