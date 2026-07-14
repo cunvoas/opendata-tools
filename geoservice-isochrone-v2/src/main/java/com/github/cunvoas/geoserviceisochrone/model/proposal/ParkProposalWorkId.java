@@ -2,7 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.model.proposal;
 
 import java.io.Serializable;
 
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

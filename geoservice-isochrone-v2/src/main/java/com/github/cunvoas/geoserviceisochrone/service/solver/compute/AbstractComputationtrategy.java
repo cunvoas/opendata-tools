@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ParkProposalHelper;
 import com.github.cunvoas.geoserviceisochrone.service.solver.sort.ProposalSortStrategy;
 import com.github.cunvoas.geoserviceisochrone.service.solver.sort.ProposalSortStrategyFactory;
 import com.github.cunvoas.geoserviceisochrone.service.solver.sort.ProposalSortStrategyFactory.Type;
@@ -23,25 +24,25 @@ public abstract class AbstractComputationtrategy implements ProposalComputationS
 
 	/**
 	 * Trie les propositions par déficit décroissant
-	 * @param carreMap
+	 * @param squaresOnTerritoryMap
 	 * @return
 	 * test: 268566.01
 	 */
-	public List<ParkProposalWork> sortProposalsByDeficit(Map<String, ParkProposalWork> carreMap) {
+	public List<ParkProposalWork> sortProposalsByDeficit(Map<String, ParkProposalWork> squaresOnTerritoryMap) {
 		ProposalSortStrategy strategy = ProposalSortStrategyFactory.create(Type.DEFICIT);
-		return strategy.sort(carreMap);
+		return strategy.sort(squaresOnTerritoryMap);
 	}
 	
 	
 	/**
 	 * Trie les propositions par déficit décroissant
-	 * @param carreMap
+	 * @param squaresOnTerritoryMap
 	 * @return
 	 * test: xxxs
 	 */
-	public List<ParkProposalWork> sortProposalsByPersona(Map<String, ParkProposalWork> carreMap) {
+	public List<ParkProposalWork> sortProposalsByPersona(Map<String, ParkProposalWork> squaresOnTerritoryMap) {
 		ProposalSortStrategy strategy = ProposalSortStrategyFactory.create(Type.PERSONA);
-		return strategy.sort(carreMap);
+		return strategy.sort(squaresOnTerritoryMap);
 	}
 	
 	
@@ -49,12 +50,12 @@ public abstract class AbstractComputationtrategy implements ProposalComputationS
 	/**
 	 * Trie les propositions par impact humain total decroissant : manque de surface × population.
 	 * Priorite aux carreaux ou le deficit est a la fois grand et concerne beaucoup d'habitants.
-	 * @param carreMap
+	 * @param squaresOnTerritoryMap
 	 * @return
 	 */
-	public List<ParkProposalWork> sortProposalsByMissingPopulation(Map<String, ParkProposalWork> carreMap) {
+	public List<ParkProposalWork> sortProposalsByMissingPopulation(Map<String, ParkProposalWork> squaresOnTerritoryMap) {
 		ProposalSortStrategy strategy = ProposalSortStrategyFactory.create(Type.MISSING_POPULATION);
-		return strategy.sort(carreMap);
+		return strategy.sort(squaresOnTerritoryMap);
 	}
 
 
@@ -65,8 +66,8 @@ public abstract class AbstractComputationtrategy implements ProposalComputationS
 	 * @param annee année de référence
 	 * @return liste des carrés voisins (max 24 ou 143 selon densité)
 	 */
-	public List<ParkProposalWork> findNeighbors(String idInspire, Map<String, ParkProposalWork> carreMap, Integer urbanDistance) {
-		return ParkProposalHelper.findNeighbors(idInspire, carreMap, urbanDistance);
+	public List<ParkProposalWork> findNeighbors(String idInspire, Map<String, ParkProposalWork> squaresOnTerritoryMap, Integer urbanDistance) {
+		return ParkProposalHelper.findNeighbors(idInspire, squaresOnTerritoryMap, urbanDistance);
 	}
 	
 }

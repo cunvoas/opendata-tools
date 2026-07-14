@@ -58,10 +58,11 @@ import lombok.extern.slf4j.Slf4j;
  * @see IterativeComputationDeficit1Strategy pour l'approche iterative pas-a-pas
  */
 @Slf4j
+@Deprecated
 public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
 
     @Override
-    public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
+    public List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap,
             Double minSquareMeterPerCapita,
             Double recoSquareMeterPerCapita,
             Integer urbanDistance) {
@@ -75,7 +76,7 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
          */
 
         List<ParkProposal> proposals = new ArrayList<>();
-        if (carreMap == null || carreMap.isEmpty()) {
+        if (squaresOnTerritoryMap == null || squaresOnTerritoryMap.isEmpty()) {
             log.warn("Carte vide, aucune proposition par moindres carres.");
             return proposals;
         }
@@ -84,10 +85,10 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
         csvLines.add("iteration,carre_centre,carre_impacte,role,population,surf_per_capita_avant,surf_per_capita_apres,missing_avant,missing_apres,deficit_avant,deficit_apres,ajout_surface");
 
         // Boucle jusqu'a couvrir la population (ou aucun gain)
-        for (int step = 0; step < carreMap.size(); step++) {
+        for (int step = 0; step < squaresOnTerritoryMap.size(); step++) {
             WeightedObservedPoints observedPoints = new WeightedObservedPoints();
             Map<String, Double> deficitPerCapitaById = new HashMap<>();
-            carreMap.values().forEach(work -> {
+            squaresOnTerritoryMap.values().forEach(work -> {
                 double population = work.getAccessingPopulation() != null ? work.getAccessingPopulation().doubleValue() : 0d;
                 double surfacePerCapita = work.getSurfacePerCapita() != null ? work.getSurfacePerCapita().doubleValue() : 0d;
                 if (population <= 0) {
@@ -111,7 +112,7 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
             additionPerCapita = Math.min(additionPerCapita, recoSquareMeterPerCapita);
 
             double baselineChi2 = 0d;
-            for (ParkProposalWork work : carreMap.values()) {
+            for (ParkProposalWork work : squaresOnTerritoryMap.values()) {
                 baselineChi2 += chi2(work, recoSquareMeterPerCapita);
             }
 
@@ -122,7 +123,7 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
 
             // Recherche du carre dont l'ajout (propagant aux voisins OMS) minimise le chi2 global
             for (Map.Entry<String, Double> entry : deficitPerCapitaById.entrySet()) {
-                ParkProposalWork work = carreMap.get(entry.getKey());
+                ParkProposalWork work = squaresOnTerritoryMap.get(entry.getKey());
                 double population = work.getAccessingPopulation() != null ? work.getAccessingPopulation().doubleValue() : 0d;
                 if (population <= 0) {
                     continue;
@@ -137,7 +138,7 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
 
                 Map<String, ParkProposalWork> impacted = new LinkedHashMap<>();
                 impacted.put(work.getIdInspire(), work);
-                for (ParkProposalWork neighbor : findNeighbors(work.getIdInspire(), carreMap, urbanDistance)) {
+                for (ParkProposalWork neighbor : findNeighbors(work.getIdInspire(), squaresOnTerritoryMap, urbanDistance)) {
                     impacted.put(neighbor.getIdInspire(), neighbor);
                 }
 
@@ -150,8 +151,8 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
                     }
                     impactedBaseline += chi2(impactedWork, recoSquareMeterPerCapita);
 
-                    double baseSurface = impactedWork.getNewSurface() != null
-                            ? impactedWork.getNewSurface().doubleValue()
+                    double baseSurface = impactedWork.getNewAccessingSurface() != null
+                            ? impactedWork.getNewAccessingSurface().doubleValue()
                             : impactedWork.getAccessingSurface() != null ? impactedWork.getAccessingSurface().doubleValue() : 0d;
                     double totalSurface = baseSurface + newParkSurface;
                     double newSurfacePerCapita = impactedPop > 0 ? totalSurface / impactedPop : 0d;
@@ -176,7 +177,7 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
             // Enregistre l'impact avant mise a jour
             for (ParkProposalWork impacted : bestNeighbors) {
                 double pop = impacted.getAccessingPopulation() != null ? impacted.getAccessingPopulation().doubleValue() : 0d;
-                double beforeSurface = impacted.getNewSurface() != null ? impacted.getNewSurface().doubleValue()
+                double beforeSurface = impacted.getNewAccessingSurface() != null ? impacted.getNewAccessingSurface().doubleValue()
                         : impacted.getAccessingSurface() != null ? impacted.getAccessingSurface().doubleValue() : 0d;
                 double beforeSurfacePerCapita = pop > 0 ? beforeSurface / pop : 0d;
                 double beforeMissing = impacted.getNewMissingSurface() != null ? impacted.getNewMissingSurface().doubleValue()
@@ -193,7 +194,7 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
                         afterSurfacePerCapita, beforeMissing, afterMissing, deficitAvant, deficitApres, bestNewParkSurface));
             }
 
-            ParkProposalWork bestWork = carreMap.get(bestId);
+            ParkProposalWork bestWork = squaresOnTerritoryMap.get(bestId);
             ParkProposal proposal = new ParkProposal();
             proposal.setAnnee(bestWork.getAnnee());
             proposal.setIdInspire(bestWork.getIdInspire());
@@ -203,7 +204,7 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
             proposals.add(proposal);
 
             // Applique la proposition sur le carre choisi
-            bestWork.setNewSurface(BigDecimal.valueOf(bestNewParkSurface));
+            bestWork.setNewAccessingSurface(BigDecimal.valueOf(bestNewParkSurface));
             BigDecimal baseMissing = bestWork.getNewMissingSurface() != null ? bestWork.getNewMissingSurface() : bestWork.getMissingSurface();
             if (baseMissing == null) {
                 baseMissing = BigDecimal.ZERO;
@@ -211,7 +212,7 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
             bestWork.setNewMissingSurface(baseMissing.subtract(BigDecimal.valueOf(bestNewParkSurface)).max(BigDecimal.ZERO));
 
             double bestPopulation = bestWork.getAccessingPopulation() != null ? bestWork.getAccessingPopulation().doubleValue() : 0d;
-            double bestBaseSurface = bestWork.getNewSurface() != null ? bestWork.getNewSurface().doubleValue()
+            double bestBaseSurface = bestWork.getNewAccessingSurface() != null ? bestWork.getNewAccessingSurface().doubleValue()
                     : bestWork.getAccessingSurface() != null ? bestWork.getAccessingSurface().doubleValue() : 0d;
             double bestTotalSurface = bestBaseSurface + bestNewParkSurface;
             double bestSurfacePerCapita = bestPopulation > 0 ? bestTotalSurface / bestPopulation : 0d;
@@ -224,7 +225,7 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
                     continue;
                 }
                 double neighborPopulation = neighbor.getAccessingPopulation() != null ? neighbor.getAccessingPopulation().doubleValue() : 0d;
-                double neighborBaseSurface = neighbor.getNewSurface() != null ? neighbor.getNewSurface().doubleValue()
+                double neighborBaseSurface = neighbor.getNewAccessingSurface() != null ? neighbor.getNewAccessingSurface().doubleValue()
                         : neighbor.getAccessingSurface() != null ? neighbor.getAccessingSurface().doubleValue() : 0d;
                 double neighborTotalSurface = neighborBaseSurface + bestNewParkSurface;
                 if (neighborPopulation > 0) {
@@ -233,7 +234,7 @@ public class LeastSquaresNeigbour1Strategy extends AbstractComputationtrategy {
                 } else {
                     neighbor.setNewSurfacePerCapita(null);
                 }
-                neighbor.setNewSurface(BigDecimal.valueOf(neighborTotalSurface));
+                neighbor.setNewAccessingSurface(BigDecimal.valueOf(neighborTotalSurface));
                 BigDecimal neighborBaseMissing = neighbor.getNewMissingSurface() != null ? neighbor.getNewMissingSurface() : neighbor.getMissingSurface();
                 if (neighborBaseMissing == null) {
                     neighborBaseMissing = BigDecimal.ZERO;

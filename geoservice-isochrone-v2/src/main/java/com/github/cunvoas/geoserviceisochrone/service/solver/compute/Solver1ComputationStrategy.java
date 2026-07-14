@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
  * since propositions are applied directly on the map.
  */
 @Slf4j
+@Deprecated
 public class Solver1ComputationStrategy extends AbstractComputationtrategy {
 
    
@@ -60,7 +61,7 @@ public class Solver1ComputationStrategy extends AbstractComputationtrategy {
 	 *   <li>Équilibrage automatique de la distribution des parcs</li>
 	 * </ul>
 	 * 
-	 * @param carreMap la carte des propositions de parc indexée par idInspire.
+	 * @param squaresOnTerritoryMap la carte des propositions de parc indexée par idInspire.
 	 *                 Modifiée par la méthode pour appliquer les surfaces calculées.
 	 * @param recoSquareMeterPerCapita densité recommandée en m²/habitant (typiquement 12 m²/hab).
 	 * @param urbanDistance distance d'accessibilité en mètres pour identifier les voisins.
@@ -72,24 +73,24 @@ public class Solver1ComputationStrategy extends AbstractComputationtrategy {
 	 */
     
     @Override
-    public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
+    public List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap,
                                       Double minSquareMeterPerCapita,
                                       Double recoSquareMeterPerCapita,
                                       Integer urbanDistance) {
        
     		List<ParkProposal> proposals = new ArrayList<>();
-    		if (carreMap.isEmpty()) {
+    		if (squaresOnTerritoryMap.isEmpty()) {
     			log.warn("Carte des carrés vide, aucune proposition à calculer");
     			return null;
     		}
 
-    		log.info("Démarrage du calcul itératif avec Choco Solver pour {} carrés", carreMap.size());
+    		log.info("Démarrage du calcul itératif avec Choco Solver pour {} carrés", squaresOnTerritoryMap.size());
 
     		// Pré-calcul des voisinages (ne change pas entre les itérations)
-    		List<String> carreIds = new ArrayList<>(carreMap.keySet());
+    		List<String> carreIds = new ArrayList<>(squaresOnTerritoryMap.keySet());
     		Map<String, List<String>> voisinagesIds = new HashMap<>();
     		for (String idInspire : carreIds) {
-    			List<ParkProposalWork> voisins = findNeighbors(idInspire, carreMap, urbanDistance);
+    			List<ParkProposalWork> voisins = findNeighbors(idInspire, squaresOnTerritoryMap, urbanDistance);
     			List<String> voisinsIds = new ArrayList<>();
     			for (ParkProposalWork voisin : voisins) {
     				voisinsIds.add(voisin.getIdInspire());
@@ -100,7 +101,7 @@ public class Solver1ComputationStrategy extends AbstractComputationtrategy {
     		int maxIterations = carreIds.size();
     		for (int iter = 1; iter <= maxIterations; iter++) {
     			// Vérifier s'il reste des carrés en déficit notable
-    			boolean resteDeficit = carreMap.values().stream().anyMatch(p -> {
+    			boolean resteDeficit = squaresOnTerritoryMap.values().stream().anyMatch(p -> {
     				double pop = p.getAccessingPopulation().doubleValue();
     				double densite = p.getSurfacePerCapita() != null ? p.getSurfacePerCapita().doubleValue() : 0d;
     				return pop > 0 && densite < recoSquareMeterPerCapita;
@@ -117,7 +118,7 @@ public class Solver1ComputationStrategy extends AbstractComputationtrategy {
     			IntVar[] surfacesAAjouter = new IntVar[carreIds.size()];
     			for (int i = 0; i < carreIds.size(); i++) {
     				String id = carreIds.get(i);
-    				ParkProposalWork carre = carreMap.get(id);
+    				ParkProposalWork carre = squaresOnTerritoryMap.get(id);
     				int population = carre.getAccessingPopulation().intValue();
     				int surfaceExistante = carre.getAccessingSurface().intValue();
 
@@ -137,7 +138,7 @@ public class Solver1ComputationStrategy extends AbstractComputationtrategy {
     			IntVar[] ecartsAbsolus = new IntVar[carreIds.size()];
     			for (int i = 0; i < carreIds.size(); i++) {
     				String idInspire = carreIds.get(i);
-    				ParkProposalWork carre = carreMap.get(idInspire);
+    				ParkProposalWork carre = squaresOnTerritoryMap.get(idInspire);
     				int population = carre.getAccessingPopulation().intValue();
 
     				if (population == 0) {
@@ -195,8 +196,8 @@ public class Solver1ComputationStrategy extends AbstractComputationtrategy {
     				if (add > 0) {
     					ajouts++;
     					surfaceAjoutee += add;
-    					ParkProposalWork p = carreMap.get(carreIds.get(i));
-    					p.setNewSurface(BigDecimal.valueOf(add));
+    					ParkProposalWork p = squaresOnTerritoryMap.get(carreIds.get(i));
+    					p.setNewAccessingSurface(BigDecimal.valueOf(add));
     					p.setNewMissingSurface(p.getMissingSurface() != null ? p.getMissingSurface().subtract(BigDecimal.valueOf(add)).max(BigDecimal.ZERO) : BigDecimal.ZERO);
     				}
     			}
@@ -210,15 +211,15 @@ public class Solver1ComputationStrategy extends AbstractComputationtrategy {
 
     			// Mettre à jour les densités locales après application
     			for (String idInspire : carreIds) {
-    				ParkProposalWork carre = carreMap.get(idInspire);
+    				ParkProposalWork carre = squaresOnTerritoryMap.get(idInspire);
     				double totalSurface = carre.getAccessingSurface().doubleValue();
-    				if (carre.getNewSurface() != null) {
-    					totalSurface += carre.getNewSurface().doubleValue();
+    				if (carre.getNewAccessingSurface() != null) {
+    					totalSurface += carre.getNewAccessingSurface().doubleValue();
     				}
     				for (String vId : voisinagesIds.get(idInspire)) {
-    					ParkProposalWork voisin = carreMap.get(vId);
-    					if (voisin != null && voisin.getNewSurface() != null) {
-    						totalSurface += voisin.getNewSurface().doubleValue();
+    					ParkProposalWork voisin = squaresOnTerritoryMap.get(vId);
+    					if (voisin != null && voisin.getNewAccessingSurface() != null) {
+    						totalSurface += voisin.getNewAccessingSurface().doubleValue();
     					}
     				}
     				double pop = carre.getAccessingPopulation().doubleValue();

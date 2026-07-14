@@ -43,7 +43,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalWorkRepo
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
 
 import lombok.extern.java.Log;
 

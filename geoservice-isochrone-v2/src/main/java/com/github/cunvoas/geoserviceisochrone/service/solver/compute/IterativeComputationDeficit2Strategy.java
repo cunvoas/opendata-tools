@@ -89,7 +89,7 @@ public class IterativeComputationDeficit2Strategy extends AbstractComputationtra
 	 *   <li>{@code accessingSurface} : surface totale accessible mise a jour</li>
 	 * </ul>
 	 * 
-	 * @param carreMap la carte des propositions de parc indexee par idInspire.
+	 * @param squaresOnTerritoryMap la carte des propositions de parc indexee par idInspire.
 	 *                 Chaque {@link ParkProposalWork} contient les donnees demographiques et surfaciques.
 	 *                 Cette map est modifiee par la methode.
 	 * @param minSquareMeterPerCapita seuil minimal de surface de parc par habitant (m²/hab).
@@ -108,9 +108,9 @@ public class IterativeComputationDeficit2Strategy extends AbstractComputationtra
 	 * 
 	 * @author github.com/cunvoas
 	 */
-	public ParkProposal calculeEtapeProposition(Double minParkSurface, Map<String, ParkProposalWork> carreMap,  Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
+	public ParkProposal calculeEtapeProposition(Double minParkSurface, Map<String, ParkProposalWork> squaresOnTerritoryMap,  Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
 		// Recupere la liste des carres tries par deficit de surface de parc decroissant
-		List<ParkProposalWork> sorted = sortProposalsByDeficit(carreMap);
+		List<ParkProposalWork> sorted = sortProposalsByDeficit(squaresOnTerritoryMap);
 		// Variante alternative : tri par persona (priorite aux populations sensibles)
 		//List<ParkProposalWork> sorted = sortProposalsByPersona(carreMap);
 		
@@ -121,80 +121,80 @@ public class IterativeComputationDeficit2Strategy extends AbstractComputationtra
 
 			// Si le carre le plus deficitaire est deja au-dessus du seuil minimal,
 			// tous les carres sont considers comme satisfaisants → arret
-			if (toProcess.getSurfacePerCapita().doubleValue() > minSquareMeterPerCapita) {
+			if (toProcess.getNewSurfacePerCapita().doubleValue() > minSquareMeterPerCapita) {
 				log.info("Toutes les propositions de la commune sont traitees.");
 				return proposalResult;
 			}
 
-			// Identifie les carres voisins accessibles dans le rayon urbain
-			List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), carreMap, urbanDistance);
-
 			// Calcule la surface de parc a ajouter :
 			// = ecart de densite (reco - actuelle) × population accessible
 			// Bornee entre 0 et 40 000 m² (surface max d'un carreau 200m × 200m)
-			Double newParkSurface = 
+			Double recomputedNewAccessingSurface = 
 					Math.min(
 							Math.max(
-									recoSquareMeterPerCapita-toProcess.getSurfacePerCapita().doubleValue(),
-									0), 
+									recoSquareMeterPerCapita, 0), 
 								AbstractComputationtrategy.CARRE_SURFACE
 							) * toProcess.getAccessingPopulation().doubleValue();
 			
+			Double proposedParkSurface = recomputedNewAccessingSurface - toProcess.getNewAccessingSurface().doubleValue();
+			
+			
 			// Applique la proposition seulement si la surface calculee depasse le seuil minimal
-			if (newParkSurface>=minParkSurface) {
+			if (proposedParkSurface>=minParkSurface) {
+				
+				
+				// Identifie les carres voisins accessibles dans le rayon urbain
+				List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
 				
 				// Construit la proposition de parc
 				proposalResult = new ParkProposal();
 				proposalResult.setAnnee(toProcess.getAnnee());
 				proposalResult.setIdInspire(toProcess.getIdInspire());
-				proposalResult.setParkSurface(BigDecimal.valueOf(newParkSurface));
+				proposalResult.setParkSurface(BigDecimal.valueOf(proposedParkSurface));
 				proposalResult.setCentre(toProcess.getCentre());
 				proposalResult.setIsDense(toProcess.getIsDense());
 				
 				// Met a jour le carre traite : ajout de la surface, reduction du deficit restant
-				toProcess.setNewSurface(BigDecimal.valueOf(newParkSurface));
+				toProcess.setNewAccessingSurface(BigDecimal.valueOf(Math.round(recomputedNewAccessingSurface)));
 				// Pas de .max(BigDecimal.ZERO) → peut passer negatif si newParkSurface > newMissingSurface
-				toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
+				toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(Math.round(recomputedNewAccessingSurface))));
 				
 				// Recalcule la densite du carre apres ajout du parc
-				Double newTotalSurface = toProcess.getAccessingSurface().doubleValue() + newParkSurface;
-				Double newSurfacePerCapita = newTotalSurface / toProcess.getAccessingPopulation().doubleValue();
-				toProcess.setSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
+				Double newSurfacePerCapita = recomputedNewAccessingSurface / toProcess.getAccessingPopulation().doubleValue();
+				toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
 				
 				// Propague la mise a jour aux voisins :
 				// le nouveau parc est accessible depuis chaque carre voisin,
 				// donc leur surface accessible et leur densite augmentent aussi
 				for (ParkProposalWork neighbor : neighbors) {
-					Double neighborNewTotalSurface = neighbor.getAccessingSurface().doubleValue() + newParkSurface;
+					// neighbor du voisin base sur toProcess (meme objet que la map)
+					
+					BigDecimal neighborNewAccessingSurface = BigDecimal.valueOf( neighbor.getNewAccessingSurface().doubleValue() + proposedParkSurface );
+					neighbor.setNewAccessingSurface(neighborNewAccessingSurface);
+					// car le deficit restant est partage dans le voisinage
+					neighbor.setNewMissingSurface( toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(proposedParkSurface)).max(BigDecimal.ZERO));
+
 					
 					Double neighborNewSurfacePerCapita = null;
-					if ( neighbor.getAccessingPopulation().doubleValue()!=0)	{
+					if ( neighbor.getAccessingPopulation()!=null && neighbor.getAccessingPopulation().doubleValue()!=0)	{
 						// Calcule la nouvelle densite du voisin
-						neighborNewSurfacePerCapita = neighborNewTotalSurface / neighbor.getAccessingPopulation().doubleValue();
+						neighborNewSurfacePerCapita = neighborNewAccessingSurface.doubleValue()  / neighbor.getAccessingPopulation().doubleValue();
 						neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborNewSurfacePerCapita));
-					
-					} else {
-						// Population nulle → densite indefinie
-						neighbor.setNewSurfacePerCapita(null);
-					}
-					neighbor.setNewSurface(new BigDecimal(String.valueOf(neighborNewTotalSurface)));
-					// newMissingSurface du voisin base sur toProcess (meme objet que la map)
-					// car le deficit restant est partage dans le voisinage
-					neighbor.setNewMissingSurface( toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)).max(BigDecimal.ZERO));
-				}
 				
+					}
+				}
+							
 				log.error("Proposition pour le carre {} : ajout de parc (surface proposee: {}).", 
-						toProcess.getIdInspire(), newParkSurface);
+						toProcess.getIdInspire(), proposedParkSurface);
 				
 			} else {
 				// Surface insuffisante : le deficit existe mais est trop faible
 				// pour justifier la creation d'un nouveau parc
-				log.info("Proposition pour le carre {} : pas d'ajout de parc (surface proposee: {}).", 
+				log.warn("Proposition pour le carre {} : pas d'ajout de parc (surface proposee: {}).", 
 						toProcess.getIdInspire(), AbstractComputationtrategy.MIN_PARK_SURFACE);
 				//toProcess.setNewSurface(null);
 			}
 		}
 		return proposalResult;
 	}
-	
 }

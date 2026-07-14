@@ -28,8 +28,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyS
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.AbstractComputationtrategy;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategy;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategyFactory;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationStrategyFactory;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -137,7 +137,7 @@ public class ServicePropositionParc {
 		List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findCarreByInseeCode(insee, true);
 		
 		//préparation des données pour le calcul
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ParkProposalWork> squaresOnTerritoryMap = new HashMap<>();
 		for (InseeCarre200mOnlyShape shape : carreShapes) {
 			Optional<InseeCarre200mComputedV2> oCarreCputd = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
 			if (oCarreCputd.isPresent()) {
@@ -159,31 +159,27 @@ public class ServicePropositionParc {
 				if (popToAnalyse==null) {
 					popToAnalyse=BigDecimal.ZERO;
 				}
+				// données d'origine pour avaoir avant/après
 				parkProposal.setMissingSurface(BigDecimal.valueOf(densiteMissing*popToAnalyse.doubleValue())); 
 				parkProposal.setLocalPopulation(carreCputd.getPopAll());
-				parkProposal.setAccessingPopulation(carreCputd.getPopAll());
+				parkProposal.setAccessingPopulation(carreCputd.getPopIncluded());
 				parkProposal.setAccessingSurface(carreCputd.getSurfaceTotalParkOms());
 				
-
-//				try {
-//					parkProposal.setLocalPopulation(filo!=null?filo.getNbIndividus():BigDecimal.ZERO);
-//				} catch (Exception e) {
-//					log.warn("CRASH: Filosofil {}",  shape.getIdInspire());
-//				}
-				parkProposal.setNewSurface(cloneBigDecimal(parkProposal.getAccessingSurface())); 
+				// clone des données d'origines qui seront travaillées pour des propositions
+				parkProposal.setNewAccessingSurface(cloneBigDecimal(parkProposal.getAccessingSurface())); 
 				parkProposal.setNewSurfacePerCapita(cloneBigDecimal(parkProposal.getSurfacePerCapita())); 
 				parkProposal.setNewMissingSurface(cloneBigDecimal(parkProposal.getMissingSurface())); 
-				carreMap.put(shape.getIdInspire(), parkProposal);
+				squaresOnTerritoryMap.put(shape.getIdInspire(), parkProposal);
 			} else {
 				log.info("Pas de données Filosofil pour le carré {} en {}", shape.getIdInspire(), annee);
 			}
 		}
 		
-		if (carreMap.isEmpty()) {
+		if (squaresOnTerritoryMap.isEmpty()) {
 			log.info("Aucun carré avec données pour la commune {} en {}", insee, annee);
 		} else  {
 			log.info("Calcul des propositions pour {} carrés dans la commune {} en {} (dense={}): reco={} m²/hab, min={} m²/hab, distance={} m", 
-					carreMap.size(), insee, annee, dense, recoSquareMeterPerCapita, minSquareMeterPerCapita, urbanDistance);
+					squaresOnTerritoryMap.size(), insee, annee, dense, recoSquareMeterPerCapita, minSquareMeterPerCapita, urbanDistance);
 		}
 		
 		ParkProposalMeta ppm  = parkProposalMetaRepository.findByAnneeAndInseeAndTypeAlgo(annee, insee, typeAlgo);
@@ -199,7 +195,10 @@ public class ServicePropositionParc {
 		
 		// ALGO chargé via factory
 		ProposalComputationStrategy computation = ProposalComputationStrategyFactory.create(typeAlgo, AbstractComputationtrategy.MIN_PARK_SURFACE);
-		proposals = computation.compute(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
+		
+		log.warn("ALGO={}, IMPL={}", typeAlgo.getDisplayName(), computation.getClass().getName());
+		
+		proposals = computation.compute(squaresOnTerritoryMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
 		
 		
 		if (proposals!=null && !proposals.isEmpty()) {
@@ -216,11 +215,11 @@ public class ServicePropositionParc {
 			
 			parkProposalRepository.saveAll(proposals);
 			parkProposalMetaRepository.save(ppm);
-			parkProposalWorkRepository.saveAll(carreMap.values());
+			parkProposalWorkRepository.saveAll(squaresOnTerritoryMap.values());
 		} else {
 			log.warn("Aucune proposition calculée pour la commune {} en {}", insee, annee);
 		}
-		return carreMap;
+		return squaresOnTerritoryMap;
 	}
 	
 	public List<ProposalComputationTypeAlgo> getAvailableAlgorithms() {

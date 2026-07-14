@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.service.solver.compute;
+package com.github.cunvoas.geoserviceisochrone.service.solver.helper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +22,11 @@ public class ParkProposalHelper {
 	 * @param annee année de référence
 	 * @return liste des carrés voisins (max 24 ou 143 selon densité)
 	 */
-	public static List<ParkProposalWork> findNeighbors(String idInspire, Map<String, ParkProposalWork> carreMap, Integer urbanDistance) {
+	public static List<ParkProposalWork> findNeighbors(String idInspire, Map<String, ParkProposalWork> squaresOnTerritoryMap, Integer urbanDistance) {
 		List<ParkProposalWork> neighbors = new ArrayList<>();
 		
 		// Récupérer le carré central
-		ParkProposalWork centre = carreMap.get(idInspire);
+		ParkProposalWork centre = squaresOnTerritoryMap.get(idInspire);
 		
 		if (centre == null) {
 			log.warn("Carré central {} introuvable dans la carte des carrés", idInspire);
@@ -38,7 +38,7 @@ public class ParkProposalHelper {
 		Coordinate centroid = centreGeom.getCentroid().getCoordinate();
 		
 		// Rechercher les carrés dans cette zone
-		for (Map.Entry<String, ParkProposalWork> parkProposal : carreMap.entrySet()) {
+		for (Map.Entry<String, ParkProposalWork> parkProposal : squaresOnTerritoryMap.entrySet()) {
 			if (!parkProposal.getKey().equals(idInspire)) {
 				// calcul de la distance au centroïde mètres
 				Double distance = 1_000 * DistanceHelper.crowFlyDistance(

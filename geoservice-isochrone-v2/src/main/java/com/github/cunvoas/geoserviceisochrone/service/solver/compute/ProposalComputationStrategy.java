@@ -12,13 +12,13 @@ import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 public interface ProposalComputationStrategy {
 	
     /**
-     * @param carreMap
+     * @param squaresOnTerritoryMap
      * @param minSquareMeterPerCapita
      * @param recoSquareMeterPerCapita
      * @param urbanDistance
      * @return
      */
-    List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
+    List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap,
                                Double minSquareMeterPerCapita,
                                Double recoSquareMeterPerCapita,
                                Integer urbanDistance);

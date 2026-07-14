@@ -65,33 +65,33 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
      * Calcule les propositions de parcs pour combler les déficits de surface verte
      * par habitant sur l'ensemble des carrés de la zone d'étude.
      *
-     * @param carreMap                 carrés de la grille, indexés par idInspire
+     * @param squaresOnTerritoryMap                 carrés de la grille, indexés par idInspire
      * @param minSquareMeterPerCapita  seuil minimal de surface verte par habitant (m²/hab)
      * @param recoSquareMeterPerCapita objectif recommandé de surface verte par habitant (m²/hab)
      * @param urbanDistance            rayon de voisinage en mètres (portée d'un parc)
      * @return liste des propositions de parcs, une entrée par carré recevant un ajout de surface
      */
     @Override
-    public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
+    public List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap,
             Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
 
-        if (carreMap.isEmpty()) {
+        if (squaresOnTerritoryMap.isEmpty()) {
             log.warn("Carte des carrés vide, aucune proposition à calculer");
             return new ArrayList<>();
         }
 
-        log.info("Démarrage Solver3 itératif pour {} carrés (unite={}m²)", carreMap.size(), UNIT_M2);
+        log.info("Démarrage Solver3 itératif pour {} carrés (unite={}m²)", squaresOnTerritoryMap.size(), UNIT_M2);
 
-        List<String> carreIds = new ArrayList<>(carreMap.keySet());
+        List<String> carreIds = new ArrayList<>(squaresOnTerritoryMap.keySet());
 
         // Pré-calcul des voisinages
         Map<String, List<ParkProposalWork>> voisinages = new HashMap<>();
         for (String id : carreIds) {
-            voisinages.put(id, findNeighbors(id, carreMap, urbanDistance));
+            voisinages.put(id, findNeighbors(id, squaresOnTerritoryMap, urbanDistance));
         }
 
         // --- Passe initiale : besoin propre de chaque carré (en unités de UNIT_M2) ---
-        Map<String, Integer> besoinPropreMap = computeBesoinPropre(carreIds, carreMap, recoSquareMeterPerCapita);
+        Map<String, Integer> besoinPropreMap = computeBesoinPropre(carreIds, squaresOnTerritoryMap, recoSquareMeterPerCapita);
         log.info("Besoin propre calculé : {} zones déficitaires sur {} carrés",
             besoinPropreMap.values().stream().filter(b -> b >= MIN_UNITS).count(), carreIds.size());
 
@@ -135,7 +135,7 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
 
             // Propagation : recalcul du déficit résiduel global en tenant compte
             // de la portée de voisinage (urbanDistance + 100 m dans findNeighbors).
-            updateResidualDeficits(residualUnitsMap, additionsM2, carreIds, carreMap,
+            updateResidualDeficits(residualUnitsMap, additionsM2, carreIds, squaresOnTerritoryMap,
                 voisinages, recoSquareMeterPerCapita);
 
             iter++;
@@ -158,7 +158,7 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
                     additionsM2.merge(id, residual * UNIT_M2, Integer::sum);
                 }
             }
-            updateResidualDeficits(residualUnitsMap, additionsM2, carreIds, carreMap,
+            updateResidualDeficits(residualUnitsMap, additionsM2, carreIds, squaresOnTerritoryMap,
                 voisinages, recoSquareMeterPerCapita);
             long residualAfterFinal = residualUnitsMap.values().stream()
                 .filter(b -> b >= MIN_UNITS).count();
@@ -170,7 +170,7 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
             }
         }
 
-        return buildProposals(carreIds, carreMap, additionsM2, voisinages);
+        return buildProposals(carreIds, squaresOnTerritoryMap, additionsM2, voisinages);
     }
 
     // -------------------------------------------------------------------------
@@ -184,15 +184,15 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
      * {@code [0, MAX_UNITS]}. Retourne 0 pour les carrés sans population.</p>
      *
      * @param carreIds liste des identifiants à traiter
-     * @param carreMap données des carrés (population, surface existante)
+     * @param squaresOnTerritoryMap données des carrés (population, surface existante)
      * @param reco     objectif recommandé en m² par habitant
      * @return map idInspire → besoin propre en unités (0 si pas de déficit)
      */
     private Map<String, Integer> computeBesoinPropre(
-            List<String> carreIds, Map<String, ParkProposalWork> carreMap, double reco) {
+            List<String> carreIds, Map<String, ParkProposalWork> squaresOnTerritoryMap, double reco) {
         Map<String, Integer> result = new HashMap<>();
         for (String id : carreIds) {
-            ParkProposalWork c = carreMap.get(id);
+            ParkProposalWork c = squaresOnTerritoryMap.get(id);
             int pop  = c.getAccessingPopulation() != null ? c.getAccessingPopulation().intValue() : 0;
             int surf = c.getAccessingSurface()    != null ? c.getAccessingSurface().intValue()    : 0;
             int besoin = pop > 0
@@ -502,7 +502,7 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
      * @param residualUnitsMap déficit résiduel à mettre à jour (modifié en place)
      * @param additionsM2      surfaces ajoutées cumulées par carré (en m²)
      * @param carreIds         liste complète des identifiants
-     * @param carreMap         données des carrés (population, surface existante)
+     * @param squaresOnTerritoryMap         données des carrés (population, surface existante)
      * @param voisinages       voisinage pré-calculé (idInspire → liste voisins)
      * @param reco             objectif recommandé en m² par habitant
      */
@@ -510,12 +510,12 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
             Map<String, Integer> residualUnitsMap,
             Map<String, Integer> additionsM2,
             List<String> carreIds,
-            Map<String, ParkProposalWork> carreMap,
+            Map<String, ParkProposalWork> squaresOnTerritoryMap,
             Map<String, List<ParkProposalWork>> voisinages,
             double reco) {
 
         for (String id : carreIds) {
-            ParkProposalWork c = carreMap.get(id);
+            ParkProposalWork c = squaresOnTerritoryMap.get(id);
             int pop  = c.getAccessingPopulation() != null ? c.getAccessingPopulation().intValue() : 0;
             int surf = c.getAccessingSurface()    != null ? c.getAccessingSurface().intValue()    : 0;
             if (pop == 0) {
@@ -544,21 +544,21 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
      * résiduel).
      *
      * @param carreIds    liste des identifiants à traiter
-     * @param carreMap    données des carrés (modifiées en place pour les métriques)
+     * @param squaresOnTerritoryMap    données des carrés (modifiées en place pour les métriques)
      * @param additionsM2 surface ajoutée cumulée par carré (en m²)
      * @param voisinages  voisinage pré-calculé (idInspire → liste voisins)
      * @return liste des {@link ParkProposal} pour les carrés recevant un ajout > 0
      */
     private List<ParkProposal> buildProposals(
             List<String> carreIds,
-            Map<String, ParkProposalWork> carreMap,
+            Map<String, ParkProposalWork> squaresOnTerritoryMap,
             Map<String, Integer> additionsM2,
             Map<String, List<ParkProposalWork>> voisinages) {
 
         List<ParkProposal> proposals = new ArrayList<>();
 
         for (String idInspire : carreIds) {
-            ParkProposalWork carre = carreMap.get(idInspire);
+            ParkProposalWork carre = squaresOnTerritoryMap.get(idInspire);
             int addedM2 = additionsM2.getOrDefault(idInspire, 0);
 
             if (addedM2 > 0) {
@@ -589,7 +589,7 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
 
             BigDecimal missing = carre.getMissingSurface() != null ? carre.getMissingSurface() : BigDecimal.ZERO;
             carre.setNewMissingSurface(missing.subtract(BigDecimal.valueOf(totalAddedM2)).max(BigDecimal.ZERO));
-            carre.setNewSurface(BigDecimal.valueOf(addedM2));
+            carre.setNewAccessingSurface(BigDecimal.valueOf(addedM2));
         }
 
         log.info("Résolution terminée : {} propositions retenues.", proposals.size());

@@ -83,7 +83,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepos
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkOverpassService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
 import com.google.common.math.BigDecimalMath;
 import com.google.common.primitives.Ints;
 
@@ -751,8 +751,8 @@ public class GeoMapServiceV2 {
 						? String.valueOf(work.getSurfacePerCapita()) : "");
 				pv.setMissingSurface(work.getMissingSurface() != null
 						? String.valueOf(work.getMissingSurface()) : "");
-				pv.setNewSurface(work.getNewSurface() != null
-						? String.valueOf(work.getNewSurface()) : "");
+				pv.setNewSurface(work.getNewAccessingSurface() != null
+						? String.valueOf(work.getNewAccessingSurface()) : "");
 				pv.setNewSurfacePerCapita(work.getNewSurfacePerCapita() != null
 						? String.valueOf(work.getNewSurfacePerCapita()) : "");
 				pv.setNewMissingSurface(work.getNewMissingSurface() != null

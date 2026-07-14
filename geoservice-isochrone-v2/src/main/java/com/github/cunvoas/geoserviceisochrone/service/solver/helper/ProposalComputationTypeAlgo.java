@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.service.solver.compute;
+package com.github.cunvoas.geoserviceisochrone.service.solver.helper;
 
 public enum ProposalComputationTypeAlgo {
     ITERATIVE_1("Itératif par déficit v1"),

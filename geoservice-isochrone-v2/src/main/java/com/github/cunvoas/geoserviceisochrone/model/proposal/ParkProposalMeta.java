@@ -2,7 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.model.proposal;
 
 import java.util.List;
 
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

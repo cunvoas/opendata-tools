@@ -39,21 +39,21 @@ public class SolverV3ComputationStrategy extends AbstractComputationtrategy {
     private static final int MIN_UNITS = (int) Math.ceil(AT_LEAST_PARK_SURFACE / UNIT_M2);
 
     @Override
-    public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap, Double minSquareMeterPerCapita,
+    public List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap, Double minSquareMeterPerCapita,
             Double recoSquareMeterPerCapita, Integer urbanDistance) {
 
         List<ParkProposal> proposals = new ArrayList<>();
-        if (carreMap.isEmpty()) {
+        if (squaresOnTerritoryMap.isEmpty()) {
             log.warn("Carte des carrés vide, aucune proposition à calculer");
             return proposals;
         }
 
-        log.info("Démarrage du calcul global avec Choco Solver pour {} carrés (unite={}m²)", carreMap.size(), UNIT_M2);
+        log.info("Démarrage du calcul global avec Choco Solver pour {} carrés (unite={}m²)", squaresOnTerritoryMap.size(), UNIT_M2);
 
-        List<String> carreIds = new ArrayList<>(carreMap.keySet());
+        List<String> carreIds = new ArrayList<>(squaresOnTerritoryMap.keySet());
         Map<String, List<ParkProposalWork>> voisinages = new HashMap<>();
         for (String idInspire : carreIds) {
-            voisinages.put(idInspire, findNeighbors(idInspire, carreMap, urbanDistance));
+            voisinages.put(idInspire, findNeighbors(idInspire, squaresOnTerritoryMap, urbanDistance));
         }
 
         Model model = new Model("Park Area Optimization");
@@ -61,7 +61,7 @@ public class SolverV3ComputationStrategy extends AbstractComputationtrategy {
 
         // --- Variables : surface ajoutee par carre, en unites de UNIT_M2 m² ---
         for (String id : carreIds) {
-            ParkProposalWork carre = carreMap.get(id);
+            ParkProposalWork carre = squaresOnTerritoryMap.get(id);
             int population   = carre.getAccessingPopulation() != null ? carre.getAccessingPopulation().intValue() : 0;
             int surfaceExist = carre.getAccessingSurface()    != null ? carre.getAccessingSurface().intValue()    : 0;
 
@@ -105,7 +105,7 @@ public class SolverV3ComputationStrategy extends AbstractComputationtrategy {
         int maxObjectif = 0;
 
         for (String idInspire : carreIds) {
-            ParkProposalWork carre = carreMap.get(idInspire);
+            ParkProposalWork carre = squaresOnTerritoryMap.get(idInspire);
             int population   = carre.getAccessingPopulation() != null ? carre.getAccessingPopulation().intValue() : 0;
             int surfaceExist = carre.getAccessingSurface()    != null ? carre.getAccessingSurface().intValue()    : 0;
 
@@ -170,7 +170,7 @@ public class SolverV3ComputationStrategy extends AbstractComputationtrategy {
         }
 
         for (String idInspire : carreIds) {
-            ParkProposalWork carre = carreMap.get(idInspire);
+            ParkProposalWork carre = squaresOnTerritoryMap.get(idInspire);
             int addedM2 = additionsM2.get(idInspire);
 
             if (addedM2 > 0) {
@@ -202,7 +202,7 @@ public class SolverV3ComputationStrategy extends AbstractComputationtrategy {
             BigDecimal missing        = carre.getMissingSurface() != null ? carre.getMissingSurface() : BigDecimal.ZERO;
             BigDecimal updatedMissing = missing.subtract(BigDecimal.valueOf(totalAddedM2)).max(BigDecimal.ZERO);
             carre.setNewMissingSurface(updatedMissing);
-            carre.setNewSurface(BigDecimal.valueOf(addedM2));
+            carre.setNewAccessingSurface(BigDecimal.valueOf(addedM2));
         }
 
         log.info("Résolution terminée : {} propositions retenues.", proposals.size());

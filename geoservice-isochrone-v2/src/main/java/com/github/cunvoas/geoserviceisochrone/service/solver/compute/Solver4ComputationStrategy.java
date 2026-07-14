@@ -39,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
  * <p>Complexité : O(k × n) avec k ≤ {@value #MAX_ITER}, contre exponentiel pour le solver global.</p>
  */
 @Slf4j
+@Deprecated
 public class Solver4ComputationStrategy extends AbstractComputationtrategy {
 
     /** Unité de discrétisation en m². */
@@ -51,26 +52,26 @@ public class Solver4ComputationStrategy extends AbstractComputationtrategy {
     private static final int MAX_ITER = 20;
 
     @Override
-    public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
+    public List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap,
             Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
 
-        if (carreMap.isEmpty()) {
+        if (squaresOnTerritoryMap.isEmpty()) {
             log.warn("Carte des carrés vide, aucune proposition à calculer");
             return new ArrayList<>();
         }
 
-        log.info("Démarrage Solver3 itératif pour {} carrés (unite={}m²)", carreMap.size(), UNIT_M2);
+        log.info("Démarrage Solver3 itératif pour {} carrés (unite={}m²)", squaresOnTerritoryMap.size(), UNIT_M2);
 
-        List<String> carreIds = new ArrayList<>(carreMap.keySet());
+        List<String> carreIds = new ArrayList<>(squaresOnTerritoryMap.keySet());
 
         // Pré-calcul des voisinages
         Map<String, List<ParkProposalWork>> voisinages = new HashMap<>();
         for (String id : carreIds) {
-            voisinages.put(id, findNeighbors(id, carreMap, urbanDistance));
+            voisinages.put(id, findNeighbors(id, squaresOnTerritoryMap, urbanDistance));
         }
 
         // Passe 1 : besoin propre initial de chaque carré (en unités)
-        Map<String, Integer> besoinPropreMap = computeBesoinPropre(carreIds, carreMap, recoSquareMeterPerCapita);
+        Map<String, Integer> besoinPropreMap = computeBesoinPropre(carreIds, squaresOnTerritoryMap, recoSquareMeterPerCapita);
         log.info("Besoin propre calculé : {} zones déficitaires sur {} carrés",
             besoinPropreMap.values().stream().filter(b -> b >= MIN_UNITS).count(), carreIds.size());
 
@@ -109,7 +110,7 @@ public class Solver4ComputationStrategy extends AbstractComputationtrategy {
             if (!improved) break;
 
             // Propagation : recalcul du déficit résiduel pour tous les carrés (couverture à 300m)
-            updateResidualDeficits(residualUnitsMap, additionsM2, carreIds, carreMap,
+            updateResidualDeficits(residualUnitsMap, additionsM2, carreIds, squaresOnTerritoryMap,
                 voisinages, recoSquareMeterPerCapita);
 
             iter++;
@@ -131,7 +132,7 @@ public class Solver4ComputationStrategy extends AbstractComputationtrategy {
                     additionsM2.merge(id, residual * UNIT_M2, Integer::sum);
                 }
             }
-            updateResidualDeficits(residualUnitsMap, additionsM2, carreIds, carreMap,
+            updateResidualDeficits(residualUnitsMap, additionsM2, carreIds, squaresOnTerritoryMap,
                 voisinages, recoSquareMeterPerCapita);
             long residualAfterFinal = residualUnitsMap.values().stream()
                 .filter(b -> b >= MIN_UNITS).count();
@@ -143,7 +144,7 @@ public class Solver4ComputationStrategy extends AbstractComputationtrategy {
             }
         }
 
-        return buildProposals(carreIds, carreMap, additionsM2, voisinages);
+        return buildProposals(carreIds, squaresOnTerritoryMap, additionsM2, voisinages);
     }
 
     // -------------------------------------------------------------------------
@@ -151,10 +152,10 @@ public class Solver4ComputationStrategy extends AbstractComputationtrategy {
     // -------------------------------------------------------------------------
 
     private Map<String, Integer> computeBesoinPropre(
-            List<String> carreIds, Map<String, ParkProposalWork> carreMap, double reco) {
+            List<String> carreIds, Map<String, ParkProposalWork> squaresOnTerritoryMap, double reco) {
         Map<String, Integer> result = new HashMap<>();
         for (String id : carreIds) {
-            ParkProposalWork c = carreMap.get(id);
+            ParkProposalWork c = squaresOnTerritoryMap.get(id);
             int pop  = c.getAccessingPopulation() != null ? c.getAccessingPopulation().intValue() : 0;
             int surf = c.getAccessingSurface()    != null ? c.getAccessingSurface().intValue()    : 0;
             int besoin = pop > 0
@@ -360,12 +361,12 @@ public class Solver4ComputationStrategy extends AbstractComputationtrategy {
             Map<String, Integer> residualUnitsMap,
             Map<String, Integer> additionsM2,
             List<String> carreIds,
-            Map<String, ParkProposalWork> carreMap,
+            Map<String, ParkProposalWork> squaresOnTerritoryMap,
             Map<String, List<ParkProposalWork>> voisinages,
             double reco) {
 
         for (String id : carreIds) {
-            ParkProposalWork c = carreMap.get(id);
+            ParkProposalWork c = squaresOnTerritoryMap.get(id);
             int pop  = c.getAccessingPopulation() != null ? c.getAccessingPopulation().intValue() : 0;
             int surf = c.getAccessingSurface()    != null ? c.getAccessingSurface().intValue()    : 0;
             if (pop == 0) {
@@ -391,14 +392,14 @@ public class Solver4ComputationStrategy extends AbstractComputationtrategy {
 
     private List<ParkProposal> buildProposals(
             List<String> carreIds,
-            Map<String, ParkProposalWork> carreMap,
+            Map<String, ParkProposalWork> squaresOnTerritoryMap,
             Map<String, Integer> additionsM2,
             Map<String, List<ParkProposalWork>> voisinages) {
 
         List<ParkProposal> proposals = new ArrayList<>();
 
         for (String idInspire : carreIds) {
-            ParkProposalWork carre = carreMap.get(idInspire);
+            ParkProposalWork carre = squaresOnTerritoryMap.get(idInspire);
             int addedM2 = additionsM2.getOrDefault(idInspire, 0);
 
             if (addedM2 > 0) {
@@ -429,7 +430,7 @@ public class Solver4ComputationStrategy extends AbstractComputationtrategy {
 
             BigDecimal missing = carre.getMissingSurface() != null ? carre.getMissingSurface() : BigDecimal.ZERO;
             carre.setNewMissingSurface(missing.subtract(BigDecimal.valueOf(totalAddedM2)).max(BigDecimal.ZERO));
-            carre.setNewSurface(BigDecimal.valueOf(addedM2));
+            carre.setNewAccessingSurface(BigDecimal.valueOf(addedM2));
         }
 
         log.info("Résolution terminée : {} propositions retenues.", proposals.size());
