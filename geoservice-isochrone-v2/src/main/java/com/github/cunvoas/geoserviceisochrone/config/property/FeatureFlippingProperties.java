@@ -39,8 +39,22 @@ public class FeatureFlippingProperties {
 	 * activate services sendEmail.
 	 */
 	private boolean sendEmail = false;
-	
-	
-	
-	
+
+	/**
+	 * CPU temperature threshold (°C) for batch inhibition.
+	 * When the metrics endpoint reports cpu_temperature above this value,
+	 * processShapes and processCarres are skipped.
+	 */
+	private double cpuTempThreshold = 75.0;
+
+	/**
+	 * Prometheus metrics endpoint URL for CPU temperature check.
+	 */
+	private String cpuMetricsUrl = "http://192.168.1.30:1081/metrics";
+
+	/**
+	 * Timeout in milliseconds for the CPU metrics HTTP call.
+	 */
+	private int cpuMetricsTimeoutMs = 2000;
+
 }

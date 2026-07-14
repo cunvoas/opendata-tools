@@ -18,6 +18,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyS
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalMeta;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWorkId;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalMetaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
@@ -27,8 +28,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyS
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.AbstractComputationtrategy;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategy;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategyFactory;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationStrategyFactory;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -79,18 +80,34 @@ public class ServicePropositionParc {
 	}
 	
 	public void deleteParkProposal(Long metaId) {
-		List<ParkProposal> props = parkProposalRepository.findParkProposalByIdMeta(metaId);
 		
-		List<InseeCarre200mComputedId> ids = props.stream().map(p -> {
-			InseeCarre200mComputedId id = new InseeCarre200mComputedId();
-			id.setAnnee(p.getAnnee());
-			id.setIdInspire(p.getIdInspire());
-			return id;
-		}).collect(java.util.stream.Collectors.toList());
+		Optional<ParkProposalMeta> oMeta = parkProposalMetaRepository.findById(metaId);
+		if (oMeta.isPresent()) {
+			ParkProposalMeta meta = oMeta.get();
+			
+			// list des idInspire par insee
+			List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findByCodeInsee( meta.getInsee());
+			List<ParkProposalWorkId> idWorks = carreShapes.stream().map(p -> {
+				ParkProposalWorkId id = new ParkProposalWorkId();
+				id.setAnnee(meta.getAnnee());
+				id.setIdInspire(p.getIdInspire());
+				id.setTypeAlgo(meta.getTypeAlgo());
+				return id;
+			}).collect(java.util.stream.Collectors.toList());
+			parkProposalWorkRepository.deleteAllById(idWorks);
+			
+			
+			List<ParkProposal> props = parkProposalRepository.findParkProposalByIdMeta(metaId);
+			List<InseeCarre200mComputedId> ids = props.stream().map(p -> {
+				InseeCarre200mComputedId id = new InseeCarre200mComputedId();
+				id.setAnnee(p.getAnnee());
+				id.setIdInspire(p.getIdInspire());
+				return id;
+			}).collect(java.util.stream.Collectors.toList());
+			parkProposalRepository.deleteAll(props);
+			parkProposalMetaRepository.deleteById(metaId);
 
-		parkProposalWorkRepository.deleteAllById(ids);
-		parkProposalRepository.deleteAll(props);
-		parkProposalMetaRepository.deleteById(metaId);
+		}
 	}
 	
 	/**
@@ -120,16 +137,17 @@ public class ServicePropositionParc {
 		List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findCarreByInseeCode(insee, true);
 		
 		//préparation des données pour le calcul
-		Map<String, ParkProposalWork> carreMap = new HashMap<>();
+		Map<String, ParkProposalWork> squaresOnTerritoryMap = new HashMap<>();
 		for (InseeCarre200mOnlyShape shape : carreShapes) {
 			Optional<InseeCarre200mComputedV2> oCarreCputd = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
 			if (oCarreCputd.isPresent()) {
 				InseeCarre200mComputedV2 carreCputd = oCarreCputd.get();
-				Filosofil200m filo = filosofil200mRepository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
+//				Filosofil200m filo = filosofil200mRepository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
 				
 				ParkProposalWork parkProposal = new ParkProposalWork();
 				parkProposal.setAnnee(annee);
 				parkProposal.setIdInspire(shape.getIdInspire());
+				parkProposal.setTypeAlgo(typeAlgo);
 				parkProposal.setCentre(shape.getGeoPoint2d());
 				parkProposal.setIsDense(dense);
 				parkProposal.setSurfacePerCapita(carreCputd.getSurfaceParkPerCapitaOms());
@@ -137,34 +155,31 @@ public class ServicePropositionParc {
 				// ( Seuil OMS – MAX (0, surface disponible  - seuil OMS) ) * Nb Habitant qui ont accès
 				Double densiteMissing = Math.max(recoSquareMeterPerCapita - carreCputd.getSurfaceParkPerCapitaOms().doubleValue(), 0);
 				
-				BigDecimal popAll =carreCputd.getPopAll();
-				if (popAll==null) {
-					popAll=BigDecimal.ZERO;
+				BigDecimal popToAnalyse = carreCputd.getPopAll();
+				if (popToAnalyse==null) {
+					popToAnalyse=BigDecimal.ZERO;
 				}
-				parkProposal.setMissingSurface(BigDecimal.valueOf(densiteMissing*popAll.doubleValue())); 
-				parkProposal.setAccessingPopulation(carreCputd.getPopAll());
+				// données d'origine pour avaoir avant/après
+				parkProposal.setMissingSurface(BigDecimal.valueOf(densiteMissing*popToAnalyse.doubleValue())); 
+				parkProposal.setLocalPopulation(carreCputd.getPopAll());
+				parkProposal.setAccessingPopulation(carreCputd.getPopIncluded());
 				parkProposal.setAccessingSurface(carreCputd.getSurfaceTotalParkOms());
 				
-
-				try {
-					parkProposal.setLocalPopulation(filo!=null?filo.getNbIndividus():BigDecimal.ZERO);
-				} catch (Exception e) {
-					log.warn("CRASH: Filosofil {}",  shape.getIdInspire());
-				}
-				parkProposal.setNewSurface(parkProposal.getAccessingSurface()); 
-				parkProposal.setNewSurfacePerCapita(parkProposal.getSurfacePerCapita()); 
-				parkProposal.setNewMissingSurface(parkProposal.getMissingSurface()); 
-				carreMap.put(shape.getIdInspire(), parkProposal);
+				// clone des données d'origines qui seront travaillées pour des propositions
+				parkProposal.setNewAccessingSurface(cloneBigDecimal(parkProposal.getAccessingSurface())); 
+				parkProposal.setNewSurfacePerCapita(cloneBigDecimal(parkProposal.getSurfacePerCapita())); 
+				parkProposal.setNewMissingSurface(cloneBigDecimal(parkProposal.getMissingSurface())); 
+				squaresOnTerritoryMap.put(shape.getIdInspire(), parkProposal);
 			} else {
 				log.info("Pas de données Filosofil pour le carré {} en {}", shape.getIdInspire(), annee);
 			}
 		}
 		
-		if (carreMap.isEmpty()) {
+		if (squaresOnTerritoryMap.isEmpty()) {
 			log.info("Aucun carré avec données pour la commune {} en {}", insee, annee);
 		} else  {
 			log.info("Calcul des propositions pour {} carrés dans la commune {} en {} (dense={}): reco={} m²/hab, min={} m²/hab, distance={} m", 
-					carreMap.size(), insee, annee, dense, recoSquareMeterPerCapita, minSquareMeterPerCapita, urbanDistance);
+					squaresOnTerritoryMap.size(), insee, annee, dense, recoSquareMeterPerCapita, minSquareMeterPerCapita, urbanDistance);
 		}
 		
 		ParkProposalMeta ppm  = parkProposalMetaRepository.findByAnneeAndInseeAndTypeAlgo(annee, insee, typeAlgo);
@@ -180,7 +195,10 @@ public class ServicePropositionParc {
 		
 		// ALGO chargé via factory
 		ProposalComputationStrategy computation = ProposalComputationStrategyFactory.create(typeAlgo, AbstractComputationtrategy.MIN_PARK_SURFACE);
-		proposals = computation.compute(carreMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
+		
+		log.warn("ALGO={}, IMPL={}", typeAlgo.getDisplayName(), computation.getClass().getName());
+		
+		proposals = computation.compute(squaresOnTerritoryMap, minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
 		
 		
 		if (proposals!=null && !proposals.isEmpty()) {
@@ -197,14 +215,22 @@ public class ServicePropositionParc {
 			
 			parkProposalRepository.saveAll(proposals);
 			parkProposalMetaRepository.save(ppm);
+			parkProposalWorkRepository.saveAll(squaresOnTerritoryMap.values());
 		} else {
 			log.warn("Aucune proposition calculée pour la commune {} en {}", insee, annee);
 		}
-		return carreMap;
+		return squaresOnTerritoryMap;
 	}
 	
 	public List<ProposalComputationTypeAlgo> getAvailableAlgorithms() {
 		return ProposalComputationStrategyFactory.getAvailableTypes();
 	}
 	
+	private BigDecimal cloneBigDecimal(BigDecimal toClone) {
+	    if (toClone == null) {
+	        return null;
+	    }
+	    return new BigDecimal(toClone.unscaledValue(), toClone.scale());
+	}
+
 }

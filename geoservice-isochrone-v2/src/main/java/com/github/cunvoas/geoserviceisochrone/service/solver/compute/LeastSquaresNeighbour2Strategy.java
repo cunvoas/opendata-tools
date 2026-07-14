@@ -94,35 +94,35 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
      *       {@code newMissingSurface} borne a 0).</li>
      * </ol>
      *
-     * @param carreMap                carte des carreaux indexee par idInspire (modifiee in-place)
+     * @param squaresOnTerritoryMap                carte des carreaux indexee par idInspire (modifiee in-place)
      * @param minSquareMeterPerCapita  seuil en dessous duquel un carreau est deficitaire (m²/hab)
      * @param recoSquareMeterPerCapita objectif OMS de surface par habitant (m²/hab, ex : 12)
      * @param urbanDistance            rayon d'accessibilite pour la propagation aux voisins (metres)
      * @return liste des {@link ParkProposal} retenues (&ge; {@code MIN_PARK_SURFACE} m²)
      */
     @Override
-    public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
+    public List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap,
             Double minSquareMeterPerCapita,
             Double recoSquareMeterPerCapita,
             Integer urbanDistance) {
 
         List<ParkProposal> proposals = new ArrayList<>();
-        if (carreMap == null || carreMap.isEmpty()) {
+        if (squaresOnTerritoryMap == null || squaresOnTerritoryMap.isEmpty()) {
             log.warn("Carte vide, aucune proposition par moindres carres.");
             return proposals;
         }
 
         // Boucle iterative : le pas chi2 est inferieur au deficit reel (addition partielle par iteration),
-        // il faut donc beaucoup plus d'iterations que carreMap.size() pour converger.
+        // il faut donc beaucoup plus d'iterations que squaresOnTerritoryMap.size() pour converger.
         // Le facteur 10 offre une marge suffisante sans risquer une boucle infinie.
-        int maxIterations = carreMap.size() * 100;
+        int maxIterations = squaresOnTerritoryMap.size() * 100;
         for (int step = 0; step < maxIterations; step++) {
 
             // --- Etape 1 : Construire les observations chi2 sur les carreaux deficitaires ---
             WeightedObservedPoints observedPoints = new WeightedObservedPoints();
-            carreMap.values().forEach(work -> {
+            squaresOnTerritoryMap.values().forEach(work -> {
                 double population = work.getAccessingPopulation() != null ? work.getAccessingPopulation().doubleValue() : 0d;
-                double surfacePerCapita = work.getSurfacePerCapita() != null ? work.getSurfacePerCapita().doubleValue() : 0d;
+                double surfacePerCapita = work.getNewSurfacePerCapita() != null ? work.getNewSurfacePerCapita().doubleValue() : 0d;
                 if (population <= 0) {
                     return;
                 }
@@ -147,14 +147,14 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
             log.info("Iteration {} : addition estimee par chi2 = {} m2/hab", step, additionPerCapita);
 
             // --- Etape 3 : Selectionner le carreau avec le plus grand deficit ---
-            List<ParkProposalWork> sorted = sortProposalsByDeficit(carreMap);
+            List<ParkProposalWork> sorted = sortProposalsByDeficit(squaresOnTerritoryMap);
             if (sorted.isEmpty()) {
                 break;
             }
             ParkProposalWork toProcess = sorted.get(0);
 
             // --- Etape 4 : Verifier que le carreau est encore deficitaire ---
-            double surfacePerCapita = toProcess.getSurfacePerCapita() != null ? toProcess.getSurfacePerCapita().doubleValue() : 0d;
+            double surfacePerCapita = toProcess.getNewSurfacePerCapita() != null ? toProcess.getNewSurfacePerCapita().doubleValue() : 0d;
             if (surfacePerCapita > minSquareMeterPerCapita) {
                 log.info("Iteration {} : tous les carreaux sont traites (meilleur = {} m2/hab).", step, surfacePerCapita);
                 break;
@@ -190,7 +190,7 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
             proposals.add(proposal);
 
             // newSurface = surface du nouveau parc propose (remplace, pas cumul)
-            toProcess.setNewSurface(BigDecimal.valueOf(newParkSurface));
+            toProcess.setNewAccessingSurface(BigDecimal.valueOf(newParkSurface));
             // newMissingSurface diminue du parc ajoute (pas de max(0) : conforme a la reference)
             toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
 
@@ -199,21 +199,21 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
             // Sans cette mutation, une propagation entrante recalculerait la base sans la contribution
             // de cet iteration et ferait baisser surfacePerCapita en dessous de sa vraie valeur.
             double newTotalSurface = toProcess.getAccessingSurface().doubleValue() + newParkSurface;
-            toProcess.setAccessingSurface(BigDecimal.valueOf(newTotalSurface));
+            toProcess.setNewAccessingSurface(BigDecimal.valueOf(newTotalSurface));
             double newSurfacePerCapita = newTotalSurface / population;
-            toProcess.setSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
+            toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
 
             // --- Etape 7 : Propager la surface ajoutee aux voisins dans le rayon d'accessibilite ---
             // La nouvelle surface est positionnee sur le centre et recalculee vis-a-vis de la population de chaque voisin
-            List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), carreMap, urbanDistance);
+            List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
             for (ParkProposalWork neighbor : neighbors) {
                 // Alignement D1: accessingSurface est mute comme accumulateur de surface totale accessible.
                 // Quand ce voisin devient carreau central, newTotalSurface = accessingSurface (enrichi) + delta → juste.
                 // Sans cette mutation, newTotalSurface ignore les enrichissements recus via propagation → sous-estimation.
-                double neighborTotalSurface = neighbor.getAccessingSurface().doubleValue() + newParkSurface;
-                neighbor.setAccessingSurface(BigDecimal.valueOf(neighborTotalSurface));
+                double neighborTotalSurface = neighbor.getNewAccessingSurface().doubleValue() + newParkSurface;
+                neighbor.setNewAccessingSurface(BigDecimal.valueOf(neighborTotalSurface));
                 // newSurface = delta du parc ajoute (meme semantique que D1, pas le total)
-                neighbor.setNewSurface(BigDecimal.valueOf(newParkSurface));
+                neighbor.setNewAccessingSurface(BigDecimal.valueOf(newParkSurface));
 
                 // null-check sur accessingPopulation
                 double neighborPopulation = neighbor.getAccessingPopulation() != null
@@ -223,7 +223,7 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
                     neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborSurfacePerCapita));
                     // FIX (D): Mettre a jour surfacePerCapita pour que les observations chi2 futures
                     // excluent ce voisin si son deficit est comble (etape 1 filtre sur surfacePerCapita)
-                    neighbor.setSurfacePerCapita(BigDecimal.valueOf(neighborSurfacePerCapita));
+                    neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborSurfacePerCapita));
                 } else {
                     neighbor.setNewSurfacePerCapita(null);
                 }
@@ -231,8 +231,8 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
                 // FIX (C): Baser la mise a jour sur le newMissingSurface propre au voisin
                 // L'ancien code utilisait toProcess.getNewMissingSurface() (valeur du carreau CENTRAL
                 // apres soustraction a l'etape 6) puis soustrayait newParkSurface une 2e fois.
-                BigDecimal neighborFallbackMissing = neighbor.getMissingSurface() != null
-                    ? neighbor.getMissingSurface() : BigDecimal.ZERO;
+                BigDecimal neighborFallbackMissing = neighbor.getNewMissingSurface() != null
+                    ? neighbor.getNewMissingSurface() : BigDecimal.ZERO;
                 BigDecimal neighborCurrentMissing = neighbor.getNewMissingSurface() != null
                     ? neighbor.getNewMissingSurface() : neighborFallbackMissing;
                 neighbor.setNewMissingSurface(

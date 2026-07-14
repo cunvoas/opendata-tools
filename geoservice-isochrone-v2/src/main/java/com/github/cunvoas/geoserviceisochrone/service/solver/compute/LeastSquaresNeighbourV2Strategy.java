@@ -72,33 +72,33 @@ public class LeastSquaresNeighbourV2Strategy extends AbstractComputationtrategy 
      *   <li>Recommencer jusqu'a ce qu'il n'y ait plus de deficit ou que tous les carreaux soient traites.</li>
      * </ol>
      *
-     * @param carreMap               carte des carreaux indexee par idInspire (modifiee in-place)
+     * @param squaresOnTerritoryMap               carte des carreaux indexee par idInspire (modifiee in-place)
      * @param minSquareMeterPerCapita seuil en dessous duquel un carreau est considere deficitaire (m²/hab)
      * @param recoSquareMeterPerCapita objectif de surface par habitant a atteindre (m²/hab, ex: 12 m²/hab OMS)
      * @param urbanDistance           rayon d'accessibilite pour la propagation aux voisins (metres)
      * @return liste des {@link ParkProposal} retenues (&gt;= MIN_PARK_SURFACE m²)
      */
     @Override
-    public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
+    public List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap,
             Double minSquareMeterPerCapita,
             Double recoSquareMeterPerCapita,
             Integer urbanDistance) {
 
         List<ParkProposal> proposals = new ArrayList<>();
-        if (carreMap == null || carreMap.isEmpty()) {
+        if (squaresOnTerritoryMap == null || squaresOnTerritoryMap.isEmpty()) {
             log.warn("Carte vide, aucune proposition par moindres carres.");
             return proposals;
         }
 
         // Boucle iterative : le pas chi2 est inferieur au deficit reel (addition partielle par iteration),
-        // il faut donc beaucoup plus d'iterations que carreMap.size() pour converger.
+        // il faut donc beaucoup plus d'iterations que squaresOnTerritoryMap.size() pour converger.
         // Le facteur 10 offre une marge suffisante sans risquer une boucle infinie.
-        int maxIterations = carreMap.size() * 100;
+        int maxIterations = squaresOnTerritoryMap.size() * 100;
         for (int step = 0; step < maxIterations; step++) {
 
             // --- Etape 1 : Construire les observations chi2 sur les carreaux deficitaires ---
             WeightedObservedPoints observedPoints = new WeightedObservedPoints();
-            carreMap.values().forEach(work -> {
+            squaresOnTerritoryMap.values().forEach(work -> {
                 double population = work.getAccessingPopulation() != null ? work.getAccessingPopulation().doubleValue() : 0d;
                 double surfacePerCapita = work.getSurfacePerCapita() != null ? work.getSurfacePerCapita().doubleValue() : 0d;
                 if (population <= 0) {
@@ -125,7 +125,7 @@ public class LeastSquaresNeighbourV2Strategy extends AbstractComputationtrategy 
             log.info("Iteration {} : addition estimee par chi2 = {} m2/hab", step, additionPerCapita);
 
             // --- Etape 3 : Selectionner le carreau avec le plus grand deficit ---
-            List<ParkProposalWork> sorted = sortProposalsByDeficit(carreMap);
+            List<ParkProposalWork> sorted = sortProposalsByDeficit(squaresOnTerritoryMap);
             if (sorted.isEmpty()) {
                 break;
             }
@@ -166,7 +166,7 @@ public class LeastSquaresNeighbourV2Strategy extends AbstractComputationtrategy 
             proposals.add(proposal);
 
             // newSurface = surface du nouveau parc propose (remplace, pas cumul)
-            toProcess.setNewSurface(BigDecimal.valueOf(newParkSurface));
+            toProcess.setNewAccessingSurface(BigDecimal.valueOf(newParkSurface));
             // newMissingSurface diminue du parc ajoute (pas de max(0) : conforme a la reference)
             toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
 
@@ -178,12 +178,12 @@ public class LeastSquaresNeighbourV2Strategy extends AbstractComputationtrategy 
 
             // --- Etape 7 : Propager la surface ajoutee aux voisins dans le rayon d'accessibilite ---
             // La nouvelle surface est positionnee sur le centre et recalculee vis-a-vis de la population de chaque voisin
-            List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), carreMap, urbanDistance);
+            List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
             for (ParkProposalWork neighbor : neighbors) {
                 // Base initiale du voisin : accessingSurface (jamais modifie)
                 double neighborTotalSurface = neighbor.getAccessingSurface().doubleValue() + newParkSurface;
 
-                neighbor.setNewSurface(new BigDecimal(String.valueOf(neighborTotalSurface)));
+                neighbor.setNewAccessingSurface(new BigDecimal(String.valueOf(neighborTotalSurface)));
 
                 double neighborPopulation = neighbor.getAccessingPopulation().doubleValue();
                 if (neighborPopulation != 0) {

@@ -2,7 +2,7 @@ package com.github.cunvoas.geoserviceisochrone.controller.form;
 
 import java.time.Year;
 
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

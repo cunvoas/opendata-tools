@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
  * Iterative computation using calculeEtapeProposition over all squares.
  */
 @Slf4j
+@Deprecated
 public class IterativeComputationDeficit1Strategy extends AbstractComputationtrategy  {
 
     private final double minParkSurface;
@@ -24,14 +25,14 @@ public class IterativeComputationDeficit1Strategy extends AbstractComputationtra
     }
 
     @Override
-    public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
+    public List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap,
                                       Double minSquareMeterPerCapita,
                                       Double recoSquareMeterPerCapita,
                                       Integer urbanDistance) {
     	
         List<ParkProposal> proposals = new ArrayList<>();
-        for (int i = 0; i < carreMap.size(); i++) {
-            ParkProposal proposal = calculeEtapeProposition(minParkSurface, carreMap,
+        for (int i = 0; i < squaresOnTerritoryMap.size(); i++) {
+            ParkProposal proposal = calculeEtapeProposition(minParkSurface, squaresOnTerritoryMap,
                     minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
             if (proposal != null) {
                 proposals.add(proposal);
@@ -81,7 +82,7 @@ public class IterativeComputationDeficit1Strategy extends AbstractComputationtra
 	 *   <li>{@code accessingSurface} : surface totale accessible mise à jour</li>
 	 * </ul>
 	 * 
-	 * @param carreMap la carte des propositions de parc indexée par idInspire.
+	 * @param squaresOnTerritoryMap la carte des propositions de parc indexée par idInspire.
 	 *                 Chaque {@link ParkProposalWork} contient les données démographiques et surfaciques.
 	 *                 Cette map est modifiée par la méthode.
 	 * @param minSquareMeterPerCapita seuil minimal de surface de parc par habitant (m²/hab).
@@ -100,77 +101,80 @@ public class IterativeComputationDeficit1Strategy extends AbstractComputationtra
 	 * 
 	 * @author github.com/cunvoas
 	 */
-	public ParkProposal calculeEtapeProposition(Double minParkSurface, Map<String, ParkProposalWork> carreMap,  Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
-		List<ParkProposalWork> sorted = sortProposalsByDeficit(carreMap);
-		//List<ParkProposalWork> sorted = sortProposalsByPersona(carreMap);
+	public ParkProposal calculeEtapeProposition(Double minParkSurface, Map<String, ParkProposalWork> squaresOnTerritoryMap,  Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
+		List<ParkProposalWork> sorted = sortProposalsByDeficit(squaresOnTerritoryMap);
+		//List<ParkProposalWork> sorted = sortProposalsByPersona(squaresOnTerritoryMap);
 		
 		ParkProposal proposalResult = null;
 		if (!sorted.isEmpty()) {
 			ParkProposalWork toProcess = sorted.get(0);
-			if (toProcess.getSurfacePerCapita().doubleValue() > minSquareMeterPerCapita) {
+			if (toProcess.getNewSurfacePerCapita().doubleValue() > minSquareMeterPerCapita) {
 				log.info("Toutes les propositions de la commune sont traitées.");
 				return proposalResult;
 			}
-			List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), carreMap, urbanDistance);
+			List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
 
 			// calcul de la surface de parc à ajouter pour atteindre la densité recommandée
 			// comprise entre 0 et 40 000 m² (surface max d'un carré de 200m x 200m)
-			Double newParkSurface = 
+			// il faut travailler avec les attibuts "New" afin de reporter les itération de préconisation
+			Double newAccessibleParkSurface = 
 					Math.min(
 							Math.max(
-									recoSquareMeterPerCapita-toProcess.getSurfacePerCapita().doubleValue(),
+									recoSquareMeterPerCapita-toProcess.getNewSurfacePerCapita().doubleValue(),
 									0), 
 						AbstractComputationtrategy.CARRE_SURFACE
 						) * toProcess.getAccessingPopulation().doubleValue();
 			
-			if (newParkSurface>=minParkSurface) {
+			// Bug Fix: Surface ajoutée à reporter dans les newAccessingSurface des voisins (neighbor)
+			Double addedSurface = newAccessibleParkSurface - toProcess.getNewAccessingSurface().doubleValue();
+			
+			if (addedSurface>=minParkSurface) {
 				
 				proposalResult = new ParkProposal();
 				proposalResult.setAnnee(toProcess.getAnnee());
 				proposalResult.setIdInspire(toProcess.getIdInspire());
-				proposalResult.setParkSurface(BigDecimal.valueOf(newParkSurface));
+				proposalResult.setParkSurface(BigDecimal.valueOf(newAccessibleParkSurface));
 				proposalResult.setCentre(toProcess.getCentre());
 				proposalResult.setIsDense(toProcess.getIsDense());
 				
 				// appliquer la proposition
-				toProcess.setNewSurface(BigDecimal.valueOf(newParkSurface));
-				toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
+				toProcess.setNewAccessingSurface(BigDecimal.valueOf(newAccessibleParkSurface));
+				toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(addedSurface)));
 				
 				// mettre à jour la surface par habitant
-				Double newTotalSurface = toProcess.getAccessingSurface().doubleValue() + newParkSurface;
+				Double newTotalSurface = toProcess.getAccessingSurface().doubleValue() + newAccessibleParkSurface;
 				Double newSurfacePerCapita = newTotalSurface / toProcess.getAccessingPopulation().doubleValue();
 				toProcess.setSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
 				
 				// mettre à jour les voisins
 				for (ParkProposalWork neighbor : neighbors) {
-					Double neighborNewTotalSurface = neighbor.getAccessingSurface().doubleValue() + newParkSurface;
+					Double neighborNewTotalSurface = neighbor.getAccessingSurface().doubleValue() + addedSurface;
 					
 					Double neighborNewSurfacePerCapita = null;
 					if ( neighbor.getAccessingPopulation().doubleValue()!=0)	{
-						//log.error("neighbor {} accessingPopulation={}", neighbor.getIdInspire(), neighbor.getAccessingPopulation().doubleValue());
+						// log.error("neighbor {} accessingPopulation={}", neighbor.getIdInspire(), neighbor.getAccessingPopulation().doubleValue());
 						
-						neighborNewSurfacePerCapita = neighborNewTotalSurface / neighbor.getAccessingPopulation().doubleValue();
+						neighbor.setNewAccessingSurface(neighbor.getSurfacePerCapita().add(BigDecimal.valueOf(addedSurface)));
+						neighborNewSurfacePerCapita = neighbor.getNewAccessingSurface().doubleValue()  / neighbor.getAccessingPopulation().doubleValue();
 						neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborNewSurfacePerCapita));
 					
 					} else {
 						neighbor.setNewSurfacePerCapita(null);
 					}
 					// accessingSurface doit être mis à jour pour que les itérations suivantes
-					// calculent correctement le newTotalSurface de ce voisin quand il devient toProcess.
-					neighbor.setAccessingSurface(BigDecimal.valueOf(neighborNewTotalSurface));
-					// setNewSurface stocke le delta (surface du parc ajouté), pas le total accessible.
-					neighbor.setNewSurface(BigDecimal.valueOf(newParkSurface));
+					// setAccessingNewSurface stocke le delta (surface du parc ajouté), pas le total accessible.
+					neighbor.setNewAccessingSurface(BigDecimal.valueOf(newAccessibleParkSurface));
 					// setNewMissingSurface doit utiliser le déficit du voisin, pas celui de toProcess.
-					neighbor.setNewMissingSurface(neighbor.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)).max(BigDecimal.ZERO));
+					neighbor.setNewMissingSurface(neighbor.getNewMissingSurface().subtract(BigDecimal.valueOf(newAccessibleParkSurface)).max(BigDecimal.ZERO));
 				}
 				
 				log.error("Proposition pour le carré {} : ajout de parc (surface proposée: {}).", 
-						toProcess.getIdInspire(), newParkSurface);
+						toProcess.getIdInspire(), newAccessibleParkSurface);
 				
 			} else {
 				log.info("Proposition pour le carré {} : pas d'ajout de parc (surface proposée: {}).", 
 						toProcess.getIdInspire(), AbstractComputationtrategy.MIN_PARK_SURFACE);
-				//toProcess.setNewSurface(null);
+				//toProcess.setNewAccessingSurface(null);
 			}
 		}
 		return proposalResult;

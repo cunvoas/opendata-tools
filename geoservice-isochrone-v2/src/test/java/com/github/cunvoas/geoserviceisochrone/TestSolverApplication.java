@@ -16,7 +16,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.service.solver.ServicePropositionParc;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
 
 import lombok.extern.slf4j.Slf4j;
 

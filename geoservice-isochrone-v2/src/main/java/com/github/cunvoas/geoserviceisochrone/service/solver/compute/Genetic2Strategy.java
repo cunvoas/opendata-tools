@@ -49,6 +49,7 @@ import lombok.extern.slf4j.Slf4j;
  * </ul>
  */
 @Slf4j
+@Deprecated
 public class Genetic2Strategy extends AbstractComputationtrategy {
 
     // ── Paramètres AG ──────────────────────────────────────────────────────────
@@ -229,15 +230,15 @@ public class Genetic2Strategy extends AbstractComputationtrategy {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Override
-    public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
+    public List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap,
                                       Double minSquareMeterPerCapita,
                                       Double recoSquareMeterPerCapita,
                                       Integer urbanDistance) {
 
         // Ordre stable des carrés : on travaille sur une liste indexée
-        List<String>             keys   = new ArrayList<>(carreMap.keySet());
+        List<String>             keys   = new ArrayList<>(squaresOnTerritoryMap.keySet());
         List<ParkProposalWork>   carres = new ArrayList<>();
-        for (String k : keys) carres.add(carreMap.get(k));
+        for (String k : keys) carres.add(squaresOnTerritoryMap.get(k));
 
         int n = carres.size();
         if (n == 0) return new ArrayList<>();
@@ -293,12 +294,12 @@ public class Genetic2Strategy extends AbstractComputationtrategy {
         log.info("AG terminé après {} générations. Fitness du meilleur : {}",
                 MAX_GENERATIONS, best.fitness());
 
-        return decodeChromosome(genes, keys, carreMap, carres,
+        return decodeChromosome(genes, keys, squaresOnTerritoryMap, carres,
                 minSquareMeterPerCapita, urbanDistance);
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    //  Décodage & mise à jour de la carreMap
+    //  Décodage & mise à jour de la squaresOnTerritoryMap
     // ══════════════════════════════════════════════════════════════════════════
 
     /**
@@ -335,7 +336,7 @@ public class Genetic2Strategy extends AbstractComputationtrategy {
 
     private List<ParkProposal> decodeChromosome(List<Double>                  genes,
                                                  List<String>                  keys,
-                                                 Map<String, ParkProposalWork> carreMap,
+                                                 Map<String, ParkProposalWork> squaresOnTerritoryMap,
                                                  List<ParkProposalWork>        carres,
                                                  Double                        minSpc,
                                                  Integer                       urbanDistance) {
@@ -383,7 +384,7 @@ public class Genetic2Strategy extends AbstractComputationtrategy {
             // ── Mettre à jour le carré courant ───────────────────────────────
             double newTotalSurface = carre.getAccessingSurface().doubleValue() + newParkSurface;
             carre.setAccessingSurface(BigDecimal.valueOf(newTotalSurface));
-            carre.setNewSurface(BigDecimal.valueOf(newParkSurface));
+            carre.setNewAccessingSurface(BigDecimal.valueOf(newParkSurface));
             carre.setNewMissingSurface(
                     carre.getNewMissingSurface()
                          .subtract(BigDecimal.valueOf(newParkSurface))
@@ -399,12 +400,12 @@ public class Genetic2Strategy extends AbstractComputationtrategy {
             // accessingSurface de chaque voisin est incrémentée de newParkSurface
             // pour que les carrés traités ensuite dans cette boucle bénéficient
             // de cet ajout (propagation cumulative correcte).
-            List<ParkProposalWork> neighbors = findNeighbors(carre.getIdInspire(), carreMap, urbanDistance);
+            List<ParkProposalWork> neighbors = findNeighbors(carre.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
             for (ParkProposalWork neighbor : neighbors) {
                 double neighborNewTotalSurface =
                         neighbor.getAccessingSurface().doubleValue() + newParkSurface;
                 neighbor.setAccessingSurface(BigDecimal.valueOf(neighborNewTotalSurface));
-                neighbor.setNewSurface(BigDecimal.valueOf(neighborNewTotalSurface));
+                neighbor.setNewAccessingSurface(BigDecimal.valueOf(neighborNewTotalSurface));
                 neighbor.setNewMissingSurface(
                         neighbor.getNewMissingSurface()
                                 .subtract(BigDecimal.valueOf(newParkSurface))

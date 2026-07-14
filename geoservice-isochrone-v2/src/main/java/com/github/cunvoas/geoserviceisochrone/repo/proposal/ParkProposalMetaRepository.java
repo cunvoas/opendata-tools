@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalMeta;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
 
 /**
  * Spring JPA repository.

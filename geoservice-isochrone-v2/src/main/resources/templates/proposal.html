@@ -10,7 +10,7 @@
     <div id="layoutSidenav_content">
     <main>
       <div class="container-fluid">
-        <h4 class="mt-3">Proposition de parcs et jardin</h4>
+        <h4 class="mt-3">Proposition de parcs et jardin <span class="beta-badge">BETA</span></h4>
         <p class="text-muted">Calculer des propositions de parcs pour obtenir un rationrface et densité. La carte permet de visualiser les résultats.</p>
 
 
@@ -249,8 +249,15 @@
                 <div class="card-body p-0">
                   <div id="mapSimulator" style="width:100%; height:600px;"></div>
                 </div>
-                <div class="card-footer text-muted small">
-                  Les propositions calculées s'affichent sur la carte.
+                <div class="card-footer text-muted small d-flex justify-content-between align-items-center">
+                  <span>
+                    <a id="aGMapLinkProposal" href="#" target="_blank" rel="noopener noreferrer">Google Map</a>
+                  </span>
+                  <span>Les propositions calculées s'affichent sur la carte.</span>
+                  <label class="small mb-0" style="cursor:pointer;">
+                    <input type="checkbox" id="colorblindToggleProposal" onchange="toggleColorblindProposal()">
+                    Mode daltonien
+                  </label>
                 </div>
               </div>
             </div>
@@ -270,6 +277,18 @@
 <script th:src="@{/mvc/static/js/scripts.js}"></script>
 
 <style>
+  .beta-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #e96020;
+    color: #fff;
+    font-size: 0.55em;
+    font-weight: bold;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+
   .below-oms-threshold {
     background-color: #ffcccc !important;
   }
@@ -545,8 +564,11 @@ setTimeout(function() {
 const dataParcs = L.layerGroup().addTo(map);
 const dataProjectZone = L.layerGroup().addTo(map);
 const dataProposal = L.layerGroup(); // Layer pour les propositions, non affiché par défaut
+const dataProposalWork = L.layerGroup(); // Layer pour les carreaux colores, non affiché par défaut
 
 overlays['Parcs existants'] = dataParcs;
+overlays['Carreaux'] = dataProposalWork;
+overlays['Propositions'] = dataProposal;
 
 L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
 
@@ -563,8 +585,11 @@ legend.onAdd = function () {
   labels.push(`<i style="background:#3aa637;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc inclus OMS`);
   labels.push(`<i style="background:#e96020;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc exclus OMS`);
   labels.push(`<i style="background:#DC20E9;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Parc futur ou détruit`);
-  labels.push(`<i style="background:#66ff66;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Carreaux ≥ 10 m²/hab`);
-  labels.push(`<i style="background:#ff6666;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> Carreaux < 10 m²/hab`);
+  labels.push(`<i style="background:#57ee17;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> ≥ 12 m²/hab`);
+  labels.push(`<i style="background:#578817;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> 10-12 m²/hab`);
+  labels.push(`<i style="background:#b0b0e8;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> 6-10 m²/hab`);
+  labels.push(`<i style="background:#6060e8;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> 3-6 m²/hab`);
+  labels.push(`<i style="background:#0000e8;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> < 3 m²/hab`);
   div.innerHTML = labels.join('<br>');
   return div;
 };
@@ -574,6 +599,89 @@ legend.addTo(map);
 const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
 const endpointProjects = /*[[@{/mvc/geojson/projectByCorner}]]*/ '';
 const endpointProposal = /*[[@{/mvc/geojson/proposal}]]*/ '';
+const endpointProposalWork = /*[[@{/mvc/geojson/proposal}]]*/ '';
+
+// Mode daltonien global pour la coloration des carreaux
+let colorblindMode = false;
+
+/**
+ * Determine la couleur d'un carre selon densite et mode daltonien
+ */
+function getSquareColor(zoneDense, densite, colorblindMode) {
+  let color = '#959595';
+  if (typeof zoneDense === 'string') zoneDense = zoneDense === 'true';
+  if (densite===null || densite==='N/A' || densite==='') return color;
+  densite = parseFloat((""+densite).replace(",", "."));
+
+  let level1, level2, level3, level4, level5;
+  if (colorblindMode) {
+    level1 = '#d73027';  level2 = '#fc8d59';  level3 = '#fee090';
+    level4 = '#4575b4';  level5 = '#91bfdb';
+  } else {
+    level1 = '#0000e8';  level2 = '#6060e8';  level3 = '#b0b0e8';
+    level4 = '#578817';  level5 = '#57ee17';
+  }
+
+  const densiteMinDense=10, densiteMaxDense=12;
+  const densiteMinNoDense=25, densiteMaxNoDense=45;
+
+  let p25 = 3, p50 = 6, densiteMin = densiteMinDense, densiteMax = densiteMaxDense;
+  if (zoneDense===false) {
+    densiteMin = densiteMinNoDense;  densiteMax = densiteMaxNoDense;
+    p25 = 8;  p50 = 17;
+  }
+
+  if (zoneDense===false || zoneDense===true) {
+    if (densite>=densiteMax)        color=level5;
+    else if (densite>=densiteMin)   color=level4;
+    else {
+      color = level3;
+      if (densite < p25)      color = level1;
+      else if (densite < p50) color = level2;
+    }
+  }
+  return color;
+}
+
+/**
+ * Style dynamique pour un carreau colore base sur ParkProposalWork
+ */
+function getSquareWorkStyle(feature) {
+  const baseStyle = { color: '#002a99', weight: 1, fillOpacity: 0.4 };
+  if (feature && feature.properties) {
+    const fillColor = getSquareColor(
+      feature.properties.isDense,
+      feature.properties.newSurfacePerCapita,
+      colorblindMode
+    );
+    return { ...baseStyle, fillColor };
+  }
+  return baseStyle;
+}
+
+function toggleColorblindProposal() {
+  colorblindMode = document.getElementById('colorblindToggleProposal').checked;
+  dataProposalWork.eachLayer(function(geoJsonLayer) {
+    if (geoJsonLayer.eachLayer) {
+      geoJsonLayer.eachLayer(function(layer) {
+        if (layer.setStyle && layer.feature) {
+          layer.setStyle(getSquareWorkStyle(layer.feature));
+        }
+      });
+    }
+  });
+}
+
+function getGMapUrl(clkLat, clkLng) {
+  return "https://www.google.com/maps/@" + clkLat + "," + clkLng + ",18.03z";
+}
+
+function updateGMapLink() {
+  const center = map.getCenter();
+  const lnk = getGMapUrl(center.lat, center.lng);
+  const el = document.getElementById("aGMapLinkProposal");
+  if (el) el.href = lnk;
+}
 
 /**
  * Détermine le style dynamique d'un parc en fonction de ses propriétés
@@ -626,8 +734,10 @@ function loadParcs() {
 // Chargement initial et au déplacement
 map.on('moveend', function() {
   loadParcs();
+  updateGMapLink();
 });
 loadParcs();
+updateGMapLink();
 // Ne pas charger loadProposal() au démarrage, sera chargé par le bouton de visualisation
 
 console.log('[Simulateur] Carte initialisée');
@@ -732,7 +842,8 @@ function changePropositionsPage(delta) {
 // ----------- EFFACER LES PROPOSITIONS DE LA CARTE -----------
 function clearPropositions() {
   dataProposal.clearLayers();
-  console.log('[Simulateur] Cercles des propositions effacés de la carte');
+  dataProposalWork.clearLayers();
+  console.log('[Simulateur] Cercles et carreaux des propositions effacés de la carte');
 }
 
 function sortPropositionsTable(column) {
@@ -827,8 +938,55 @@ function viewProposition(button) {
   
   // Effacer les données précédentes
   dataProposal.clearLayers();
+  dataProposalWork.clearLayers();
   
-  // Charger les données de la proposition
+  // Charger les carreaux colores (ParkProposalWork)
+  if (endpointProposalWork) {
+    const workUrl = `${endpointProposalWork}/${propositionId}/work`;
+    fetch(workUrl)
+      .then(r => r.json())
+      .then(geojson => {
+        if (geojson && geojson.features && geojson.features.length > 0) {
+          L.geoJSON(geojson, {
+            style: getSquareWorkStyle,
+            onEachFeature: function(feature, layer) {
+              let popupContent = '<strong>' + (feature.properties.idInspire || 'Carreau') + '</strong><p>';
+
+              if (feature.properties.accessingPopulation && feature.properties.accessingPopulation !== '') {
+                popupContent += '<br />Population en partage: <b>' + feature.properties.accessingPopulation + '</b>';
+              }
+              if (feature.properties.localPopulation && feature.properties.localPopulation !== '') {
+                popupContent += '<br />Population du carreau: <b>' + feature.properties.localPopulation + '</b>';
+              }
+              popupContent += '<br /><br /><strong>Avant</strong> | <strong>Après</strong>';
+              if (feature.properties.surfacePerCapita && feature.properties.surfacePerCapita !== '') {
+                popupContent += '<br /><b>Densité</b> ' + parseFloat(feature.properties.surfacePerCapita).toFixed(2) + ' m²/hab'
+                  + ' | ' + (feature.properties.newSurfacePerCapita && feature.properties.newSurfacePerCapita !== ''
+                    ? parseFloat(feature.properties.newSurfacePerCapita).toFixed(2) + ' m²/hab' : '-');
+              }
+              if (feature.properties.surface && feature.properties.surface !== '') {
+                popupContent += '<br /><b>Surface accès</b> ' + parseFloat(feature.properties.surface).toFixed(0) + ' m²'
+                  + ' | ' + (feature.properties.newSurface && feature.properties.newSurface !== ''
+                    ? parseFloat(feature.properties.newSurface).toFixed(0) + ' m²' : '-');
+              }
+              if (feature.properties.missingSurface && feature.properties.missingSurface !== '') {
+                popupContent += '<br /><b>Surface manquante</b> ' + parseFloat(feature.properties.missingSurface).toFixed(0) + ' m²'
+                  + ' | ' + (feature.properties.newMissingSurface && feature.properties.newMissingSurface !== ''
+                    ? parseFloat(feature.properties.newMissingSurface).toFixed(0) + ' m²' : '-');
+              }
+              popupContent += '<br /><br />Zone ' + (feature.properties.isDense === 'true' ? 'dense' : 'non dense') + '</p>';
+              layer.bindPopup(popupContent);
+              layer._isProposalWork = true;
+            }
+          }).addTo(dataProposalWork);
+          dataProposalWork.addTo(map);
+          console.log('[Simulateur] Carreaux colores chargés:', geojson.features.length);
+        }
+      })
+      .catch(err => console.error('[Simulateur] Erreur chargement carreaux colores', err));
+  }
+
+  // Charger les données de la proposition (cercles)
   if (endpointProposal) {
     const url = `${endpointProposal}/${propositionId}`;
     
@@ -838,7 +996,6 @@ function viewProposition(button) {
         if (geojson && geojson.features && geojson.features.length > 0) {
           L.geoJSON(geojson, {
             pointToLayer: function(feature, latlng) {
-              // Créer des cercles pour les points avec radius
               if (feature.properties && feature.properties.radius) {
                 const radius = parseFloat(feature.properties.radius);
                 if (!isNaN(radius)) {
@@ -851,7 +1008,6 @@ function viewProposition(button) {
                   });
                 }
               }
-              // Fallback: point par défaut
               return L.circleMarker(latlng, {
                 radius: 5,
                 color: '#20B2AA',
@@ -880,10 +1036,7 @@ function viewProposition(button) {
               layer._isProposal = true;
             }
           }).addTo(dataProposal);
-          
-          // Ajouter le layer à la carte
           dataProposal.addTo(map);
-          
           console.log('[Simulateur] Proposition chargée:', geojson.features.length, 'éléments');
         } else {
           console.warn('[Simulateur] Aucune donnée pour la proposition', propositionId);

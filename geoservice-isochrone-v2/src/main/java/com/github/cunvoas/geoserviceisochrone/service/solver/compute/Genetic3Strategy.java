@@ -54,6 +54,7 @@ import lombok.extern.slf4j.Slf4j;
  * </ul>
  */
 @Slf4j
+@Deprecated
 public class Genetic3Strategy extends AbstractComputationtrategy {
 
     // ── Paramètres AG ──────────────────────────────────────────────────────────
@@ -284,15 +285,15 @@ public class Genetic3Strategy extends AbstractComputationtrategy {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Override
-    public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
+    public List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap,
                                       Double minSquareMeterPerCapita,
                                       Double recoSquareMeterPerCapita,
                                       Integer urbanDistance) {
 
         // Ordre stable des carrés : on travaille sur une liste indexée
-        List<String>             keys   = new ArrayList<>(carreMap.keySet());
+        List<String>             keys   = new ArrayList<>(squaresOnTerritoryMap.keySet());
         List<ParkProposalWork>   carres = new ArrayList<>();
-        for (String k : keys) carres.add(carreMap.get(k));
+        for (String k : keys) carres.add(squaresOnTerritoryMap.get(k));
 
         // Tri par déficit décroissant (newMissingSurface) avant toute construction
         // de chromosome. Cette étape est indispensable pour trois raisons :
@@ -380,15 +381,15 @@ public class Genetic3Strategy extends AbstractComputationtrategy {
         log.info("AG terminé après {} générations. Fitness du meilleur : {}",
                 MAX_GENERATIONS, best.fitness());
 
-        List<ParkProposal> proposals = decodeChromosome(genes, keys, carreMap, carres,
+        List<ParkProposal> proposals = decodeChromosome(genes, keys, squaresOnTerritoryMap, carres,
                 minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
 
         // ── Balayage complémentaire : zones non couvertes par l'AG ──────────────────
         // Quand des gènes ont derivé sous minParkSurface, certaines zones
         // déficitaires (spc < minSpc) restent sans proposition.
         // Ce sweep identique à la stratégie itérative les couvre systématiquement.
-        for (int sweep = 0; sweep < carreMap.size(); sweep++) {
-            List<ParkProposalWork> sorted = sortProposalsByDeficit(carreMap);
+        for (int sweep = 0; sweep < squaresOnTerritoryMap.size(); sweep++) {
+            List<ParkProposalWork> sorted = sortProposalsByDeficit(squaresOnTerritoryMap);
             if (sorted.isEmpty()) break;
             ParkProposalWork toProcess = sorted.get(0);
             if (toProcess.getSurfacePerCapita().doubleValue() >= minSquareMeterPerCapita) break;
@@ -409,17 +410,17 @@ public class Genetic3Strategy extends AbstractComputationtrategy {
 
             double swNewTotal = toProcess.getAccessingSurface().doubleValue() + swParkSurface;
             toProcess.setAccessingSurface(BigDecimal.valueOf(swNewTotal));
-            toProcess.setNewSurface(BigDecimal.valueOf(swParkSurface));
+            toProcess.setNewAccessingSurface(BigDecimal.valueOf(swParkSurface));
             toProcess.setNewMissingSurface(
                     toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(swParkSurface)).max(BigDecimal.ZERO));
             toProcess.setSurfacePerCapita(BigDecimal.valueOf(swNewTotal / swPop));
             toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(swNewTotal / swPop));
 
-            List<ParkProposalWork> swNeighbors = findNeighbors(toProcess.getIdInspire(), carreMap, urbanDistance);
+            List<ParkProposalWork> swNeighbors = findNeighbors(toProcess.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
             for (ParkProposalWork neighbor : swNeighbors) {
                 double nTotal = neighbor.getAccessingSurface().doubleValue() + swParkSurface;
                 neighbor.setAccessingSurface(BigDecimal.valueOf(nTotal));
-                neighbor.setNewSurface(BigDecimal.valueOf(swParkSurface));
+                neighbor.setNewAccessingSurface(BigDecimal.valueOf(swParkSurface));
                 neighbor.setNewMissingSurface(
                         neighbor.getNewMissingSurface().subtract(BigDecimal.valueOf(swParkSurface)).max(BigDecimal.ZERO));
                 double nPop = neighbor.getAccessingPopulation().doubleValue();
@@ -435,7 +436,7 @@ public class Genetic3Strategy extends AbstractComputationtrategy {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    //  Décodage & mise à jour de la carreMap
+    //  Décodage & mise à jour de la squaresOnTerritoryMap
     // ══════════════════════════════════════════════════════════════════════════
 
     /**
@@ -472,7 +473,7 @@ public class Genetic3Strategy extends AbstractComputationtrategy {
 
     private List<ParkProposal> decodeChromosome(List<Double>                  genes,
                                                  List<String>                  keys,
-                                                 Map<String, ParkProposalWork> carreMap,
+                                                 Map<String, ParkProposalWork> squaresOnTerritoryMap,
                                                  List<ParkProposalWork>        carres,
                                                  Double                        minSpc,
                                                  Double                        recoSpc,
@@ -526,7 +527,7 @@ public class Genetic3Strategy extends AbstractComputationtrategy {
             // ── Mettre à jour le carré courant ───────────────────────────────
             double newTotalSurface = carre.getAccessingSurface().doubleValue() + newParkSurface;
             carre.setAccessingSurface(BigDecimal.valueOf(newTotalSurface));
-            carre.setNewSurface(BigDecimal.valueOf(newParkSurface));
+            carre.setNewAccessingSurface(BigDecimal.valueOf(newParkSurface));
             carre.setNewMissingSurface(
                     carre.getNewMissingSurface()
                          .subtract(BigDecimal.valueOf(newParkSurface))
@@ -542,14 +543,14 @@ public class Genetic3Strategy extends AbstractComputationtrategy {
             // accessingSurface de chaque voisin est incrémentée de newParkSurface
             // pour que les carrés traités ensuite dans cette boucle bénéficient
             // de cet ajout (propagation cumulative correcte).
-            List<ParkProposalWork> neighbors = findNeighbors(carre.getIdInspire(), carreMap, urbanDistance);
+            List<ParkProposalWork> neighbors = findNeighbors(carre.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
             for (ParkProposalWork neighbor : neighbors) {
                 double neighborNewTotalSurface =
                         neighbor.getAccessingSurface().doubleValue() + newParkSurface;
                 neighbor.setAccessingSurface(BigDecimal.valueOf(neighborNewTotalSurface));
-                // setNewSurface doit contenir le delta (surface du parc ajouté),
+                // setAccessingNewSurface doit contenir le delta (surface du parc ajouté),
                 // pas le total accessible — cohérent avec le traitement du carré principal.
-                neighbor.setNewSurface(BigDecimal.valueOf(newParkSurface));
+                neighbor.setNewAccessingSurface(BigDecimal.valueOf(newParkSurface));
                 neighbor.setNewMissingSurface(
                         neighbor.getNewMissingSurface()
                                 .subtract(BigDecimal.valueOf(newParkSurface))

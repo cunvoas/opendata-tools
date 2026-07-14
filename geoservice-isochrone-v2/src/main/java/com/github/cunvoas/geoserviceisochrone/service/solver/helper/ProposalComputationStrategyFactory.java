@@ -1,6 +1,17 @@
-package com.github.cunvoas.geoserviceisochrone.service.solver.compute;
+package com.github.cunvoas.geoserviceisochrone.service.solver.helper;
 
 import java.util.List;
+
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.Genetic1Strategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.IterativeComputationDeficit1Strategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.IterativeComputationDeficit2Strategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.IterativeComputationPopulation1Strategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.LeastSquaresNeigbour1Strategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.LeastSquaresNeighbour2Strategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.Solver1ComputationStrategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.Solver2ComputationStrategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.Solver3ComputationStrategy;
 
 /**
  * Abstract factory to create computation strategy (iterative or solver).

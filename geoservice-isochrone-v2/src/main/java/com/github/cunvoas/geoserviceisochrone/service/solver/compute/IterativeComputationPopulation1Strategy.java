@@ -27,14 +27,14 @@ public class IterativeComputationPopulation1Strategy extends AbstractComputation
     }
 
     @Override
-    public List<ParkProposal> compute(Map<String, ParkProposalWork> carreMap,
+    public List<ParkProposal> compute(Map<String, ParkProposalWork> squaresOnTerritoryMap,
                                       Double minSquareMeterPerCapita,
                                       Double recoSquareMeterPerCapita,
                                       Integer urbanDistance) {
     	
         List<ParkProposal> proposals = new ArrayList<>();
-        for (int i = 0; i < carreMap.size(); i++) {
-            ParkProposal proposal = calculeEtapeProposition(minParkSurface, carreMap,
+        for (int i = 0; i < squaresOnTerritoryMap.size(); i++) {
+            ParkProposal proposal = calculeEtapeProposition(minParkSurface, squaresOnTerritoryMap,
                     minSquareMeterPerCapita, recoSquareMeterPerCapita, urbanDistance);
             if (proposal != null) {
                 proposals.add(proposal);
@@ -75,7 +75,7 @@ public class IterativeComputationPopulation1Strategy extends AbstractComputation
 	 * 6. Sinon : aucun parc proposé pour ce carreau
 	 * </pre>
 	 *
-	 * @param carreMap la carte des propositions de parc indexée par idInspire (modifiée par la méthode)
+	 * @param squaresOnTerritoryMap la carte des propositions de parc indexée par idInspire (modifiée par la méthode)
 	 * @param minSquareMeterPerCapita seuil minimal de surface de parc par habitant (m²/hab)
 	 * @param recoSquareMeterPerCapita densité recommandée de surface de parc par habitant (m²/hab)
 	 * @param urbanDistance distance d'accessibilité en mètres définissant les voisins
@@ -83,9 +83,9 @@ public class IterativeComputationPopulation1Strategy extends AbstractComputation
 	 * @see #sortProposalsByMissingPopulation(Map)
 	 * @see #findNeighbors(String, Map, Integer)
 	 */
-	public ParkProposal calculeEtapeProposition(Double minParkSurface, Map<String, ParkProposalWork> carreMap, Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
+	public ParkProposal calculeEtapeProposition(Double minParkSurface, Map<String, ParkProposalWork> squaresOnTerritoryMap, Double minSquareMeterPerCapita, Double recoSquareMeterPerCapita, Integer urbanDistance) {
 		// Priorite au carreau avec le plus grand impact humain : manque de surface × population
-		List<ParkProposalWork> sorted = sortProposalsByMissingPopulation(carreMap);
+		List<ParkProposalWork> sorted = sortProposalsByMissingPopulation(squaresOnTerritoryMap);
 		
 		ParkProposal proposalResult = null;
 		if (!sorted.isEmpty()) {
@@ -94,17 +94,17 @@ public class IterativeComputationPopulation1Strategy extends AbstractComputation
 				log.info("Toutes les propositions de la commune sont traitées.");
 				return proposalResult;
 			}
-			List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), carreMap, urbanDistance);
-
+			
 			// calcul de la surface de parc à ajouter pour atteindre la densité recommandée
 			// comprise entre 0 et 40 000 m² (surface max d'un carré de 200m x 200m)
-			Double newParkSurface = 
+			Double newAccessibleParkSurface = 
 					Math.min(
 							Math.max(
-									recoSquareMeterPerCapita-toProcess.getSurfacePerCapita().doubleValue(),
-									0), 
+									recoSquareMeterPerCapita, 0), 
 						AbstractComputationtrategy.CARRE_SURFACE
 						) * toProcess.getAccessingPopulation().doubleValue();
+			
+			Double newParkSurface = newAccessibleParkSurface - toProcess.getNewAccessingSurface().doubleValue();
 			
 			if (newParkSurface>=minParkSurface) {
 				
@@ -116,39 +116,39 @@ public class IterativeComputationPopulation1Strategy extends AbstractComputation
 				proposalResult.setIsDense(toProcess.getIsDense());
 				
 				// appliquer la proposition
-				toProcess.setNewSurface(BigDecimal.valueOf(newParkSurface));
+				toProcess.setNewAccessingSurface(BigDecimal.valueOf(Math.round(newAccessibleParkSurface)));
 				toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
 				
 				// mettre à jour la surface par habitant
-				Double newTotalSurface = toProcess.getAccessingSurface().doubleValue() + newParkSurface;
-				Double newSurfacePerCapita = newTotalSurface / toProcess.getAccessingPopulation().doubleValue();
-				toProcess.setSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
+				Double newSurfacePerCapita = newAccessibleParkSurface / toProcess.getAccessingPopulation().doubleValue();
+				toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
 				
+				List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
+
 				// mettre à jour les voisins
 				for (ParkProposalWork neighbor : neighbors) {
-					Double neighborNewTotalSurface = neighbor.getAccessingSurface().doubleValue() + newParkSurface;
+					Double neighborNewTotalSurface = neighbor.getNewAccessingSurface().doubleValue() + newParkSurface;
 					
+					neighbor.setNewAccessingSurface(new BigDecimal(String.valueOf(neighborNewTotalSurface)));
+					neighbor.setNewMissingSurface( toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)).max(BigDecimal.ZERO));
+
 					Double neighborNewSurfacePerCapita = null;
 					if ( neighbor.getAccessingPopulation().doubleValue()!=0)	{
 						//log.error("neighbor {} accessingPopulation={}", neighbor.getIdInspire(), neighbor.getAccessingPopulation().doubleValue());
 						
 						neighborNewSurfacePerCapita = neighborNewTotalSurface / neighbor.getAccessingPopulation().doubleValue();
 						neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborNewSurfacePerCapita));
-					
 					} else {
 						neighbor.setNewSurfacePerCapita(null);
 					}
-					neighbor.setNewSurface(new BigDecimal(String.valueOf(neighborNewTotalSurface)));
-					neighbor.setNewMissingSurface( toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)).max(BigDecimal.ZERO));
-				}
+			}
 				
 				log.error("Proposition pour le carré {} : ajout de parc (surface proposée: {}).", 
 						toProcess.getIdInspire(), newParkSurface);
 				
 			} else {
-				log.info("Proposition pour le carré {} : pas d'ajout de parc (surface proposée: {}).", 
-						toProcess.getIdInspire(), AbstractComputationtrategy.MIN_PARK_SURFACE);
-				//toProcess.setNewSurface(null);
+				log.info("Proposition pour le carré {} : pas d'ajout de parc (surface proposée: {}<{}).", 
+						toProcess.getIdInspire(), newParkSurface, AbstractComputationtrategy.MIN_PARK_SURFACE);
 			}
 		}
 		return proposalResult;

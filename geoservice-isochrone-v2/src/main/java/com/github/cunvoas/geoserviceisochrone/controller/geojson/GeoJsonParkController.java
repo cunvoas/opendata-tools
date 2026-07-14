@@ -1,7 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.controller.geojson;
 
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
-import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
@@ -149,10 +147,6 @@ public class GeoJsonParkController {
     		annee=applicationBusinessProperties.getDerniereAnnee();
     	}
     	Polygon polygon = factory.createPolygon();
-    	//Lille 50, 3.
-    	Point p = GeoShapeHelper.parsePointLatLng(coords);
-    	
-    	//TODO compute a rectangle shape with point at the center
         return geoMapService.findAllParkByArea(polygon, annee);
     }
 

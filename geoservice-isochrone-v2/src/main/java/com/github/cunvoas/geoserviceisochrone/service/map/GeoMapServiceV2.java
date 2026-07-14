@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -37,7 +38,6 @@ import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ProjetSimu
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.IrisDataComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
@@ -64,7 +64,12 @@ import com.github.cunvoas.geoserviceisochrone.repo.IrisDataComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkProposalWorkView;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalMeta;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalMetaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalWorkRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWorkRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
@@ -78,7 +83,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepos
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkOverpassService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
-import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
 import com.google.common.math.BigDecimalMath;
 import com.google.common.primitives.Ints;
 
@@ -144,6 +149,10 @@ public class GeoMapServiceV2 {
 
     @Autowired
     private ParkProposalRepository parkProposalRepository;
+    @Autowired
+    private ParkProposalMetaRepository parkProposalMetaRepository;
+    @Autowired
+    private ParkProposalWorkRepository parkProposalWorkRepository;
     
 
     @Autowired
@@ -695,7 +704,65 @@ public class GeoMapServiceV2 {
 		}
 		return root;
 	}
-	
+
+	/**
+	 * findParkProposalWorkByMeta.
+	 * @param idMeta proposal meta id
+	 * @return ParkProposalWork geojson (colored squares)
+	 */
+	public GeoJsonRoot findParkProposalWorkByMeta(Long idMeta) {
+		GeoJsonRoot root = new GeoJsonRoot();
+
+		ParkProposalMeta meta = parkProposalMetaRepository.findById(idMeta).orElse(null);
+		if (meta == null) {
+			return root;
+		}
+
+		List<ParkProposalWork> works = parkProposalWorkRepository.findByAnneeAndCodeInseeAndTypeAlgo(meta.getAnnee(), meta.getInsee(), meta.getTypeAlgo().name());
+
+		if (!CollectionUtils.isEmpty(works)) {
+			List<String> idInspires = works.stream().map(ParkProposalWork::getIdInspire).toList();
+			List<InseeCarre200mOnlyShape> shapes = inseeCarre200osRepository.findAllById(idInspires);
+			Map<String, InseeCarre200mOnlyShape> shapeMap = shapes.stream()
+					.collect(java.util.stream.Collectors.toMap(InseeCarre200mOnlyShape::getIdInspire, s -> s));
+
+			for (ParkProposalWork work : works) {
+				GeoJsonFeature feature = new GeoJsonFeature();
+				root.getFeatures().add(feature);
+
+				InseeCarre200mOnlyShape shape = shapeMap.get(work.getIdInspire());
+				if (shape != null) {
+					feature.setGeometry(shape.getGeoShape());
+				} else {
+					feature.setGeometry(work.getCentre());
+				}
+
+				ParkProposalWorkView pv = new ParkProposalWorkView();
+				pv.setIdInspire(work.getIdInspire());
+				pv.setIsDense(work.getIsDense() != null
+						? String.valueOf(work.getIsDense()) : "");
+				pv.setAccessingPopulation(work.getAccessingPopulation() != null
+						? String.valueOf(work.getAccessingPopulation()) : "");
+				pv.setLocalPopulation(work.getLocalPopulation() != null
+						? String.valueOf(work.getLocalPopulation()) : "");
+				pv.setSurface(work.getAccessingSurface() != null
+						? String.valueOf(work.getAccessingSurface()) : "");
+				pv.setSurfacePerCapita(work.getSurfacePerCapita() != null
+						? String.valueOf(work.getSurfacePerCapita()) : "");
+				pv.setMissingSurface(work.getMissingSurface() != null
+						? String.valueOf(work.getMissingSurface()) : "");
+				pv.setNewSurface(work.getNewAccessingSurface() != null
+						? String.valueOf(work.getNewAccessingSurface()) : "");
+				pv.setNewSurfacePerCapita(work.getNewSurfacePerCapita() != null
+						? String.valueOf(work.getNewSurfacePerCapita()) : "");
+				pv.setNewMissingSurface(work.getNewMissingSurface() != null
+						? String.valueOf(work.getNewMissingSurface()) : "");
+
+				feature.setProperties(pv);
+			}
+		}
+		return root;
+	}
 
 	/**
 	 * findProjetSimulationByArea.
