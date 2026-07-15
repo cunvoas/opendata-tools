@@ -16,8 +16,8 @@ public abstract class AbstractComputationtrategy implements ProposalComputationS
 
 
 	public static final double AT_LEAST_PARK_SURFACE = 1_000; // m²
-	public static final double MIN_PARK_SURFACE = 500; // m²
-	public static final double CARRE_SIZE = 200; // mètres (200m x 200m)	
+	public static final double MIN_PARK_SURFACE = 350; // m²
+	public static final double CARRE_SIZE = 333; // mètres (200m x 200m)	
 	public static final double CARRE_SURFACE = 40_000; // m²
 	public static final int SQUARE_DISTANCE = 120; // marge en mètres entre demi-coté et demi-diagonale
 	
