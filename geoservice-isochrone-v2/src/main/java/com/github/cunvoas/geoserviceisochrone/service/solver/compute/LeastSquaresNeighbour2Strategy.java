@@ -190,7 +190,9 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
             proposals.add(proposal);
 
             // newMissingSurface diminue du parc ajoute (pas de max(0) : conforme a la reference)
-            toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
+            toProcess.setNewMissingSurface(toProcess.getNewMissingSurface()
+                    .subtract(BigDecimal.valueOf(newParkSurface))
+                    .max(BigDecimal.ZERO));
 
             // Cumul : newAccessingSurface += newParkSurface (preserve les propagations des iterations precedentes)
             double newTotalSurface = toProcess.getNewAccessingSurface().doubleValue() + newParkSurface;

@@ -153,7 +153,9 @@ public class IterativeComputationDeficit2Strategy extends AbstractComputationtra
 				// Met a jour le carre traite : cumul, pas ecrasement par l'ideal
 				double newTotalSurface = toProcess.getNewAccessingSurface().doubleValue() + proposedParkSurface;
 				toProcess.setNewAccessingSurface(BigDecimal.valueOf(newTotalSurface));
-				toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(proposedParkSurface)));
+				toProcess.setNewMissingSurface(toProcess.getNewMissingSurface()
+						.subtract(BigDecimal.valueOf(proposedParkSurface))
+						.max(BigDecimal.ZERO));
 
 				// Recalcule la densite du carre apres ajout du parc
 				Double newSurfacePerCapita = newTotalSurface / toProcess.getAccessingPopulation().doubleValue();

@@ -180,7 +180,8 @@ public class IterativeComputationDBSCANStrategy extends AbstractComputationtrate
             double newTotalSurface = toProcess.getNewAccessingSurface().doubleValue() + proposedParkSurface;
             toProcess.setNewAccessingSurface(BigDecimal.valueOf(newTotalSurface));
             toProcess.setNewMissingSurface(toProcess.getNewMissingSurface()
-                    .subtract(BigDecimal.valueOf(proposedParkSurface)));
+                    .subtract(BigDecimal.valueOf(proposedParkSurface))
+                    .max(BigDecimal.ZERO));
 
             Double newSurfacePerCapita = newTotalSurface
                     / toProcess.getAccessingPopulation().doubleValue();

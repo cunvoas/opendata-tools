@@ -115,7 +115,9 @@ public class IterativeComputationPopulation1Strategy extends AbstractComputation
 				// appliquer la proposition : cumul, pas ecrasement
 				double newTotalSurface = toProcess.getNewAccessingSurface().doubleValue() + newParkSurface;
 				toProcess.setNewAccessingSurface(BigDecimal.valueOf(newTotalSurface));
-				toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
+				toProcess.setNewMissingSurface(toProcess.getNewMissingSurface()
+						.subtract(BigDecimal.valueOf(newParkSurface))
+						.max(BigDecimal.ZERO));
 
 				// mettre à jour la surface par habitant
 				Double newSurfacePerCapita = newTotalSurface / toProcess.getAccessingPopulation().doubleValue();
