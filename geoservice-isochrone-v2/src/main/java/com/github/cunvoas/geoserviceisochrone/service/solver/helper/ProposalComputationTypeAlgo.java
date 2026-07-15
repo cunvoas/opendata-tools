@@ -4,6 +4,7 @@ public enum ProposalComputationTypeAlgo {
     ITERATIVE_1("Itératif par déficit v1"),
     ITERATIVE_2("Itératif par déficit v2"),
     ITERATIVE_3("Itératif par population v2"),
+    ITERATIVE_DBSCAN("Itératif DBSCAN v1"),
     PPC_1("Solveur PPC v1"),
     PPC_2("Solveur PPC v2"),
     PPC_3("Solveur PPC v3"),

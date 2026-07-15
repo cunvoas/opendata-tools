@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.service.solver.helper;
 import java.util.List;
 
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.Genetic1Strategy;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.IterativeComputationDBSCANStrategy;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.IterativeComputationDeficit1Strategy;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.IterativeComputationDeficit2Strategy;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.IterativeComputationPopulation1Strategy;
@@ -26,6 +27,7 @@ public final class ProposalComputationStrategyFactory {
 //            ProposalComputationTypeAlgo.ITERATIVE_1,
             ProposalComputationTypeAlgo.ITERATIVE_2,
             ProposalComputationTypeAlgo.ITERATIVE_3,
+            ProposalComputationTypeAlgo.ITERATIVE_DBSCAN,
 //            ProposalComputationTypeAlgo.PPC_1,
 //            ProposalComputationTypeAlgo.PPC_2,
             ProposalComputationTypeAlgo.PPC_3,
@@ -43,6 +45,8 @@ public final class ProposalComputationStrategyFactory {
                 return new IterativeComputationDeficit2Strategy(minParkSurface);
             case ITERATIVE_3:
                 return new IterativeComputationPopulation1Strategy(minParkSurface);
+            case ITERATIVE_DBSCAN:
+                return new IterativeComputationDBSCANStrategy(minParkSurface);
              case PPC_1:
                 return new Solver1ComputationStrategy();
             case PPC_2:
