@@ -32,7 +32,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",
     "@vitejs/plugin-vue": "^6.0.7",
-    "@vitest/coverage-v8": "^4.1.4",
+    "@vitest/coverage-v8": "^4.1.10",
     "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vue/cli-plugin-router": "~5.0.0",
     "@vue/test-utils": "^2.4.6",
