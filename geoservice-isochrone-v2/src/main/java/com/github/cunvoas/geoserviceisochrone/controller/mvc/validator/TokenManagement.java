@@ -1,168 +1,118 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.validator;
 
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.AlgorithmParameterSpec;
 import java.util.Base64;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.Mac;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+
 /**
- * Classe responsable de la gestion des tokens de sécurité.
+ * Gestion des tokens anti-rejeu par signature HMAC-SHA256.
+ *
+ * Le token est un timestamp signé par HMAC-SHA256 en base64.
+ * Pas d'encryption : l'integrite seule suffit pour l'antirejeu.
+ * HMAC-SHA256 est rapide (pas d'acceleration hardware necessaire).
+ *
+ * Format du token : base64( timestamp "." HMAC-SHA256(timestamp) )
+ *
  * @author cunvoas
  */
 @Component
 @Slf4j
 public class TokenManagement {
-	
+
 	@Value("${application.security.token.expiration-ms}")
 	private long tokenExpirationMillis;
-	
+
 	@Value("${application.security.token.secret}")
 	private String tokenSecret;
-	
+
+	/**
+	 * Genere un token valide pour la soumission de formulaire.
+	 * Le timestamp est signe par HMAC-SHA256 avec la clef secrete.
+	 * L'horodatage permet de borner la duree de validite.
+	 *
+	 * @return token en base64 (timestamp "." hmac)
+	 */
 	public String getValidToken() {
 		String now = String.valueOf(System.currentTimeMillis());
-		
-		byte[]  tokenSecretBytes = Base64.getDecoder().decode(tokenSecret);
-		SecretKey key = new SecretKeySpec(tokenSecretBytes, "ChaCha20");
-		
 		try {
-			// Generate a random nonce for each encryption
-			byte[] nonce = getNonce();
-			byte[] encrypted = encrypt(now.getBytes(), key, nonce);
-			
-			// Combine nonce and encrypted data (nonce is needed for decryption)
-			byte[] combined = new byte[nonce.length + encrypted.length];
-			System.arraycopy(nonce, 0, combined, 0, nonce.length);
-			System.arraycopy(encrypted, 0, combined, nonce.length, encrypted.length);
-			
-			return Base64.getEncoder().encodeToString(combined);
-			
-		} catch (InvalidKeyException e) {
-			log.error("InvalidKeyException during token encryption", e);
-		} catch (NoSuchPaddingException e) {
-			log.error("NoSuchPaddingException during token encryption", e);
-		} catch (NoSuchAlgorithmException e) {
-			log.error("NoSuchAlgorithmException during token encryption", e);
-		} catch (InvalidAlgorithmParameterException e) {
-			log.error("InvalidAlgorithmParameterException during token encryption", e);
-		} catch (BadPaddingException e) {
-			log.error("BadPaddingException during token encryption", e);
-		} catch (IllegalBlockSizeException e) {
-			log.error("IllegalBlockSizeException during token encryption", e);
+			String hmac = hmac(now);
+			return Base64.getEncoder().encodeToString((now + "." + hmac).getBytes());
+		} catch (Exception e) {
+			log.error("HMAC error", e);
+			return now;
 		}
-		return now;
 	}
-	
+
+	/**
+	 * Valide un token anti-rejeu.
+	 * Verifie : integrite HMAC + expiration (tokenExpirationMillis).
+	 *
+	 * @param token token a valider
+	 * @return true si le token est valide et non expire
+	 */
 	public boolean isTokenValid(String token) {
-		boolean valid=false;
-		
 		try {
-			byte[]  tokenSecretBytes = Base64.getDecoder().decode(tokenSecret);
-			
-			byte[] combined = Base64.getDecoder().decode(token);
-			
-			// Extract nonce and encrypted data
-			if (combined.length < 12) {
-				log.error("Invalid token: too short");
+			String decoded = new String(Base64.getDecoder().decode(token));
+			String[] parts = decoded.split("\\.", 2);
+			if (parts.length != 2) {
 				return false;
 			}
-			
-			byte[] nonce = new byte[12];
-			byte[] encryptedData = new byte[combined.length - 12];
-			System.arraycopy(combined, 0, nonce, 0, 12);
-			System.arraycopy(combined, 12, encryptedData, 0, encryptedData.length);
-			
-			SecretKey key = new SecretKeySpec(tokenSecretBytes, "ChaCha20");
-			String decrypted=new String(decrypt(encryptedData, key, nonce));
-			long tokenTime = Long.parseLong(decrypted);
-			
-			log.info("Token time: {}, now: {}", tokenTime, System.currentTimeMillis());
+			String timestamp = parts[0];
+			String hmac = parts[1];
 
-			valid = System.currentTimeMillis()  < tokenTime + tokenExpirationMillis;
-			
+			String expected = hmac(timestamp);
+			if (!hmac.equals(expected)) {
+				log.warn("Invalid HMAC");
+				return false;
+			}
+
+			long tokenTime = Long.parseLong(timestamp);
+			return System.currentTimeMillis() < tokenTime + tokenExpirationMillis;
+
 		} catch (Exception e) {
-			log.error("Exception during token decryption", e);
+			log.error("Token validation error", e);
+			return false;
 		}
-		
-		return valid;
 	}
-	
 
-    // 96-bit nonce (12 bytes)
-    private static byte[] getNonce() {
-        byte[] newNonce = new byte[12];
-        new SecureRandom().nextBytes(newNonce);
-        return newNonce;
-    }
-    
-	
- // A 256-bit secret key (32 bytes)
-    private static SecretKey getKey() throws NoSuchAlgorithmException {
-        KeyGenerator keyGen = KeyGenerator.getInstance("ChaCha20");
-        keyGen.init(256, SecureRandom.getInstanceStrong());
-        return keyGen.generateKey();
-    }
-    
-    public String getStringKey() throws NoSuchAlgorithmException {
-    	return Base64.getEncoder().encodeToString( getKey().getEncoded() );
-    }
-	
+	/**
+	 * Calcule HMAC-SHA256 des donnees avec la clef secrete configuree.
+	 */
+	private String hmac(String data) throws NoSuchAlgorithmException, InvalidKeyException {
+		byte[] keyBytes = Base64.getDecoder().decode(tokenSecret);
+		SecretKey key = new SecretKeySpec(keyBytes, "HmacSHA256");
+		Mac mac = Mac.getInstance("HmacSHA256");
+		mac.init(key);
+		return Base64.getEncoder().encodeToString(mac.doFinal(data.getBytes()));
+	}
 
-    private static byte[] encrypt(byte[] data, SecretKey key, byte[] nonce) throws NoSuchPaddingException, NoSuchAlgorithmException,
-            InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        if(key == null) throw new InvalidKeyException("SecretKey must NOT be NULL");
-        if(nonce == null || nonce.length != 12) throw new InvalidAlgorithmParameterException("Nonce must be 12 bytes");
+	/**
+	 * Genere une nouvelle clef HMAC-SHA256 (256-bit).
+	 */
+	private static SecretKey getKey() throws NoSuchAlgorithmException {
+		KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
+		keyGen.init(256);
+		return keyGen.generateKey();
+	}
 
-        // Get Cipher Instance
-        Cipher cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
+	/**
+	 * Retourne une clef HMAC-SHA256 en base64.
+	 * Utilitaire pour generer la valeur de {@code application.security.token.secret}.
+	 *
+	 * @return clef encodee en base64
+	 */
+	public String getStringKey() throws NoSuchAlgorithmException {
+		return Base64.getEncoder().encodeToString(getKey().getEncoded());
+	}
 
-        // Create IvParamterSpec
-        AlgorithmParameterSpec ivParameterSpec = new IvParameterSpec(nonce);
-
-        // Create SecretKeySpec
-        SecretKeySpec keySpec = new SecretKeySpec(key.getEncoded(), "ChaCha20");
-
-        // Initialize Cipher for ENCRYPT_MODE
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivParameterSpec);
-
-        // Perform Encryption
-        return cipher.doFinal(data);
-    }
-
-    private static byte[] decrypt(byte[] cipherText, SecretKey key, byte[] nonce) throws Exception {
-        if(key == null) throw new InvalidKeyException("SecretKey must NOT be NULL");
-        if(nonce == null || nonce.length != 12) throw new InvalidAlgorithmParameterException("Nonce must be 12 bytes");
-
-        // Get Cipher Instance
-        Cipher cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
-
-        // Create IvParamterSpec
-        AlgorithmParameterSpec ivParameterSpec = new IvParameterSpec(nonce);
-
-        // Create SecretKeySpec
-        SecretKeySpec keySpec = new SecretKeySpec(key.getEncoded(), "ChaCha20");
-
-        // Initialize Cipher for DECRYPT_MODE
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivParameterSpec);
-
-        // Perform Decryption
-        return cipher.doFinal(cipherText);
-    }
-
-	
 }
