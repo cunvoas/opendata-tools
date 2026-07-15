@@ -188,20 +188,23 @@ public class SolverV3ComputationStrategy extends AbstractComputationtrategy {
                 totalAddedM2 += additionsM2.getOrDefault(voisin.getIdInspire(), 0);
             }
 
-            double surfaceBaseM2  = carre.getAccessingSurface()    != null ? carre.getAccessingSurface().doubleValue()    : 0d;
-            double population     = carre.getAccessingPopulation() != null ? carre.getAccessingPopulation().doubleValue() : 0d;
-            double totalSurfaceM2 = surfaceBaseM2 + totalAddedM2;
+            if (totalAddedM2 > 0) {
+                double surfaceBaseM2  = carre.getAccessingSurface()    != null ? carre.getAccessingSurface().doubleValue()    : 0d;
+                double population     = carre.getAccessingPopulation() != null ? carre.getAccessingPopulation().doubleValue() : 0d;
+                double totalSurfaceM2 = surfaceBaseM2 + totalAddedM2;
 
-            if (population > 0) {
-                carre.setNewSurfacePerCapita(BigDecimal.valueOf(totalSurfaceM2 / population));
-            } else {
-                carre.setNewSurfacePerCapita(null);
+                carre.setNewAccessingSurface(BigDecimal.valueOf(totalSurfaceM2));
+
+                if (population > 0) {
+                    carre.setNewSurfacePerCapita(BigDecimal.valueOf(totalSurfaceM2 / population));
+                } else {
+                    carre.setNewSurfacePerCapita(null);
+                }
+
+                BigDecimal missing        = carre.getMissingSurface() != null ? carre.getMissingSurface() : BigDecimal.ZERO;
+                BigDecimal updatedMissing = missing.subtract(BigDecimal.valueOf(totalAddedM2)).max(BigDecimal.ZERO);
+                carre.setNewMissingSurface(updatedMissing);
             }
-
-            BigDecimal missing        = carre.getMissingSurface() != null ? carre.getMissingSurface() : BigDecimal.ZERO;
-            BigDecimal updatedMissing = missing.subtract(BigDecimal.valueOf(totalAddedM2)).max(BigDecimal.ZERO);
-            carre.setNewMissingSurface(updatedMissing);
-            carre.setNewAccessingSurface(BigDecimal.valueOf(addedM2));
         }
 
         log.info("Résolution terminée : {} propositions retenues.", proposals.size());
