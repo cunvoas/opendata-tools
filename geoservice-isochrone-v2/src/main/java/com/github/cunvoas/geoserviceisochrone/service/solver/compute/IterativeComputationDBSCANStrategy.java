@@ -212,12 +212,12 @@ public class IterativeComputationDBSCANStrategy extends AbstractComputationtrate
                     toProcess.getIdInspire(), proposedParkSurface);
 
         } else {
-            // Marque le carreau comme non rééligible : le déficit existe mais
-            // la surface calculée est trop faible (< minParkSurface) pour justifier
-            // un nouveau parc. Sans ce marquage, le carreau serait resélectionné
-            // indéfiniment à chaque itération (boucle infinie).
-            toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(minSquareMeterPerCapita + 1));
-            log.warn("Proposition pour le carre {} : pas d'ajout de parc (surface proposee: {}), carreau marque non eligible.",
+            // Carreau non traitable : le déficit existe mais la surface calculée
+            // est trop faible pour justifier un nouveau parc.
+            // On zeroise newMissingSurface pour éviter la resélection en boucle,
+            // sans altérer newSurfacePerCapita (valeur réelle pour l'utilisateur).
+            toProcess.setNewMissingSurface(BigDecimal.ZERO);
+            log.warn("Proposition pour le carre {} : pas d'ajout de parc (surface proposee: {}), deficit zeroise.",
                     toProcess.getIdInspire(), AbstractComputationtrategy.MIN_PARK_SURFACE);
         }
         return proposalResult;
