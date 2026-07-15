@@ -582,7 +582,6 @@ public class Solver3ComputationStrategy extends AbstractComputationtrategy {
 
             if (population > 0) {
                 carre.setNewSurfacePerCapita(BigDecimal.valueOf(totalSurfaceM2 / population));
-                carre.setSurfacePerCapita(BigDecimal.valueOf(totalSurfaceM2 / population));
             } else {
                 carre.setNewSurfacePerCapita(null);
             }

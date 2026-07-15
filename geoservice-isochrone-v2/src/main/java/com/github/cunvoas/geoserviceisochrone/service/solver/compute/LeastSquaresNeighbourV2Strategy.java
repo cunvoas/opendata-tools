@@ -100,7 +100,7 @@ public class LeastSquaresNeighbourV2Strategy extends AbstractComputationtrategy 
             WeightedObservedPoints observedPoints = new WeightedObservedPoints();
             squaresOnTerritoryMap.values().forEach(work -> {
                 double population = work.getAccessingPopulation() != null ? work.getAccessingPopulation().doubleValue() : 0d;
-                double surfacePerCapita = work.getSurfacePerCapita() != null ? work.getSurfacePerCapita().doubleValue() : 0d;
+                double surfacePerCapita = work.getNewSurfacePerCapita() != null ? work.getNewSurfacePerCapita().doubleValue() : 0d;
                 if (population <= 0) {
                     return;
                 }
@@ -132,7 +132,7 @@ public class LeastSquaresNeighbourV2Strategy extends AbstractComputationtrategy 
             ParkProposalWork toProcess = sorted.get(0);
 
             // --- Etape 4 : Verifier que le carreau est encore deficitaire ---
-            double surfacePerCapita = toProcess.getSurfacePerCapita() != null ? toProcess.getSurfacePerCapita().doubleValue() : 0d;
+            double surfacePerCapita = toProcess.getNewSurfacePerCapita() != null ? toProcess.getNewSurfacePerCapita().doubleValue() : 0d;
             if (surfacePerCapita > minSquareMeterPerCapita) {
                 log.info("Iteration {} : tous les carreaux sont traites (meilleur = {} m2/hab).", step, surfacePerCapita);
                 break;
@@ -173,8 +173,8 @@ public class LeastSquaresNeighbourV2Strategy extends AbstractComputationtrategy 
             // Recalcul surface/hab depuis la base initiale accessingSurface (les attributs sans New ne changent pas)
             double newTotalSurface = toProcess.getAccessingSurface().doubleValue() + newParkSurface;
             double newSurfacePerCapita = newTotalSurface / population;
-            // setSurfacePerCapita mis a jour uniquement pour piloter le tri a l'iteration suivante
-            toProcess.setSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
+            // newSurfacePerCapita mis a jour pour les observations chi2 de l'iteration suivante
+            toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
 
             // --- Etape 7 : Propager la surface ajoutee aux voisins dans le rayon d'accessibilite ---
             // La nouvelle surface est positionnee sur le centre et recalculee vis-a-vis de la population de chaque voisin

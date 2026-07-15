@@ -212,12 +212,7 @@ public class IterativeComputationDBSCANStrategy extends AbstractComputationtrate
                     toProcess.getIdInspire(), proposedParkSurface);
 
         } else {
-            // Carreau non traitable : le déficit existe mais la surface calculée
-            // est trop faible pour justifier un nouveau parc.
-            // On zeroise newMissingSurface pour éviter la resélection en boucle,
-            // sans altérer newSurfacePerCapita (valeur réelle pour l'utilisateur).
-            toProcess.setNewMissingSurface(BigDecimal.ZERO);
-            log.warn("Proposition pour le carre {} : pas d'ajout de parc (surface proposee: {}), deficit zeroise.",
+            log.warn("Proposition pour le carre {} : pas d'ajout de parc (surface proposee: {}).",
                     toProcess.getIdInspire(), AbstractComputationtrategy.MIN_PARK_SURFACE);
         }
         return proposalResult;

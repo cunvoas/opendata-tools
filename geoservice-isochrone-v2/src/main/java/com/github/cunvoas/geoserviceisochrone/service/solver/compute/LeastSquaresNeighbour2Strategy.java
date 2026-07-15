@@ -194,11 +194,11 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
             // newMissingSurface diminue du parc ajoute (pas de max(0) : conforme a la reference)
             toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
 
-            // Recalcul surface/hab : accessingSurface est mute comme pour les voisins
-            // pour rester coherent si ce carreau redevient voisin dans une iteration future.
-            // Sans cette mutation, une propagation entrante recalculerait la base sans la contribution
-            // de cet iteration et ferait baisser surfacePerCapita en dessous de sa vraie valeur.
-            double newTotalSurface = toProcess.getAccessingSurface().doubleValue() + newParkSurface;
+            // Recalcul surface/hab : utilise newAccessingSurface (cumul des contributions
+            // voisines + delta) plutot que accessingSurface (JPA original jamais mute).
+            // Sans ce correctif, les contributions recues comme voisin sont perdues quand
+            // le carreau devient centre → sous-estimation de la densite reelle.
+            double newTotalSurface = toProcess.getNewAccessingSurface().doubleValue() + newParkSurface;
             toProcess.setNewAccessingSurface(BigDecimal.valueOf(newTotalSurface));
             double newSurfacePerCapita = newTotalSurface / population;
             toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
@@ -207,22 +207,18 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
             // La nouvelle surface est positionnee sur le centre et recalculee vis-a-vis de la population de chaque voisin
             List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
             for (ParkProposalWork neighbor : neighbors) {
-                // Alignement D1: accessingSurface est mute comme accumulateur de surface totale accessible.
-                // Quand ce voisin devient carreau central, newTotalSurface = accessingSurface (enrichi) + delta → juste.
-                // Sans cette mutation, newTotalSurface ignore les enrichissements recus via propagation → sous-estimation.
+                // newAccessingSurface cumule la surface totale accessible (original + toutes
+                // les contributions voisines). L'ancien code écrasait ce cumul avec le seul
+                // delta (ligne suivante), ce qui faisait perdre les contributions quand le
+                // voisin devenait centre → sous-estimation systematique.
                 double neighborTotalSurface = neighbor.getNewAccessingSurface().doubleValue() + newParkSurface;
                 neighbor.setNewAccessingSurface(BigDecimal.valueOf(neighborTotalSurface));
-                // newSurface = delta du parc ajoute (meme semantique que D1, pas le total)
-                neighbor.setNewAccessingSurface(BigDecimal.valueOf(newParkSurface));
 
                 // null-check sur accessingPopulation
                 double neighborPopulation = neighbor.getAccessingPopulation() != null
                     ? neighbor.getAccessingPopulation().doubleValue() : 0d;
                 if (neighborPopulation != 0) {
                     double neighborSurfacePerCapita = neighborTotalSurface / neighborPopulation;
-                    neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborSurfacePerCapita));
-                    // FIX (D): Mettre a jour surfacePerCapita pour que les observations chi2 futures
-                    // excluent ce voisin si son deficit est comble (etape 1 filtre sur surfacePerCapita)
                     neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborSurfacePerCapita));
                 } else {
                     neighbor.setNewSurfacePerCapita(null);
