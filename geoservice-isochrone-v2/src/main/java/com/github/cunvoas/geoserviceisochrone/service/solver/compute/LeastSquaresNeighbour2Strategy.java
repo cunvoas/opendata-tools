@@ -189,15 +189,10 @@ public class LeastSquaresNeighbour2Strategy extends AbstractComputationtrategy {
             proposal.setIsDense(toProcess.getIsDense());
             proposals.add(proposal);
 
-            // newSurface = surface du nouveau parc propose (remplace, pas cumul)
-            toProcess.setNewAccessingSurface(BigDecimal.valueOf(newParkSurface));
             // newMissingSurface diminue du parc ajoute (pas de max(0) : conforme a la reference)
             toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
 
-            // Recalcul surface/hab : utilise newAccessingSurface (cumul des contributions
-            // voisines + delta) plutot que accessingSurface (JPA original jamais mute).
-            // Sans ce correctif, les contributions recues comme voisin sont perdues quand
-            // le carreau devient centre → sous-estimation de la densite reelle.
+            // Cumul : newAccessingSurface += newParkSurface (preserve les propagations des iterations precedentes)
             double newTotalSurface = toProcess.getNewAccessingSurface().doubleValue() + newParkSurface;
             toProcess.setNewAccessingSurface(BigDecimal.valueOf(newTotalSurface));
             double newSurfacePerCapita = newTotalSurface / population;

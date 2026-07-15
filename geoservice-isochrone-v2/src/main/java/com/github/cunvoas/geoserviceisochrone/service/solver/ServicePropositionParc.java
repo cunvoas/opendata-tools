@@ -162,7 +162,7 @@ public class ServicePropositionParc {
 				// données d'origine pour avaoir avant/après
 				parkProposal.setMissingSurface(BigDecimal.valueOf(densiteMissing*popToAnalyse.doubleValue())); 
 				parkProposal.setLocalPopulation(carreCputd.getPopAll());
-				parkProposal.setAccessingPopulation(carreCputd.getPopIncluded());
+				parkProposal.setAccessingPopulation(carreCputd.getPopulationInIsochroneOms());
 				parkProposal.setAccessingSurface(carreCputd.getSurfaceTotalParkOms());
 				
 				// clone des données d'origines qui seront travaillées pour des propositions

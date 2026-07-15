@@ -156,14 +156,10 @@ public class IterativeComputationDBSCANStrategy extends AbstractComputationtrate
 
         // Étape 6 : calcule la surface de parc nécessaire pour atteindre
         // la densité recommandée, plafonnée à CARRE_SURFACE (40 000 m²)
-        Double recomputedNewAccessingSurface =
-                Math.min(
-                        Math.max(
-                                recoSquareMeterPerCapita, 0),
-                            AbstractComputationtrategy.CARRE_SURFACE
-                        ) * toProcess.getAccessingPopulation().doubleValue();
-
-        Double proposedParkSurface = recomputedNewAccessingSurface - toProcess.getNewAccessingSurface().doubleValue();
+        double deficitPerCapita = Math.max(0d, recoSquareMeterPerCapita - toProcess.getNewSurfacePerCapita().doubleValue());
+        double proposedParkSurface = Math.min(
+                deficitPerCapita * toProcess.getAccessingPopulation().doubleValue(),
+                AbstractComputationtrategy.CARRE_SURFACE);
 
         // Étape 7 : seuil de validation — ≥ minParkSurface (1000 m²)
         if (proposedParkSurface >= minParkSurface) {
@@ -180,29 +176,29 @@ public class IterativeComputationDBSCANStrategy extends AbstractComputationtrate
             proposalResult.setCentre(toProcess.getCentre());
             proposalResult.setIsDense(toProcess.getIsDense());
 
-            // Étape 10 : mise à jour du carreau traité
-            toProcess.setNewAccessingSurface(BigDecimal.valueOf(Math.round(recomputedNewAccessingSurface)));
+            // Étape 10 : mise à jour du carreau traité (cumul, pas écrasement)
+            double newTotalSurface = toProcess.getNewAccessingSurface().doubleValue() + proposedParkSurface;
+            toProcess.setNewAccessingSurface(BigDecimal.valueOf(newTotalSurface));
             toProcess.setNewMissingSurface(toProcess.getNewMissingSurface()
-                    .subtract(BigDecimal.valueOf(Math.round(recomputedNewAccessingSurface))));
+                    .subtract(BigDecimal.valueOf(proposedParkSurface)));
 
-            Double newSurfacePerCapita = recomputedNewAccessingSurface
+            Double newSurfacePerCapita = newTotalSurface
                     / toProcess.getAccessingPopulation().doubleValue();
             toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
 
             // Étape 11 : propagation aux voisins
             for (ParkProposalWork neighbor : neighbors) {
-                BigDecimal neighborNewAccessingSurface = BigDecimal.valueOf(
-                        neighbor.getNewAccessingSurface().doubleValue() + proposedParkSurface);
-                neighbor.setNewAccessingSurface(neighborNewAccessingSurface);
+                double neighborNewTotalSurface = neighbor.getNewAccessingSurface().doubleValue() + proposedParkSurface;
+                neighbor.setNewAccessingSurface(BigDecimal.valueOf(neighborNewTotalSurface));
                 neighbor.setNewMissingSurface(
-                        toProcess.getNewMissingSurface()
+                        neighbor.getNewMissingSurface()
                                 .subtract(BigDecimal.valueOf(proposedParkSurface))
                                 .max(BigDecimal.ZERO));
 
                 if (neighbor.getAccessingPopulation() != null
                         && neighbor.getAccessingPopulation().doubleValue() != 0) {
                     Double neighborNewSurfacePerCapita =
-                            neighborNewAccessingSurface.doubleValue()
+                            neighborNewTotalSurface
                                     / neighbor.getAccessingPopulation().doubleValue();
                     neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborNewSurfacePerCapita));
                 }

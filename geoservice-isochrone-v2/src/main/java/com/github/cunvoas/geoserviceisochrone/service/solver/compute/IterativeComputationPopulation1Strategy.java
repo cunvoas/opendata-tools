@@ -90,53 +90,51 @@ public class IterativeComputationPopulation1Strategy extends AbstractComputation
 		ParkProposal proposalResult = null;
 		if (!sorted.isEmpty()) {
 			ParkProposalWork toProcess = sorted.get(0);
-			if (toProcess.getSurfacePerCapita().doubleValue() > minSquareMeterPerCapita) {
-				log.info("Toutes les propositions de la commune sont traitées.");
+			if (toProcess.getNewSurfacePerCapita() != null
+					&& toProcess.getNewSurfacePerCapita().doubleValue() >= recoSquareMeterPerCapita) {
+				log.info("Toutes les propositions de la commune sont traitées (≥ reco {}).", recoSquareMeterPerCapita);
 				return proposalResult;
 			}
 			
 			// calcul de la surface de parc à ajouter pour atteindre la densité recommandée
 			// comprise entre 0 et 40 000 m² (surface max d'un carré de 200m x 200m)
-			Double newAccessibleParkSurface = 
-					Math.min(
-							Math.max(
-									recoSquareMeterPerCapita, 0), 
-						AbstractComputationtrategy.CARRE_SURFACE
-						) * toProcess.getAccessingPopulation().doubleValue();
-			
-			Double newParkSurface = newAccessibleParkSurface - toProcess.getNewAccessingSurface().doubleValue();
-			
-			if (newParkSurface>=minParkSurface) {
-				
+			double deficitPerCapita = Math.max(0d, recoSquareMeterPerCapita - toProcess.getNewSurfacePerCapita().doubleValue());
+			double newParkSurface = Math.min(
+					deficitPerCapita * toProcess.getAccessingPopulation().doubleValue(),
+					AbstractComputationtrategy.CARRE_SURFACE);
+
+			if (newParkSurface >= minParkSurface) {
+
 				proposalResult = new ParkProposal();
 				proposalResult.setAnnee(toProcess.getAnnee());
 				proposalResult.setIdInspire(toProcess.getIdInspire());
 				proposalResult.setParkSurface(BigDecimal.valueOf(newParkSurface));
 				proposalResult.setCentre(toProcess.getCentre());
 				proposalResult.setIsDense(toProcess.getIsDense());
-				
-				// appliquer la proposition
-				toProcess.setNewAccessingSurface(BigDecimal.valueOf(Math.round(newAccessibleParkSurface)));
+
+				// appliquer la proposition : cumul, pas ecrasement
+				double newTotalSurface = toProcess.getNewAccessingSurface().doubleValue() + newParkSurface;
+				toProcess.setNewAccessingSurface(BigDecimal.valueOf(newTotalSurface));
 				toProcess.setNewMissingSurface(toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)));
-				
+
 				// mettre à jour la surface par habitant
-				Double newSurfacePerCapita = newAccessibleParkSurface / toProcess.getAccessingPopulation().doubleValue();
+				Double newSurfacePerCapita = newTotalSurface / toProcess.getAccessingPopulation().doubleValue();
 				toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
-				
+
 				List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
 
-				// mettre à jour les voisins
+				// mettre à jour les voisins (chaque voisin utilise son propre newMissingSurface)
 				for (ParkProposalWork neighbor : neighbors) {
-					Double neighborNewTotalSurface = neighbor.getNewAccessingSurface().doubleValue() + newParkSurface;
-					
-					neighbor.setNewAccessingSurface(new BigDecimal(String.valueOf(neighborNewTotalSurface)));
-					neighbor.setNewMissingSurface( toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(newParkSurface)).max(BigDecimal.ZERO));
+					double neighborNewTotalSurface = neighbor.getNewAccessingSurface().doubleValue() + newParkSurface;
+					neighbor.setNewAccessingSurface(BigDecimal.valueOf(neighborNewTotalSurface));
+					neighbor.setNewMissingSurface(
+							neighbor.getNewMissingSurface()
+									.subtract(BigDecimal.valueOf(newParkSurface))
+									.max(BigDecimal.ZERO));
 
-					Double neighborNewSurfacePerCapita = null;
-					if ( neighbor.getAccessingPopulation().doubleValue()!=0)	{
-						//log.error("neighbor {} accessingPopulation={}", neighbor.getIdInspire(), neighbor.getAccessingPopulation().doubleValue());
-						
-						neighborNewSurfacePerCapita = neighborNewTotalSurface / neighbor.getAccessingPopulation().doubleValue();
+					if (neighbor.getAccessingPopulation().doubleValue() != 0) {
+						double neighborNewSurfacePerCapita = neighborNewTotalSurface
+								/ neighbor.getAccessingPopulation().doubleValue();
 						neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborNewSurfacePerCapita));
 					} else {
 						neighbor.setNewSurfacePerCapita(null);
