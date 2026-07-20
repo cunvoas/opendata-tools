@@ -212,7 +212,7 @@
                             <td class="text-end" th:text="${#numbers.formatDecimal(prop.totalSurfaceOfParks, 0, 0)}">1000</td>
                             <td class="text-center">
                               <button type="button" class="btn btn-sm btn-outline-primary" onclick="viewProposition(this)" 
-                                      th:attr="data-id=${prop.id},data-insee=${prop.insee},data-annee=${prop.annee},data-type=${prop.typeAlgo}">
+                                      th:attr="data-id=${prop.id},data-insee=${prop.insee},data-annee=${prop.annee},data-type=${prop.typeAlgo},data-type-display-name=${prop.typeAlgo?.displayName}">
                                 <i class="fas fa-eye"></i>
                               </button>
                               <button type="button" class="btn btn-sm btn-outline-danger ms-1" onclick="deleteProposition(this)" 
@@ -928,8 +928,17 @@ function viewProposition(button) {
   const propositionId = button.getAttribute('data-id');
   const propositionInsee = button.getAttribute('data-insee');
   const propositionAnnee = button.getAttribute('data-annee');
+  const propositionType = button.getAttribute('data-type-display-name');
   
-  console.log('[Simulateur] Visualisation de la proposition:', propositionId, 'INSEE:', propositionInsee, 'Année:', propositionAnnee);
+  // Mettre à jour le titre de la carte avec l'année et l'algorithme
+  const cardHeader = document.querySelector('.map-block .card-header');
+  if (cardHeader) {
+    cardHeader.innerHTML = propositionAnnee && propositionType
+      ? `Carte des propositions - <strong><em>${propositionAnnee} - ${propositionType}</em></strong>`
+      : 'Carte des propositions';
+  }
+  
+  console.log('[Simulateur] Visualisation de la proposition:', propositionId, 'INSEE:', propositionInsee, 'Année:', propositionAnnee, 'Algo:', propositionType);
   
   if (!propositionId) {
     console.error('[Simulateur] ID de proposition manquant');
