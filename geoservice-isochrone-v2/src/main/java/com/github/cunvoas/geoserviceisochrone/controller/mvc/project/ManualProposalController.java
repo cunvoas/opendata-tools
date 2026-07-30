@@ -22,6 +22,9 @@ import com.github.cunvoas.geoserviceisochrone.service.proposal.ManualProposalSer
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Contrôleur Spring MVC gérant la page de saisie et d'édition des propositions manuelles de parcs.
+ */
 @Controller
 @RequestMapping("/mvc/proposal/manual")
 @Slf4j
@@ -46,6 +49,9 @@ public class ManualProposalController {
         this.applicationBusinessProperties = applicationBusinessProperties;
     }
 
+    /**
+     * Affiche la vue principale des propositions manuelles.
+     */
     @GetMapping
     public String show(@ModelAttribute FormManualProposal form, Model model) {
         log.debug("show() - form={}", form);
@@ -86,6 +92,9 @@ public class ManualProposalController {
         return show(form, model);
     }
 
+    /**
+     * Traite la sauvegarde d'une nouvelle proposition ou sa modification.
+     */
     @PostMapping("/save")
     public String save(@ModelAttribute FormManualProposal form, Model model) {
         log.info("save() - form={}", form);
@@ -124,6 +133,9 @@ public class ManualProposalController {
         return show(form, model);
     }
 
+    /**
+     * Traite la suppression d'une proposition manuelle.
+     */
     @PostMapping("/delete")
     public String delete(@ModelAttribute FormManualProposal form, Model model) {
         log.info("delete() - form={}", form);

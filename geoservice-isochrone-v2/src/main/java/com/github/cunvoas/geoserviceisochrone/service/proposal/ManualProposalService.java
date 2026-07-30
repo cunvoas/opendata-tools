@@ -21,6 +21,13 @@ import com.github.cunvoas.geoserviceisochrone.repo.proposal.manual.ManualParkPro
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service pour gérer les propositions manuelles de parcs.
+ * <p>
+ * Ce service permet de sauvegarder, supprimer et récupérer des propositions
+ * manuelles de parcs en fonction du code INSEE et de l'année.
+ * </p>
+ */
 @Service
 @Slf4j
 public class ManualProposalService {
@@ -37,6 +44,17 @@ public class ManualProposalService {
     @Autowired
     private com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;
 
+    /**
+     * Sauvegarde une proposition manuelle de parc.
+     * <p>
+     * Cette méthode crée ou met à jour une proposition.
+     * Si aucune métadonnée n'existe pour cette commune et année,
+     * une nouvelle métadonnée est créée automatiquement.
+     * </p>
+     * 
+     * @param form Formulaire contenant les données de la proposition
+     * @return La proposition sauvegardée
+     */
     @Transactional
     public ManualParkProposal save(FormManualProposal form) {
         String insee = form.getCodeInsee();
@@ -104,6 +122,12 @@ public class ManualProposalService {
 
         List<ManualParkProposal> all = proposalRepository.findByIdMetaOrderByCreatedDateDesc(meta.getId());
         meta.setNumberOfParks(all.size());
+        
+        // STREAM EXPLICATION :
+        // 1. .stream() : Transforme la liste 'all' en un flux d'éléments pour pouvoir utiliser les opérations fonctionnelles.
+        // 2. .filter(p -> p.getSurface() != null) : Filtre la liste pour ne garder que les propositions qui ont une surface renseignée (évite les NullPointerException).
+        // 3. .mapToInt(p -> p.getSurface().intValue()) : Convertit chaque objet proposal (p) en sa valeur entière de surface (Stream d'entiers primitifs IntStream).
+        // 4. .sum() : Effectue l'addition de toutes les surfaces entières obtenues pour calculer la surface totale cumulée.
         meta.setTotalSurfaceOfParks(all.stream()
             .filter(p -> p.getSurface() != null)
             .mapToInt(p -> p.getSurface().intValue())
@@ -113,6 +137,15 @@ public class ManualProposalService {
         return proposal;
     }
 
+    /**
+     * Supprime une proposition manuelle de parc.
+     * <p>
+     * Si la proposition était la dernière pour une métadonnée,
+     * alors la métadonnée est supprimée également.
+     * </p>
+     * 
+     * @param proposalId ID de la proposition à supprimer
+     */
     @Transactional
     public void delete(Long proposalId) {
         proposalRepository.findById(proposalId).ifPresent(proposal -> {
@@ -125,6 +158,10 @@ public class ManualProposalService {
                     metaRepository.delete(meta);
                 } else {
                     meta.setNumberOfParks(remaining.size());
+                    
+                    // STREAM EXPLICATION :
+                    // On recalcule la surface totale des parcs restants après suppression.
+                    // .filter() élimine les objets sans surface, .mapToInt() extrait la surface sous forme d'entier, et .sum() additionne le tout.
                     meta.setTotalSurfaceOfParks(remaining.stream()
                         .filter(p -> p.getSurface() != null)
                         .mapToInt(p -> p.getSurface().intValue())
@@ -135,11 +172,27 @@ public class ManualProposalService {
         });
     }
 
+    /**
+     * Récupère toutes les propositions manuelles pour une commune.
+     * <p>
+     * La méthode utilise l'année courante par défaut.
+     * </p>
+     * 
+     * @param insee Code INSEE de la commune
+     * @return Liste des propositions
+     */
     public List<ManualParkProposal> findByInsee(String insee) {
         Integer annee = java.time.Year.now().getValue();
         return findByInsee(insee, annee);
     }
 
+    /**
+     * Récupère toutes les propositions manuelles pour une commune et une année spécifiques.
+     * 
+     * @param insee Code INSEE de la commune
+     * @param annee Année des propositions
+     * @return Liste des propositions
+     */
     public List<ManualParkProposal> findByInsee(String insee, Integer annee) {
         ManualParkProposalMeta meta = metaRepository.findByAnneeAndInsee(annee, insee);
         if (meta == null) return List.of();

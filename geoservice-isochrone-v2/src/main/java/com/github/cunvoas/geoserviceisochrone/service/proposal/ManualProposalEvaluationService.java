@@ -29,6 +29,13 @@ import com.github.cunvoas.geoserviceisochrone.service.solver.compute.AbstractCom
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service d'évaluation de l'impact des propositions manuelles de parcs.
+ * <p>
+ * Ce service calcule l'impact de l'ajout de propositions manuelles sur la desserte
+ * en espaces verts par habitant pour chaque carreau INSEE de 200m d'une commune.
+ * </p>
+ */
 @Service
 @Slf4j
 public class ManualProposalEvaluationService {
@@ -54,6 +61,14 @@ public class ManualProposalEvaluationService {
     @Autowired
     private ManualEvalWorkRepository manualEvalWorkRepository;
 
+    /**
+     * Évalue l'impact des propositions manuelles pour une commune et une année données,
+     * persiste les résultats dans la table 'manual_eval_work' et retourne un objet GeoJSON.
+     * 
+     * @param insee Code INSEE de la commune
+     * @param annee Année du calcul
+     * @return GeoJsonRoot contenant les géométries des carreaux et leurs propriétés avant/après
+     */
     @Transactional
     public GeoJsonRoot evaluate(String insee, Integer annee) {
         log.info("Manual proposal evaluation for INSEE={}, annee={}", insee, annee);
@@ -63,6 +78,7 @@ public class ManualProposalEvaluationService {
             return root;
         }
 
+        // 1. Détermination du type de zone (dense ou périurbaine) pour adapter les distances de marche OMS et les objectifs de surface par habitant
         Boolean dense = serviceOpenData.isDistanceDense(insee);
         Integer urbanDistance = Integer.valueOf(dense
                 ? applicationBusinessProperties.getOmsUrbanDistance()
@@ -71,12 +87,14 @@ public class ManualProposalEvaluationService {
                 ? applicationBusinessProperties.getRecoUrbSquareMeterPerCapita()
                 : applicationBusinessProperties.getRecoSubUrbSquareMeterPerCapita();
 
+        // 2. Récupération des formes géométriques de tous les carreaux 200m de la commune ayant de la population
         List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findCarreByInseeCode(insee, true);
         if (carreShapes == null || carreShapes.isEmpty()) {
             log.warn("No carreaux found for INSEE={}", insee);
             return root;
         }
 
+        // 3. Récupération ou création des métadonnées de propositions manuelles pour ce couple (INSEE, année)
         ManualParkProposalMeta meta = manualParkProposalMetaRepository.findByAnneeAndInsee(annee, insee);
         if (meta == null) {
             log.info("Creating meta for INSEE={}, annee={}", insee, annee);
@@ -87,8 +105,10 @@ public class ManualProposalEvaluationService {
             meta = manualParkProposalMetaRepository.save(meta);
         }
 
+        // 4. Nettoyage des anciennes évaluations enregistrées pour repartir sur une évaluation fraîche
         manualEvalWorkRepository.deleteByIdMeta(meta.getId());
 
+        // 5. Chargement des propositions manuelles tracées par l'utilisateur
         List<ManualParkProposal> proposals = manualProposalService.findByInsee(insee, annee);
         if (proposals == null || proposals.isEmpty()) {
             log.warn("No manual proposals found for INSEE={}", insee);
@@ -97,10 +117,12 @@ public class ManualProposalEvaluationService {
 
         List<ManualEvalWork> works = new ArrayList<>();
 
+        // 6. Boucle de calcul carreau par carreau pour mesurer le gain apporté par les nouveaux parcs
         for (InseeCarre200mOnlyShape shape : carreShapes) {
             Optional<InseeCarre200mComputedV2> oCarre = inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(annee, shape.getIdInspire());
             if (oCarre.isEmpty()) continue;
 
+            // Récupération des métriques actuelles pré-calculées du carreau (population, surfaces accessibles, etc.)
             InseeCarre200mComputedV2 carre = oCarre.get();
 
             BigDecimal accessingPopulation = carre.getPopulationInIsochroneOms();
@@ -112,6 +134,7 @@ public class ManualProposalEvaluationService {
             BigDecimal surfacePerCapita = carre.getSurfaceParkPerCapitaOms();
             if (surfacePerCapita == null) surfacePerCapita = BigDecimal.ZERO;
 
+            // Calcul de la surface manquante actuelle pour atteindre la recommandation OMS
             BigDecimal missingSurface;
             if (accessingPopulation.compareTo(BigDecimal.ZERO) > 0) {
                 double densiteMissing = Math.max(recoSquareMeterPerCapita - surfacePerCapita.doubleValue(), 0);
@@ -123,6 +146,10 @@ public class ManualProposalEvaluationService {
             double newAccessingSurfaceD = accessingSurface.doubleValue();
             Point carreCentre = shape.getGeoPoint2d();
 
+            // VÉRIFICATION DE LA PROXIMITÉ GÉOGRAPHIQUE :
+            // Pour chaque proposition manuelle, on calcule la distance à vol d'oiseau entre le centre du carreau et le centre du parc.
+            // Si la distance est inférieure au rayon isochrone OMS + la moitié de la diagonale d'un carreau (283m), 
+            // le parc est considéré accessible depuis ce carreau, et sa surface est ajoutée.
             for (ManualParkProposal prop : proposals) {
                 Point propCentre = prop.getCentre();
                 if (propCentre == null) continue;
@@ -138,6 +165,7 @@ public class ManualProposalEvaluationService {
                 }
             }
 
+            // Calcul du nouveau ratio de surface par habitant et du nouveau déficit après prise en compte des propositions
             double popForDensity = accessingPopulation.doubleValue() > 0
                     ? accessingPopulation.doubleValue()
                     : localPopulation.doubleValue();
@@ -186,6 +214,13 @@ public class ManualProposalEvaluationService {
         return root;
     }
 
+    /**
+     * Charge une évaluation pré-calculée depuis la base de données sans relancer le calcul.
+     * 
+     * @param insee Code INSEE de la commune
+     * @param annee Année de l'évaluation
+     * @return GeoJsonRoot contenant les carreaux évalués enregistrés
+     */
     @Transactional(readOnly = true)
     public GeoJsonRoot loadEvaluation(String insee, Integer annee) {
         log.info("Load manual evaluation for INSEE={}, annee={}", insee, annee);
