@@ -5,8 +5,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,19 +75,19 @@ public class ManualProposalService {
             }
         } else {
             if (form.getMapLat() != null && form.getMapLng() != null) {
-                org.locationtech.jts.geom.Coordinate coord = new org.locationtech.jts.geom.Coordinate(
+                Coordinate coord = new Coordinate(
                     Double.parseDouble(form.getMapLng()),
                     Double.parseDouble(form.getMapLat())
                 );
-                org.locationtech.jts.geom.GeometryFactory factory = new org.locationtech.jts.geom.GeometryFactory();
+                GeometryFactory factory = new GeometryFactory();
                 proposal.setCentre(factory.createPoint(coord));
             } else if (StringUtils.isNotBlank(form.getSGeometry())) {
-                org.locationtech.jts.geom.GeometryFactory factory = new org.locationtech.jts.geom.GeometryFactory();
+                GeometryFactory factory = new GeometryFactory();
                 tools.jackson.databind.JsonNode root = new tools.jackson.databind.ObjectMapper().readTree(form.getSGeometry());
                 if (root.has("coordinates")) {
                     double lng = root.get("coordinates").get(0).asDouble();
                     double lat = root.get("coordinates").get(1).asDouble();
-                    proposal.setCentre(factory.createPoint(new org.locationtech.jts.geom.Coordinate(lng, lat)));
+                    proposal.setCentre(factory.createPoint(new Coordinate(lng, lat)));
                 }
             }
 
