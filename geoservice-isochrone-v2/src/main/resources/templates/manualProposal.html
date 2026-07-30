@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{fragments/fragment-head :: head(#{manualProposal.title})}"></head>
+
+<body class="sb-nav-fixed">
+<div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
+<div id="layoutSidenav">
+    <div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+    <div id="layoutSidenav_content">
+    <main>
+    <div class="container-fluid px-4">
+        <h4 class="mt-3">Proposition manuelle de parcs</h4>
+        <p class="text-muted">Dessiner des propositions de parcs sur la carte. Mode cercle pour une estimation rapide, mode polygone pour un tracé précis.</p>
+
+        <!-- Messages -->
+        <div class="alert alert-danger" th:if="${tokenInvalid}">
+            <i class="fas fa-exclamation-triangle"></i> <span class="alert-msg">Formulaire expiré, veuillez réessayer.</span>
+        </div>
+        <div class="alert alert-success" th:if="${saveSuccess}">
+            <i class="fas fa-check"></i> <span class="alert-msg" th:text="${saveSuccess}"></span>
+        </div>
+        <div class="alert alert-danger" th:if="${saveError}">
+            <i class="fas fa-exclamation-circle"></i> <span class="alert-msg" th:text="${saveError}"></span>
+        </div>
+        <div class="alert alert-success" th:if="${deleteSuccess}">
+            <i class="fas fa-check"></i> <span class="alert-msg" th:text="${deleteSuccess}"></span>
+        </div>
+        <div class="alert alert-danger" th:if="${deleteError}">
+            <i class="fas fa-exclamation-circle"></i> <span class="alert-msg" th:text="${deleteError}"></span>
+        </div>
+
+        <!-- Sélecteurs territoire -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <h6 class="mb-0">Sélection du territoire</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <form id="formSelectRegion" th:action="@{/mvc/proposal/manual/region}" th:object="${formManualProposal}" method="post" onchange="submit();" class="w-100">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="idRegion" name="idRegion" th:field="*{idRegion}">
+                                            <option value="" selected disabled>Choisir une région...</option>
+                                            <option th:each="region : ${regions}" th:value="${region.id}" th:text="${region.name}"></option>
+                                        </select>
+                                        <label for="idRegion"><i class="fas fa-map me-2"></i>Région</label>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-md-3">
+                                <form id="formSelectComm2co" th:action="@{/mvc/proposal/manual/commDeCo}" th:object="${formManualProposal}" method="post" onchange="submit();" class="w-100">
+                                    <fieldset id="fsComm2co" th:disabled="${formManualProposal.idRegion == null}">
+                                        <div class="form-floating">
+                                            <select class="form-select" id="idCommunauteDeCommunes" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}">
+                                                <option value="">EPCI...</option>
+                                                <option th:each="commDeCo : ${communautesDeCommunes}" th:value="${commDeCo.id}" th:text="${commDeCo.name}"></option>
+                                            </select>
+                                            <label for="idCommunauteDeCommunes"><i class="fas fa-building me-2"></i>Communauté de communes</label>
+                                            <input type="hidden" id="idRegionComm" name="idRegion" th:field="*{idRegion}" />
+                                        </div>
+                                    </fieldset>
+                                </form>
+                            </div>
+                            <div class="col-md-6">
+                                <form id="formSelectCity" th:action="@{/mvc/proposal/manual/city}" method="POST" th:object="${formManualProposal}" class="w-100">
+                                    <fieldset id="fsCity" th:disabled="${formManualProposal.idCommunauteDeCommunes == null}">
+                                        <div class="form-floating">
+                                            <input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter"
+                                                   th:value="${formManualProposal.nameCommune}" placeholder="Commune..."
+                                                   onchange="onCitySelect(this)" />
+                                            <label for="idCommune-filter"><i class="fas fa-city me-2"></i>Commune</label>
+                                            <datalist id="communes">
+                                                <option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id},data-insee=${commune.inseeCode}"></option>
+                                            </datalist>
+                                            <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
+                                            <input type="hidden" id="idRegionCity" name="idRegion" th:field="*{idRegion}" />
+                                            <input type="hidden" id="idCommunauteDeCommunesCity" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+                                        </div>
+                                    </fieldset>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire principal -->
+        <form id="formManualProposal" th:action="@{/mvc/proposal/manual/save}" method="post" th:object="${formManualProposal}" onsubmit="return false;">
+            <input type="hidden" name="token" th:field="*{token}" />
+            <input type="hidden" name="id" th:field="*{id}" />
+            <input type="hidden" name="idMeta" th:field="*{idMeta}" />
+            <input type="hidden" name="idRegion" th:field="*{idRegion}" />
+            <input type="hidden" name="idCommunauteDeCommunes" th:field="*{idCommunauteDeCommunes}" />
+            <input type="hidden" name="idCommune" th:field="*{idCommune}" />
+            <input type="hidden" name="codeInsee" th:field="*{codeInsee}" />
+            <input type="hidden" id="mapLat" name="mapLat" th:field="*{mapLat}" />
+            <input type="hidden" id="mapLng" name="mapLng" th:field="*{mapLng}" />
+            <input type="hidden" id="sGeometry" name="sGeometry" th:field="*{sGeometry}" />
+
+            <div class="row g-3 mb-3">
+                <!-- Colonne gauche : formulaire -->
+                <div class="col-12 col-lg-4">
+                    <div class="card">
+                        <div class="card-header">Nouvelle proposition</div>
+                        <div class="card-body">
+                            <!-- Mode toggle -->
+                            <div class="mb-3">
+                                <label class="form-label">Mode de dessin</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="mode" id="modeCircle" value="CIRCLE" autocomplete="off"
+                                           th:field="*{mode}" th:checked="${formManualProposal.mode == 'CIRCLE'}" onchange="toggleMode()" />
+                                    <label class="btn btn-outline-primary" for="modeCircle"><i class="fas fa-circle"></i> Cercle</label>
+                                    <input type="radio" class="btn-check" name="mode" id="modePolygon" value="POLYGON" autocomplete="off"
+                                           th:field="*{mode}" th:checked="${formManualProposal.mode == 'POLYGON'}" onchange="toggleMode()" />
+                                    <label class="btn btn-outline-primary" for="modePolygon"><i class="fas fa-draw-polygon"></i> Polygone</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nom</label>
+                                <input class="form-control" type="text" id="name" name="name" th:field="*{name}" placeholder="Nom de la proposition" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="surface" class="form-label">Surface (m²)</label>
+                                <input class="form-control" type="number" id="surface" name="surface" th:field="*{surface}" placeholder="Surface en m²" step="1" min="1" />
+                            </div>
+
+                            <div id="circleFields" class="mb-3">
+                                <div class="text-center my-1 text-muted">ou</div>
+                                <label for="diameter" class="form-label">Diamètre (m)</label>
+                                <input class="form-control" type="number" id="diameter" name="diameter" th:field="*{diameter}" placeholder="Diamètre en m" step="1" min="1" oninput="diameterChanged()" />
+                                <div id="surfacePreview" class="form-text text-muted"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" th:field="*{description}" rows="3" placeholder="Description optionnelle"></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-primary" onclick="saveProposal()" th:disabled="${formManualProposal.idCommune == null}">
+                                    <i class="fas fa-save"></i> Enregistrer
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                                    <i class="fas fa-plus"></i> Nouveau
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Liste des propositions -->
+                    <div class="card mt-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Propositions</span>
+                            <span class="badge bg-secondary" th:text="${proposals != null ? #lists.size(proposals) : 0}">0</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div th:if="${proposals == null || proposals.isEmpty()}" class="text-muted text-center py-3">
+                                Aucune proposition pour cette commune.
+                            </div>
+                            <div th:if="${proposals != null && !proposals.isEmpty()}">
+                                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th>Nom</th>
+                                                <th>Mode</th>
+                                                <th class="text-end">Surface</th>
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="prop : ${proposals}"
+                                                th:data-id="${prop.id}"
+                                                th:data-name="${prop.name}"
+                                                th:data-mode="${prop.mode}"
+                                                th:data-surface="${prop.surface}"
+                                                th:data-description="${prop.description}"
+                                                th:data-lat="${prop.centre?.y}"
+                                                th:data-lng="${prop.centre?.x}"
+                                                onclick="editProposalFromRow(this)"
+                                                style="cursor:pointer;">
+                                                <td th:text="${prop.name}">Nom</td>
+                                                <td><span class="badge" th:classappend="${prop.mode == 'POLYGON'} ? 'bg-info' : 'bg-success'" th:text="${prop.mode}">CIRCLE</span></td>
+                                                <td class="text-end" th:text="${prop.surface}">0</td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            th:data-id="${prop.id}"
+                                                            onclick="deleteProposal(this)">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colonne droite : carte -->
+                <div class="col-12 col-lg-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Carte interactive</span>
+                            <span>
+                                <a id="aGMapLink" href="#" target="_blank" rel="noopener noreferrer">Google Map</a>
+                                <label class="small mb-0 ms-3" style="cursor:pointer;">
+                                    <input type="checkbox" id="colorblindToggle" onchange="toggleColorblind()"> Mode daltonien
+                                </label>
+                            </span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="mapManualProposal" style="width:100%; height:600px;"></div>
+                        </div>
+                        <div class="card-footer text-muted small">
+                            Mode cercle : cliquer sur la carte puis saisir surface ou diamètre. Mode polygone : utiliser l'outil de dessin.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/fragment-footer :: footer}"></div>
+<div th:replace="~{fragments/fragment-jslibs :: newMap}"></div>
+
+<style>
+    .beta-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background-color: #e96020;
+        color: #fff;
+        font-size: 0.55em;
+        font-weight: bold;
+        border-radius: 4px;
+        vertical-align: middle;
+        margin-left: 8px;
+    }
+    .table-responsive {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    }
+    .table-responsive::-webkit-scrollbar { width: 8px; }
+    .table-responsive::-webkit-scrollbar-track { background: transparent; }
+    .table-responsive::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.3); border-radius: 4px; }
+    .sticky-top { position: sticky; top: 0; z-index: 10; }
+</style>
+
+<script th:inline="javascript">
+const mapMinZoom = 10;
+const mapMaxZoom = 18;
+const zoomInit = 15;
+const latInit = 50.626419;
+const lonInit = 3.0719121;
+
+const layerOSM = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a target="_blank" rel="noopener" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: mapMaxZoom, minZoom: mapMinZoom
+});
+const layerSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Esri Satellite', maxZoom: mapMaxZoom, minZoom: mapMinZoom
+});
+const layerAeroIgn = L.tileLayer('https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS', {
+    attribution: 'IGN GeoPortail', maxZoom: Math.min(18, mapMaxZoom), minZoom: mapMinZoom
+});
+const baseLayers = { 'IGN Aérien': layerAeroIgn, 'Satellite': layerSatellite, 'OpenStreetMap': layerOSM };
+
+const layerExisting = L.layerGroup();
+const layerManual = L.layerGroup();
+const layerCadastre = L.layerGroup();
+const layerIris = L.layerGroup();
+const layerVegetation = L.layerGroup();
+const overlays = { 'Parcs existants': layerExisting, 'Propositions manuelles': layerManual, 'Cadastre': layerCadastre, 'IRIS': layerIris, 'Végétation IGN': layerVegetation };
+
+function locatePlace(lat, lon) { return L.latLng(parseFloat(lat), parseFloat(lon)); }
+
+function getMapLocation() {
+    const mLat = document.getElementById('mapLat').value;
+    const mLng = document.getElementById('mapLng').value;
+    if (mLat && mLng && mLat.trim() !== '' && mLng.trim() !== '' && !isNaN(parseFloat(mLat)) && !isNaN(parseFloat(mLng))) {
+        return locatePlace(mLat, mLng);
+    }
+    return L.latLng(latInit, lonInit);
+}
+
+let locateWorkPlace = getMapLocation();
+const targetLat = locateWorkPlace.lat;
+const targetLng = locateWorkPlace.lng;
+
+const map = L.map('mapManualProposal', {
+    center: [targetLat, targetLng],
+    zoom: zoomInit,
+    layers: [layerOSM],
+    keyboard: false
+});
+
+setTimeout(function() {
+    window.scrollTo(0, 0);
+    map.invalidateSize();
+    map.setView([targetLat, targetLng], zoomInit, { animate: false, reset: true });
+}, 200);
+
+L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
+
+let currentCircle = null;
+let drawnPolygonLayer = null;
+
+function clearGeomanDrawings() {
+    const layers = map.pm.getGeomanDrawLayers();
+    layers.eachLayer ? layers.eachLayer(l => map.removeLayer(l)) : layers.forEach(l => map.removeLayer(l));
+    drawnPolygonLayer = null;
+}
+
+function toggleMode() {
+    const isCircle = document.getElementById('modeCircle').checked;
+    document.getElementById('circleFields').style.display = isCircle ? 'block' : 'none';
+    document.getElementById('surface').readOnly = !isCircle;
+
+    if (isCircle) {
+        map.pm.disableDraw('Polygon');
+        clearGeomanDrawings();
+        document.getElementById('sGeometry').value = '';
+        document.getElementById('surface').value = '';
+        document.getElementById('mapLat').value = '';
+        document.getElementById('mapLng').value = '';
+        if (currentCircle) { map.removeLayer(currentCircle); currentCircle = null; }
+    } else {
+        map.pm.addControls({
+            position: 'topleft',
+            drawControls: true, editControls: true, optionsControls: true, customControls: true, oneBlock: true,
+            drawMarker: false, drawPolyline: false, drawRectangle: false, drawPolygon: true,
+            drawCircle: false, drawCircleMarker: false, drawText: false,
+            editMode: true, dragMode: false, cutPolygon: false, removalMode: true, rotateMode: false
+        });
+        map.pm.enableDraw('Polygon', { snappable: false, allowSelfIntersection: false });
+    }
+}
+
+map.pm.setLang('fr');
+map.pm.setGlobalOptions({ allowSelfIntersection: false });
+
+map.on('pm:create', function(e) {
+    const layer = e.layer;
+    drawnPolygonLayer = layer;
+    const geoJson = JSON.stringify(layer.toGeoJSON());
+    document.getElementById('sGeometry').value = geoJson;
+    if (layer.getArea) {
+        const area = Math.round(layer.getArea());
+        document.getElementById('surface').value = area;
+    }
+    layer.on('pm:edit', function(ev) {
+        const updated = JSON.stringify(layer.toGeoJSON());
+        document.getElementById('sGeometry').value = updated;
+        if (layer.getArea) {
+            document.getElementById('surface').value = Math.round(layer.getArea());
+        }
+    });
+    layer.on('pm:remove', function() {
+        document.getElementById('sGeometry').value = '';
+        document.getElementById('surface').value = '';
+        drawnPolygonLayer = null;
+    });
+});
+
+map.on('click', function(e) {
+    const isCircle = document.getElementById('modeCircle').checked;
+    if (!isCircle) return;
+
+    if (currentCircle) map.removeLayer(currentCircle);
+    document.getElementById('mapLat').value = e.latlng.lat;
+    document.getElementById('mapLng').value = e.latlng.lng;
+
+    currentCircle = L.circle(e.latlng, { radius: 100, color: '#3388ff', fillOpacity: 0.3 }).addTo(map);
+    updateCircleFromSurface();
+});
+
+function deleteProposal(btn) {
+    if (!confirm('Supprimer cette proposition ?')) return;
+    const id = btn.dataset.id;
+    const formData = new FormData();
+    formData.append('id', id);
+    const csrfInput = document.querySelector('input[name="_csrf"]');
+    const headers = {};
+    if (csrfInput) headers['X-XSRF-TOKEN'] = csrfInput.value;
+    fetch(/*[[@{/mvc/proposal/manual/delete}]]*/ '', { method: 'POST', headers: headers, body: formData })
+        .then(function() {
+            refreshProposalList();
+            loadManualProposals();
+        });
+}
+
+function onCitySelect(input) {
+    const opts = document.querySelectorAll('#communes option');
+    let opt = null;
+    for (const o of opts) {
+        if (o.value === input.value) { opt = o; break; }
+    }
+    if (!opt) return;
+    const cityId = opt.dataset.value;
+    if (!cityId) return;
+    document.getElementById('idCommune').value = cityId;
+    document.getElementById('codeInsee').value = opt.dataset.insee;
+    document.getElementById('idRegionCity').value = document.getElementById('idRegion').value;
+
+    const c2co = document.getElementById('idCommunauteDeCommunes').value;
+    document.getElementById('idCommunauteDeCommunesCity').value = c2co;
+
+    const csrfInput = document.querySelector('input[name="_csrf"]');
+    const headers = {'Content-Type':'application/x-www-form-urlencoded'};
+    if (csrfInput) headers['X-XSRF-TOKEN'] = csrfInput.value;
+    const body = new URLSearchParams();
+    body.append('idCommune', cityId);
+    body.append('idRegion', document.getElementById('idRegion').value);
+    body.append('idCommunauteDeCommunes', c2co);
+
+    fetch(/*[[@{/mvc/proposal/manual/city}]]*/ '', { method: 'POST', headers: headers, body: body })
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newLat = doc.getElementById('mapLat');
+            const newLng = doc.getElementById('mapLng');
+            if (newLat && newLng && newLat.value && newLng.value) {
+                document.getElementById('mapLat').value = newLat.value;
+                document.getElementById('mapLng').value = newLng.value;
+                map.setView([parseFloat(newLat.value), parseFloat(newLng.value)], zoomInit, { animate: true });
+            }
+            resetForm();
+            loadManualProposals();
+            refreshProposalList();
+        });
+}
+
+function editProposalFromRow(row) {
+    const id = row.dataset.id;
+    const name = row.dataset.name;
+    const mode = row.dataset.mode;
+    const surface = row.dataset.surface;
+    const description = row.dataset.description;
+    const lat = row.dataset.lat;
+    const lng = row.dataset.lng;
+    populateForm(id, name, mode, surface, description, lat, lng);
+}
+
+function selectMode(mode) {
+    const modeCircle = document.getElementById('modeCircle');
+    const modePolygon = document.getElementById('modePolygon');
+    modeCircle.checked = mode === 'CIRCLE';
+    modePolygon.checked = mode === 'POLYGON';
+    toggleMode();
+}
+
+function hideAlerts() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(a) { a.style.display = 'none'; });
+}
+
+function resetForm() {
+    document.getElementById('id').value = '';
+    document.getElementById('idMeta').value = '';
+    document.getElementById('name').value = '';
+    document.getElementById('surface').value = '';
+    document.getElementById('diameter').value = '';
+    document.getElementById('description').value = '';
+    document.getElementById('surfacePreview').textContent = '';
+    document.getElementById('sGeometry').value = '';
+    document.getElementById('mapLat').value = '';
+    document.getElementById('mapLng').value = '';
+    hideAlerts();
+    if (currentCircle) { map.removeLayer(currentCircle); currentCircle = null; }
+    clearGeomanDrawings();
+    selectMode('CIRCLE');
+    map.setView(getMapLocation(), zoomInit, { animate: true });
+}
+
+function formToParams(form) {
+    const params = new URLSearchParams();
+    for (const el of form.elements) {
+        if (el.name && !el.disabled) {
+            if (el.type === 'radio' || el.type === 'checkbox') {
+                if (el.checked) params.append(el.name, el.value);
+            } else {
+                params.append(el.name, el.value);
+            }
+        }
+    }
+    return params;
+}
+
+function saveProposal() {
+    console.log('saveProposal called');
+    if (!document.getElementById('codeInsee').value) { console.log('no codeInsee'); return; }
+    const btn = document.querySelector('.btn-primary');
+    btn.disabled = true;
+    const body = formToParams(document.getElementById('formManualProposal'));
+    const csrfInput = document.querySelector('input[name="_csrf"]');
+    const headers = {'Content-Type':'application/x-www-form-urlencoded'};
+    if (csrfInput) headers['X-XSRF-TOKEN'] = csrfInput.value;
+    console.log('sending', body.toString());
+    fetch(/*[[@{/mvc/proposal/manual/save}]]*/ '', { method: 'POST', headers: headers, body: body })
+        .then(function(r) {
+            console.log('save response', r.status);
+            return r.text();
+        })
+        .then(function(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const err = doc.querySelector('.alert-danger .alert-msg');
+            if (err) {
+                alert('Erreur: ' + err.textContent);
+                return;
+            }
+            resetForm();
+            loadManualProposals();
+            refreshProposalList();
+        })
+        .catch(function(e) { console.error('Save error', e); alert('Erreur: ' + e.message); })
+        .finally(function() { btn.disabled = false; });
+}
+
+function refreshProposalList() {
+    const insee = document.getElementById('codeInsee').value;
+    fetch(window.location.href)
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newBody = doc.querySelector('.card-body.p-0');
+            const oldBody = document.querySelector('.card-body.p-0');
+            if (newBody && oldBody) oldBody.innerHTML = newBody.innerHTML;
+            const newBadge = doc.querySelector('.badge.bg-secondary');
+            const oldBadge = document.querySelector('.badge.bg-secondary');
+            if (newBadge && oldBadge) oldBadge.textContent = newBadge.textContent;
+        });
+}
+
+function populateForm(id, name, mode, surface, description, lat, lng) {
+    document.getElementById('id').value = id;
+    document.getElementById('idMeta').value = '';
+    document.getElementById('name').value = name || '';
+    selectMode(mode || 'CIRCLE');
+    document.getElementById('surface').value = surface || '';
+    document.getElementById('description').value = description || '';
+    document.getElementById('diameter').value = '';
+    document.getElementById('surfacePreview').textContent = '';
+
+    if (lat && lng) {
+        document.getElementById('mapLat').value = lat;
+        document.getElementById('mapLng').value = lng;
+        map.setView([parseFloat(lat), parseFloat(lng)], zoomInit, { animate: true });
+
+        if (mode === 'CIRCLE') {
+            clearGeomanDrawings();
+            if (currentCircle) map.removeLayer(currentCircle);
+            const center = L.latLng(parseFloat(lat), parseFloat(lng));
+            const s = parseFloat(surface) || 10000;
+            const r = Math.sqrt(s / Math.PI);
+            currentCircle = L.circle(center, { radius: r, color: '#3388ff', fillOpacity: 0.3 }).addTo(map);
+            const centerStr = '{"type":"Point","coordinates":[' + lng + ',' + lat + ']}';
+            document.getElementById('sGeometry').value = centerStr;
+        }
+    }
+}
+
+function diameterChanged() {
+    const d = parseFloat(document.getElementById('diameter').value);
+    if (d > 0) {
+        const r = d / 2;
+        const area = Math.PI * r * r;
+        document.getElementById('surface').value = Math.round(area);
+        document.getElementById('surfacePreview').textContent = 'Rayon: ' + r.toFixed(1) + ' m, Surface: ' + Math.round(area) + ' m²';
+        updateCircleFromSurface();
+    } else {
+        document.getElementById('surfacePreview').textContent = '';
+    }
+}
+
+function updateCircleFromSurface() {
+    const s = parseFloat(document.getElementById('surface').value);
+    if (s > 0 && currentCircle) {
+        const r = Math.sqrt(s / Math.PI);
+        currentCircle.setRadius(r);
+        const center = currentCircle.getLatLng();
+        const centerStr = '{"type":"Point","coordinates":[' + center.lng + ',' + center.lat + ']}';
+        document.getElementById('sGeometry').value = centerStr;
+    }
+}
+
+const endpointParcs = /*[[@{/mvc/geojson/parkGardenOutlineByCorner}]]*/ '';
+const endpointManual = /*[[@{/mvc/geojson/manualProposal/}]]*/ '';
+const endpointCadastre = /*[[@{/mvc/geojson/cadastreByCorner}]]*/ '';
+const endpointIris = /*[[@{/map/insee/iris/area}]]*/ '';
+const endpointVegetation = /*[[@{/map/ign-topo/vegetal}]]*/ '';
+
+function loadCadastre(bounds) {
+    const sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+    const url = endpointCadastre + '?swLat=' + sw.lat + '&swLng=' + sw.lng + '&neLat=' + ne.lat + '&neLng=' + ne.lng;
+    fetch(url).then(r => r.json()).then(data => {
+        layerCadastre.clearLayers();
+        if (data.features) {
+            L.geoJSON(data, {
+                style: function() { return { color: '#7a7c00', fillColor: '#d6d900', weight: 1, fillOpacity: 0.18 }; },
+                onEachFeature: function(f, l) {
+                    if (f.properties) {
+                        let nm = f.properties.nom || '';
+                        if (f.properties.idInsee) nm += ' (' + f.properties.idInsee + ')';
+                        if (nm) l.bindTooltip(nm);
+                    }
+                }
+            }).addTo(layerCadastre);
+        }
+    });
+}
+
+function loadIris(bounds) {
+    const sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+    const annee = new Date().getFullYear();
+    const url = endpointIris + '?swLat=' + sw.lat + '&swLng=' + sw.lng + '&neLat=' + ne.lat + '&neLng=' + ne.lng + '&annee=' + annee;
+    fetch(url).then(r => r.json()).then(data => {
+        layerIris.clearLayers();
+        if (data.features) {
+            L.geoJSON(data, {
+                style: function() { return { color: '#b85f00', fillColor: '#ff9d33', weight: 1, fillOpacity: 0.25 }; },
+                onEachFeature: function(f, l) {
+                    if (f.properties) {
+                        let nm = 'IRIS';
+                        if (f.properties.idIris) nm += ': ' + f.properties.idIris;
+                        l.bindTooltip(nm);
+                    }
+                }
+            }).addTo(layerIris);
+        }
+    });
+}
+
+function loadVegetation(bounds) {
+    const sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+    const url = endpointVegetation + '?swLat=' + sw.lat + '&swLng=' + sw.lng + '&neLat=' + ne.lat + '&neLng=' + ne.lng;
+    fetch(url).then(r => r.json()).then(data => {
+        layerVegetation.clearLayers();
+        if (data.features) {
+            L.geoJSON(data, {
+                style: function() { return { color: '#0f4d0f', fillColor: '#2fa42f', weight: 1, fillOpacity: 0.45 }; },
+                onEachFeature: function(f, l) {
+                    if (f.properties && f.properties.nature) l.bindTooltip(f.properties.nature);
+                }
+            }).addTo(layerVegetation);
+        }
+    });
+}
+
+function loadExistingParks(bounds) {
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+    const url = endpointParcs + '?swLat=' + sw.lat + '&swLng=' + sw.lng + '&neLat=' + ne.lat + '&neLng=' + ne.lng;
+    fetch(url).then(r => r.json()).then(data => {
+        layerExisting.clearLayers();
+        if (data.features) {
+            L.geoJSON(data, {
+                pointToLayer: function(f, ll) { return L.circleMarker(ll, { radius: 4, color: '#3aa637', fillOpacity: 0.8 }); },
+                style: function() { return { color: '#3aa637', weight: 2, fillOpacity: 0.2 }; },
+                onEachFeature: function(f, l) {
+                    if (f.properties && f.properties.name) l.bindTooltip(f.properties.name);
+                }
+            }).addTo(layerExisting);
+        }
+    });
+}
+
+const featureMap = new Map();
+
+function editFeature(id) {
+    const entry = featureMap.get(id);
+    if (!entry) return;
+    const f = entry.feature;
+    const l = entry.layer;
+    const p = f.properties;
+    let lat = null, lng = null;
+    if (f.geometry && f.geometry.type === 'Point') {
+        lng = f.geometry.coordinates[0];
+        lat = f.geometry.coordinates[1];
+    } else if (f.geometry && f.geometry.type === 'Polygon') {
+        const centroid = l.getBounds().getCenter();
+        lat = centroid.lat;
+        lng = centroid.lng;
+    }
+    populateForm(p.id, p.name, p.mode, p.surface, p.description, lat, lng);
+    if (p.mode === 'POLYGON') {
+        document.getElementById('sGeometry').value = '';
+        setTimeout(function() {
+            document.getElementById('sGeometry').value = JSON.stringify(l.toGeoJSON());
+        }, 100);
+    }
+}
+
+function loadManualProposals() {
+    const insee = document.getElementById('codeInsee').value;
+    if (!insee) return;
+    const url = endpointManual + insee;
+    fetch(url).then(r => r.json()).then(data => {
+        layerManual.clearLayers();
+        featureMap.clear();
+        if (data.features) {
+            L.geoJSON(data, {
+                pointToLayer: function(f, ll) {
+                    return L.circleMarker(ll, { radius: 6, color: '#e96020', fillOpacity: 0.8 });
+                },
+                style: function(f) {
+                    const isPolygon = f.properties && f.properties.mode === 'POLYGON';
+                    return { color: '#e96020', weight: 2, fillOpacity: isPolygon ? 0.2 : 0.5 };
+                },
+                onEachFeature: function(f, l) {
+                    featureMap.set(f.properties.id, { feature: f, layer: l });
+                    if (f.properties) {
+                        let tip = f.properties.name || '';
+                        if (f.properties.surface) tip += ' (' + f.properties.surface + ' m²)';
+                        if (tip) l.bindTooltip(tip);
+                    }
+                            l.bindPopup(function() {
+                                const p = f.properties;
+                                const name = p.name || 'Sans nom';
+                                const mode = p.mode || '';
+                                const surface = p.surface || '';
+                                const modeLabel = mode === 'POLYGON' ? 'Polygone' : 'Cercle';
+                                return '<div class="text-center">'
+                                    + '<strong>' + name + '</strong><br>'
+                                    + '<span class="text-muted small">' + modeLabel + ' &middot; ' + surface + ' m²</span><br>'
+                                    + '<button class="btn btn-sm btn-outline-primary mt-2" onclick="editFeature(' + p.id + ')"><i class="fas fa-edit"></i> Éditer</button>'
+                                    + '</div>';
+                            });
+                }
+            }).addTo(layerManual);
+        }
+    });
+}
+
+map.on('overlayadd', function(e) {
+    if (e.name === 'Cadastre') loadCadastre(map.getBounds());
+    if (e.name === 'IRIS') loadIris(map.getBounds());
+    if (e.name === 'Végétation IGN') loadVegetation(map.getBounds());
+});
+
+map.on('overlayremove', function(e) {
+    if (e.name === 'Cadastre') layerCadastre.clearLayers();
+    if (e.name === 'IRIS') layerIris.clearLayers();
+    if (e.name === 'Végétation IGN') layerVegetation.clearLayers();
+});
+
+map.on('moveend', function() {
+    const center = map.getCenter();
+    const lnk = 'https://www.google.com/maps/@' + center.lat + ',' + center.lng + ',18.03z';
+    document.getElementById('aGMapLink').href = lnk;
+    loadExistingParks(map.getBounds());
+    if (map.hasLayer(layerCadastre)) loadCadastre(map.getBounds());
+    if (map.hasLayer(layerIris)) loadIris(map.getBounds());
+    if (map.hasLayer(layerVegetation)) loadVegetation(map.getBounds());
+});
+
+document.getElementById('surface').addEventListener('input', updateCircleFromSurface);
+document.getElementById('codeInsee').addEventListener('change', loadManualProposals);
+
+toggleMode();
+setTimeout(loadManualProposals, 500);
+</script>
+</body>
+</html>
