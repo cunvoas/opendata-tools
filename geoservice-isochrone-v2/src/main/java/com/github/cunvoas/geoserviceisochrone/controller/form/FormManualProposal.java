@@ -18,5 +18,6 @@ public class FormManualProposal extends AbstractFormLocate {
     private String description;
     private String sGeometry;
     private String codeInsee;
+    private Integer annee;
     private ProposalComputationTypeAlgo type;
 }

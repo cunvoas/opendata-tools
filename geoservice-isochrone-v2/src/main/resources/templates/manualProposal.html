@@ -211,9 +211,18 @@
                             <span>Carte interactive</span>
                             <span>
                                 <a id="aGMapLink" href="#" target="_blank" rel="noopener noreferrer">Google Map</a>
+                                <label for="annee" class="small ms-3 mb-0">Année</label>
+                                <select class="form-select form-select-sm d-inline-block w-auto ms-1" id="annee" name="annee">
+                                    <option th:each="a : ${listAnnee}" th:value="${a}" th:text="${a}" th:selected="${formManualProposal.annee == a}"></option>
+                                </select>
+                                <button type="button" class="btn btn-sm btn-outline-success ms-2" onclick="computeEvaluation()" title="Évaluer l'impact des propositions">
+                                    <i class="fas fa-calculator"></i> Évaluer
+                                </button>
                                 <label class="small mb-0 ms-3" style="cursor:pointer;">
                                     <input type="checkbox" id="colorblindToggle" onchange="toggleColorblind()"> Mode daltonien
                                 </label>
+
+                                <span class="badge bg-info ms-2" id="evalCount" title="Carreaux évalués">0</span>
                             </span>
                         </div>
                         <div class="card-body p-0">
@@ -281,7 +290,8 @@ const layerManual = L.layerGroup();
 const layerCadastre = L.layerGroup();
 const layerIris = L.layerGroup();
 const layerVegetation = L.layerGroup();
-const overlays = { 'Parcs existants': layerExisting, 'Propositions manuelles': layerManual, 'Cadastre': layerCadastre, 'IRIS': layerIris, 'Végétation IGN': layerVegetation };
+const layerManualEval = L.layerGroup();
+const overlays = { 'Parcs existants': layerExisting, 'Propositions manuelles': layerManual, 'Cadastre': layerCadastre, 'IRIS': layerIris, 'Végétation IGN': layerVegetation, 'Évaluation': layerManualEval };
 
 function locatePlace(lat, lon) { return L.latLng(parseFloat(lat), parseFloat(lon)); }
 
@@ -312,6 +322,23 @@ setTimeout(function() {
 }, 200);
 
 L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
+
+const legendEval = L.control({ position: 'bottomright' });
+legendEval.onAdd = function() {
+    const div = L.DomUtil.create('div', 'info legend');
+    div.style.background = 'white';
+    div.style.padding = '8px';
+    div.style.borderRadius = '4px';
+    div.style.boxShadow = '0 0 8px rgba(0,0,0,0.2)';
+    div.style.fontSize = '13px';
+    div.innerHTML = '<b>Évaluation</b><br>'
+        + '<i style="background:#57ee17;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> ≥ seuil max<br>'
+        + '<i style="background:#578817;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> seuil min - max<br>'
+        + '<i style="background:#b0b0e8;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> 2e tiers<br>'
+        + '<i style="background:#6060e8;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> 1er tiers<br>'
+        + '<i style="background:#0000e8;width:18px;height:18px;display:inline-block;margin-right:6px;"></i> &lt; 1er seuil<br>';
+    return div;
+};
 
 let currentCircle = null;
 let drawnPolygonLayer = null;
@@ -602,6 +629,9 @@ const endpointManual = /*[[@{/mvc/geojson/manualProposal/}]]*/ '';
 const endpointCadastre = /*[[@{/mvc/geojson/cadastreByCorner}]]*/ '';
 const endpointIris = /*[[@{/map/insee/iris/area}]]*/ '';
 const endpointVegetation = /*[[@{/map/ign-topo/vegetal}]]*/ '';
+const endpointManualEval = /*[[@{/mvc/geojson/manualProposal/}]]*/ '';
+
+let colorblindMode = false;
 
 function loadCadastre(bounds) {
     const sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
@@ -707,7 +737,9 @@ function editFeature(id) {
 function loadManualProposals() {
     const insee = document.getElementById('codeInsee').value;
     if (!insee) return;
-    const url = endpointManual + insee;
+    const annee = document.getElementById('annee').value;
+    if (!annee) return;
+    const url = endpointManual + insee + '?annee=' + annee;
     fetch(url).then(r => r.json()).then(data => {
         layerManual.clearLayers();
         featureMap.clear();
@@ -745,16 +777,151 @@ function loadManualProposals() {
     });
 }
 
+function getSquareColor(zoneDense, densite, colorblind) {
+    let color = '#959595';
+    if (typeof zoneDense === 'string') zoneDense = zoneDense === 'true';
+    if (densite === null || densite === 'N/A' || densite === '') return color;
+    densite = parseFloat(('' + densite).replace(',', '.'));
+    let level1, level2, level3, level4, level5;
+    if (colorblind) {
+        level1 = '#d73027'; level2 = '#fc8d59'; level3 = '#fee090';
+        level4 = '#4575b4'; level5 = '#91bfdb';
+    } else {
+        level1 = '#0000e8'; level2 = '#6060e8'; level3 = '#b0b0e8';
+        level4 = '#578817'; level5 = '#57ee17';
+    }
+    const densiteMinDense = 10, densiteMaxDense = 12;
+    const densiteMinNoDense = 25, densiteMaxNoDense = 45;
+    let p25 = 3, p50 = 6, densiteMin = densiteMinDense, densiteMax = densiteMaxDense;
+    if (zoneDense === false) {
+        densiteMin = densiteMinNoDense; densiteMax = densiteMaxNoDense;
+        p25 = 8; p50 = 17;
+    }
+    if (zoneDense === false || zoneDense === true) {
+        if (densite >= densiteMax) color = level5;
+        else if (densite >= densiteMin) color = level4;
+        else {
+            color = level3;
+            if (densite < p25) color = level1;
+            else if (densite < p50) color = level2;
+        }
+    }
+    return color;
+}
+
+function getSquareEvalStyle(feature) {
+    const baseStyle = { color: '#002a99', weight: 1, fillOpacity: 0.4 };
+    if (feature && feature.properties) {
+        const fillColor = getSquareColor(
+            feature.properties.isDense,
+            feature.properties.newSurfacePerCapita,
+            colorblindMode
+        );
+        return { ...baseStyle, fillColor };
+    }
+    return baseStyle;
+}
+
+function toggleColorblind() {
+    colorblindMode = document.getElementById('colorblindToggle').checked;
+    if (layerManualEval) {
+        layerManualEval.eachLayer(function(geoJsonLayer) {
+            if (geoJsonLayer.eachLayer) {
+                geoJsonLayer.eachLayer(function(layer) {
+                    if (layer.setStyle && layer.feature) {
+                        layer.setStyle(getSquareEvalStyle(layer.feature));
+                    }
+                });
+            }
+        });
+    }
+}
+
+function computeEvaluation() {
+    const insee = document.getElementById('codeInsee').value;
+    if (!insee) return;
+    const annee = document.getElementById('annee').value;
+    if (!annee) return;
+    document.getElementById('evalCount').textContent = '…';
+    const csrfInput = document.querySelector('input[name="_csrf"]');
+    const headers = { 'Content-Type': 'application/json' };
+    if (csrfInput) headers['X-XSRF-TOKEN'] = csrfInput.value;
+    const url = endpointManualEval + insee + '/evaluate?annee=' + annee;
+    fetch(url, { method: 'POST', headers: headers }).then(function(r) {
+        if (!r.ok) { console.error('Eval POST error', r.status, r.statusText); return null; }
+        return r.json();
+    }).then(function(data) {
+        if (!data) return;
+        layerManualEval.clearLayers();
+        if (data.features && data.features.length > 0) {
+            L.geoJSON(data, {
+                style: getSquareEvalStyle,
+                onEachFeature: function(f, l) {
+                    const p = f.properties;
+                    if (p) {
+                        l.bindPopup(
+                            '<div class="text-center small">'
+                            + '<strong>' + p.idInspire + '</strong><br>'
+                            + 'Avant: ' + p.surfacePerCapita + ' m²/hab (manque ' + p.missingSurface + ' m²)<br>'
+                            + 'Après: ' + p.newSurfacePerCapita + ' m²/hab (manque ' + p.newMissingSurface + ' m²)<br>'
+                            + 'Population: ' + p.localPopulation + ' hab'
+                            + '</div>'
+                        );
+                    }
+                }
+            }).addTo(layerManualEval);
+            layerManualEval.addTo(map);
+            document.getElementById('evalCount').textContent = data.features.length;
+        } else {
+            document.getElementById('evalCount').textContent = '0';
+        }
+    });
+}
+
+function loadEvaluation() {
+    const insee = document.getElementById('codeInsee').value;
+    if (!insee) return;
+    const annee = document.getElementById('annee').value;
+    if (!annee) return;
+    const url = endpointManualEval + insee + '/evaluate?annee=' + annee;
+    fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+        layerManualEval.clearLayers();
+        if (data.features && data.features.length > 0) {
+            L.geoJSON(data, {
+                style: getSquareEvalStyle,
+                onEachFeature: function(f, l) {
+                    const p = f.properties;
+                    if (p) {
+                        l.bindPopup(
+                            '<div class="text-center small">'
+                            + '<strong>' + p.idInspire + '</strong><br>'
+                            + 'Avant: ' + p.surfacePerCapita + ' m²/hab (manque ' + p.missingSurface + ' m²)<br>'
+                            + 'Après: ' + p.newSurfacePerCapita + ' m²/hab (manque ' + p.newMissingSurface + ' m²)<br>'
+                            + 'Population: ' + p.localPopulation + ' hab'
+                            + '</div>'
+                        );
+                    }
+                }
+            }).addTo(layerManualEval);
+            layerManualEval.addTo(map);
+            document.getElementById('evalCount').textContent = data.features.length;
+        } else {
+            document.getElementById('evalCount').textContent = '0';
+        }
+    });
+}
 map.on('overlayadd', function(e) {
     if (e.name === 'Cadastre') loadCadastre(map.getBounds());
     if (e.name === 'IRIS') loadIris(map.getBounds());
     if (e.name === 'Végétation IGN') loadVegetation(map.getBounds());
+    if (e.name === 'Évaluation') loadEvaluation();
 });
 
 map.on('overlayremove', function(e) {
     if (e.name === 'Cadastre') layerCadastre.clearLayers();
     if (e.name === 'IRIS') layerIris.clearLayers();
     if (e.name === 'Végétation IGN') layerVegetation.clearLayers();
+    if (e.name === 'Évaluation') layerManualEval.clearLayers();
 });
 
 map.on('moveend', function() {
@@ -768,7 +935,16 @@ map.on('moveend', function() {
 });
 
 document.getElementById('surface').addEventListener('input', updateCircleFromSurface);
-document.getElementById('codeInsee').addEventListener('change', loadManualProposals);
+document.getElementById('codeInsee').addEventListener('change', function() {
+    loadManualProposals();
+    document.getElementById('evalCount').textContent = '0';
+    layerManualEval.clearLayers();
+});
+document.getElementById('annee').addEventListener('change', function() {
+    loadManualProposals();
+    document.getElementById('evalCount').textContent = '0';
+    layerManualEval.clearLayers();
+});
 
 toggleMode();
 setTimeout(loadManualProposals, 500);

@@ -33,14 +33,17 @@ public class ManualProposalController {
     private final ServiceReadReferences serviceReadReferences;
     private final TokenManagement tokenManagement;
     private final ManualProposalService manualProposalService;
+    private final ApplicationBusinessProperties applicationBusinessProperties;
 
     @Autowired
     public ManualProposalController(ServiceReadReferences serviceReadReferences,
                                     TokenManagement tokenManagement,
-                                    ManualProposalService manualProposalService) {
+                                    ManualProposalService manualProposalService,
+                                    ApplicationBusinessProperties applicationBusinessProperties) {
         this.serviceReadReferences = serviceReadReferences;
         this.tokenManagement = tokenManagement;
         this.manualProposalService = manualProposalService;
+        this.applicationBusinessProperties = applicationBusinessProperties;
     }
 
     @GetMapping
@@ -111,6 +114,7 @@ public class ManualProposalController {
             freshForm.setNameCommune(form.getNameCommune());
             freshForm.setMapLat(form.getMapLat());
             freshForm.setMapLng(form.getMapLng());
+            freshForm.setAnnee(form.getAnnee());
             return show(freshForm, model);
         } catch (Exception e) {
             log.error("Erreur lors de la sauvegarde", e);
@@ -153,6 +157,10 @@ public class ManualProposalController {
             }
         }
 
+        if (form.getAnnee() == null) {
+            form.setAnnee(applicationBusinessProperties.getDerniereAnnee());
+        }
+
         form.setRegions(serviceReadReferences.getRegion());
 
         if (form.getIdRegion() != null) {
@@ -163,6 +171,10 @@ public class ManualProposalController {
         }
 
         setCityAndEpciNames(form);
+
+        List<Integer> anneeList = new ArrayList<>(List.of(applicationBusinessProperties.getInseeAnnees()));
+        java.util.Collections.reverse(anneeList);
+        model.addAttribute("listAnnee", anneeList);
 
         model.addAttribute(FORM_KEY, form);
         model.addAttribute("regions", form.getRegions());
@@ -217,7 +229,7 @@ public class ManualProposalController {
 
     private void loadProposals(FormManualProposal form, Model model) {
         if (form.getCodeInsee() != null && !form.getCodeInsee().isEmpty()) {
-            List<ManualParkProposal> proposals = manualProposalService.findByInsee(form.getCodeInsee());
+            List<ManualParkProposal> proposals = manualProposalService.findByInsee(form.getCodeInsee(), form.getAnnee());
             model.addAttribute("proposals", proposals);
         } else {
             model.addAttribute("proposals", new ArrayList<>());

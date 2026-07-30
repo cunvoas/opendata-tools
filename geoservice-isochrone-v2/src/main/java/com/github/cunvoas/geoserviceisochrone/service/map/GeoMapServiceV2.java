@@ -781,10 +781,10 @@ public class GeoMapServiceV2 {
 	 * @param insee code insee
 	 * @return GeoJson manual proposals
 	 */
-	public GeoJsonRoot findManualProposalByInsee(String insee) {
+	public GeoJsonRoot findManualProposalByInsee(String insee, Integer annee) {
 		GeoJsonRoot root = new GeoJsonRoot();
 
-		ManualParkProposalMeta meta = manualParkProposalMetaRepository.findByInsee(insee);
+		ManualParkProposalMeta meta = manualParkProposalMetaRepository.findByAnneeAndInsee(annee, insee);
 		if (meta == null) {
 			return root;
 		}

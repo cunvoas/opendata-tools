@@ -39,7 +39,7 @@ public class ManualProposalService {
     @Transactional
     public ManualParkProposal save(FormManualProposal form) {
         String insee = form.getCodeInsee();
-        Integer annee = java.time.Year.now().getValue();
+        Integer annee = form.getAnnee() != null ? form.getAnnee() : java.time.Year.now().getValue();
 
         ManualParkProposalMeta meta = metaRepository.findByAnneeAndInsee(annee, insee);
         if (meta == null) {
@@ -136,6 +136,10 @@ public class ManualProposalService {
 
     public List<ManualParkProposal> findByInsee(String insee) {
         Integer annee = java.time.Year.now().getValue();
+        return findByInsee(insee, annee);
+    }
+
+    public List<ManualParkProposal> findByInsee(String insee, Integer annee) {
         ManualParkProposalMeta meta = metaRepository.findByAnneeAndInsee(annee, insee);
         if (meta == null) return List.of();
         return proposalRepository.findByIdMetaOrderByCreatedDateDesc(meta.getId());
