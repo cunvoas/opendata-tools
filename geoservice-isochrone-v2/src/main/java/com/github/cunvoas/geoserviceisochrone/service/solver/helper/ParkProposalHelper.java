@@ -9,6 +9,7 @@ import org.locationtech.jts.geom.Geometry;
 
 import com.github.cunvoas.geoserviceisochrone.extern.helper.DistanceHelper;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
+import com.github.cunvoas.geoserviceisochrone.service.solver.compute.AbstractComputationtrategy;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,7 +23,7 @@ public class ParkProposalHelper {
 	 * @param annee année de référence
 	 * @return liste des carrés voisins (max 24 ou 143 selon densité)
 	 */
-	public static List<ParkProposalWork> findNeighbors(String idInspire, Map<String, ParkProposalWork> squaresOnTerritoryMap, Integer urbanDistance) {
+	public static List<ParkProposalWork> findNeighbors(String idInspire, Map<String, ParkProposalWork> squaresOnTerritoryMap, Integer distanceOnMap) {
 		List<ParkProposalWork> neighbors = new ArrayList<>();
 		
 		// Récupérer le carré central
@@ -47,15 +48,14 @@ public class ParkProposalHelper {
 						parkProposal.getValue().getCentre().getCentroid().getY(),
 						parkProposal.getValue().getCentre().getCentroid().getX());
 				
-				if (distance<urbanDistance+100) { // +100m pour le périmètre vs le centroïde
+				if (distance<distanceOnMap+AbstractComputationtrategy.SQUARE_DISTANCE) { // +100m pour le périmètre vs le centroïde
 					neighbors.add(parkProposal.getValue());
 				}
 			}
 		}
 
-		if (neighbors.size()>24) {
+		if (neighbors.size()>24 && centre.getIsDense()) {
 			log.warn("Nombre de voisins ({}) supérieur à 24 pour le carré {} en zone urbaine", neighbors.size(), idInspire);
-			
 		}
 		log.info("Trouvé {} voisins pour le carré {}", neighbors.size(), idInspire);
 		return neighbors;

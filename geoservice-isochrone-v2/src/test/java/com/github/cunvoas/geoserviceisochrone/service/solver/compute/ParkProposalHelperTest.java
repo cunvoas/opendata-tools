@@ -190,7 +190,7 @@ class ParkProposalHelperTest extends BaseUnitTest {
                 p.setLocalPopulation(new BigDecimal(cols[6].trim()));
                 p.setMissingSurface(new BigDecimal(cols[7].trim()));
                 p.setNewMissingSurface(new BigDecimal(cols[8].trim()));
-                p.setNewSurface(new BigDecimal(cols[9].trim()));
+//                p.setNewSurface(new BigDecimal(cols[9].trim()));
                 p.setNewSurfacePerCapita(new BigDecimal(cols[10].trim()));
                 p.setSurfacePerCapita(new BigDecimal(cols[11].trim()));
                 p.setTypeAlgo(ProposalComputationTypeAlgo.ITERATIVE_1);

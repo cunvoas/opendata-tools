@@ -119,6 +119,8 @@ class ServicePropositionParcTest {
 		c.setPopAll(BigDecimal.valueOf(popAll));
 		c.setSurfaceParkPerCapitaOms(BigDecimal.valueOf(surfPcapita));
 		c.setSurfaceTotalParkOms(BigDecimal.valueOf(surfTotal));
+		// attention: accessingPopulation initialisé depuis getPopulationInIsochroneOms dans ServicePropositionParc
+		c.setPopulationInIsochroneOms(BigDecimal.valueOf(popAll));
 		return c;
 	}
 

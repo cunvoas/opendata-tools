@@ -21,7 +21,7 @@
 	<springProperty scope="context" name="appName"
 		source="spring.application.name" defaultValue="isochrone" />
 	<springProperty scope="context" name="logPath"
-		source="logging.file.path" defaultValue="/var/log" />
+		source="logging.file.path" defaultValue="/app/logs" />
 
 	<property name="LOG_PATTERN_CONSOLE"
 		value="%clr(%d{HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx" />
