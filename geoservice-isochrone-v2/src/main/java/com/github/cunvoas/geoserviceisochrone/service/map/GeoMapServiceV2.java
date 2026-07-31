@@ -16,7 +16,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,11 +67,16 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkProposalWorkView;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ManualProposalView;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalMeta;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.manual.ManualParkProposal;
+import com.github.cunvoas.geoserviceisochrone.model.proposal.manual.ManualParkProposalMeta;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalMetaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalWorkRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.manual.ManualParkProposalMetaRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.proposal.manual.ManualParkProposalRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWorkRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
@@ -128,6 +135,7 @@ public class GeoMapServiceV2 {
 	
 	
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
+	private static final double EARTH_RADIUS_M = 6378137.0;
 
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
@@ -154,6 +162,10 @@ public class GeoMapServiceV2 {
     @Autowired
     private ParkProposalWorkRepository parkProposalWorkRepository;
     
+    @Autowired
+    private ManualParkProposalMetaRepository manualParkProposalMetaRepository;
+    @Autowired
+    private ManualParkProposalRepository manualParkProposalRepository;
 
     @Autowired
     private ProjectSimulatorRepository projectSimulatorRepository;
@@ -762,6 +774,61 @@ public class GeoMapServiceV2 {
 			}
 		}
 		return root;
+	}
+
+	/**
+	 * findManualProposalByInsee.
+	 * @param insee code insee
+	 * @return GeoJson manual proposals
+	 */
+	public GeoJsonRoot findManualProposalByInsee(String insee, Integer annee) {
+		GeoJsonRoot root = new GeoJsonRoot();
+
+		ManualParkProposalMeta meta = manualParkProposalMetaRepository.findByAnneeAndInsee(annee, insee);
+		if (meta == null) {
+			return root;
+		}
+
+		List<ManualParkProposal> proposals = manualParkProposalRepository.findByIdMetaOrderByCreatedDateDesc(meta.getId());
+		if (!CollectionUtils.isEmpty(proposals)) {
+			for (ManualParkProposal proposal : proposals) {
+				GeoJsonFeature feature = new GeoJsonFeature();
+				root.getFeatures().add(feature);
+
+				if (proposal.getContour() != null) {
+					feature.setGeometry(proposal.getContour());
+				} else if ("CIRCLE".equals(proposal.getMode()) && proposal.getCentre() != null && proposal.getSurface() != null) {
+					feature.setGeometry(buildCirclePolygon(proposal.getCentre(), proposal.getSurface().doubleValue()));
+				} else if (proposal.getCentre() != null) {
+					feature.setGeometry(proposal.getCentre());
+				}
+
+				ManualProposalView pv = new ManualProposalView();
+				pv.setId(proposal.getId());
+				pv.setName(proposal.getName());
+				pv.setMode(proposal.getMode());
+				pv.setSurface(proposal.getSurface() != null ? Long.valueOf(Math.round(proposal.getSurface().longValue())) : null);
+				pv.setDescription(proposal.getDescription());
+				feature.setProperties(pv);
+			}
+		}
+		return root;
+	}
+
+	private Polygon buildCirclePolygon(Point centre, double surface) {
+		double radius = Math.sqrt(surface / Math.PI);
+		double latRad = Math.toRadians(centre.getY());
+		double delta = radius / EARTH_RADIUS_M;
+		Coordinate[] coords = new Coordinate[65];
+		for (int i = 0; i < 64; i++) {
+			double bearing = i * Math.PI / 32;
+			double lat2 = Math.asin(Math.sin(latRad) * Math.cos(delta) + Math.cos(latRad) * Math.sin(delta) * Math.cos(bearing));
+			double lng2 = centre.getX() + Math.toDegrees(Math.atan2(Math.sin(bearing) * Math.sin(delta) * Math.cos(latRad), Math.cos(delta) - Math.sin(latRad) * Math.sin(lat2)));
+			lat2 = Math.toDegrees(lat2);
+			coords[i] = new Coordinate(lng2, lat2);
+		}
+		coords[64] = coords[0];
+		return factory.createPolygon(coords);
 	}
 
 	/**

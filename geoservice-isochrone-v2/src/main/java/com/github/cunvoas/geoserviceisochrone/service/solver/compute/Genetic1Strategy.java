@@ -415,10 +415,10 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
             List<ParkProposalWork> sorted = sortProposalsByDeficit(squaresOnTerritoryMap);
             if (sorted.isEmpty()) break;
             ParkProposalWork toProcess = sorted.get(0);
-            if (toProcess.getSurfacePerCapita().doubleValue() >= minSquareMeterPerCapita) break;
+            if (toProcess.getNewSurfacePerCapita().doubleValue() >= minSquareMeterPerCapita) break;
             double swPop = toProcess.getAccessingPopulation().doubleValue();
             if (swPop == 0) break;
-            double swCurrentSpc = toProcess.getSurfacePerCapita().doubleValue();
+            double swCurrentSpc = toProcess.getNewSurfacePerCapita().doubleValue();
             double swParkSurface = Math.min(
                     Math.max(recoSquareMeterPerCapita - swCurrentSpc, 0.0), CARRE_SURFACE) * swPop;
             if (swParkSurface < minParkSurface) break;
@@ -431,24 +431,20 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
             sweepProposal.setIsDense(toProcess.getIsDense());
             proposals.add(sweepProposal);
 
-            double swNewTotal = toProcess.getAccessingSurface().doubleValue() + swParkSurface;
-            toProcess.setAccessingSurface(BigDecimal.valueOf(swNewTotal));
-            toProcess.setNewAccessingSurface(BigDecimal.valueOf(swParkSurface));
+            double swNewTotal = toProcess.getNewAccessingSurface().doubleValue() + swParkSurface;
+            toProcess.setNewAccessingSurface(BigDecimal.valueOf(swNewTotal));
             toProcess.setNewMissingSurface(
                     toProcess.getNewMissingSurface().subtract(BigDecimal.valueOf(swParkSurface)).max(BigDecimal.ZERO));
-            toProcess.setSurfacePerCapita(BigDecimal.valueOf(swNewTotal / swPop));
             toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(swNewTotal / swPop));
 
             List<ParkProposalWork> swNeighbors = findNeighbors(toProcess.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
             for (ParkProposalWork neighbor : swNeighbors) {
-                double nTotal = neighbor.getAccessingSurface().doubleValue() + swParkSurface;
-                neighbor.setAccessingSurface(BigDecimal.valueOf(nTotal));
-                neighbor.setNewAccessingSurface(BigDecimal.valueOf(swParkSurface));
+                double nTotal = neighbor.getNewAccessingSurface().doubleValue() + swParkSurface;
+                neighbor.setNewAccessingSurface(BigDecimal.valueOf(nTotal));
                 neighbor.setNewMissingSurface(
                         neighbor.getNewMissingSurface().subtract(BigDecimal.valueOf(swParkSurface)).max(BigDecimal.ZERO));
                 double nPop = neighbor.getAccessingPopulation().doubleValue();
                 if (nPop > 0) {
-                    neighbor.setSurfacePerCapita(BigDecimal.valueOf(nTotal / nPop));
                     neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(nTotal / nPop));
                 }
             }
@@ -485,7 +481,7 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
                         yi, xi,
                         cj.getCentre().getCentroid().getY(),
                         cj.getCentre().getCentroid().getX());
-                if (dist < urbanDistance + 100) {
+                if (dist < urbanDistance + AbstractComputationtrategy.SQUARE_DISTANCE) {
                     neighborIdx.get(i).add(j);
                 }
             }
@@ -521,9 +517,9 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
             double pop = carre.getAccessingPopulation().doubleValue();
             if (pop == 0) continue;
 
-            // Densité effective courante (accessingSurface déjà mis à jour par
-            // les ajouts précédents dans cette boucle)
-            double currentSpc = carre.getAccessingSurface().doubleValue() / pop;
+            // Densité effective courante (newAccessingSurface porte le cumul
+            // des ajouts précédents — accessingSurface JPA reste intact)
+            double currentSpc = carre.getNewAccessingSurface().doubleValue() / pop;
 
             // On ne propose que pour les carrés encore déficitaires après
             // propagation des ajouts précédents.
@@ -548,15 +544,13 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
             proposals.add(proposal);
 
             // ── Mettre à jour le carré courant ───────────────────────────────
-            double newTotalSurface = carre.getAccessingSurface().doubleValue() + newParkSurface;
-            carre.setAccessingSurface(BigDecimal.valueOf(newTotalSurface));
-            carre.setNewAccessingSurface(BigDecimal.valueOf(newParkSurface));
+            double newTotalSurface = carre.getNewAccessingSurface().doubleValue() + newParkSurface;
+            carre.setNewAccessingSurface(BigDecimal.valueOf(newTotalSurface));
             carre.setNewMissingSurface(
                     carre.getNewMissingSurface()
                          .subtract(BigDecimal.valueOf(newParkSurface))
                          .max(BigDecimal.ZERO));
             double newSpc = newTotalSurface / pop;
-            carre.setSurfacePerCapita(BigDecimal.valueOf(newSpc));
             carre.setNewSurfacePerCapita(BigDecimal.valueOf(newSpc));
 
             log.info("Proposition carré {} : surface ajoutée = {} m², densité {} → {} m²/hab.",
@@ -569,11 +563,8 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
             List<ParkProposalWork> neighbors = findNeighbors(carre.getIdInspire(), squaresOnTerritoryMap, urbanDistance);
             for (ParkProposalWork neighbor : neighbors) {
                 double neighborNewTotalSurface =
-                        neighbor.getAccessingSurface().doubleValue() + newParkSurface;
-                neighbor.setAccessingSurface(BigDecimal.valueOf(neighborNewTotalSurface));
-                // setNewSurface doit contenir le delta (surface du parc ajouté),
-                // pas le total accessible — cohérent avec le traitement du carré principal.
-                neighbor.setNewAccessingSurface(BigDecimal.valueOf(newParkSurface));
+                        neighbor.getNewAccessingSurface().doubleValue() + newParkSurface;
+                neighbor.setNewAccessingSurface(BigDecimal.valueOf(neighborNewTotalSurface));
                 neighbor.setNewMissingSurface(
                         neighbor.getNewMissingSurface()
                                 .subtract(BigDecimal.valueOf(newParkSurface))
@@ -582,7 +573,6 @@ public class Genetic1Strategy extends AbstractComputationtrategy {
                 double neighborPop = neighbor.getAccessingPopulation().doubleValue();
                 if (neighborPop != 0) {
                     double neighborNewSpc = neighborNewTotalSurface / neighborPop;
-                    neighbor.setSurfacePerCapita(BigDecimal.valueOf(neighborNewSpc));
                     neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborNewSpc));
                 } else {
                     neighbor.setNewSurfacePerCapita(null);
