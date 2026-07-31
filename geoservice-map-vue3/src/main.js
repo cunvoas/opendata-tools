@@ -95,6 +95,7 @@ router.afterEach((to) => {
     }
   }
   // Log the page view to Matomo
+  window._paq = window._paq || [];
   window._paq.push(['setCustomUrl', to.fullPath]);
   window._paq.push(['trackPageView']);
 });
