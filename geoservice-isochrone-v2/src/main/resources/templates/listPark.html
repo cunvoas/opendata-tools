@@ -326,7 +326,17 @@
 
         const datatablesSimple = document.getElementById('datatablesSimple');
         if (datatablesSimple) {
-            new simpleDatatables.DataTable(datatablesSimple);
+            new simpleDatatables.DataTable(datatablesSimple, {
+                labels: {
+                    placeholder: "Rechercher...",
+                    perPage: " parcs par page",
+                    noRows: "Aucune entrée trouvée",
+                    info: "Affichage de {start} à {end} sur {rows} entrées",
+                },
+                perPage: 25,
+                searchable: true,
+                sortable: true
+            });
         }
     });
 
