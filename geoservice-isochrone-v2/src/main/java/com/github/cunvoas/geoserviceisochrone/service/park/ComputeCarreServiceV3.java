@@ -222,7 +222,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 				// merge areas for parks
 				dto.polygonParkAreasOms = dto.polygonParkAreasOms.union(parkArea.getPolygon());
 			} else {
-				dto.parcNames.add("(✖ "+parkArea.getName()+")");
+				dto.parcNames.add("✖ "+parkArea.getName());
 			}
 		}  // end merge
 		
