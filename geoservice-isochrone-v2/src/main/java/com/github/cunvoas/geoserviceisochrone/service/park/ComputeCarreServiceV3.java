@@ -305,6 +305,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 			computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
 		}
 		
+		computed.setPopAll(dto.popAll);
 		computed.setComments(dto.parcName);
 
 		log.info("\tsave computed {}\n", computed.getIdInspire());

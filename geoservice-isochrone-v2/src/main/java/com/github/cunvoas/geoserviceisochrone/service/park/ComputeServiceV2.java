@@ -288,6 +288,8 @@ public class ComputeServiceV2 implements IComputeCarreService {
 			computed.setPopIncludedOms(dto.resultOms.popInc);
 			computed.setPopExcludedOms(dto.resultOms.popExc);
 			
+			computed.setPopAll(dto.popAll);
+			
 			if (Boolean.TRUE.equals(dto.withSufficient)) {
 				computed.setIsSustainablePark(Boolean.TRUE);
 				//TODO 
