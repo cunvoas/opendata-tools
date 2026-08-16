@@ -94,7 +94,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk18on</artifactId>
-      <version>1.85</version>
+      <version>1.85.2</version>
     </dependency>
     
     <dependency>
@@ -302,7 +302,7 @@
       <plugin>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-maven-plugin</artifactId>
-        <version>13.1.0</version>
+        <version>13.2.0</version>
         <configuration>
           <url>${FLYWAY_URL}</url>
           <user>${FLYWAY_USER}</user>
