@@ -236,6 +236,7 @@ export default {
   
       // 📊 Envoyer l'événement à Matomo
       const cityName = newLocation.cityName || 'Unknown';
+      window._paq = window._paq || [];
       window._paq.push(['trackEvent', 'City Stats', newLocation.locType , cityName]);
       
       // Si vous avez aussi un ID unique : 

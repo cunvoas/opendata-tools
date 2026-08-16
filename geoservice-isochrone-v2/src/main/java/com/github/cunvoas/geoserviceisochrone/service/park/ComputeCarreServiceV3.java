@@ -222,7 +222,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 				// merge areas for parks
 				dto.polygonParkAreasOms = dto.polygonParkAreasOms.union(parkArea.getPolygon());
 			} else {
-				dto.parcNames.add("(✖ "+parkArea.getName()+")");
+				dto.parcNames.add("✖ "+parkArea.getName());
 			}
 		}  // end merge
 		
@@ -305,6 +305,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 			computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
 		}
 		
+		computed.setPopAll(dto.popAll);
 		computed.setComments(dto.parcName);
 
 		log.info("\tsave computed {}\n", computed.getIdInspire());

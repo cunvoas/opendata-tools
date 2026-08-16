@@ -219,7 +219,7 @@ public class ComputeServiceV2 implements IComputeCarreService {
 					// merge areas for parks
 					dto.polygonParkAreasOms = dto.polygonParkAreasOms.union(parkArea.getPolygon());
 				} else {
-					dto.parcNames.add("(✖ "+parkArea.getName()+")");
+					dto.parcNames.add("✖ "+parkArea.getName());
 				}
 			}  // end merge
 			
@@ -287,6 +287,8 @@ public class ComputeServiceV2 implements IComputeCarreService {
 			computed.setPopulationInIsochroneOms(dto.resultOms.populationInIsochrone);
 			computed.setPopIncludedOms(dto.resultOms.popInc);
 			computed.setPopExcludedOms(dto.resultOms.popExc);
+			
+			computed.setPopAll(dto.popAll);
 			
 			if (Boolean.TRUE.equals(dto.withSufficient)) {
 				computed.setIsSustainablePark(Boolean.TRUE);

@@ -499,6 +499,7 @@ export default {
       // 📊 Envoyer l'événement à Matomo
       const cityName = newLocation.cityName || 'Unknown';
       const locType = newLocation.locType || 'city';
+      window._paq = window._paq || [];
       window._paq.push(['trackEvent', 'City Map', locType, cityName]);
 
 

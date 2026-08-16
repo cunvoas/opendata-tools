@@ -439,13 +439,11 @@
     
     // extras data sur la carte
     const dataPrefecture = L.layerGroup();
-    const dataOverpass = L.layerGroup();
     const dataAutmel = L.layerGroup();
     const dataCadastre = L.layerGroup();
     const dataLayers = {
         "Cadastre des communes": dataCadastre,
-    	"Données de la préfecture": dataPrefecture,
-    	"Parcs Overpass (OSM)": dataOverpass,
+    	"Parcs Overpass (OSM)": dataPrefecture,
     	"Contours des parcs": dataAutmel
     };
     
@@ -477,19 +475,37 @@
     	//geojsonPrefLayer.redraw()
     }
     function customOnEachFeaturePref(feature, layer) {
-   	
+    	  //color:'#26D8DE', fillColor:'#093C3E'
         layer.setStyle({
            "fillOpacity": 0.3,
             "opacity": 0.6,
             "color": "#1212ff",
-            "fillColor": "#1212ff"
+            "fillColor": "#1212ff",
+            weight:1,
+            fillOpacity:0.35 
         });
         
-        if (feature.properties.name) {
-            const parcEdit = "<p>"+feature.properties.name+"</p>";
-            layer.bindPopup(parcEdit);
-        }
+        const p = feature.properties || {};
         
+        if (id = p.id || p.osm_id) {
+             const id = p.id || p.osm_id || '';
+             const name = p.name || '(sans nom)';
+             let surface = 'N/A';
+             if (p.surface != null) {
+                 const s = parseFloat(p.surface);
+                 if (s > 10000) {
+                     surface = (s / 10000).toFixed(2) + ' ha';
+                 } else {
+                     surface = Math.round(s) + ' m²';
+                 }
+             }
+             layer.bindPopup(
+                 '<b>' + name + '</b><br/>' +
+                 'ID&nbsp;: <a href="https://www.openstreetmap.org/way/' + id + '" target="_blank" rel="noopener noreferrer">' + id + '</a><br/>' +
+                 'Surface&nbsp;: ' + surface
+             );
+         }
+
     }
     
     function getGMapLink(feature) {
@@ -600,7 +616,8 @@
                     document.getElementById("sGeometry").value=strPoly;
                     document.getElementById("etatAction").value="add";
                     document.getElementById("etat").value="pref";
-                    
+                    // 
+                    document.getElementById("name").value=props.name;
                     return;
                 }
                 
@@ -612,9 +629,9 @@
     	
         document.getElementById("sGeometry").value=strPoly;
         document.getElementById("etatAction").value="add";
-    	document.getElementById("etat").value="pref";
+        document.getElementById("etat").value="pref";
         document.getElementById("id").value = props.id;
-    	document.getElementById("idPark").value = props.idParcJardin;
+        document.getElementById("idPark").value = props.idParcJardin;
         document.getElementById("name").value = props.name;
         document.getElementById("surface").value = props.surface;
         document.getElementById("quartier").value = props.quartier;
@@ -665,7 +682,6 @@
 
     
     let geojsonPrefLayer = null;
-    let geojsonOverpassLayer = null;
     let geojsonCadastreLayer = null;
     let geojsonParkLayer = null;
     
@@ -709,40 +725,12 @@
         if (geojsonPrefLayer!==null) {
         	dataPrefecture.removeLayer(geojsonPrefLayer);
         }
-        const sUrlGeoPref= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkPrefectureByCorner}]]+'?'+sPos;
+        const sUrlGeoPref= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkOverpassByCorner}]]+'?'+sPos;
         geojsonPrefLayer = new L.GeoJSON.AJAX(sUrlGeoPref, {onEachFeature: customOnEachFeaturePref});
         //geojsonPrefLayer.addTo(dataPrefecture);
         dataPrefecture.addLayer(geojsonPrefLayer);
         
-        // get shapes: parcs Overpass (OSM) - source complémentaire à la préfecture, destinée à la remplacer
-        if (geojsonOverpassLayer!==null) {
-        	dataOverpass.removeLayer(geojsonOverpassLayer);
-        }
-        const sUrlGeoOverpass= window.location.protocol + "//" + window.location.host + [[@{/mvc/geojson/parkOverpassByCorner}]]+'?'+sPos;
-        geojsonOverpassLayer = new L.GeoJSON.AJAX(sUrlGeoOverpass, {
-            style: { color:'#26D8DE', fillColor:'#093C3E', weight:1, fillOpacity:0.35 },
-            onEachFeature: function(feature, layer) {
-                const p = feature.properties || {};
-                const id = p.id || p.osm_id || '';
-                const name = p.name || '(sans nom)';
-                let surface = 'N/A';
-                if (p.surface != null) {
-                    const s = parseFloat(p.surface);
-                    if (s > 10000) {
-                        surface = (s / 10000).toFixed(2) + ' ha';
-                    } else {
-                        surface = Math.round(s) + ' m²';
-                    }
-                }
-                layer.bindPopup(
-                    '<b>' + name + '</b><br/>' +
-                    'ID&nbsp;: <a href="https://www.openstreetmap.org/way/' + id + '" target="_blank" rel="noopener noreferrer">' + id + '</a><br/>' +
-                    'Surface&nbsp;: ' + surface
-                );
-            }
-        });
-        dataOverpass.addLayer(geojsonOverpassLayer);
-        
+                
         // get shapes: contours parc autmel  : parkGardenByCorner
         if (geojsonParkLayer!==null) {
         	dataAutmel.removeLayer(geojsonParkLayer);
