@@ -80,6 +80,7 @@ export default {
         this.player.play();
       }
 
+      window._paq = window._paq || [];
       window._paq.push(['trackEvent', 'Video Changed', index, this.currentVideo.videoTitle]);
     }
   },

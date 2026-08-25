@@ -304,7 +304,7 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
                     computed.setIsSustainablePark(Boolean.FALSE);
                     computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
                 }
-
+                computed.setPopAll(dto.popAll);
                 computed.setComments(dto.parcName);
 
                 log.info("\tsave computed v4 {}", computed.getIdInspire());
@@ -645,6 +645,10 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
             computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
         }
 
+        Filosofil200m filo = filosofilMap.get(computed.getIdInspire());
+        computed.setPopAll(filo.getNbIndividus());
+        
+        computed.setPopAll(computeDto.popAll);
         computed.setComments(computeDto.parcName);
         inseeCarre200mComputedV2Repository.save(computed);
     }
