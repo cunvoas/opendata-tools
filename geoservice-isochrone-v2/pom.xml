@@ -302,7 +302,7 @@
       <plugin>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-maven-plugin</artifactId>
-        <version>13.2.0</version>
+        <version>13.3.0</version>
         <configuration>
           <url>${FLYWAY_URL}</url>
           <user>${FLYWAY_USER}</user>
