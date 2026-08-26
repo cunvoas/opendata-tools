@@ -371,7 +371,7 @@
         <dependency>
           <groupId>io.cucumber</groupId>
           <artifactId>cucumber-spring</artifactId>
-          <version>7.34.6</version>
+          <version>7.34.7</version>
           <scope>test</scope>
         </dependency>
         <dependency>
