@@ -1,7 +1,7 @@
 //import Vue from 'vue'
 /* eslint-env browser */
 import { createApp } from 'vue'
-import VueMatomo from 'vue-matomo'
+import { initMatomo } from '@certible/use-matomo'
 import HeaderAsso from './components/HeaderAsso.vue'
 import 'leaflet/dist/leaflet.css';
 import './assets/tailwind.css'
@@ -58,30 +58,26 @@ function initializeFromUrl() {
 initializeFromUrl();
 
 
-/*
-app.use(VueMatomo, {
-    // Configure your matomo server and site by providing
-    host: 'https://autmel.piwik.pro',
-    siteId: 'f948682b-11fe-4d25-ab02-fcfe606a7397'
-});
-*/
-
-app.use(VueMatomo, {
-    // Configure your matomo server and site by providing
-    host: 'https://asso.autmel.ovh/audience',
-    siteId: '1',
-    // Send tracking data via POST to avoid URL length limits
-    preInitActions: [
-        ['setRequestMethod', 'POST']
-    ]
-});
-
 app.use(router);
 
 // Initialize version check (refresh cache every 4 hours)
 initVersionCheck();
 
 app.mount('#app');
+
+// Wait for SW to be active before loading matomo.js —
+// otherwise the script tag hits the server directly → 404
+const MATOMO_CONFIG = {
+    host: 'https://asso.autmel.ovh/audience',
+    siteId: '1',
+    trackerScriptUrl: '/parcs-et-jardins/matomo.js',
+    trackerUrl: '/parcs-et-jardins/matomo.php'
+};
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(() => initMatomo(MATOMO_CONFIG));
+} else {
+    initMatomo(MATOMO_CONFIG);
+}
 
 router.afterEach((to) => {
   // Update page title and description for SEO
