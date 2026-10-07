@@ -1,13 +1,15 @@
 <template>
     <div class="container mx-auto px-4 py-6 relative">
+        <a class="skip-link" href="#contenu">Aller au contenu principal</a>
         <div
-            class="absolute left-4 top-2 text-xs text-gray-400 select-none"
+            class="absolute left-4 top-2 text-xs text-gray-600 select-none"
             :title="'Version: ' + appVersion">
             v{{ appVersion }}
         </div>
         <!-- Header Title -->
+        <header>
         <div class="text-center mb-6">
-            <h3 class="text-2xl font-bold text-gray-800" @dblclick="generateShareLink" style="cursor: pointer;">Parcs accessibles en m² par habitant</h3>
+            <p class="text-2xl font-bold text-gray-800" @dblclick="generateShareLink" style="cursor: pointer;">Parcs accessibles en m² par habitant</p>
         </div>
         
         <!-- Logos Row -->
@@ -59,7 +61,7 @@
         </div>
         
         <!-- Navigation Links -->
-        <nav class="flex flex-wrap gap-2 items-center justify-center mb-6">
+        <nav class="flex flex-wrap gap-2 items-center justify-center mb-6" aria-label="Navigation principale">
             <router-link 
                 to="/carte" 
                 class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors font-medium no-underline"
@@ -86,10 +88,41 @@
             </router-link>
         </nav>
         
+        </header>
+
         <!-- Router View -->
-        <div class="w-full">
+        <main id="contenu" tabindex="-1" class="w-full">
             <router-view></router-view>
-        </div>
+        </main>
+
+        <footer class="mt-6 pt-4 border-t border-gray-200">
+            <nav aria-label="Plan du site" class="flex flex-wrap gap-2 items-center justify-center text-sm">
+                <router-link
+                    to="/carte"
+                    class="px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 transition-colors font-medium no-underline underline-hover"
+                    active-class="bg-yellow-50 text-black font-bold">
+                    Carte
+                </router-link>
+                <router-link
+                    to="/stats"
+                    class="px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 transition-colors font-medium no-underline underline-hover"
+                    active-class="bg-yellow-50 text-black font-bold">
+                    Statistiques
+                </router-link>
+                <router-link
+                    to="/Information"
+                    class="px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 transition-colors font-medium no-underline underline-hover"
+                    active-class="bg-yellow-50 text-black font-bold">
+                    Information
+                </router-link>
+                <router-link
+                    to="/aideoVideo"
+                    class="px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 transition-colors font-medium no-underline underline-hover"
+                    active-class="bg-yellow-50 text-black font-bold">
+                    Aide en vidéo
+                </router-link>
+            </nav>
+        </footer>
     </div>
 </template>
 
@@ -164,5 +197,23 @@ export default {
 <style scoped>
 .no-underline {
   text-decoration: none;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 10000;
+  padding: 0.5rem 1rem;
+  background: #ffffff;
+  color: #111827;
+  border: 2px solid #1d4ed8;
+  border-radius: 0 0 0.375rem 0;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  left: 0;
+  top: 0;
 }
 </style>

@@ -27,7 +27,7 @@ export default {
     border-radius: 5px;
 }
 
-.dataDetail h4 {
+.dataDetail .data-detail-title {
     margin: 0 0 5px;
     color: #777;
 }
