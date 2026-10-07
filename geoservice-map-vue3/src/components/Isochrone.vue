@@ -38,14 +38,6 @@
       > | Cadastre</label>
     <input id="cbCadastre" v-model="showCadastre" type="checkbox" />
 
-    <label
-      for="cbColorblind"
-      title="Adapte les couleurs pour améliorer la lisibilité pour les personnes atteintes de daltonisme. "
-    >
-      | Mode daltonien
-    </label>
-    <input id="cbColorblind" v-model="colorblindMode" type="checkbox" @change="onColorModeChange" />
-
     <br />
     </div>
 
@@ -69,6 +61,20 @@
         :tile-size="tileProvider.tileSize"
         layer-type="base"
       />
+
+      <l-control position="topright">
+        <button
+          type="button"
+          class="a11y-toggle"
+          :class="{ 'a11y-toggle--active': colorblindMode }"
+          :aria-pressed="colorblindMode ? 'true' : 'false'"
+          title="Adapte les couleurs pour améliorer la lisibilité pour les personnes atteintes de daltonisme."
+          @click="toggleColorblindMode"
+        >
+          <span aria-hidden="true">◐</span>
+          Mode daltonien
+        </button>
+      </l-control>
 
       <l-control-layers position="topright" />
       <l-control position="topleft">
@@ -186,6 +192,40 @@
 
 .leaflet-control-fullscreen-button:active {
   background-color: #e8e8e8;
+}
+
+/* Bouton accessibilité (mode daltonien) - haut droit de la carte */
+.a11y-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 2px solid #1f2937;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #111827;
+  font: 600 14px/1.2 Arial, Helvetica, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.a11y-toggle:hover {
+  background: #f3f4f6;
+}
+
+.a11y-toggle:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+.a11y-toggle--active {
+  background: #1f2937;
+  color: #ffffff;
+}
+
+.a11y-toggle--active:hover {
+  background: #374151;
 }
 
 /* Align layer names to the left inside the layer selector */
@@ -550,6 +590,10 @@ export default {
       const mapElement = this.$refs.leafletMap.$el;
       if (!this.isFullscreen()) this.requestFullscreen(mapElement);
       else this.exitFullscreen();
+    },
+    toggleColorblindMode() {
+      this.colorblindMode = !this.colorblindMode;
+      this.onColorModeChange();
     },
     onColorModeChange() {
       // Sauvegarder le mode dans le localStorage
