@@ -74,8 +74,12 @@ const MATOMO_CONFIG = {
     trackerUrl: '/parcs-et-jardins/matomo.php'
 };
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(() => initMatomo(MATOMO_CONFIG));
+    navigator.serviceWorker.ready.then(() => {
+        console.log('[MATOMO] SW ready, init tracker');
+        initMatomo(MATOMO_CONFIG);
+    });
 } else {
+    console.log('[MATOMO] No SW support, init tracker directly');
     initMatomo(MATOMO_CONFIG);
 }
 
@@ -94,6 +98,7 @@ router.afterEach((to) => {
   window._paq = window._paq || [];
   window._paq.push(['setCustomUrl', to.fullPath]);
   window._paq.push(['trackPageView']);
+  console.log('[MATOMO] trackPageView', to.fullPath);
 });
 
 

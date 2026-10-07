@@ -9,7 +9,7 @@ const MATOMO_BASE = 'https://asso.autmel.ovh/audience';
 
 // ——— matomo proxy ———
 // Intercepts same-origin /matomo.js and /matomo.php,
-// forwards to remote server. Brèves/Firefox ETP see first-party requests.
+// forwards to remote server. Brave/Firefox ETP see first-party requests.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.hostname !== self.location.hostname) return;
@@ -22,12 +22,19 @@ self.addEventListener('fetch', (event) => {
   }
   if (!remoteUrl) return;
 
+  console.log(`[SW/MATOMO] proxy ${event.request.method} ${url.pathname} → ${remoteUrl}`);
   event.respondWith(
     fetch(remoteUrl, {
       method: event.request.method,
       headers: event.request.headers,
       body: event.request.method === 'POST' ? event.request : undefined
-    }).catch(() => new Response('', { status: 502 }))
+    }).then((response) => {
+      console.log(`[SW/MATOMO] ${response.status} ${url.pathname}`);
+      return response;
+    }).catch((err) => {
+      console.error(`[SW/MATOMO] FAILED ${url.pathname}`, err);
+      return new Response('', { status: 502 });
+    })
   );
 });
 
