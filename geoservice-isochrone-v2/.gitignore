@@ -3,3 +3,8 @@
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
 /target/
+
+# secrets locaux
+deps.txt
+.env
+secret.env

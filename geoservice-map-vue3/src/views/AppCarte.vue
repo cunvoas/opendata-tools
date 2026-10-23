@@ -1,5 +1,6 @@
 <template>
     <div class="text-left align-top">
+        <h1 class="sr-only">Cartographie des parcs</h1>
         <SearchLocation @update-location="updateLocation" @location-selected="updateLocation" :displaySearchAddress="true" />
         
         <div class="border-2 border-transparent mt-4">
@@ -12,18 +13,19 @@
     <div class="mt-4">   
         <div class="border-2 border-transparent">
             <table class="text-left">
+                <caption class="sr-only">Légende de la carte</caption>
                 <tbody>
                     <tr>
-                        <td class="pr-2">Préconisations OMS non respectées :</td>
-                        <td class="px-1"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getLowColor1};`" /></td>
-                        <td class="px-1"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getLowColor2};`" /></td>
-                        <td class="px-1"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getLowColor3};`" /></td>
+                        <th scope="row" class="pr-2 text-left font-normal">Préconisations OMS non respectées :</th>
+                        <td class="px-1"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getLowColor1, 0.4)};`" /></td>
+                        <td class="px-1"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getLowColor2, 0.4)};`" /></td>
+                        <td class="px-1"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getLowColor3, 0.4)};`" /></td>
                     </tr>
                     
                     <tr>
-                        <td class="pr-2">Préconisations OMS respectées :</td>
-                        <td class="px-1"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getHighColor1};`" /></td>
-                        <td class="px-1"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getHighColor2};`" /></td>
+                        <th scope="row" class="pr-2 text-left font-normal">Préconisations OMS respectées :</th>
+                        <td class="px-1"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getHighColor1, 0.4)};`" /></td>
+                        <td class="px-1"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getHighColor2, 0.4)};`" /></td>
                         <td>&nbsp;</td>
                     </tr>
                     <tr>
@@ -34,16 +36,16 @@
                     </tr>
 
                     <tr id="legend-parks-1" v-show="showParcsLegend">
-                        <td class="pr-2">Parcs comptabilisé :</td>
-                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getParcComptabiliseColor}`" /></td>
+                        <th scope="row" class="pr-2 text-left font-normal">Parcs comptabilisé :</th>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getParcComptabiliseColor, 0.5)}`" /></td>
                    </tr>
                     <tr id="legend-parks-2" v-show="showParcsLegend">
-                        <td class="pr-2" >Parcs non comptabilisé :</td>
-                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getParcNonComptabiliseColor}`" /></td>
+                        <th scope="row" class="pr-2 text-left font-normal">Parcs non comptabilisé :</th>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getParcNonComptabiliseColor, 0.5)}`" /></td>
                     </tr>
                     <tr id="legend-parks-3" v-show="showParcsLegend">
-                        <td class="pr-2" >Parcs futur ou détruit :</td>
-                        <td class="px-1" colspan="3"><div class="w-5 aspect-square opacity-40" :style="`background-color: ${getParcFuturOuDetruitColor}`" /></td>
+                        <th scope="row" class="pr-2 text-left font-normal">Parcs futur ou détruit :</th>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getParcFuturOuDetruitColor, 0.5)}`" /></td>
                     </tr>
                 </tbody>
             </table>
@@ -54,6 +56,7 @@
 <script>
 import Isochrone from "../components/Isochrone.vue";
 import SearchLocation from "../components/SearchLocation.vue";
+import { hexToRgba } from "../utils/color.js";
 
 export default {
     name: "AppCarte",
@@ -95,6 +98,9 @@ export default {
         }
     },
     methods: {
+        swatchColor(hex, alpha) {
+            return hexToRgba(hex, alpha);
+        },
         updateLocation(newLocation) {
             //alert(' appcarte. updateLocation(newLocation) '+JSON.stringify(newLocation) );
             
@@ -121,9 +127,9 @@ export default {
     border-radius: 5px;
 }
 
-.dataDetail h4 {
+.dataDetail .data-detail-title {
     margin: 0 0 5px;
-    color: #777;
+    color: #767676;
 }
 
 .legend {
@@ -137,6 +143,7 @@ export default {
     height: 18px;
     float: left;
     margin-right: 8px;
-    opacity: 0.7;
+    border: 1px solid #4b5563;
+    box-sizing: border-box;
 }
 </style>

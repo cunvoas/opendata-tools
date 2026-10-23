@@ -1,5 +1,6 @@
 <template>
     <div class="text-left align-top">
+        <h1 class="sr-only">Statistiques des espaces verts</h1>
         <SearchLocation @update-location="updateLocation" @location-selected="updateLocation" :displaySearchAddress="false" />
         
         <Com2coQuickAccess 

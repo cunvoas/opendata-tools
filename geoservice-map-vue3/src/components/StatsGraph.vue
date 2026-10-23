@@ -1,6 +1,6 @@
 <template>
   <div v-if="loaded" class="flex flex-col items-center w-full">
-    <p class="text-center"><b id="villeId">{{ villeNom }}</b></p>
+    <h2 class="text-center">{{ villeNom }}</h2>
     <div v-if="shouldDisplayBarChart" class="w-full max-w-4xl">
       <Bar :data="dataBar" :options="barOptions" class="w-full h-[300px]" />
     </div>
@@ -13,7 +13,7 @@
     <!-- Alternative textuelle pour les agents IA et l'accessibilité -->
     <StatsTableAccessibility :villeNom="villeNom" :dataPie="dataPie" :loaded="loaded" />
   </div>
-  <div v-else class="text-center">Chargement en cours...</div>
+  <div v-else class="text-center" role="status">Chargement en cours...</div>
 </template>
 
 
@@ -74,7 +74,8 @@ export default {
   name: 'StatsGraph',
   components: {
     Bar,
-    Pie
+    Pie,
+    StatsTableAccessibility
   },
   data() {
     return {
@@ -236,6 +237,7 @@ export default {
   
       // 📊 Envoyer l'événement à Matomo
       const cityName = newLocation.cityName || 'Unknown';
+      window._paq = window._paq || [];
       window._paq.push(['trackEvent', 'City Stats', newLocation.locType , cityName]);
       
       // Si vous avez aussi un ID unique : 

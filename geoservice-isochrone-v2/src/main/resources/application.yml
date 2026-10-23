@@ -11,6 +11,8 @@ management:
   enabled: false
 
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 55s # Donne 60 secondes max aux calculs géospatiaux pour finir
   application.name: isochrone
   application.version: '@project.version@'
 # TODO make a custom page : https://docs.spring.io/spring-boot/how-to/spring-mvc.html
@@ -115,6 +117,10 @@ spring:
       allowed-headers: "Requestor-Type"
       exposed-headers: "X-Get-Header"
 
+
+matomo:
+  url:
+  site-id: 0
 
 application:
   business:

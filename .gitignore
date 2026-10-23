@@ -21,6 +21,7 @@ geoservice-map-vue3/deployGhP.sh
 **/build
 **/.dart_tool
 **/.scannerwork
+**/*SECURITY*
 
 # dependencies
 node_modules
@@ -36,6 +37,8 @@ node_modules
 .factorypath
 .idea/
 .vscode/
+.opencode
+
 
 # IDE - VSCode
 **/.vscode/*

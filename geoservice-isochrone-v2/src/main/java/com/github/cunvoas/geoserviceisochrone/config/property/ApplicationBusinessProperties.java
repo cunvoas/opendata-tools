@@ -69,6 +69,11 @@ public class ApplicationBusinessProperties {
 	private String siteGestion;
 	@Value("${ISOCHRONE_SITE_PUBLIQUE}")
 	private String sitePublique;
+
+	@Value("${matomo.url:}")
+	private String matomoUrl;
+	@Value("${matomo.site-id:0}")
+	private int matomoSiteId;
 	
 
 	/**
