@@ -37,6 +37,9 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
         name: 'Analyse des Parcs et Jardins selon l\'OMS',
@@ -74,33 +77,6 @@ export default defineConfig({
           }
         ]
       },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,ttf,eot}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/api\..*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 jours
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/tile\..*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'tiles-cache',
-              expiration: {
-                maxEntries: 500,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 jours
-              }
-            }
-          }
-        ]
-      }
     }),
     /* VitePrerender({
       staticDir: path.join(__dirname, 'dist'),

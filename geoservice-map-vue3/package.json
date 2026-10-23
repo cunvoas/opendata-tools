@@ -2,7 +2,7 @@
   "name": "geoservice-map-vue3",
   "private": true,
   "license": "AGPL-3.0",
-  "version": "2.0.5",
+  "version": "2.0.9",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -26,7 +26,7 @@
     "video.js": "^8.24.0",
     "vue": "^3.5.41",
     "vue-chartjs": "^5.3.4",
-    "vue-matomo": "^4.2.0",
+    "@certible/use-matomo": "^1.0.0",
     "vue-router": "^5.2.0"
   },
   "devDependencies": {

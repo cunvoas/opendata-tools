@@ -71,7 +71,7 @@ public class ParkOverpassService {
      * @return liste des {@link ParkOverpass} correspondants
      */
     public List<ParkOverpass> getVegetal(String inseeCode) {
-        return parkOverpassRepository.findByInsee(inseeCode);
+        return parkOverpassRepository.findByInseeContains(inseeCode);
     }
 
     /**

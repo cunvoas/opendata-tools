@@ -170,7 +170,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 				// merge areas for parks
 				dto.polygonParkAreasOms = dto.polygonParkAreasOms.union(parkArea.getPolygon());
 			} else {
-				dto.parcNames.add("(✖ "+parkArea.getName()+")");
+				dto.parcNames.add("✖ "+parkArea.getName());
 			}
 		}  // end merge
 		

@@ -10,7 +10,7 @@
       </thead>
       <tbody>
         <tr v-for="(item, index) in tableData" :key="index">
-          <td>{{ item.label }}</td>
+          <th scope="row">{{ item.label }}</th>
           <td>{{ item.value }} habitants</td>
         </tr>
       </tbody>

@@ -1,14 +1,14 @@
 <template>
     <div class="p-2 bg-gray-50 rounded-md mb-2" v-if="currentLocation && currentLocation.com2coId">
-        <h3 class="m-0 mb-2 text-base text-gray-800 font-semibold">
+        <h2 class="m-0 mb-2 text-base text-gray-800 font-semibold">
             Accès rapide aux statistiques : {{ currentLocation.com2coName || 'Communauté de commune' }}
-        </h3>
+        </h2>
         <div class="flex gap-2 flex-wrap justify-start">
             <button 
                 v-for="graphType in graphTypes" 
                 :key="graphType.id"
                 @click="selectGraphType(graphType)"
-                class="px-3 py-2 bg-emerald-600 text-white rounded border-none cursor-pointer text-sm transition-all duration-200 whitespace-nowrap hover:bg-emerald-700 hover:shadow-md active:scale-95"
+                class="px-3 py-2 bg-emerald-700 text-white rounded border-none cursor-pointer text-sm transition-all duration-200 whitespace-nowrap hover:bg-emerald-800 hover:shadow-md active:scale-95"
                 :class="{ 'bg-emerald-800 shadow-inner': selectedType === graphType.id }"
             >
                 {{ graphType.name }}

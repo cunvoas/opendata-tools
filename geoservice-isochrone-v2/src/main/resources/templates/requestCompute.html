@@ -120,6 +120,9 @@
                                 <button id="btnComputeCity" onclick="requestComputeCity()" type="button" class="btn btn-outline-secondary">
                                     <i class="fas fa-city me-1"></i><span th:text="#{compute.request.btn.city}">Calculer la ville</span>
                                 </button>
+                                <button id="btnComputeParkOverpass" onclick="launchParkOverpass()" type="button" class="btn btn-success">
+                                    <i class="fas fa-layer-group me-1"></i><span th:text="#{compute.request.launch.park_overpass}">Park Overpass</span>
+                                </button>
                                 <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
@@ -187,6 +190,14 @@
             cityId: sel.value,
             requestedYear: yearSel ? (yearSel.value || null) : null
         });
+}
+    function launchParkOverpass() {
+        doPostCompute({
+            token: [[${token}]],
+            parkOverpass: true
+        });
+        alert("Traitement des parcs Overpass démarré avec succès");
+        location.reload();
     }
     /*]]>*/
     </script>

@@ -33,14 +33,14 @@ describe('Com2coQuickAccess.vue', () => {
   describe('titre', () => {
     it('affiche le nom de la com2co dans le titre', () => {
       const wrapper = mount(Com2coQuickAccess, { props: { currentLocation: locationWithCom2co } })
-      expect(wrapper.find('h3').text()).toContain('Métropole Européenne de Lille')
+      expect(wrapper.find('h2').text()).toContain('Métropole Européenne de Lille')
     })
 
     it('affiche un libellé par défaut si com2coName est absent', () => {
       const wrapper = mount(Com2coQuickAccess, {
         props: { currentLocation: { com2coId: '1' } }
       })
-      expect(wrapper.find('h3').text()).toContain('Communauté de commune')
+      expect(wrapper.find('h2').text()).toContain('Communauté de commune')
     })
   })
 

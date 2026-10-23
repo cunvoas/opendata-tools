@@ -1,5 +1,6 @@
 <template>
   <div>
+    <div role="group" aria-label="Calques et options de la carte">
     <label for="annee">Année</label>
     <select id="annee" @change="onAnnee" class="compact-select" v-model="annee">
       <option value="2021" selected="selected">2021</option>
@@ -9,20 +10,20 @@
     </select>
 
     <label
-      for="checkbox"
+      for="cbParcs"
       title="Affiche les contours des parcs."
     >
       | Parcs
     </label>
-    <input id="checkbox" v-model="showParcs" type="checkbox" />
+    <input id="cbParcs" v-model="showParcs" type="checkbox" />
 
     <label
-      for="checkbox"
+      for="cbIsochrones"
       title="Affiche les isochrones pour visualiser les zones d'accessibilité aux parcs."
     >
       | Isochrones
     </label>
-    <input id="checkbox" v-model="showIsochrones" type="checkbox" />
+    <input id="cbIsochrones" v-model="showIsochrones" type="checkbox" />
 
     <label
       for="cbCarre"
@@ -37,17 +38,8 @@
       > | Cadastre</label>
     <input id="cbCadastre" v-model="showCadastre" type="checkbox" />
 
-    <label
-      for="cbColorblind"
-      title="Adapte les couleurs pour améliorer la lisibilité pour les personnes atteintes de daltonisme. "
-    >
-      | Mode daltonien
-    </label>
-    <input id="cbColorblind" v-model="colorblindMode" type="checkbox" @change="onColorModeChange" />
-
     <br />
-
-     
+    </div>
 
     <l-map
       ref="leafletMap"
@@ -70,6 +62,20 @@
         layer-type="base"
       />
 
+      <l-control position="topright">
+        <button
+          type="button"
+          class="a11y-toggle"
+          :class="{ 'a11y-toggle--active': colorblindMode }"
+          :aria-pressed="colorblindMode ? 'true' : 'false'"
+          title="Adapte les couleurs pour améliorer la lisibilité pour les personnes atteintes de daltonisme."
+          @click="toggleColorblindMode"
+        >
+          <span aria-hidden="true">◐</span>
+          Mode daltonien
+        </button>
+      </l-control>
+
       <l-control-layers position="topright" />
       <l-control position="topleft">
         <div class="leaflet-control leaflet-bar">
@@ -77,16 +83,17 @@
             href="#" 
             class="leaflet-control-fullscreen-button leaflet-bar-part" 
             title="Afficher en plein écran"
+            aria-label="Afficher en plein écran"
             @click.prevent="toggleFullscreen"
             style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 20px;"
           >
-            🖥️
+            <span aria-hidden="true">🖥️</span>
           </a>
         </div>
       </l-control>
       <l-control position="bottomright">
-        <div id="dataDetail" class="dataDetail">
-          <h4>&nbsp;Détail des données&nbsp;</h4>
+        <div id="dataDetail" class="dataDetail" role="status" aria-live="polite">
+          <p class="data-detail-title">&nbsp;Détail des données&nbsp;</p>
           &nbsp;<br />&nbsp;
         </div>
       </l-control>
@@ -97,7 +104,7 @@
 
       <l-control position="bottomleft" >
         <div id="customControl" class="dataDetail">
-          <h4 @dblclick="copyShareableUrl" style="cursor: pointer;">&nbsp;m²/habitant de parcs&nbsp;</h4>
+          <p class="data-detail-title" @dblclick="copyShareableUrl" style="cursor: pointer;">&nbsp;m²/habitant de parcs&nbsp;</p>
           <div id="legend" class="legend">            
             <div id="legendContent" v-html="htmlLegend" />
           </div>
@@ -187,6 +194,40 @@
   background-color: #e8e8e8;
 }
 
+/* Bouton accessibilité (mode daltonien) - haut droit de la carte */
+.a11y-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 2px solid #1f2937;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #111827;
+  font: 600 14px/1.2 Arial, Helvetica, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.a11y-toggle:hover {
+  background: #f3f4f6;
+}
+
+.a11y-toggle:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+.a11y-toggle--active {
+  background: #1f2937;
+  color: #ffffff;
+}
+
+.a11y-toggle--active:hover {
+  background: #374151;
+}
+
 /* Align layer names to the left inside the layer selector */
 .leaflet-control-layers,
 .leaflet-control-layers-list,
@@ -211,6 +252,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
 import { ref, onMounted } from 'vue';
+import { hexToRgba } from "../utils/color.js";
 import axios from 'axios';
 import { buildShareableUrl, isActive } from '../utils/urlParams.js';
 import debounce from 'lodash/debounce';
@@ -313,7 +355,7 @@ function getColorLegend(legendeDense, colorblindMode = false) {
       labels.push(`&nbsp;<b>Zone périurbaine</b>`);
       grades = gradesSubur;
     }
-    labels.push(`<i style="background:${getSquareColor(true, null, colorblindMode)}"></i> non calculé`);
+    labels.push(`<i style="border:1px solid #4b5563;background:${hexToRgba(getSquareColor(true, null, colorblindMode), 0.4)}"></i> non calculé`);
 
 
 
@@ -322,7 +364,7 @@ function getColorLegend(legendeDense, colorblindMode = false) {
 			to = grades[i + 1];
 
       let tSurface = `${from}${to ? `&ndash;${to}` : '+'}`
-      let tColors = `<i style="opacity:0.4;background:${getSquareColor(legendeDense, from, colorblindMode)}"></i> `;
+      let tColors = `<i style="border:1px solid #4b5563;background:${hexToRgba(getSquareColor(legendeDense, from, colorblindMode), 0.4)}"></i> `;
 			
       labels.push(tColors+tSurface);
 
@@ -499,6 +541,7 @@ export default {
       // 📊 Envoyer l'événement à Matomo
       const cityName = newLocation.cityName || 'Unknown';
       const locType = newLocation.locType || 'city';
+      window._paq = window._paq || [];
       window._paq.push(['trackEvent', 'City Map', locType, cityName]);
 
 
@@ -547,6 +590,10 @@ export default {
       const mapElement = this.$refs.leafletMap.$el;
       if (!this.isFullscreen()) this.requestFullscreen(mapElement);
       else this.exitFullscreen();
+    },
+    toggleColorblindMode() {
+      this.colorblindMode = !this.colorblindMode;
+      this.onColorModeChange();
     },
     onColorModeChange() {
       // Sauvegarder le mode dans le localStorage
@@ -973,13 +1020,7 @@ export default {
    * Vue lifecycle hook called after the component has been mounted to the DOM.
    * Used here to add custom HTML content to the Leaflet control element.
    */
-  mounted() {      
-      // Add custom HTML content to the l-control
-      const customControl = document.getElementById('customControl');
-      if (customControl) {
-        customControl.innerHTML = '<p>Custom HTML content loaded on map load</p>';
-      }
-      
+  mounted() {
       // Émettre le mode daltonien initial au parent (depuis localStorage)
       this.$emit('colorblind-mode-changed', this.colorblindMode);
   },
@@ -993,8 +1034,7 @@ export default {
       return {
         onEachFeature: (feature, layer) => this.onDetailPark(feature, layer),
       };
-    },
-    detailIsochrone() {
+    },    detailIsochrone() {
       return {
         onEachFeature: this.onDetailIsochrone,
       };

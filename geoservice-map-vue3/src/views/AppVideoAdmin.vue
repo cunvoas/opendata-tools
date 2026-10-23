@@ -1,6 +1,6 @@
 <template>
     <div class="text-left align-top">
-      <h5 class="text-xl font-semibold mb-3">Saisie des parcs et des entrées</h5>
+      <h1 class="text-xl font-semibold mb-3">Saisie des parcs et des entrées</h1>
       <p class="mb-4">
         Les vidéos ci-dessous vous montrent comment saisir les contours des parcs et les entrées de parc.
         <br />
@@ -12,14 +12,14 @@
           v-for="(source, index) in sources" 
           :key="index" 
           @click="changeVideo(index)"
-          class="mx-2 px-4 py-2 bg-green-600 text-white border-none rounded cursor-pointer hover:bg-green-700 transition-colors"
+          class="mx-2 px-4 py-2 bg-green-700 text-white border-none rounded cursor-pointer hover:bg-green-800 transition-colors"
           type="button">
           {{ source.videoTitle }}
         </button>
       </div>
 
       <div class="max-w-[800px] mx-auto my-5">
-        <h5 class="text-lg font-medium mb-2">{{ currentVideo.videoTitle }}</h5>
+        <h2 class="text-lg font-medium mb-2">{{ currentVideo.videoTitle }}</h2>
 
         <video
           id="videoPlayer"
@@ -80,6 +80,7 @@ export default {
         this.player.play();
       }
 
+      window._paq = window._paq || [];
       window._paq.push(['trackEvent', 'Video Changed', index, this.currentVideo.videoTitle]);
     }
   },
