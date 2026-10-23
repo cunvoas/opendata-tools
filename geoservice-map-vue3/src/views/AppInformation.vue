@@ -44,8 +44,8 @@
                 L'algorithme de calcul de la zone d'accessibilité est le suivant :
             </p>
             <div class="flex gap-2 my-4">
-                <button @click="showDiagram = false" :class="['px-4 py-1.5 text-sm rounded transition-colors', showDiagram ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-blue-900 text-white']">Détail</button>
-                <button @click="showDiagram = true" :class="['px-4 py-1.5 text-sm rounded transition-colors', showDiagram ? 'bg-blue-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200']">Diagramme</button>
+                <button type="button" @click="showDiagram = false" :aria-pressed="showDiagram === false ? 'true' : 'false'" :class="modeBtnClass(!showDiagram)">Détail</button>
+                <button type="button" @click="showDiagram = true" :aria-pressed="showDiagram === true ? 'true' : 'false'" :class="modeBtnClass(showDiagram)">Diagramme</button>
             </div>
             <ol v-if="!showDiagram" class="list-decimal list-inside space-y-2 ml-4">
                 <li class="font-medium">Détermination des carreaux de la commune à partir du cadastre</li>
@@ -73,7 +73,7 @@
                 </li>
             </ol>
             <div v-else class="flex justify-center my-8">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 560" class="w-full max-w-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 560" class="w-full max-w-lg" role="img" aria-label="Diagramme de l'algorithme de calcul : détermination des carreaux, accessibilité, population couverte, densité d'espaces verts">
                     <defs>
                         <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
                             <path d="M0,0 L10,4 L0,8 Z" fill="#94a3b8" />
@@ -128,7 +128,7 @@
                 possible de contribuer à l'amélioration des données, des algorithmes et des fonctionnalités.
                 <br />
                 Pour cela, il suffit de se rendre sur le <a target="_blank" rel="noopener noreferrer"
-                    href="https://github.com/cunvoas/opendata-tools/issues">site github du projet</a> et de proposer des
+                    href="https://github.com/cunvoas/opendata-tools/issues" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">site github du projet</a> et de proposer des
                 améliorations.
                 <br />
                 Le programme peut aussi être copié en respectant la <a target="_blank" rel="noopener noreferrer"
@@ -174,24 +174,24 @@
 
             <h2 class="font-bold underline my-6">Thésaurus</h2>
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm cursor-pointer" @click="showIsochroneDetail = true">
-                    <h3 class="text-lg font-semibold">Isochrone</h3>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                    <h3 class="text-lg font-semibold"><button type="button" class="text-left hover:underline cursor-pointer" @click="showIsochroneDetail = true">Isochrone</button></h3>
                     <p class="mt-2 text-sm leading-relaxed">Surface représentant la zone atteignable à pied en un temps donné depuis une entrée de parc. Nous utilisons 5 minutes en zone urbaine et 20 minutes en zone rurale.</p>
                 </div>
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm cursor-pointer" @click="showM2Detail = true">
-                    <h3 class="text-lg font-semibold">m² / habitant</h3>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                    <h3 class="text-lg font-semibold"><button type="button" class="text-left hover:underline cursor-pointer" @click="showM2Detail = true">m² / habitant</button></h3>
                     <p class="mt-2 text-sm leading-relaxed">Indicateur de densité d'espaces verts publics. Il correspond au ratio entre la surface totale des parcs accessibles et la population couverte.</p>
                 </div>
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm cursor-pointer" @click="showCarreauDetail = true">
-                    <h3 class="text-lg font-semibold">Carreau INSEE</h3>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                    <h3 class="text-lg font-semibold"><button type="button" class="text-left hover:underline cursor-pointer" @click="showCarreauDetail = true">Carreau INSEE</button></h3>
                     <p class="mt-2 text-sm leading-relaxed">Maille de référence de 200m × 200m utilisée pour agréger les données socio-démographiques locales et évaluer la population couverte.</p>
                 </div>
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm cursor-pointer" @click="showEspacesVertsDetail = true">
-                    <h3 class="text-lg font-semibold">Espaces verts publics de proximité</h3>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                    <h3 class="text-lg font-semibold"><button type="button" class="text-left hover:underline cursor-pointer" @click="showEspacesVertsDetail = true">Espaces verts publics de proximité</button></h3>
                     <p class="mt-2 text-sm leading-relaxed">Espaces accessibles librement (parcs, jardins, squares) à distance piétonne. Les cimetières ou surfaces minérales ne sont pas comptés dans la surface accessible.</p>
                 </div>
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm cursor-pointer" @click="showZoneDetail = true">
-                    <h3 class="text-lg font-semibold">Zone urbaine / périurbaine</h3>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                    <h3 class="text-lg font-semibold"><button type="button" class="text-left hover:underline cursor-pointer" @click="showZoneDetail = true">Zone urbaine / périurbaine</button></h3>
                     <p class="mt-2 text-sm leading-relaxed">Catégorisation appliquée pour ajuster les seuils OMS : 10 m²/habitant en zone urbaine et 25 m²/habitant en zone périurbaine.</p>
                 </div>
             </div>
@@ -200,7 +200,7 @@
                 <div class="mx-4 max-w-lg rounded-lg bg-white p-6 shadow-xl">
                     <div class="flex items-start justify-between">
                         <h3 class="text-lg font-semibold">Isochrone</h3>
-                        <button @click="showIsochroneDetail = false" class="ml-4 text-slate-400 hover:text-slate-600">&times;</button>
+                        <button @click="showIsochroneDetail = false" class="ml-4 text-slate-600 hover:text-slate-800" aria-label="Fermer la fenêtre" title="Fermer la fenêtre"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <p class="mt-4 text-sm leading-relaxed text-slate-700">
                         Les isochrones sont des indicateurs d'accessibilité spatiale prenant la forme de surfaces correspondant à la zone géographique accessible depuis un point choisi, dans une durée de déplacement prédéfinie. Elles offrent une représentation cartographique relativement simple du temps de parcours nécessaire pour se déplacer vers un lieu ou une ressource particulière. Le principal intérêt des isochrones est de délimiter les espaces disposant d'un accès facile à certaines opportunités.
@@ -216,7 +216,7 @@
                 <div class="mx-4 max-w-lg rounded-lg bg-white p-6 shadow-xl">
                     <div class="flex items-start justify-between">
                         <h3 class="text-lg font-semibold">Carreau INSEE</h3>
-                        <button @click="showCarreauDetail = false" class="ml-4 text-slate-400 hover:text-slate-600">&times;</button>
+                        <button @click="showCarreauDetail = false" class="ml-4 text-slate-600 hover:text-slate-800" aria-label="Fermer la fenêtre" title="Fermer la fenêtre"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <p class="mt-4 text-sm leading-relaxed text-slate-700">
                         Les carreaux INSEE sont des mailles statistiques de 200m × 200m utilisées par l'Institut national de la statistique et des études économiques pour diffuser des données socio-démographiques à un niveau géographique fin tout en garantissant l'anonymat des personnes. Chaque carreau contient des informations estimées sur la population résidente, les revenus, l'âge ou encore la catégorie socio-professionnelle, sans correspondre à une adresse ou une rue spécifique. Cette approche carroyée permet d'analyser des territoires de manière homogène, indépendamment des limites administratives (communes, iris), et de croiser ces données avec d'autres couches géographiques comme les isochrones d'accès aux parcs.
@@ -232,7 +232,7 @@
                 <div class="mx-4 max-w-lg rounded-lg bg-white p-6 shadow-xl">
                     <div class="flex items-start justify-between">
                         <h3 class="text-lg font-semibold">Espaces verts publics de proximité</h3>
-                        <button @click="showEspacesVertsDetail = false" class="ml-4 text-slate-400 hover:text-slate-600">&times;</button>
+                        <button @click="showEspacesVertsDetail = false" class="ml-4 text-slate-600 hover:text-slate-800" aria-label="Fermer la fenêtre" title="Fermer la fenêtre"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <p class="mt-4 text-sm leading-relaxed text-slate-700">
                         L'Organisation mondiale de la santé (OMS / WHO) recommande un minimum de 10 m² d'espaces verts publics de proximité par habitant en zone urbaine, et 25 m²/habitant en zone périurbaine. Les surfaces conseillées sont respectivement de 12 et 45 m²/habitant. Un espace vert public de proximité est un parc, un jardin ou un square accessible librement à distance piétonne (5 minutes en ville, 20 minutes à la campagne). Ces espaces jouent un rôle essentiel pour la santé physique et mentale des citadins : ils favorisent l'activité physique, réduisent le stress, améliorent la qualité de l'air et contribuent à la régulation thermique en ville. Les cimetières, les bosquets non accessibles et les places minéralisées ne sont pas comptabilisés dans cette surface.
@@ -245,7 +245,7 @@
                 <div class="mx-4 max-w-lg rounded-lg bg-white p-6 shadow-xl">
                     <div class="flex items-start justify-between">
                         <h3 class="text-lg font-semibold">m² / habitant</h3>
-                        <button @click="showM2Detail = false" class="ml-4 text-slate-400 hover:text-slate-600">&times;</button>
+                        <button @click="showM2Detail = false" class="ml-4 text-slate-600 hover:text-slate-800" aria-label="Fermer la fenêtre" title="Fermer la fenêtre"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <p class="mt-4 text-sm leading-relaxed text-slate-700">
                         Le ratio <strong>m² / habitant</strong> est l'indicateur clé pour mesurer la desserte en espaces verts publics d'un territoire. Il se calcule en divisant la surface totale des espaces verts publics de proximité accessibles par la population résidente du territoire considéré. Cet indicateur permet de comparer des quartiers, des communes ou des métropoles entre eux, indépendamment de leur taille. L'OMS recommande un minimum de 10 m²/habitant en zone urbaine et 25 m²/habitant en zone périurbaine. Dans cette application, le calcul intègre uniquement les parcs accessibles à pied depuis chaque carreau INSEE, via le réseau de rues, dans le temps de marche préconisé par l'OMS.
@@ -258,7 +258,7 @@
                 <div class="mx-4 max-w-lg rounded-lg bg-white p-6 shadow-xl">
                     <div class="flex items-start justify-between">
                         <h3 class="text-lg font-semibold">Zone urbaine / périurbaine</h3>
-                        <button @click="showZoneDetail = false" class="ml-4 text-slate-400 hover:text-slate-600">&times;</button>
+                        <button @click="showZoneDetail = false" class="ml-4 text-slate-600 hover:text-slate-800" aria-label="Fermer la fenêtre" title="Fermer la fenêtre"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <p class="mt-4 text-sm leading-relaxed text-slate-700">
                         D'un point de vue géographique, la <strong>zone urbaine</strong> désigne un espace caractérisé par une forte densité de population et de bâti, une continuité du tissu urbain et une concentration d'activités économiques, de services et d'infrastructures. Elle correspond aux centres-villes et aux quartiers densément peuplés où la trame viaire est continue et les parcs de proximité accessibles en moins de 5 minutes à pied.
@@ -291,6 +291,19 @@ export default {
         }
     },
     methods: {
+        /**
+         * Classes du bouton de bascule Détail / Diagramme.
+         * Les couples fond/texte sont définis ici (et non dans le template)
+         * pour rester analysables tels quels par l'extraction de couleurs.
+         * @param {boolean} active - true si le bouton représente le mode affiché.
+         * @returns {string}
+         */
+        modeBtnClass(active) {
+            const base = 'px-4 py-1.5 text-sm rounded transition-colors';
+            return active
+                ? base + ' bg-blue-900 text-white'
+                : base + ' bg-slate-100 text-slate-600 hover:bg-slate-200';
+        },
         toPlain(cypher) {
             return cypher.map(code => String.fromCharCode(code)).join('');
         },

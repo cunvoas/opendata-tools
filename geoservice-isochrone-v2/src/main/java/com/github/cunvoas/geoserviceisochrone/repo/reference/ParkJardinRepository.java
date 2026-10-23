@@ -149,6 +149,17 @@ public interface ParkJardinRepository extends JpaRepository<ParcEtJardin, Long> 
 	
 	
 	/**
+	 * findByCityIdNoContour.
+	 * Parcs d'une commune possédant une coordonnée mais aucune forme (contour NULL).
+	 * @param id city
+	 * @return list ParcEtJardin à enrichir
+	 */
+	@Query(nativeQuery = true,
+			value="select pj.* from parc_jardin pj "
+					+ " where pj.id_city=:id and pj.contour is null and pj.coordonnee is not null")
+	List<ParcEtJardin> findByCityIdNoContour(@Param("id")Long id);
+
+	/**
 	 * findByAreaAndCityId.
 	 * @param cityId city 
 	 * @param searchArea shape

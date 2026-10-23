@@ -7,13 +7,13 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.1.0</version>
+    <version>4.1.1</version>
     <relativePath />
   </parent>
   
   <groupId>com.github.cunvoas</groupId>
   <artifactId>geoservice-isochrone</artifactId>
-  <version>2.0.9</version>
+  <version>2.0.11</version>
   <name>geoservice-isochrone-v2</name>
 
   <licenses>
@@ -115,7 +115,7 @@
     <dependency>
       <groupId>org.hibernate.orm</groupId>
       <artifactId>hibernate-spatial</artifactId>
-      <version>7.4.5.Final</version>
+      <version>7.4.6.Final</version>
     </dependency>
     
     <dependency>
@@ -365,22 +365,41 @@
         <dependency>
           <groupId>io.cucumber</groupId>
           <artifactId>cucumber-java</artifactId>
-          <version>7.34.6</version>
+          <version>7.34.7</version>
           <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>io.cucumber</groupId>
           <artifactId>cucumber-spring</artifactId>
-          <version>7.34.6</version>
+          <version>7.34.7</version>
           <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>io.cucumber</groupId>
           <artifactId>cucumber-junit-platform-engine</artifactId>
-          <version>7.34.6</version>
+          <version>7.34.7</version>
           <scope>test</scope>
         </dependency>
       </dependencies>
+    </profile>
+    <!-- Audit OWASP : mvn -Powasp dependency-check:check -->
+    <profile>
+      <id>owasp</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <version>13.0.0</version>
+            <configuration>
+              <format>HTML,JSON</format>
+              <failBuildOnCVSS>7</failBuildOnCVSS>
+              <!-- clé lue dans $NVD_API_KEY (voir .env, jamais dans le pom ni les logs) -->
+              <nvdApiKeyEnvironmentVariable>${NVD_API_KEY}</nvdApiKeyEnvironmentVariable>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 

@@ -82,8 +82,12 @@ public class ParkOverpass {
 	private Map<String, Object> tags;
     
 
-	/** Code INSEE de la commune où se trouve l'espace vert. */
-	@Column(length = 5)
+	/**
+	 * Code(s) INSEE de la ou des communes où se trouve l'espace vert.
+	 * <p>Un espace vert peut s'étendre sur plusieurs communes : les codes sont
+	 * alors triés et séparés par des virgules (ex : "59100,59350").</p>
+	 */
+	@Column(length = 255)
 	private String insee;
 
 	/** Surface de l'espace vert. */

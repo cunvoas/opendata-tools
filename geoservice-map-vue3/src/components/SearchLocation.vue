@@ -1,9 +1,12 @@
 <template>
     <div class="grid grid-cols-1 md:grid-cols-4 gap-2 p-2 bg-gray-50 rounded-md">
+        <label class="sr-only" for="selRegion">Région</label>
+        <label class="sr-only" for="selCom2co">Intercommunalité</label>
+        <label class="sr-only" for="selCity">Commune</label>
         <select 
-            v-model="selectedRegion" 
-            @change="fetchCom2cos" 
-            tabindex="1" 
+            id="selRegion"
+            v-model="selectedRegion"
+            @change="fetchCom2cos"
             class="select-field">
             <option v-for="region in regions" :key="region.id" :value="region.id">
                 {{ region.name }}
@@ -11,10 +14,10 @@
         </select>
         
         <select 
-            v-model="selectedCom2co" 
-            @change="fetchCities" 
-            :disabled="!selectedRegion" 
-            tabindex="2" 
+            id="selCom2co"
+            v-model="selectedCom2co"
+            @change="fetchCities"
+            :disabled="!selectedRegion"
             class="select-field disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
             <option v-for="com2co in com2cos" :key="com2co.id" :value="com2co.id">
                 {{ com2co.name }}
@@ -22,10 +25,10 @@
         </select>
         
         <select 
-            v-model="selectedCity" 
-            @change="handleCityChange" 
-            :disabled="!selectedCom2co" 
-            tabindex="3" 
+            id="selCity"
+            v-model="selectedCity"
+            @change="handleCityChange"
+            :disabled="!selectedCom2co"
             class="select-field disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
             <option v-for="city in cities" :key="city.id" :value="city.id" :data-insee-code="city.inseeCode" :data-longitude-x="city.lonX" :data-latitude-y="city.latY">
                 {{ city.name }} ({{ city.inseeCode }})
@@ -37,8 +40,7 @@
             :fetch-items="fetchAddresses" 
             placeholder="Aller à une adresse"
             :displaySearchAddress="displaySearchAddress" 
-            :disabled="!selectedCity" 
-            tabindex="4" 
+            :disabled="!selectedCity"
             @location-selected="handleLocationSelected" 
             class="w-full" />
     </div>
