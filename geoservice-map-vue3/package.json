@@ -37,7 +37,7 @@
     "@vue/cli-plugin-router": "~5.0.0",
     "@vue/test-utils": "^2.4.11",
     "autoprefixer": "^10.5.3",
-    "happy-dom": "^20.11.2",
+    "happy-dom": "^20.11.6",
     "jsdom": "^30.0.1",
     "leaflet": "^1.9.4",
     "postcss": "^8.5.26",
