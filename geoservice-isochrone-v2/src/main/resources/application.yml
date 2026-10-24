@@ -142,6 +142,10 @@ application:
       annees: 2015,2017,2019,2021
     iris:
         annees: 2020
+  ndvi:
+    copernicus.openeo:
+        client-id:
+        client-secret:
   feature-flipping:
     show-stacktrace-on-error: false
     mobile-api: false

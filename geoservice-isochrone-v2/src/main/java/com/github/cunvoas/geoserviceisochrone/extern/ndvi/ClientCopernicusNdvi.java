@@ -46,10 +46,10 @@ public class ClientCopernicusNdvi {
     private String accessToken;
     private Instant tokenExpiry = Instant.EPOCH;
 
-    @Value("${copernicus.openeo.client-id}")
+    @Value("${application.ndvi.copernicus.openeo.client-id}")
     private String clientId;
 
-    @Value("${copernicus.openeo.client-secret}")
+    @Value("${application.ndvi.copernicus.openeo.client-secret}")
     private String clientSecret;
 
     public ClientCopernicusNdvi(RestClient.Builder restClientBuilder) {

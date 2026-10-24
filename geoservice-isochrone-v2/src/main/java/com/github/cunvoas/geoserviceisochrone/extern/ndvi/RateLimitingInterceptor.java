@@ -25,7 +25,7 @@ public class RateLimitingInterceptor implements ClientHttpRequestInterceptor {
     }
 
     public RateLimitingInterceptor() {
-        this(RateLimiter.create(4.0));
+        this(RateLimiter.create(0.25));
     }
 
     @Override
@@ -53,13 +53,17 @@ public class RateLimitingInterceptor implements ClientHttpRequestInterceptor {
                         // si vous devez attendre 'X' secondes, adaptez selon votre API (ex: Thread.sleep ou acquire de X permis)
                         this.rateLimiter.acquire(secondsToWait);
                         
+                        Thread.sleep(secondsToWait * 1000 );
+                        
                         // 3. Rejeu de la requête après l'attente
                         return execution.execute(request, body);
                     }
                 } catch (NumberFormatException e) {
                     // Gestion au cas où le header n'est pas un entier valide (ex: une date GMT)
                     // Optionnel : appliquer une attente par défaut (ex: 5 secondes)
-                }
+                } catch (InterruptedException e) {
+					e.printStackTrace();
+				}
             }
         }
 
