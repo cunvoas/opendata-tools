@@ -69,12 +69,22 @@ public class ManualProposalEvaluationService {
      * @param annee Année du calcul
      * @return GeoJsonRoot contenant les géométries des carreaux et leurs propriétés avant/après
      */
+    private String sanitizeForLog(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.replace('\n', '_')
+                .replace('\r', '_')
+                .replace('\t', '_');
+    }
+
     @Transactional
     public GeoJsonRoot evaluate(String insee, Integer annee) {
-        log.info("Manual proposal evaluation for INSEE={}, annee={}", insee, annee);
+        String safeInsee = sanitizeForLog(insee);
+        log.info("Manual proposal evaluation for INSEE={}, annee={}", safeInsee, annee);
         GeoJsonRoot root = new GeoJsonRoot();
         if (annee == null) {
-            log.warn("No annee provided for INSEE={}", insee);
+            log.warn("No annee provided for INSEE={}", safeInsee);
             return root;
         }
 
@@ -90,14 +100,14 @@ public class ManualProposalEvaluationService {
         // 2. Récupération des formes géométriques de tous les carreaux 200m de la commune ayant de la population
         List<InseeCarre200mOnlyShape> carreShapes = inseeCarre200mOnlyShapeRepository.findCarreByInseeCode(insee, true);
         if (carreShapes == null || carreShapes.isEmpty()) {
-            log.warn("No carreaux found for INSEE={}", insee);
+            log.warn("No carreaux found for INSEE={}", safeInsee);
             return root;
         }
 
         // 3. Récupération ou création des métadonnées de propositions manuelles pour ce couple (INSEE, année)
         ManualParkProposalMeta meta = manualParkProposalMetaRepository.findByAnneeAndInsee(annee, insee);
         if (meta == null) {
-            log.info("Creating meta for INSEE={}, annee={}", insee, annee);
+            log.info("Creating meta for INSEE={}, annee={}", safeInsee, annee);
             meta = new ManualParkProposalMeta();
             meta.setAnnee(annee);
             meta.setInsee(insee);
