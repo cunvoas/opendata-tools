@@ -7,12 +7,10 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.mockito.Mockito.mock;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
@@ -21,69 +19,54 @@ import org.springframework.http.client.ClientHttpResponse;
 
 import com.google.common.util.concurrent.RateLimiter;
 
-@ExtendWith(MockitoExtension.class)
 class TestRateLimitInterceptor {
 
-
-
-    @Mock
-    private RateLimiter rateLimiter; 
-
-    @InjectMocks
-    private RateLimitingInterceptor interceptor;
-
-    @Mock
-    private HttpRequest request;
-
-    @Mock
-    private ClientHttpRequestExecution execution;
-
-    @Mock
-    private ClientHttpResponse response429;
-
-    @Mock
-    private ClientHttpResponse response200;
-
+    private final HttpRequest request = mock(HttpRequest.class);
+    private final ClientHttpRequestExecution execution = mock(ClientHttpRequestExecution.class);
     private final byte[] body = new byte[0];
 
-    @BeforeEach
-    void setUp() {
-        // Optionnel : Initialisation si nécessaire
+    @Test
+    void doit_limiter_a_4_requetes_par_seconde() {
+        // RateLimiter.create attend des permis PAR seconde : 4.0 = 4 req/s
+        RateLimitingInterceptor interceptor = new RateLimitingInterceptor();
+
+        assertEquals(4.0, interceptor.getRate(), 0.0001);
     }
 
     @Test
-    void should_RetryRequest_When_StatusIs429AndRetryAfterHeaderIsPresent() throws IOException {
-        // Given
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("retry-after", "3");
-
-        // Configuration de la réponse 429 initiale
-        when(response429.getStatusCode()).thenReturn(HttpStatus.TOO_MANY_REQUESTS);
-        when(response429.getHeaders()).thenReturn(headers);
-
-        // Configuration de la réponse 200 lors du rejeu
+    void doit_consommer_un_permis_avant_chaque_appel() throws IOException {
+        RateLimiter rateLimiter = mock(RateLimiter.class);
+        ClientHttpResponse response200 = mock(ClientHttpResponse.class);
         when(response200.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(execution.execute(request, body)).thenReturn(response200);
 
-        // Chaînage des comportements : 1ère exécution -> 429, 2ème exécution -> 200
-        when(execution.execute(request, body))
-                .thenReturn(response429)
-                .thenReturn(response200);
+        ClientHttpResponse result = new RateLimitingInterceptor(rateLimiter).intercept(request, body, execution);
 
-        // When
-        ClientHttpResponse finalResponse = interceptor.intercept(request, body, execution);
-
-        // Then
-        // 1. Vérifie que la réponse finale est bien le succès (200 OK)
-        assertEquals(HttpStatus.OK, finalResponse.getStatusCode());
-
-        // 2. Vérifie que la réponse 429 a bien été fermée pour libérer la connexion
-        verify(response429, times(1)).close();
-
-        // 3. Vérifie que le rate limiter a bien été sollicité avec la valeur "3" issue du header
-        verify(rateLimiter, times(1)).acquire(3);
-
-        // 4. Vérifie que l'exécution globale de la requête a eu lieu exactement 2 fois
-        verify(execution, times(2)).execute(request, body);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        verify(rateLimiter, times(1)).acquire();
+        verify(execution, times(1)).execute(request, body);
     }
 
+    @Test
+    void doit_rejouer_la_requete_apres_un_429_et_respecter_retry_after() throws IOException {
+        RateLimiter rateLimiter = mock(RateLimiter.class);
+        ClientHttpResponse response429 = mock(ClientHttpResponse.class);
+        ClientHttpResponse response200 = mock(ClientHttpResponse.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("retry-after", "1");
+        when(response429.getStatusCode()).thenReturn(HttpStatus.TOO_MANY_REQUESTS);
+        when(response429.getHeaders()).thenReturn(headers);
+        when(response200.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(execution.execute(request, body)).thenReturn(response429).thenReturn(response200);
+
+        long start = System.currentTimeMillis();
+        ClientHttpResponse finalResponse = new RateLimitingInterceptor(rateLimiter).intercept(request, body, execution);
+        long elapsed = System.currentTimeMillis() - start;
+
+        assertEquals(HttpStatus.OK, finalResponse.getStatusCode());
+        verify(response429, times(1)).close();
+        verify(execution, times(2)).execute(request, body);
+        verify(rateLimiter, times(1)).acquire();
+        assertEquals(true, elapsed >= 1000L, "retry-after non respecté : " + elapsed + " ms");
+    }
 }

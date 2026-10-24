@@ -60,5 +60,21 @@ public class ParkAreaComputed {
     @DateTimeFormat
     @Column(name="updated")
     private Date updated;
+    /** NDVI moyen sur le polygone du parc (indice -1..1). */
+    @Column(name = "ndvi_mean", precision = 6, scale = 4)
+    private BigDecimal ndviMean;
+    /** NDVI minimal sur le polygone du parc. */
+    @Column(name = "ndvi_min", precision = 6, scale = 4)
+    private BigDecimal ndviMin;
+    /** NDVI maximal sur le polygone du parc. */
+    @Column(name = "ndvi_max", precision = 6, scale = 4)
+    private BigDecimal ndviMax;
+    /** Écart-type du NDVI sur le polygone du parc. */
+    @Column(name = "ndvi_stddev", precision = 6, scale = 4)
+    private BigDecimal ndviStddev;
+    /** Fin de la fenêtre d'observation NDVI fournie par le fournisseur. */
+    @DateTimeFormat
+    @Column(name = "ndvi_acquisition_date")
+    private Date ndviAcquisitionDate;
 
 }

@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.ClientCopernicusNdvi;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
@@ -66,6 +67,8 @@ public class ComputeParkAreaV2 {
 	private ServiceOpenData serviceOpenData;
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
+	@Autowired
+	private ClientCopernicusNdvi clientCopernicusNdvi;
 	
 	
 
@@ -187,10 +190,42 @@ public class ComputeParkAreaV2 {
 		
 		
 	}
-	
+
+	/**
+	 * Remplit les colonnes NDVI à partir du fournisseur satellite.
+	 * Un échec laisse les colonnes inchangées (nulles) sans impacter le calcul OMS.
+	 */
+	private void refreshNdvi(ParkAreaComputed parcCpu, ParkArea park) {
+		try {
+			clientCopernicusNdvi.fetchNdviForPark(park.getId(), park.getPolygon())
+					.ifPresent(stats -> {
+						parcCpu.setNdviMean(stats.mean());
+						parcCpu.setNdviMin(stats.min());
+						parcCpu.setNdviMax(stats.max());
+						parcCpu.setNdviStddev(stats.stdDev());
+						parcCpu.setNdviAcquisitionDate(stats.acquisitionDate());
+					});
+		} catch (Exception e) {
+			log.warn("NDVI non récupéré pour le parc {}-{} : {}", park.getId(), park.getName(), e.getMessage());
+		}
+	}
+
+	/**
+	 * Rattrapage NDVI d'une ligne OMS déjà à jour : la ligne est sauvegardée
+	 * sans recalculer les indicateurs OMS ni modifier sa date de mise à jour.
+	 */
+	private ParkAreaComputed refreshNdviIfMissing(ParkAreaComputed parcCpu, ParkArea park) {
+		if (parcCpu.getNdviMean() == null && clientCopernicusNdvi.isEnabled()) {
+			this.refreshNdvi(parcCpu, park);
+			return parkAreaComputedRepository.save(parcCpu);
+		}
+		return parcCpu;
+	}
+
 	public ParkAreaComputed computeGenericParkAreaV2(ParkArea park) {
 		return this.computeGenericParkAreaV2(park, null);
 	}
+
 	public ParkAreaComputed computeGenericParkAreaV2(ParkArea park, Integer wAnnee) {
 		Calendar c1 = Calendar.getInstance();
 		c1.set(1970, Calendar.JANUARY, 1, 0, 0, 0);
@@ -235,7 +270,7 @@ public class ComputeParkAreaV2 {
 			
 			Boolean alreadyProcessed = this.computeGenericHead(parcCpu, park, wAnnee);
 			if (alreadyProcessed) {
-				return parcCpu;
+				return this.refreshNdviIfMissing(parcCpu, park);
 			}
 			
 			if (carreAnnees.indexOf(wAnnee)!=-1) {
@@ -246,6 +281,7 @@ public class ComputeParkAreaV2 {
 				this.computeGenericIris(parcCpu, park, wAnnee);
 			}
 			 
+			this.refreshNdvi(parcCpu, park);
 			parcCpu = parkAreaComputedRepository.save(parcCpu);
 			return parcCpu;
 		} else {
@@ -264,6 +300,7 @@ public class ComputeParkAreaV2 {
 
 				Boolean alreadyProcessed = this.computeGenericHead(parcCpu, park, wAnnee);
 				if (alreadyProcessed) {
+					this.refreshNdviIfMissing(parcCpu, park);
 					continue;
 				}
 				
@@ -276,6 +313,7 @@ public class ComputeParkAreaV2 {
 				}
 				 
 				parcCpu.setUpdated(new Date());
+				this.refreshNdvi(parcCpu, park);
 				parcCpu = parkAreaComputedRepository.save(parcCpu);
 			}
 		}
