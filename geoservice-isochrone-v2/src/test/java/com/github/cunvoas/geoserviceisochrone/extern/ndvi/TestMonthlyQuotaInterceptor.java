@@ -44,5 +44,31 @@ class TestMonthlyQuotaInterceptor {
 
         assertEquals(HttpStatus.OK, result.getStatusCode());
         verify(quotaService).tryAcquire();
+        verify(quotaService, never()).release();
+    }
+
+    @Test
+    void rembourse_le_quota_si_la_reponse_n_est_pas_2xx() throws IOException {
+        NdviQuotaService quotaService = mock(NdviQuotaService.class);
+        ClientHttpResponse response500 = mock(ClientHttpResponse.class);
+        when(quotaService.tryAcquire()).thenReturn(true);
+        when(response500.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
+        when(execution.execute(request, body)).thenReturn(response500);
+
+        ClientHttpResponse result = new MonthlyQuotaInterceptor(quotaService).intercept(request, body, execution);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+        verify(quotaService).release();
+    }
+
+    @Test
+    void rembourse_le_quota_si_l_appel_echoue() throws IOException {
+        NdviQuotaService quotaService = mock(NdviQuotaService.class);
+        when(quotaService.tryAcquire()).thenReturn(true);
+        when(execution.execute(request, body)).thenThrow(new IOException("timeout"));
+
+        assertThrows(IOException.class,
+                () -> new MonthlyQuotaInterceptor(quotaService).intercept(request, body, execution));
+        verify(quotaService).release();
     }
 }

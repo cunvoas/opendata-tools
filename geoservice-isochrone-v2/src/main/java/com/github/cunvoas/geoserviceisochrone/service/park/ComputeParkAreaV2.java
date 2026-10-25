@@ -2,6 +2,9 @@ package com.github.cunvoas.geoserviceisochrone.service.park;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -193,9 +196,17 @@ public class ComputeParkAreaV2 {
 
 	/**
 	 * Remplit les colonnes NDVI à partir du fournisseur satellite.
-	 * Un échec laisse les colonnes inchangées (nulles) sans impacter le calcul OMS.
+	 * L'appel n'a lieu qu'à partir de septembre et au plus une fois par an et par parc.
+	 * Un échec laisse les colonnes NDVI inchangées sans impacter le calcul OMS ; la date
+	 * de demande est tout de même posée pour ne pas relancer l'appel avant un an.
+	 *
+	 * @return vrai si un appel fournisseur a été tenté (la ligne doit être sauvegardée)
 	 */
-	private void refreshNdvi(ParkAreaComputed parcCpu, ParkArea park) {
+	private boolean refreshNdvi(ParkAreaComputed parcCpu, ParkArea park) {
+		if (!clientCopernicusNdvi.isEnabled() || park!= null && park.getPolygon()==null || !isNdviRequestDue(parcCpu)) {
+			return false;
+		}
+		parcCpu.setNdviRequestDate(new Date());
 		try {
 			clientCopernicusNdvi.fetchNdviForPark(park.getId(), park.getPolygon())
 					.ifPresent(stats -> {
@@ -204,19 +215,43 @@ public class ComputeParkAreaV2 {
 						parcCpu.setNdviMax(stats.max());
 						parcCpu.setNdviStddev(stats.stdDev());
 						parcCpu.setNdviAcquisitionDate(stats.acquisitionDate());
-					});
+				});
 		} catch (Exception e) {
 			log.warn("NDVI non récupéré pour le parc {}-{} : {}", park.getId(), park.getName(), e.getMessage());
 		}
+		return true;
+	}
+
+	/**
+	 * Indique si un nouvel appel NDVI est autorisé : à partir de septembre et
+	 * seulement un an après la dernière demande.
+	 */
+	boolean isNdviRequestDue(ParkAreaComputed parcCpu) {
+		return isNdviRequestDue(parcCpu, LocalDate.now());
+	}
+
+	/**
+	 * Variante testable avec une date explicite.
+	 * @param today date de référence
+	 */
+	boolean isNdviRequestDue(ParkAreaComputed parcCpu, LocalDate today) {
+		if (today.getMonthValue() < Month.SEPTEMBER.getValue()) {
+			return false;
+		}
+		if (parcCpu.getNdviRequestDate() == null) {
+			return true;
+		}
+		LocalDate lastRequest = parcCpu.getNdviRequestDate().toInstant()
+				.atZone(ZoneId.systemDefault()).toLocalDate();
+		return !today.isBefore(lastRequest.plusYears(1));
 	}
 
 	/**
 	 * Rattrapage NDVI d'une ligne OMS déjà à jour : la ligne est sauvegardée
 	 * sans recalculer les indicateurs OMS ni modifier sa date de mise à jour.
 	 */
-	private ParkAreaComputed refreshNdviIfMissing(ParkAreaComputed parcCpu, ParkArea park) {
-		if (parcCpu.getNdviMean() == null && clientCopernicusNdvi.isEnabled()) {
-			this.refreshNdvi(parcCpu, park);
+	private ParkAreaComputed refreshNdviIfDue(ParkAreaComputed parcCpu, ParkArea park) {
+		if (this.refreshNdvi(parcCpu, park)) {
 			return parkAreaComputedRepository.save(parcCpu);
 		}
 		return parcCpu;
@@ -270,7 +305,7 @@ public class ComputeParkAreaV2 {
 			
 			Boolean alreadyProcessed = this.computeGenericHead(parcCpu, park, wAnnee);
 			if (alreadyProcessed) {
-				return this.refreshNdviIfMissing(parcCpu, park);
+				return this.refreshNdviIfDue(parcCpu, park);
 			}
 			
 			if (carreAnnees.indexOf(wAnnee)!=-1) {
@@ -300,7 +335,7 @@ public class ComputeParkAreaV2 {
 
 				Boolean alreadyProcessed = this.computeGenericHead(parcCpu, park, wAnnee);
 				if (alreadyProcessed) {
-					this.refreshNdviIfMissing(parcCpu, park);
+					this.refreshNdviIfDue(parcCpu, park);
 					continue;
 				}
 				

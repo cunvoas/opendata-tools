@@ -25,8 +25,9 @@ de fin de fenêtre d'acquisition.
   première ne renvoie aucune donnée exploitable.
 - **Non bloquant** : toute erreur (configuration, réseau, quota, timeout) est
   absorbée → colonnes NDVI nulles + log `WARN`, le calcul OMS continue.
-- **Rafraîchissement** : uniquement lors du recalcul de la ligne OMS ; reprise
-  automatique si les colonnes NDVI sont nulles sur une ligne pourtant à jour.
+- **Rafraîchissement** : au plus **un appel par parc et par an**, uniquement **à partir
+  de septembre** (date mémorisée dans `ndvi_request_date`). Le rattrapage s'applique
+  aussi aux lignes OMS déjà à jour, sans modifier leurs indicateurs ni leur date `updated`.
 
 ### Configuration
 
@@ -55,12 +56,28 @@ Les identifiants proviennent du [Dashboard CDSE](https://dataspace.copernicus.eu
 
 ### Quota et débit
 
+Limites CDSE du compte gratuit (Sentinel Hub APIs, reset le 1er du mois) :
+
+| Ressource | Limite |
+|---|---|
+| Requêtes / mois | 10 000 |
+| Requêtes / minute | 300 |
+| Processing Units (PU) / mois | 10 000 |
+| PU / minute | 300 |
+
 - Compteur mensuel **persisté en base** (`ndvi_api_quota`, migration
   `v2.1.4_ndvi_api_quota.sql`) : réservation atomique, plafond garanti même après
   redémarrage ou en concurrence.
-- 1 requête = 1 parc × 1 fenêtre tentée (le secours compte aussi) ; le token OAuth
-  n'est pas décompté. 2 400 parcs ≈ 2 400 requêtes/mois.
-- Débit limité à **4 requêtes/seconde**, avec reprise sur `429` (`retry-after`).
+- Une unité est réservée avant l'envoi puis **remboursée si la réponse n'est pas 2XX** :
+  CDSE ne facture que les requêtes réussies. Le token OAuth n'est pas un appel
+  Sentinel Hub et n'est **pas** décompté.
+- Le compteur local suit les **requêtes** ; le dashboard CDSE suit aussi les **PU**.
+  1 requête Statistical coûte au minimum 0,01 PU et dépend de la taille, des bandes
+  et des samples : les deux chiffres ne sont donc pas identiques.
+- La taille de sortie est calculée à **10 m natif** (plafond 512×512) au lieu d'un
+  suréchantillonnage 512×512 : les PU restent proportionnés à la surface du parc.
+- Débit limité à **2 requêtes/seconde** (≤ 240 PU/min avec 2 PU max par requête),
+  avec reprise sur `429` (`retry-after`).
 
 ### Activation et test réel
 

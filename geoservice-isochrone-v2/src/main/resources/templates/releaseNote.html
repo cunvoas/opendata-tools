@@ -55,7 +55,8 @@
                                     <ul class="list-unstyled">
                                         <li><i class="fas fa-check text-success me-2"></i>Ajout de l'indice NDVI par parc (moyenne, min, max, écart-type, date de fenêtre) via l'API Statistical de Copernicus.</li>
                                         <li><i class="fas fa-check text-success me-2"></i>Fenêtre NDVI configurable (1–6 juin, secours 1–6 juillet) sur Sentinel-2 L2A.</li>
-                                        <li><i class="fas fa-check text-success me-2"></i>Quota mensuel CDSE de 10 000 requêtes persisté en base, sans blocage des calculs OMS en cas d'échec.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Quota mensuel CDSE (10 000 requêtes / 10 000 PU) persisté en base : seules les réponses 2XX sont décomptées, le token OAuth est exclu, sans blocage des calculs OMS en cas d'échec.</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>NDVI limité à un appel par parc et par an, à partir de septembre, et requête CDSE à la résolution native 10 m pour maîtriser les PU.</li>
                                     </ul>
                                 </div>
                             </div>

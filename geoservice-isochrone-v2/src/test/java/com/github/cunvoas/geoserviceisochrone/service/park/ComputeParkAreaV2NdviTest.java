@@ -1,15 +1,22 @@
 package com.github.cunvoas.geoserviceisochrone.service.park;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
@@ -88,6 +95,10 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
         when(parkAreaComputedRepository.findByIdAndAnnee(PARK_ID, ANNEE)).thenReturn(Optional.of(row));
         when(parkAreaComputedRepository.save(any(ParkAreaComputed.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // La fenêtre septembre/1 an est testée isolément : on force ici l'éligibilité
+        service = spy(service);
+        doReturn(true).when(service).isNdviRequestDue(any(ParkAreaComputed.class));
     }
 
     @Test
@@ -121,8 +132,26 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
 
         assertSame(row, result);
         assertNull(result.getNdviMean());
+        assertNotNull(result.getNdviRequestDate(), "la demande doit être datée même en échec");
         assertEquals(omsUpdated, result.getUpdated());
         assertNull(result.getPopulation());
         verify(parkAreaComputedRepository, times(1)).save(row);
+    }
+
+    @Test
+    @DisplayName("appel NDVI autorisé seulement à partir de septembre")
+    void ndviAutoriseAPartirDeSeptembre() {
+        assertFalse(service.isNdviRequestDue(row, LocalDate.of(2027, 8, 31)));
+        assertTrue(service.isNdviRequestDue(row, LocalDate.of(2027, 9, 1)));
+    }
+
+    @Test
+    @DisplayName("pas de nouvel appel NDVI avant un an")
+    void ndviLimiteAUnAn() {
+        row.setNdviRequestDate(Date.from(
+                LocalDate.of(2026, 9, 15).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
+        assertFalse(service.isNdviRequestDue(row, LocalDate.of(2027, 9, 14)));
+        assertTrue(service.isNdviRequestDue(row, LocalDate.of(2027, 9, 15)));
     }
 }

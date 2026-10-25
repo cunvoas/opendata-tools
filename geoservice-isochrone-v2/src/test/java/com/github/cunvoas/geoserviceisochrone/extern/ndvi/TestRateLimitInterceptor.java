@@ -26,11 +26,11 @@ class TestRateLimitInterceptor {
     private final byte[] body = new byte[0];
 
     @Test
-    void doit_limiter_a_4_requetes_par_seconde() {
-        // RateLimiter.create attend des permis PAR seconde : 4.0 = 4 req/s
+    void doit_limiter_a_2_requetes_par_seconde() {
+        // 2 req/s × 2 PU max = 240 PU/min, sous la limite CDSE de 300 PU/min
         RateLimitingInterceptor interceptor = new RateLimitingInterceptor();
 
-        assertEquals(4.0, interceptor.getRate(), 0.0001);
+        assertEquals(2.0, interceptor.getRate(), 0.0001);
     }
 
     @Test
@@ -53,7 +53,7 @@ class TestRateLimitInterceptor {
         ClientHttpResponse response429 = mock(ClientHttpResponse.class);
         ClientHttpResponse response200 = mock(ClientHttpResponse.class);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("retry-after", "1");
+        headers.add("retry-after", "1000");
         when(response429.getStatusCode()).thenReturn(HttpStatus.TOO_MANY_REQUESTS);
         when(response429.getHeaders()).thenReturn(headers);
         when(response200.getStatusCode()).thenReturn(HttpStatus.OK);

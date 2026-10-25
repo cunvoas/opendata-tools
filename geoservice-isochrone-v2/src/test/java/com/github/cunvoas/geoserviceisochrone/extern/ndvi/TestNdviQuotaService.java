@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -36,5 +37,14 @@ class TestNdviQuotaService {
                 .thenReturn(List.of());
 
         assertFalse(new NdviQuotaService(jdbcTemplate, 10000).tryAcquire());
+    }
+
+    @Test
+    void rembourse_une_reservation_non_facturee() {
+        JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+
+        new NdviQuotaService(jdbcTemplate, 10000).release();
+
+        verify(jdbcTemplate).update(anyString(), anyString());
     }
 }
