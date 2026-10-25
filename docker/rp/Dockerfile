@@ -1,5 +1,5 @@
 FROM dhi.io/nginx:1-alpine3.21
-#FROM nginx:alpine3.22-slim
+#FROM nginx:alpine3.24-slim
 
 RUN apk --no-cache add curl
 
