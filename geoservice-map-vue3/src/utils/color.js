@@ -17,3 +17,19 @@ export function hexToRgba(hex, alpha) {
   const b = int & 255;
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+/**
+ * Couleur NDVI d'un parc, du plus clair (végétation faible) au plus foncé.
+ * Les valeurs absentes ou non numériques sont neutres (pas encore calculé).
+ * @param {number|string|null} ndviMean - NDVI moyen du parc.
+ * @returns {string} couleur #rrggbb.
+ */
+export function getNdviColor(ndviMean) {
+  const value = parseFloat(String(ndviMean ?? '').replace(',', '.'));
+  if (Number.isNaN(value)) return '#959595';
+  if (value < 0.2) return '#d9f0a3';
+  if (value < 0.3) return '#addd8e';
+  if (value < 0.4) return '#78c679';
+  if (value < 0.5) return '#31a354';
+  return '#006837';
+}

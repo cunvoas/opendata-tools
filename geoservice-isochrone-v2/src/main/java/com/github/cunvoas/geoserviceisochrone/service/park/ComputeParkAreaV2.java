@@ -203,7 +203,8 @@ public class ComputeParkAreaV2 {
 	 * @return vrai si un appel fournisseur a été tenté (la ligne doit être sauvegardée)
 	 */
 	private boolean refreshNdvi(ParkAreaComputed parcCpu, ParkArea park) {
-		if (!clientCopernicusNdvi.isEnabled() || park!= null && park.getPolygon()==null || !isNdviRequestDue(parcCpu)) {
+		if (!clientCopernicusNdvi.isEnabled() || park!= null && park.getPolygon()==null
+				|| !isNdviReferenceYear(parcCpu) || !isNdviRequestDue(parcCpu)) {
 			return false;
 		}
 		parcCpu.setNdviRequestDate(new Date());
@@ -220,6 +221,15 @@ public class ComputeParkAreaV2 {
 			log.warn("NDVI non récupéré pour le parc {}-{} : {}", park.getId(), park.getName(), e.getMessage());
 		}
 		return true;
+	}
+
+	/**
+	 * Le NDVI n'est demandé que pour l'année de référence (dernière année INSEE),
+	 * afin de ne pas multiplier les appels par les lignes des années antérieures.
+	 */
+	boolean isNdviReferenceYear(ParkAreaComputed parcCpu) {
+		Integer anneeReference = applicationBusinessProperties.getDerniereAnnee();
+		return anneeReference != null && anneeReference.equals(parcCpu.getAnnee());
 	}
 
 	/**

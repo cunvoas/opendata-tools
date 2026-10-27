@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version à figer, sans préfixe v (ex: 2.0.9)"
+        required: true
+        type: string
+      ref:
+        description: "Branche ou commit à taguer"
+        required: true
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Tag and release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+      with:
+        egress-policy: audit
+
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.ref }}
+        fetch-depth: 0
+
+    - name: Validate version and tag
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        VERSION="${VERSION#v}"
+        VERSION="${VERSION#V}"
+        if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+          echo "::error::Version invalide '$VERSION' (attendu X.Y.Z)"
+          exit 1
+        fi
+        if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+          echo "::error::Le tag v$VERSION existe déjà"
+          exit 1
+        fi
+        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+    - name: Prepare release notes
+      run: |
+        awk '/^## / { if (hdr) exit; hdr = ($2 == "V" ENVIRON["VERSION"] || $2 == "v" ENVIRON["VERSION"]); next } hdr { print }' CHANGELOG.md > notes.md
+        if [ -z "$(tr -d '[:space:]' < notes.md)" ]; then
+          rm -f notes.md
+          echo "Aucune section V$VERSION dans CHANGELOG.md, notes générées par GitHub"
+        fi
+
+    - name: Create tag and GitHub release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [ -f notes.md ]; then
+          gh release create "v$VERSION" --target "${{ inputs.ref }}" --title "v$VERSION" --notes-file notes.md
+        else
+          gh release create "v$VERSION" --target "${{ inputs.ref }}" --title "v$VERSION" --generate-notes
+        fi

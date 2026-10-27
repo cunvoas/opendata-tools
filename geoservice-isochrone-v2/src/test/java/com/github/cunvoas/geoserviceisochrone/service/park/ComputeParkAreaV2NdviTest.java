@@ -73,6 +73,7 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
     void setUp() {
         when(applicationBusinessProperties.getInseeAnnees()).thenReturn(new Integer[] { 2015 });
         when(applicationBusinessProperties.getIrisAnnees()).thenReturn(new Integer[] { ANNEE });
+        when(applicationBusinessProperties.getDerniereAnnee()).thenReturn(ANNEE);
 
         GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
         Polygon polygon = factory.createPolygon(new Coordinate[] {
@@ -136,6 +137,15 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
         assertEquals(omsUpdated, result.getUpdated());
         assertNull(result.getPopulation());
         verify(parkAreaComputedRepository, times(1)).save(row);
+    }
+
+    @Test
+    @DisplayName("seule l'année de référence déclenche un appel NDVI")
+    void ndviSeulementAnneeDeReference() {
+        assertTrue(service.isNdviReferenceYear(row), "2019 est l'année de référence simulée");
+
+        row.setAnnee(2017);
+        assertFalse(service.isNdviReferenceYear(row), "une autre année ne doit pas appeler le NDVI");
     }
 
     @Test

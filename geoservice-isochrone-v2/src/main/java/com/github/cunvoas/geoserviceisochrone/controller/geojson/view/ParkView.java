@@ -1,5 +1,8 @@
 package com.github.cunvoas.geoserviceisochrone.controller.geojson.view;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonProperty;
 
 import lombok.Data;
@@ -23,5 +26,11 @@ public class ParkView extends GeoJsonProperty {
 	private String areaPerPeople;
 	private String area;
 	private String people;
+	private Boolean ndviEnabled;
+	private BigDecimal ndviMean;
+	private BigDecimal ndviMin;
+	private BigDecimal ndviMax;
+	private BigDecimal ndviStddev;
+	private Date ndviAcquisitionDate;
 	
 }

@@ -74,6 +74,12 @@
                 active-class="bg-yellow-50 text-black font-bold">
                 Statistiques
             </router-link>
+            <router-link
+                to="/ndvi"
+                class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors font-medium no-underline"
+                active-class="bg-yellow-50 text-black font-bold">
+                NDVI
+            </router-link>
             <router-link 
                 to="/Information" 
                 class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors font-medium no-underline"
@@ -108,6 +114,12 @@
                     class="px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 transition-colors font-medium no-underline underline-hover"
                     active-class="bg-yellow-50 text-black font-bold">
                     Statistiques
+                </router-link>
+                <router-link
+                    to="/ndvi"
+                    class="px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 transition-colors font-medium no-underline underline-hover"
+                    active-class="bg-yellow-50 text-black font-bold">
+                    NDVI
                 </router-link>
                 <router-link
                     to="/Information"

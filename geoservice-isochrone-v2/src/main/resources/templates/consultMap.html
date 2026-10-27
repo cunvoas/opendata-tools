@@ -536,6 +536,42 @@ function createCircleFromFeature(feature, style) {
  * @param {string} layerName - Nom de la couche ('Parcs', 'IRIS', 'Carrés', 'Cadastre', 'Végétation IGN')
  * @returns {string} Contenu HTML formaté pour la popup
  */
+/**
+ * Catégories NDVI affichées dans l'infobulle des parcs (bornes : > 0,60 ; 0,40 à 0,60 ; 0,20 à 0,40 ; < 0,20).
+ */
+const NDVI_CATEGORIES = [
+  { min: 0.6, strict: true, label: 'Végétation très dense / Canopée haute',
+    text: 'Arbres majeurs, forêts, parcs très boisés en pleine santé.' },
+  { min: 0.4, label: 'Végétation modérée à bonne',
+    text: 'Pelouses bien vertes, arbustes, parcs urbains classiques bien entretenus.' },
+  { min: 0.2, label: 'Végétation éparse ou en stress',
+    text: 'Prairies sèches, jeunes pousses, ou parcs fortement artificialisés.' },
+  { min: -Infinity, label: 'Sols nus ou surfaces minérales',
+    text: 'Béton, bitume, terre battue, chemins de promenade.' }
+];
+
+/**
+ * Construit le bloc NDVI de l'infobulle d'un parc (vide si le NDVI n'est pas activé).
+ * @param {Object} props - Propriétés GeoJSON du parc
+ * @returns {string} HTML du bloc NDVI
+ */
+function createNdviHtml(props) {
+  if (!props || !props.ndviEnabled) return '';
+  if (props.ndviMean === null || props.ndviMean === undefined) {
+    return `<span style="display:block">NDVI : pas encore calculé</span>`;
+  }
+  const nf = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  const mean = Number(props.ndviMean);
+  const category = NDVI_CATEGORIES.find(c => c.strict ? mean > c.min : mean >= c.min);
+  let html = `<span style="display:block;margin-top:.3em"><b>NDVI moyen : ${nf.format(mean)}</b>`;
+  if (props.ndviMin !== null && props.ndviMax !== null && props.ndviMin !== undefined && props.ndviMax !== undefined) {
+    html += ` (min ${nf.format(props.ndviMin)}, max ${nf.format(props.ndviMax)})`;
+  }
+  html += `</span>`;
+  html += `<span style="display:block"><i>${category.label}.</i> ${category.text}</span>`;
+  return html;
+}
+
 function createPopupContent(feat, layerName) {
   if (!feat || !feat.properties) return '';
   let nm = feat.properties.name || feat.properties.nom || layerName;
@@ -558,7 +594,7 @@ function createPopupContent(feat, layerName) {
   // Lien édition parcs
   if (layerName === 'Parcs' && feat.properties.id) {
     const sUrlEditPark = window.location.protocol + "//" + window.location.host + urlEditPark + '?idPark=' + feat.properties.id;
-    popupContent += `<p>Surface: `+ formatedSurface(feat) +`<br /><a href='${sUrlEditPark}'>Éditer</a></p>`;
+    popupContent += `<p>Surface: `+ formatedSurface(feat) +`<br />${createNdviHtml(feat.properties)}<a href='${sUrlEditPark}'>Éditer</a></p>`;
 
     // changer la couleur si feat.properties.oms=true => #3aa637
     // changer la couleur si feat.properties.oms=false => #e96020
