@@ -19,7 +19,7 @@ updates:
   - package-ecosystem: "maven"
     directory: "/geoservice-isochrone-v2/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     labels:
       - "dependencies"
       - "security"
@@ -35,7 +35,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/geoservice-map-vue3/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     labels:
       - "dependencies"
       - "security"
