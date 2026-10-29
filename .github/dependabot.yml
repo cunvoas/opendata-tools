@@ -17,20 +17,23 @@ updates:
       - "security"
 
   - package-ecosystem: "maven"
-    directory: "/geoservice-isochrone-v2/"
+    directory: "/dbf2csv/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "friday"
     labels:
       - "dependencies"
       - "security"
 
+
+  # ☕ Configuration pour Java (Maven)
   - package-ecosystem: "maven"
-    directory: "/dbf2csv/"
+    directory: "/geoservice-isochrone-v2/"
     schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-      - "security"
+      interval: "daily"
+    open-pull-requests-limit: 5
+    # Les alertes de sécurité (Critical/High) ignoreront ce planning hebdomadaire
+    # et créeront une PR immédiatement dès la découverte de la faille.
 
   - package-ecosystem: "npm"
     directory: "/geoservice-map-vue3/"
@@ -39,3 +42,28 @@ updates:
     labels:
       - "dependencies"
       - "security"
+
+
+  # 📦 Configuration pour Node.js (NPM)
+  - package-ecosystem: "npm"
+    directory: "/" # Emplacement du package.json
+    schedule:
+      interval: "weekly"
+      day: "friday"
+    open-pull-requests-limit: 10
+    
+    # Stratégie de regroupement pour réduire le "bruit" visuel sur NPM
+    groups:
+      # Regroupe toutes les dépendances de dev (tests, linters) en une seule PR hebdo
+      devDependencies:
+        dependency-type: "development"
+      # Regroupe les sous-dépendances de production non-critiques
+      minorAndPatchUpdates:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+    # Les failles de sécurité critiques/hautes NPM passeront TOUJOURS en priorité
+    # et en dehors de ces groupes sous forme de PR individuelles immédiates.
