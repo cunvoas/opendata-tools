@@ -293,12 +293,12 @@ const layerVegetation = L.layerGroup();
 const layerManualEval = L.layerGroup();
 const overlays = { 'Parcs existants': layerExisting, 'Propositions manuelles': layerManual, 'Cadastre': layerCadastre, 'IRIS': layerIris, 'Végétation IGN': layerVegetation, 'Évaluation': layerManualEval };
 
-function locatePlace(lat, lon) { return L.latLng(parseFloat(lat), parseFloat(lon)); }
+function locatePlace(lat, lon) { return L.latLng(Number.parseFloat(lat), Number.parseFloat(lon)); }
 
 function getMapLocation() {
     const mLat = document.getElementById('mapLat').value;
     const mLng = document.getElementById('mapLng').value;
-    if (mLat && mLng && mLat.trim() !== '' && mLng.trim() !== '' && !isNaN(parseFloat(mLat)) && !isNaN(parseFloat(mLng))) {
+    if (mLat && mLng && mLat.trim() !== '' && mLng.trim() !== '' && !isNaN(Number.parseFloat(mLat)) && !isNaN(Number.parseFloat(mLng))) {
         return locatePlace(mLat, mLng);
     }
     return L.latLng(latInit, lonInit);
@@ -461,7 +461,7 @@ function onCitySelect(input) {
             if (newLat && newLng && newLat.value && newLng.value) {
                 document.getElementById('mapLat').value = newLat.value;
                 document.getElementById('mapLng').value = newLng.value;
-                map.setView([parseFloat(newLat.value), parseFloat(newLng.value)], zoomInit, { animate: true });
+                map.setView([Number.parseFloat(newLat.value), Number.parseFloat(newLng.value)], zoomInit, { animate: true });
             }
             resetForm();
             loadManualProposals();
@@ -585,13 +585,13 @@ function populateForm(id, name, mode, surface, description, lat, lng) {
     if (lat && lng) {
         document.getElementById('mapLat').value = lat;
         document.getElementById('mapLng').value = lng;
-        map.setView([parseFloat(lat), parseFloat(lng)], zoomInit, { animate: true });
+        map.setView([Number.parseFloat(lat), Number.parseFloat(lng)], zoomInit, { animate: true });
 
         if (mode === 'CIRCLE') {
             clearGeomanDrawings();
             if (currentCircle) map.removeLayer(currentCircle);
-            const center = L.latLng(parseFloat(lat), parseFloat(lng));
-            const s = parseFloat(surface) || 10000;
+            const center = L.latLng(Number.parseFloat(lat), Number.parseFloat(lng));
+            const s = Number.parseFloat(surface) || 10000;
             const r = Math.sqrt(s / Math.PI);
             currentCircle = L.circle(center, { radius: r, color: '#3388ff', fillOpacity: 0.3 }).addTo(map);
             const centerStr = '{"type":"Point","coordinates":[' + lng + ',' + lat + ']}';
@@ -601,7 +601,7 @@ function populateForm(id, name, mode, surface, description, lat, lng) {
 }
 
 function diameterChanged() {
-    const d = parseFloat(document.getElementById('diameter').value);
+    const d = Number.parseFloat(document.getElementById('diameter').value);
     if (d > 0) {
         const r = d / 2;
         const area = Math.PI * r * r;
@@ -614,7 +614,7 @@ function diameterChanged() {
 }
 
 function updateCircleFromSurface() {
-    const s = parseFloat(document.getElementById('surface').value);
+    const s = Number.parseFloat(document.getElementById('surface').value);
     if (s > 0 && currentCircle) {
         const r = Math.sqrt(s / Math.PI);
         currentCircle.setRadius(r);
@@ -781,7 +781,7 @@ function getSquareColor(zoneDense, densite, colorblind) {
     let color = '#959595';
     if (typeof zoneDense === 'string') zoneDense = zoneDense === 'true';
     if (densite === null || densite === 'N/A' || densite === '') return color;
-    densite = parseFloat(('' + densite).replace(',', '.'));
+    densite = Number.parseFloat(('' + densite).replace(',', '.'));
     let level1, level2, level3, level4, level5;
     if (colorblind) {
         level1 = '#d73027'; level2 = '#fc8d59'; level3 = '#fee090';

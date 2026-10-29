@@ -25,7 +25,7 @@ export function hexToRgba(hex, alpha) {
  * @returns {string} couleur #rrggbb.
  */
 export function getNdviColor(ndviMean) {
-  const value = parseFloat(String(ndviMean ?? '').replace(',', '.'));
+  const value = Number.parseFloat(String(ndviMean ?? '').replace(',', '.'));
   if (Number.isNaN(value)) return '#959595';
   if (value < 0.2) return '#d9f0a3';
   if (value < 0.3) return '#addd8e';

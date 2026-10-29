@@ -647,7 +647,7 @@ function createPopupContent(feat, layerName) {
       popupContent += `<p>ID: ${feat.id}</p>`;
     }
     if (feat.properties.surface) {
-      const surface = parseFloat(feat.properties.surface);
+      const surface = Number.parseFloat(feat.properties.surface);
       if (!isNaN(surface)) {
         if (surface >= 10000) {
           popupContent += `<p>Surface: ${(surface / 10000).toFixed(2)} ha</p>`;
@@ -664,10 +664,10 @@ function createPopupContent(feat, layerName) {
   // Infos spécifiques Proposition de parcs (cercles)
   if (layerName === 'Proposition de parcs') {
     if (feat.properties.radius) {
-      const radius = parseFloat(feat.properties.radius);
+      const radius = Number.parseFloat(feat.properties.radius);
       if (!isNaN(radius)) {
         popupContent += `<p>Diamètre: ${Math.round(2*radius)} m</p>`;
-        const surface = parseFloat(feat.properties.surface);
+        const surface = Number.parseFloat(feat.properties.surface);
         if (surface >= 10000) {
           popupContent += `<p>Surface: ${(surface / 10000).toFixed(2)} ha</p>`;
         } else {

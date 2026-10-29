@@ -87,6 +87,7 @@
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
                             </div>
+                            <div id="publishStatus" class="form-text mt-2"></div>
                         </sec:authorize>
                     </div>
                 </div>
@@ -132,10 +133,38 @@
                 if (response.ok) {
                     const status = await response.json();
                     document.getElementById("btnPublish").disabled = !status.canPublish;
+                    renderPublication(status.publication);
+                    if (status.publication && (status.publication.phase === "PRODUCING" || status.publication.phase === "PUBLISHING")) {
+                        setTimeout(checkPublishStatus, 2000);
+                    }
                 }
             } catch (error) {
                 console.error("Error checking publish status:", error);
             }
+        }
+
+        function renderPublication(pub) {
+            const el = document.getElementById("publishStatus");
+            if (!pub) {
+                el.textContent = "";
+                return;
+            }
+            const files = pub.files || [];
+            const produced = files.filter(f => f.produced).length;
+            let text = "Production : " + produced + "/" + files.length + " fichier(s)";
+            switch (pub.phase) {
+                case "PRODUCING": text += " — en cours…"; break;
+                case "PRODUCTION_FAILED": text += " — en échec"; break;
+                case "PRODUCED": text += " — terminée, publication Git en attente"; break;
+                case "PUBLISHING": text += " — terminée, push en cours…"; break;
+                case "PUBLISHED": text += " — publication Git OK" + (pub.gitSha ? " (" + pub.gitSha.substring(0, 7) + ")" : ""); break;
+                case "PUSH_FAILED": text += " — push en échec"; break;
+                case "PUSH_NOT_CONFIGURED": text += " — publication Git non configurée"; break;
+            }
+            if (pub.message && (pub.phase === "PRODUCTION_FAILED" || pub.phase === "PUSH_FAILED" || pub.phase === "PUSH_NOT_CONFIGURED")) {
+                text += " : " + pub.message;
+            }
+            el.textContent = text;
         }
 
         async function doPostCompute(requestPrms, requestedYear) {
@@ -215,6 +244,7 @@
             if ( rawResponse.status == 202 || rawResponse.status == 200 )  {
                 const content = await rawResponse.json();
                 alert("Publication demandée pour " + content.nbCarre + " carrés.");
+                checkPublishStatus();
             }
         }
         

@@ -342,7 +342,7 @@ function getSquareColor(zoneDense, densite, colorblindMode = false) {
     return color;
   }
 
-  const value = parseFloat(("" + densite).replace(",", "."));
+  const value = Number.parseFloat(("" + densite).replace(",", "."));
   const { level1, level2, level3, level4, level5 } = selectSquarePalette(colorblindMode);
   const { densiteMin, densiteMax, p25, p50 } = densityParams(zoneDense);
 

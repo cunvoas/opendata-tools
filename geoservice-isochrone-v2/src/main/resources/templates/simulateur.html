@@ -631,7 +631,7 @@ let color = '#959595';
 if (densite===null || densite==='N/A' || densite==='' ) {
  return color;
 }
-densite = parseFloat((""+densite).replace(",", "."));
+densite = Number.parseFloat((""+densite).replace(",", "."));
 
 // Définition des deux palettes de couleurs
 let level1, level2, level3, level4, level5;
@@ -706,7 +706,7 @@ return color;
  */
 function getSurfacePerCapitaClass(densite, zoneDense, colorblindMode = false) {
   if (densite === null || densite === 'N/A' || densite === '') return '';
-  const val = parseFloat(("" + densite).replace(",", "."));
+  const val = Number.parseFloat(("" + densite).replace(",", "."));
   if (isNaN(val)) return '';
 
   const suffix = colorblindMode ? '-cb' : '';
@@ -792,7 +792,7 @@ const overlays = {};
 
 // custom location on load
 function locatePlace(lat, lon) {
-  return L.latLng(parseFloat(lat), parseFloat(lon));
+  return L.latLng(Number.parseFloat(lat), Number.parseFloat(lon));
 }
 
 // Déterminer la position de la carte
@@ -804,7 +804,7 @@ function getMapLocation() {
   let locateWorkPlace;
 
   // Utiliser les coordonnées du formulaire si disponibles
-  if (mLat && mLng && mLat.trim() !== "" && mLng.trim() !== "" && !isNaN(parseFloat(mLat)) && !isNaN(parseFloat(mLng))) {
+  if (mLat && mLng && mLat.trim() !== "" && mLng.trim() !== "" && !isNaN(Number.parseFloat(mLat)) && !isNaN(Number.parseFloat(mLng))) {
     locateWorkPlace = locatePlace(mLat, mLng);
     console.log('[Simulateur] Position personnalisée:', locateWorkPlace);
   }
@@ -1294,9 +1294,9 @@ console.log('[Simulateur] Carte initialisée');
   if (!floorEl || !avgEl || !densityEl || !populationEl) return;
 
   const computePopulation = () => {
-    const floor = parseFloat(floorEl.value);
-    const avg = parseFloat(avgEl.value);
-    const density = parseFloat(densityEl.value);
+    const floor = Number.parseFloat(floorEl.value);
+    const avg = Number.parseFloat(avgEl.value);
+    const density = Number.parseFloat(densityEl.value);
     if (isNaN(floor) || isNaN(avg) || isNaN(density) || avg === 0) {
       return;
     }
@@ -1496,8 +1496,8 @@ function sortProjectWorkTable(column) {
     } else {
       // Pour les colonnes numériques
       const dataKey = column.replace(/([A-Z])/g, '-$1').toLowerCase();
-      valueA = parseFloat(a.dataset[column.replace(/([A-Z])/g, (m) => '-' + m.toLowerCase()).substring(column.startsWith('data-') ? 0 : 5)] || a.getAttribute('data-' + dataKey.replace('data-', '')) || 0);
-      valueB = parseFloat(b.dataset[column.replace(/([A-Z])/g, (m) => '-' + m.toLowerCase()).substring(column.startsWith('data-') ? 0 : 5)] || b.getAttribute('data-' + dataKey.replace('data-', '')) || 0);
+      valueA = Number.parseFloat(a.dataset[column.replace(/([A-Z])/g, (m) => '-' + m.toLowerCase()).substring(column.startsWith('data-') ? 0 : 5)] || a.getAttribute('data-' + dataKey.replace('data-', '')) || 0);
+      valueB = Number.parseFloat(b.dataset[column.replace(/([A-Z])/g, (m) => '-' + m.toLowerCase()).substring(column.startsWith('data-') ? 0 : 5)] || b.getAttribute('data-' + dataKey.replace('data-', '')) || 0);
       return projectWorkSortAscending ? valueA - valueB : valueB - valueA;
     }
   });

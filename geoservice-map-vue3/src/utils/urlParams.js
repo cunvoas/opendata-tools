@@ -55,8 +55,8 @@ export function getUrlParams() {
         regionId: parts[0] || null,
         com2coId: parts[1] || null,
         cityId: parts[2] || null,
-        latY: parseFloat(parts[3] || parts[0]),
-        lonX: parseFloat(parts[4] || parts[1]),
+        latY: Number.parseFloat(parts[3] || parts[0]),
+        lonX: Number.parseFloat(parts[4] || parts[1]),
         name: parts[5] || null,
         locType: parts[6] || 'city'
       };

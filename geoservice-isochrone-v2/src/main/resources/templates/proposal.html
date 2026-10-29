@@ -508,7 +508,7 @@ const overlays = {};
 
 // custom location on load
 function locatePlace(lat, lon) {
-  return L.latLng(parseFloat(lat), parseFloat(lon));
+  return L.latLng(Number.parseFloat(lat), Number.parseFloat(lon));
 }
 
 // Déterminer la position de la carte
@@ -520,7 +520,7 @@ function getMapLocation() {
   let locateWorkPlace;
 
   // Utiliser les coordonnées du formulaire si disponibles
-  if (mLat && mLng && mLat.trim() !== "" && mLng.trim() !== "" && !isNaN(parseFloat(mLat)) && !isNaN(parseFloat(mLng))) {
+  if (mLat && mLng && mLat.trim() !== "" && mLng.trim() !== "" && !isNaN(Number.parseFloat(mLat)) && !isNaN(Number.parseFloat(mLng))) {
     locateWorkPlace = locatePlace(mLat, mLng);
     console.log('[Simulateur] Position personnalisée:', locateWorkPlace);
   }
@@ -611,7 +611,7 @@ function getSquareColor(zoneDense, densite, colorblindMode) {
   let color = '#959595';
   if (typeof zoneDense === 'string') zoneDense = zoneDense === 'true';
   if (densite===null || densite==='N/A' || densite==='') return color;
-  densite = parseFloat((""+densite).replace(",", "."));
+  densite = Number.parseFloat((""+densite).replace(",", "."));
 
   let level1, level2, level3, level4, level5;
   if (colorblindMode) {
@@ -868,8 +868,8 @@ function sortPropositionsTable(column) {
     if (column === 'annee' || column === 'numberOfParks' || column === 'totalSurfaceOfParks') {
       // Colonnes numériques
       const dataKey = column.replace(/([A-Z])/g, '-$1').toLowerCase();
-      valueA = parseFloat(a.getAttribute('data-' + dataKey) || 0);
-      valueB = parseFloat(b.getAttribute('data-' + dataKey) || 0);
+      valueA = Number.parseFloat(a.getAttribute('data-' + dataKey) || 0);
+      valueB = Number.parseFloat(b.getAttribute('data-' + dataKey) || 0);
       return propositionsSortAscending ? valueA - valueB : valueB - valueA;
     } else if (column === 'typeAlgo') {
       // Colonne texte
@@ -969,19 +969,19 @@ function viewProposition(button) {
               }
               popupContent += '<br /><br /><strong>Avant</strong> | <strong>Après</strong>';
               if (feature.properties.surfacePerCapita && feature.properties.surfacePerCapita !== '') {
-                popupContent += '<br /><b>Densité</b> ' + parseFloat(feature.properties.surfacePerCapita).toFixed(2) + ' m²/hab'
+                popupContent += '<br /><b>Densité</b> ' + Number.parseFloat(feature.properties.surfacePerCapita).toFixed(2) + ' m²/hab'
                   + ' | ' + (feature.properties.newSurfacePerCapita && feature.properties.newSurfacePerCapita !== ''
-                    ? parseFloat(feature.properties.newSurfacePerCapita).toFixed(2) + ' m²/hab' : '-');
+                    ? Number.parseFloat(feature.properties.newSurfacePerCapita).toFixed(2) + ' m²/hab' : '-');
               }
               if (feature.properties.surface && feature.properties.surface !== '') {
-                popupContent += '<br /><b>Surface accès</b> ' + parseFloat(feature.properties.surface).toFixed(0) + ' m²'
+                popupContent += '<br /><b>Surface accès</b> ' + Number.parseFloat(feature.properties.surface).toFixed(0) + ' m²'
                   + ' | ' + (feature.properties.newSurface && feature.properties.newSurface !== ''
-                    ? parseFloat(feature.properties.newSurface).toFixed(0) + ' m²' : '-');
+                    ? Number.parseFloat(feature.properties.newSurface).toFixed(0) + ' m²' : '-');
               }
               if (feature.properties.missingSurface && feature.properties.missingSurface !== '') {
-                popupContent += '<br /><b>Surface manquante</b> ' + parseFloat(feature.properties.missingSurface).toFixed(0) + ' m²'
+                popupContent += '<br /><b>Surface manquante</b> ' + Number.parseFloat(feature.properties.missingSurface).toFixed(0) + ' m²'
                   + ' | ' + (feature.properties.newMissingSurface && feature.properties.newMissingSurface !== ''
-                    ? parseFloat(feature.properties.newMissingSurface).toFixed(0) + ' m²' : '-');
+                    ? Number.parseFloat(feature.properties.newMissingSurface).toFixed(0) + ' m²' : '-');
               }
               popupContent += '<br /><br />Zone ' + (feature.properties.isDense === 'true' ? 'dense' : 'non dense') + '</p>';
               layer.bindPopup(popupContent);
@@ -1006,7 +1006,7 @@ function viewProposition(button) {
           L.geoJSON(geojson, {
             pointToLayer: function(feature, latlng) {
               if (feature.properties && feature.properties.radius) {
-                const radius = parseFloat(feature.properties.radius);
+                const radius = Number.parseFloat(feature.properties.radius);
                 if (!isNaN(radius)) {
                   return L.circle(latlng, {
                     radius: radius,
@@ -1029,10 +1029,10 @@ function viewProposition(button) {
               let popupContent = '';
               if (feature.properties) {
                 if (feature.properties.radius) {
-                  const radius = parseFloat(feature.properties.radius);
+                  const radius = Number.parseFloat(feature.properties.radius);
                   if (!isNaN(radius)) {
                     popupContent += `<p>Diamètre: ${Math.round(2*radius)} m</p>`;
-                    const surface = parseFloat(feature.properties.surface);
+                    const surface = Number.parseFloat(feature.properties.surface);
                     if (surface >= 10000) {
                       popupContent += `<p>Surface: ${(surface / 10000).toFixed(2)} ha</p>`;
                     } else {
