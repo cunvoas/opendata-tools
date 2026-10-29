@@ -39,7 +39,7 @@
     "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vue/cli-plugin-router": "~5.0.0",
     "@vue/test-utils": "^2.5.1",
-    "autoprefixer": "^10.5.3",
+    "autoprefixer": "^10.6.1",
     "happy-dom": "^21.0.4",
     "jsdom": "^30.0.1",
     "leaflet": "^1.9.4",
