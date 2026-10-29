@@ -37,6 +37,7 @@ import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkPropos
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ProjetSimulView;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ProjetSimulWorkView;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.ClientCopernicusNdvi;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
@@ -178,6 +179,8 @@ public class GeoMapServiceV2 {
     private ParkEntranceRepository parkEntranceRepository;
     @Autowired
     private ParkAreaComputedRepository parkAreaComputedRepository;
+    @Autowired
+    private ClientCopernicusNdvi clientCopernicusNdvi;
     @Autowired
     private ParkJardinRepository parkJardinRepository;
 	@Autowired 
@@ -607,6 +610,17 @@ public class GeoMapServiceV2 {
 					
 					ParkArea pa =parkAreaRepository.findByIdParcEtJardin(park.getId());
 					pv.setEntry(pa!=null && pa.getPolygon()!=null);
+					pv.setNdviEnabled(clientCopernicusNdvi.isEnabled());
+					if (pa!=null) {
+						parkAreaComputedRepository.findByIdAndAnnee(pa.getId(), applicationBusinessProperties.getDerniereAnnee())
+								.ifPresent(pac -> {
+									pv.setNdviMean(pac.getNdviMean());
+									pv.setNdviMin(pac.getNdviMin());
+									pv.setNdviMax(pac.getNdviMax());
+									pv.setNdviStddev(pac.getNdviStddev());
+									pv.setNdviAcquisitionDate(pac.getNdviAcquisitionDate());
+								});
+					}
 //					if (pa!=null && pa.getPolygon()!=null) {
 //						pv.setEntry(true);
 //					}
@@ -649,6 +663,7 @@ public class GeoMapServiceV2 {
 					pv.setId(String.valueOf(parkArea.getId()));
 					pv.setName(parkArea.getName());
 					pv.setQuartier(parkArea.getBlock());
+					pv.setNdviEnabled(clientCopernicusNdvi.isEnabled());
 
 					Optional<ParkAreaComputed> cpu = parkAreaComputedRepository.findByIdAndAnnee(parkArea.getId(), annee);
 					if (cpu.isPresent()) {
@@ -1087,6 +1102,11 @@ public class GeoMapServiceV2 {
 			pv.setArea(nf.format(pac.getSurface()));
 			pv.setOms(pac.getOms());
 			pv.setDense(pac.getIsDense());
+			pv.setNdviMean(pac.getNdviMean());
+			pv.setNdviMin(pac.getNdviMin());
+			pv.setNdviMax(pac.getNdviMax());
+			pv.setNdviStddev(pac.getNdviStddev());
+			pv.setNdviAcquisitionDate(pac.getNdviAcquisitionDate());
 			
 			//pv.setFillColor(this.getFillColorPark(pv, pac));
 		}

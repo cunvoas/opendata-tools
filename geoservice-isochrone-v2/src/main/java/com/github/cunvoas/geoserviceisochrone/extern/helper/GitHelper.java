@@ -31,27 +31,48 @@ public class GitHelper {
 	 *  - git push (origin) avec login/token fournis dans application-prod.yml
 	 *
 	 * Configuration attendue (application-prod.yml) :
-	 * git:
-	 *   username: ${GIT_USERNAME}
-	 *   token: ${GIT_TOKEN}
-	 * Les variables d'environnement GIT_USERNAME / GIT_TOKEN doivent être définies.
+	 * application:
+	 *   git:
+	 *     localPath: ${MOUNT_PATH}/isochrone/data
+	 *     username: ${GIT_USERNAME}
+	 *     token: ${GIT_TOKEN}
 	 */
 
-    @Value("application.git.GIT_USERNAME")
+    @Value("${application.git.username:}")
 	private String username;
-    @Value("application.git.GIT_TOKEN")
+    @Value("${application.git.token:}")
 	private String token;
+    @Value("${application.git.localPath:}")
+	private String localPath;
+
+	/**
+	 * @return chemin du clone local du dépôt de publication (peut être vide)
+	 */
+	public String getLocalPath() {
+		return localPath;
+	}
+
+	/**
+	 * @return true si les credentials Git sont renseignés
+	 */
+	public boolean isConfigured() {
+		return !isBlank(username) && !isBlank(token);
+	}
 
 
 	/**
-	 * Ajoute tous les fichiers du dossier (pattern JGit), crée un commit avec la date/heure du jour et pousse sur origin.
+	 * Ajoute tous les fichiers des dossiers (pattern JGit), crée un commit avec la date/heure du jour et pousse sur origin.
 	 * @param repositoryRoot chemin absolu vers la racine du repository (où se trouve .git)
-	 * @param folderPath chemin relatif (depuis la racine du repo) vers le dossier à ajouter
+	 * @param folderPaths chemins relatifs (depuis la racine du repo) des dossiers à ajouter
+	 * @return le SHA du commit créé, ou null si le commit n'a pas retourné d'objet
 	 * @throws IllegalStateException si credentials absents
 	 */
-	public void addCommitPush(String repositoryRoot, String folderPath) throws Exception {
-		if (isBlank(username) || isBlank(token)) {
+	public String addCommitPush(String repositoryRoot, String... folderPaths) throws Exception {
+		if (!isConfigured()) {
 			throw new IllegalStateException("Git credentials missing (GIT_USERNAME / GIT_TOKEN)");
+		}
+		if (folderPaths == null || folderPaths.length == 0) {
+			throw new IllegalArgumentException("No folder to publish");
 		}
 
 		java.io.File repoDir = new java.io.File(repositoryRoot);
@@ -60,9 +81,12 @@ public class GitHelper {
 		}
 
 		try (Git git = Git.open(repoDir)) {
-			stageFolder(git, folderPath);
-			commit(git, folderPath);
+			for (String folderPath : folderPaths) {
+				stageFolder(git, folderPath);
+			}
+			String sha = commit(git, folderPaths[0]);
 			push(git);
+			return sha;
 		}
 	}
 
@@ -84,13 +108,14 @@ public class GitHelper {
 		add.call();
 	}
 
-	private void commit(Git git, String folderPath) throws Exception {
+	private String commit(Git git, String folderPath) throws Exception {
 		String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
 		String message = String.format("chore(%s): automatic data update %s", folderPath, timestamp);
-		git.commit()
+		org.eclipse.jgit.revwalk.RevCommit rev = git.commit()
 				.setMessage(message)
 				.setAuthor(username, username + "@local")
 				.call();
+		return rev == null ? null : rev.getName();
 	}
 
 	private void push(Git git) throws Exception {

@@ -132,6 +132,7 @@ public class PublishRestControler {
 				resp.setNbCarre(stat.getProcessed().intValue());
 				resp.setCanPublish(this.canPublish(stat));
 			}
+			resp.setPublication(publishService.getStatus(c2cId, req.getRequestedYear()));
 			return new ResponseEntity<>(resp, HttpStatus.OK);
 		}
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 
+import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -43,6 +45,7 @@ import tools.jackson.databind.ObjectMapper;
  * @see <a href="https://documentation.dataspace.copernicus.eu/APIs/Token.html">CDSE - Access Token</a>
  */
 @Component
+@Slf4j
 public class ClientCopernicusNdvi {
 
     private static final Logger log = LoggerFactory.getLogger(ClientCopernicusNdvi.class);
@@ -120,20 +123,27 @@ public class ClientCopernicusNdvi {
      * @param restClientBuilder builder fourni par Spring Boot
      * @param timeoutMs délai max (connexion + lecture) d'un appel CDSE
      */
-    public ClientCopernicusNdvi(RestClient.Builder restClientBuilder,
+    public ClientCopernicusNdvi(
+    		RestClient.Builder restClientBuilder,
             NdviQuotaService quotaService,
             @Value("${application.ndvi.timeout-ms:10000}") int timeoutMs) {
+    	
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(
-                HttpClient.newBuilder().connectTimeout(Duration.ofMillis(timeoutMs)).build());
+                	HttpClient
+                		.newBuilder()
+                		.connectTimeout(Duration.ofMillis(timeoutMs))
+                		.build());
         requestFactory.setReadTimeout(Duration.ofMillis(timeoutMs));
+        
         this.restClient = restClientBuilder
                 .requestFactory(requestFactory)
-                .requestInterceptor(new RateLimitingInterceptor())
-                // après le rate limiter : les rejeux 429 repassent aussi par le quota
+                // quota à l'extérieur : une seule réservation par appel logique, remboursée si non-2XX
                 .requestInterceptor(new MonthlyQuotaInterceptor(quotaService))
+                .requestInterceptor(new RateLimitingInterceptor())
                 .build();
         this.authClient = restClientBuilder
                 .requestFactory(requestFactory)
+                // le token OAuth n'est pas un appel Sentinel Hub : hors quota
                 .build();
     }
 
@@ -237,19 +247,39 @@ public class ClientCopernicusNdvi {
                 "data", List.of(Map.of(
                         "type", COLLECTION_L2A,
                         "dataFilter", Map.of("mosaickingOrder", "leastCC"))));
+        int[] size = requestSize(parkGeometry);
         Map<String, Object> aggregation = Map.of(
                 "timeRange", Map.of(
                         "from", isoFrom,
                         "to", isoTo),
                 "aggregationInterval", Map.of("of", aggregationInterval),
                 "evalscript", NDVI_EVALSCRIPT,
-                "width", 512,
-                "height", 512);
+                "width", size[0],
+                "height", size[1]);
 
         Map<String, Object> request = new LinkedHashMap<>();
         request.put("input", input);
         request.put("aggregation", aggregation);
         return request;
+    }
+
+    /**
+     * Calcule la taille de sortie à la résolution native Sentinel-2 (10 m) pour éviter
+     * de suréchantillonner un petit parc et de gonfler les Processing Units CDSE.
+     * Plafonnée à 512×512 (coût area ≤ 1 PU).
+     *
+     * @param parkGeometry emprise du parc en WGS84
+     * @return largeur et hauteur en pixels, chacune entre 1 et 512
+     */
+    static int[] requestSize(Polygon parkGeometry) {
+        Envelope env = parkGeometry.getEnvelopeInternal();
+        double midLat = Math.toRadians((env.getMinY() + env.getMaxY()) / 2.0);
+        int width = (int) Math.ceil(env.getWidth() * 111_320.0 * Math.cos(midLat) / 10.0);
+        int height = (int) Math.ceil(env.getHeight() * 110_540.0 / 10.0);
+        return new int[] {
+                Math.max(1, Math.min(512, width)),
+                Math.max(1, Math.min(512, height))
+        };
     }
 
     private Optional<NdviStatistics> parseResponse(JsonNode response) {

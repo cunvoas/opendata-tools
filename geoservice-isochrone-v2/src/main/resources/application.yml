@@ -145,16 +145,17 @@ application:
   ndvi:
     # Feature off par défaut : les colonnes NDVI restent nulles tant que le compte CDSE n'est pas configuré
     enabled: false
-    # Quota gratuit CDSE : 10 000 requêtes statistiques par mois
+    # Quota gratuit CDSE : 10 000 requêtes/mois ET 10 000 PU/mois.
+    # Ce compteur suit les requêtes réussies (2XX) ; le token OAuth n'est pas décompté.
     monthly-quota: 10000
     # Fenêtre NDVI (MM-dd), année précédente, bornes incluses
     window:
       from: "06-01"
-      to: "06-07"
+      to: "06-15"
       # Seconde fenêtre, utilisée seulement si la première ne renvoie aucune donnée
       fallback:
-        from: "06-08"
-        to: "06-14"
+        from: "06-16"
+        to: "06-30"
     timeout-ms: 10000
     copernicus:
         client-id: 

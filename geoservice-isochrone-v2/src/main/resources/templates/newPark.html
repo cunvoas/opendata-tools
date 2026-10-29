@@ -492,7 +492,7 @@
              const name = p.name || '(sans nom)';
              let surface = 'N/A';
              if (p.surface != null) {
-                 const s = parseFloat(p.surface);
+                 const s = Number.parseFloat(p.surface);
                  if (s > 10000) {
                      surface = (s / 10000).toFixed(2) + ' ha';
                  } else {

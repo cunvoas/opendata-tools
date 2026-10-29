@@ -76,6 +76,20 @@
         </button>
       </l-control>
 
+      <l-control position="topright">
+        <button
+          type="button"
+          class="ndvi-toggle"
+          :class="{ 'ndvi-toggle--active': ndviMode }"
+          :aria-pressed="ndviMode ? 'true' : 'false'"
+          title="Colorie les parcs selon leur NDVI (végétation réelle) sans ajouter de calque."
+          @click="toggleNdviMode"
+        >
+          <span aria-hidden="true">🌿</span>
+          NDVI
+        </button>
+      </l-control>
+
       <l-control-layers position="topright" />
       <l-control position="topleft">
         <div class="leaflet-control leaflet-bar">
@@ -195,7 +209,8 @@
 }
 
 /* Bouton accessibilité (mode daltonien) - haut droit de la carte */
-.a11y-toggle {
+.a11y-toggle,
+.ndvi-toggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -210,21 +225,25 @@
   transition: background-color 0.2s, color 0.2s;
 }
 
-.a11y-toggle:hover {
+.a11y-toggle:hover,
+.ndvi-toggle:hover {
   background: #f3f4f6;
 }
 
-.a11y-toggle:focus-visible {
+.a11y-toggle:focus-visible,
+.ndvi-toggle:focus-visible {
   outline: 3px solid #1d4ed8;
   outline-offset: 2px;
 }
 
-.a11y-toggle--active {
+.a11y-toggle--active,
+.ndvi-toggle--active {
   background: #1f2937;
   color: #ffffff;
 }
 
-.a11y-toggle--active:hover {
+.a11y-toggle--active:hover,
+.ndvi-toggle--active:hover {
   background: #374151;
 }
 
@@ -252,7 +271,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
 import { ref, onMounted } from 'vue';
-import { hexToRgba } from "../utils/color.js";
+import { hexToRgba, getNdviColor } from "../utils/color.js";
 import axios from 'axios';
 import { buildShareableUrl, isActive } from '../utils/urlParams.js';
 import debounce from 'lodash/debounce';
@@ -323,7 +342,7 @@ function getSquareColor(zoneDense, densite, colorblindMode = false) {
     return color;
   }
 
-  const value = parseFloat(("" + densite).replace(",", "."));
+  const value = Number.parseFloat(("" + densite).replace(",", "."));
   const { level1, level2, level3, level4, level5 } = selectSquarePalette(colorblindMode);
   const { densiteMin, densiteMax, p25, p50 } = densityParams(zoneDense);
 
@@ -425,6 +444,7 @@ export default {
       showParcs: false,
       showCadastre: false,
       colorblindMode: colorblindMode,
+      ndviMode: false,
       refreshKey: 0,
       legendeDense: true,
       zoom: 14,
@@ -595,6 +615,16 @@ export default {
       this.colorblindMode = !this.colorblindMode;
       this.onColorModeChange();
     },
+    toggleNdviMode() {
+      this.ndviMode = !this.ndviMode;
+      this.updateParcLayerStyle();
+    },
+    updateParcLayerStyle() {
+      const parcsLayer = this.$refs.parcsLayer?.leafletObject;
+      if (parcsLayer && typeof parcsLayer.setStyle === 'function') {
+        parcsLayer.setStyle((feature) => this.computeParcStyle(feature));
+      }
+    },
     onColorModeChange() {
       // Sauvegarder le mode dans le localStorage
       localStorage.setItem('colorblindMode', this.colorblindMode.toString());
@@ -608,6 +638,16 @@ export default {
       this.$emit('colorblind-mode-changed', this.colorblindMode);
     },
     computeParcStyle(feature) {
+      if (this.ndviMode) {
+        const ndviColor = getNdviColor(feature?.properties?.ndviMean);
+        return {
+          weight: 1,
+          color: ndviColor,
+          fillColor: ndviColor,
+          opacity: 0.6,
+          fillOpacity: 0.5,
+        };
+      }
       const fillColor = getParkColor(
         feature?.properties?.oms,
         feature?.properties?.actif,
@@ -932,6 +972,24 @@ export default {
       });
     },
 
+    formatNdviDate(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('fr-FR');
+    },
+    buildNdviHtml(properties) {
+      if (!properties?.ndviEnabled) return '';
+      if (properties.ndviMean == null) {
+        return "<div>NDVI : pas encore calculé</div>";
+      }
+      const nf = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+      const date = this.formatNdviDate(properties.ndviAcquisitionDate);
+      return "<div>NDVI moyen: " + nf.format(properties.ndviMean) +
+        " (min " + nf.format(properties.ndviMin) +
+        ", max " + nf.format(properties.ndviMax) +
+        ", écart-type " + nf.format(properties.ndviStddev) + ")" +
+        (date ? "</div><div>Acquisition: " + date : '') + "</div>";
+    },
     onDetailPark(feature, layer) {
       try {
         // Dépendance explicite au mode daltonien pour forcer le recalcul
@@ -992,16 +1050,14 @@ export default {
         layer.bindTooltip(
           "<div>Nom: " + valid +" "+ parkName +
           "</div><div>Surface: " + formattedSurface + unit + 
-          "</div><div>Ville: " + parkCity +"</div>",
+          "</div><div>Ville: " + parkCity +"</div>" +
+          this.buildNdviHtml(feature.properties),
           { permanent: false, sticky: true }
         );
 
-        // Appliquer la couleur avec le mode daltonien
-        const fillColor = getParkColor(
-          feature.properties.oms,
-          feature.properties.actif,
-          colorblindMode
-        );
+        // Appliquer la couleur du mode courant (daltonien ou NDVI)
+        const style = this.computeParcStyle(feature);
+        const fillColor = style.fillColor;
         
         // setStyle only works on paths (Polygon, Polyline), not on Point markers or FeatureGroup
         if (layer.setStyle && typeof layer.setStyle === 'function') {
