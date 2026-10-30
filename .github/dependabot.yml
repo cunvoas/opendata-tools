@@ -9,7 +9,7 @@ updates:
       - "security"
 
   - package-ecosystem: "docker"
-    directory: "/docker/"
+    directory: "/geoservice-isochrone-v2/"
     schedule:
       interval: "weekly"
     labels:
@@ -24,6 +24,14 @@ updates:
     labels:
       - "dependencies"
       - "security"
+    # Minor/patch du sous-projet en une seule PR ; majors + sécurité en PR individuelles
+    groups:
+      minorAndPatch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
 
   # ☕ Configuration pour Java (Maven)
@@ -32,26 +40,26 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 5
-    # Les alertes de sécurité (Critical/High) ignoreront ce planning hebdomadaire
+    # Minor/patch du sous-projet en une seule PR ; majors + sécurité en PR individuelles
+    groups:
+      minorAndPatch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    # Les alertes de sécurité (Critical/High) ignorent ce planning hebdomadaire
     # et créeront une PR immédiatement dès la découverte de la faille.
 
   - package-ecosystem: "npm"
     directory: "/geoservice-map-vue3/"
     schedule:
       interval: "daily"
+    open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "security"
 
-
-  # 📦 Configuration pour Node.js (NPM)
-  - package-ecosystem: "npm"
-    directory: "/" # Emplacement du package.json
-    schedule:
-      interval: "weekly"
-      day: "friday"
-    open-pull-requests-limit: 10
-    
     # Stratégie de regroupement pour réduire le "bruit" visuel sur NPM
     groups:
       # Regroupe toutes les dépendances de dev (tests, linters) en une seule PR hebdo
