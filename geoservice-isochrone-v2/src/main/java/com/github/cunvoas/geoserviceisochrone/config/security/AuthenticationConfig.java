@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -15,6 +16,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.context.request.RequestContextListener;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationSecurityProperties;
@@ -85,6 +89,16 @@ public class AuthenticationConfig {
                 .loginPage("/login")
                 .permitAll()
             )
+            .requestCache(cache -> {
+                // Spring Security 7 stores every unauthenticated request, including
+                // stray asset hits like /matomo.js, and redirects there after login.
+                HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+                requestCache.setRequestMatcher(new OrRequestMatcher(
+                    PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/"),
+                    PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/mvc/**")));
+                requestCache.setMatchingRequestParameterName(null);
+                cache.requestCache(requestCache);
+            })
             .logout(logout -> logout
                 .logoutSuccessUrl("/logout?m=logout")
                 .permitAll()
