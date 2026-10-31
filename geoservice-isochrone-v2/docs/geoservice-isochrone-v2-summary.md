@@ -3,205 +3,222 @@
 ## Document Status
 
 - **Status:** Draft for review
-- **Profile:** API service (Spring MVC + REST) with embedded scheduled worker and async publisher
-- **Intended owner:** cunvoas (single maintainer, AGPL-3.0 association project)
-- **Scope:** `geoservice-isochrone-v2/` directory inside the [cunvoas/opendata-tools](https://github.com/cunvoas/opendata-tools) repository (Maven artifact `com.github.cunvoas:geoservice-isochrone:2.0.11`)
-- **Completeness:** Complete; per-city ingestion parsers (MEL, Lyon, Nantes, Toulouse) treated at catalog level, not inventoried
-- **Last reviewed:** 2026-10-22
-- **Evidence baseline:** Working tree on branch `feat/overpass`, including uncommitted overpass-related changes. Default branch `main` points at `d64b850`; the reviewed branch is ahead of or diverged from it, so some findings may be newer than `main`.
-- **Validated commit:** `e2d64544eca5683e2b591c850a03063efd03b5ab`
+- **Profile:** API service (Spring MVC + REST) avec worker planifié embarqué et publication asynchrone. Lecture orientée « données d'urbanisme » : rédigé pour être lisible par un journaliste spécialisé urbanisme sans sacrifier la traçabilité technique.
+- **Intended owner:** cunvoas (mainteneur unique, projet associatif AGPL-3.0)
+- **Scope:** répertoire `geoservice-isochrone-v2/` du dépôt [cunvoas/opendata-tools](https://github.com/cunvoas/opendata-tools) (artefact Maven `com.github.cunvoas:geoservice-isochrone:2.0.11`)
+- **Completeness:** Complete ; ingestion par ville (MEL, Lyon, Nantes, Toulouse) traitée au niveau catalogue ; framings front NDVI couverts au niveau « cadrage »
+- **Last reviewed:** 2026-10-29
+- **Evidence baseline:** branche par défaut `main` (= `origin/main`), arbre de travail sur `feat/ndvi-front` pointant le même commit (seuls fichiers d'IDE non commités : `.project`, `.settings/`, `.gitignore`). Lignes métier inchangées dans l'arbre de travail.
+- **Validated commit:** `3a4855944dd7e9311f213c1773cc42d76940b775`
 
 ## Purpose and Boundaries
 
-This service computes and publishes how well city residents can reach parks and gardens, checked against WHO recommendations (a large green area within a short walk). It ingests French open data:
+Ce service mesure et publie l'**accessibilité aux espaces verts des habitants**, confrontée aux seuils de l'Organisation mondiale de la santé (OMS) : en zone urbaine dense, un grand espace vert doit être joignable à pied en 5 minutes ; en zone périurbaine, en 20 minutes. Pour chaque micro-territoire (maille de 200 m × 200 m de l'INSEE, et district statistique IRIS), l'outil calcule la surface de parc accessible par habitant, l'écart aux normes OMS et les surfaces manquantes.
 
-- INSEE 200m population grid (`InseeCarre200m`) and IRIS districts,
-- IGN "topo végétal" and IGN isochrone API,
-- OpenStreetMap parks via Overpass, and Cadastre boundaries,
-- Parks/gardens datasets loaded per city (CSV/JSON parsers in `extern/mel`).
+Il est conçu pour un usage **national** (toutes les EPCI de France), avec une saisie **participative** : habitants et associations complètent les parcs de leur territoire quand les données de leur collectivité sont absentes ou incomplètes. L'étude a démarré sur la Métropole Européenne de Lille (MEL), où les données sources contenaient des erreurs : des études contradictoires (Préfecture du Nord, Direction du Territoire) ont permis de **requalifier** certaines données sans les effacer — les corrections sont traçables, pas un simple « écrasement ».
 
-It then computes, per 200m grid cell, the accessibility score, proposes park modifications (6 resolution algorithms) so the WHO threshold is met, allows manual proposals, and exports final GeoJSON + OMS statistics as static files for consumption by a related static front (GitHub Pages `geoservice-data`).
+Le service :
 
-Owns: its PostgreSQL/PostGIS schema (Flyway), compute job queue, park/accessibility domain, compute code, serving UI/API.
+- ingère les données ouvertes françaises (INSEE, IGN, OpenStreetMap, cadastre, portails de collectivités) ;
+- calcule les isochrones piétons (zone atteignable à pied depuis chaque entrée de parc, via l'API isochrone de l'IGN) ;
+- calcule les indicateurs OMS (m²/hab, déficit, « parcs durables » de ≥ 5 000 m² à 300 m) ;
+- enrichit chaque parc d'un indicateur de végétation **NDVI** mesuré par satellite (Sentinel-2 / Copernicus) ;
+- propose des aménagements (10 algorithmes de résolution + propositions dessinées à la main) avec évaluation d'impact OMS ;
+- publie les résultats en fichiers statiques (GeoJSON + statistiques) consommés par le site public [autmel.github.io/parcs-et-jardins](https://autmel.github.io/parcs-et-jardins).
 
-Does not own: source open-data portals, the published static website, the PostgreSQL instance itself, Matomo analytics server, Mailjet SMTP service.
+Possède : sa base PostgreSQL/PostGIS (migrations Flyway), sa file de calcul, son domaine « parc/accessibilité », son code de calcul, sa console d'administration.
+
+Ne possède pas : les portails de données sources, le site public lui-même (dépôt GitHub Pages), l'instance PostgreSQL, le serveur Matomo (analytics) ou le service Mailjet (emails).
 
 ## Component Context
 
-| Relationship | Component or system | Purpose |
+| Relation | Composant ou système | Rôle |
 | --- | --- | --- |
-| Upstream data | INSEE (200m grid, IRIS, density), IGN (topo végétal, isochrone API v2), OpenStreetMap/Overpass, Cadastre, city open-data portals | Reference shapes and isochrone computations |
-| Data store | PostgreSQL + PostGIS | All reference and computed geodata, job queue, flyway migrations from v1.0.0 to v2.1.2 |
-| Downstream | Static data export (GitHub Pages `geoservice-data` folder via `application.admin.export-path`) | Published GeoJSON + OMS statistics per EPCI/year |
-| Outbound services | IGN isochrone API v2, adresse.data.gouv.fr (geocoding), Mailjet (email) | Isochrone computation, address search, contributor emails |
-| Outbound analytics | Matomo (rest analytics client), Prometheus/Micrometer, optional Zipkin, Loki logback appender | Tracking and observability |
-| Consumer | Internal users: contributors (park creation/edit), administrators (admin console); anonymous public users via consultation map | Thymeleaf + Leaflet/Vue pages served by this app |
-| Secret providers | Environment variables (e.g. DB credentials, Mailjet keys in prod profile) | Never hardcoded in prod profile |
+| Données amont | INSEE (grille 200 m, IRIS, densité, population carroyée Filosofil 2015/2017/2019/2021), IGN (topo végétal, API isochrone v2), OpenStreetMap (Overpass), cadastre.data.gouv.fr, portails open data des collectivités | Formes de référence, population, calculs d'isochrones |
+| Données satellite | Copernicus Data Space Ecosystem (API statistique Sentinel-2 L2A) | Indice NDVI par parc (végétation réelle) |
+| Stockage | PostgreSQL + PostGIS | Données géographiques sources et calculées, file de jobs, migrations v1.0.0 → v2.1.5 |
+| Sortie | Export statique (GeoJSON + statistiques OMS) publié vers le dépôt GitHub Pages | Données consultables par le grand public |
+| Services sortants | API isochrone IGN, adresse.data.gouv.fr (géocodage), Mailjet (emails contributeurs), Matomo (optionnel) | Calcul, recherche d'adresse, courriel du contributeur, mesure d'audience |
+| Utilisateurs | Contributeurs (création/édition de parcs), administrateurs (console), anonymes (carte de consultation) | Pages Thymeleaf + Leaflet servies par ce service |
 
-Runtime model: one Spring Boot 4.1.1 / Java 21 jar (Dockerized, non-root uid 1001), Tomcat on port 8980, single-threaded scheduler pool, Hikari pool max 50 connections to PostGIS.
+Runtime : un jar Spring Boot 4.1.1 / Java 21 (Dockerisé, uid non-root 1001), Tomcat port 8980, planificateur mono-thread, pool Hikari max 50 connexions PostGIS.
 
 ## Architecture
 
-| Area | Responsibility | Authoritative source |
+| Zone | Responsabilité | Source |
 | --- | --- | --- |
-| Entry point | Boot application, Jackson customization, component scan | `src/main/java/com/github/cunvoas/geoserviceisochrone/GeoserviceIsochroneApplication.java` |
-| MVC controllers | Thymeleaf pages: park list/new/edit/check, consultation map, entrances, admin (cities, EPCI, contributors, compute requests), manual proposals, project simulator | `src/main/java/com/github/cunvoas/geoserviceisochrone/controller/mvc/` |
-| REST/GeoJSON controllers | GeoJSON feeds for map layers (parks, IRIS, INSEE cells, cadastre, IGN topo), compute job AJAX endpoints, publish endpoints, file exporter, address REST | `src/main/java/com/github/cunvoas/geoserviceisochrone/controller/geojson/`, `controller/rest/` |
-| Job orchestration | Batch computation queue for 200m cells and IRIS, recycling, shutdown handling | `src/main/java/com/github/cunvoas/geoserviceisochrone/service/compute/BatchJobService.java` |
-| Geospatial compute | Strategy v3/v4 for carre-200m computation, IRIS computation, park areas | `src/main/java/com/github/cunvoas/geoserviceisochrone/service/park/` |
-| Proposal solvers | 6 algorithms to propose park configurations (see `ProposalComputationTypeAlgo`) | `service/solver/` |
-| Manual proposals | CIRCLE/POLYGON proposals, evaluation vs OMS thresholds, `ManualEvalWork` persistence | `service/proposal/` |
-| Overpass integration | Raw and GeoJSON parsers for OSM park data (in progress, see branch `feat/overpass`) | `src/main/java/com/github/cunvoas/geoserviceisochrone/extern/overpass/` |
-| Persistence | Spring Data JPA + Hibernate Spatial; repositories split by reference/admin/proposal | `src/main/java/com/github/cunvoas/geoserviceisochrone/repo/` |
-| Security config | Form login, Argon2, CSRF cookie, login attempt throttle, role-based method security | `src/main/java/com/github/cunvoas/geoserviceisochrone/config/security/` |
-| Config | Business thresholds, feature flips (`application.business.*`), security props, hardening | `src/main/resources/application*.yml`, `config/property/` |
-| Frontend views | Thymeleaf templates + Leaflet/Vue assets | `src/main/resources/templates/`, `static/` |
-| Migrations | Flyway SQL v1.0.0 → v2.1.2, run automatically at startup | `src/main/resources/db/migration/` |
+| Point d'entrée | Application de démarrage et configuration | [GeoserviceIsochroneApplication.java](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/src/main/java/com/github/cunvoas/geoserviceisochrone/GeoserviceIsochroneApplication.java) |
+| Pages MVC | Gestion des parcs (liste/nouvelle/édition/vérification), carte de consultation, entrées, admin (villes, EPCI, contributeurs, calculs), simulateur de projets, propositions manuelles | `src/main/java/com/github/cunvoas/geoserviceisochrone/controller/mvc/` |
+| REST / GeoJSON | Flux GeoJSON pour la carte (parcs, IRIS, carreaux INSEE, cadastre, topo IGN), calculs AJAX, publication, exporteur, adresses | `controller/geojson/`, `controller/rest/` |
+| Orchestration des jobs | File de calcul des carreaux 200 m et IRIS, recyclage des erreurs, arrêt propre | [BatchJobService.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/BatchJobService.md) |
+| Calcul géospatial | Stratégies v3/v4 de calcul par carreau, calcul IRIS, calcul par parc | [ComputeCarreServiceV4.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/ComputeCarreServiceV4.md) |
+| Solveurs de propositions | 10 algorithmes pour « quel parc créer ou agrandir pour tenir l'OMS » | `service/solver/`, [proposal-computation-strategy.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/proposal-computation-strategy.md) |
+| NDVI | Client API statistique Copernicus CDSE, quota mensuel persisté, fenêtre estivale glissante | `extern/ndvi/`, [copernicus-ndvi-oauth.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/copernicus-ndvi-oauth.md) |
+| Intégration Overpass | Parseurs OpenStreetMap (brut + GeoJSON) — raccord au calcul encore ouvert | `extern/overpass/` |
+| Publication | Export asynchrone GeoJSON + statistiques puis commit/push Git du dépôt Pages | [publication.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/publication.md) |
+| Persistance | Spring Data JPA + Hibernate Spatial | `repo/` |
+| Sécurité | Form login, hachage Argon2, cookie CSRF, limitation des tentatives de connexion, rôles | `config/security/` |
+| Migrations | Flyway SQL v1.0.0 → v2.1.5, exécutées au démarrage | `src/main/resources/db/migration/` |
 
 ## Interfaces
 
-Inbound:
+Entrantes :
 
-- Thymeleaf MVC pages: park management (list/new/edit/check/export), consultation map, entrance management, admin console (contributors, cities, city↔EPCI association, compute requests, dashboard), project simulator, manual proposal editor.
-- AJAX REST (under `/mvc/ajax/...`): `POST /mvc/ajax/jobs/api/request` (compute jobs; token + admin role for city/EPCI scope), `POST /mvc/ajax/publish/api/request` and `publish/api/status` (publication), file exporter endpoint (key + IP allowlist), analytics REST, contributor REST.
-- GeoJSON feeds: parks, park overpass, park proposals, manual proposals, IRIS, INSEE 200m cells, cadastre, IGN topo vegetation, city/year selection.
+- Pages web (Thymeleaf) : gestion des parcs, carte de consultation, console admin, simulateur de projets, éditeur de propositions manuelles.
+- REST AJAX protégés (authentification + token + rôle admin) : déclencher des calculs (`/mvc/ajax/jobs/api/request`), publier (`/mvc/ajax/publish/api/request`, `/publish/api/status`).
+- Flux GeoJSON de la carte : parcs, propositions, IRIS, carreaux INSEE, cadastre, topo végétal.
+- Exporteur de fichiers : protégé par clé + liste d'IP autorisées (documenté comme défaillant, voir contraintes).
 
-Outbound:
+Sortantes :
 
-- IGN isochrone API v2 (isochrone polygons around park entrances), configurable via `application.business.feature-flipping.isochrone-impl: ign-api-v2`.
-- Overpass API (raw OSM JSON and GeoJSON parsers).
-- adresse.data.gouv.fr (address-based auto-location of map).
-- Mailjet (sender implemented in `extern/helper/EmailSender.java`; gated by feature flag `application.sendEmail`).
-- Matomo (optional; blank URL and site-id 0 disable it).
-- File system export: GeoJSON and statistics written under `application.admin.export-path` (published data repository).
+- API isochrone IGN v2 (isochrones pédestres depuis chaque entrée de parc) ;
+- Copernicus CDSE (NDVI par parc, quota gratuit 10 000 requêtes/mois) ;
+- adresse.data.gouv.fr (localisation par adresse) ;
+- Mailjet (emails, flag `application.sendEmail`, actuellement désactivé) ;
+- Matomo (optionnel) ;
+- Publication Git : écriture des fichiers sous `application.admin.export-data-path` puis commit/push JGit vers le dépôt GitHub Pages.
 
-Authoritative per-controller rules: [docs/workflow-rules/README.md](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/docs/workflow-rules).
+Règles par contrôleur : [docs/workflow-rules/README.md](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/docs/workflow-rules).
 
 ## Core Domain Concepts
 
-| Concept | Meaning or use | Ownership |
+| Concept | Sens / usage | Propriété |
 | --- | --- | --- |
-| ParcEtJardin | A park/garden polygon loaded from city data or created by contributors | Produced |
-| Entrance | Access point of a park; isochrone polygons are computed per entrance and merged | Produced |
-| InseeCarre200m | 200m population grid cell (INSEE) | Consumed (INSEE data), computed values are Produced |
-| IRIS | INSEE statistical district, second compute unit | Consumed (INSEE), computed values Produced |
-| ComputeJob / ComputeIrisJob | Queue entries for one grid cell or IRIS + year, status TO_PROCESS/IN_PROCESS/PROCESSED/IN_ERROR | Produced |
-| OMS criteria | WHO thresholds: urban (300s walk, ≥10ha site, 3ha within 300m), suburban (1200s, 45ha/25ha); empty-area threshold 5000 m² | Consumed (WHO), config Produced |
-| ParkArea | Park-portion geometry relevant to accessibility (cleaned/cropped) | Produced |
-| Proposal (auto/manual) | Park geometry proposal from one of 6 algorithms or drawn manually (CIRCLE/POLYGON) | Produced |
-| Publication | Final static GeoJSON + OMS stats per EPCI and year | Produced |
-| Contributeur | User account with roles; Argon2 passwords; token-protected compute triggers | Produced |
+| ParcEtJardin | Polygone d'un parc/jardin, chargé des données d'une collectivité ou créé par un contributeur | Produit |
+| Entrée | Point d'accès d'un parc ; les isochrones sont calculés par entrée puis fusionnés | Produit |
+| Carreau INSEE 200 m | Maille de 200 m × 200 m avec population Filosofil ; unité principale de mesure de l'accessibilité | Consommé (INSEE), valeurs calculées produites |
+| IRIS | District statistique INSEE, deuxième maillage de calcul | Consommé (INSEE), valeurs calculées produites |
+| Indicateurs OMS | Seuils configurés : zone urbaine = 300 s à pied, 12 m²/hab recommandés, 10 m²/hab minimum ; périurbain = 1200 s, 45/25 m²/hab ; « parc durable » à ≥ 5 000 m² à 300 m | Consommé (OMS), production configurée |
+| ParkAreaComputed | Métriques par parc et par année (surface, population, OMS, NDVI moyenne/min/max/écart-type, date d'acquisition) | Produit |
+| Proposition (auto ou manuelle) | Aménagement proposé par un des 10 algorithmes ou dessiné à la main (cercle/polygone), avec évaluation d'impact OMS persistée (`ManualEvalWork`) | Produit (jamais appliqué automatiquement aux parcs réels) |
+| Publication | Export statique par EPCI et année, poussé vers le dépôt GitHub Pages | Produit |
+| Contributeur | Compte utilisateur à rôles, mot de passe Argon2 | Produit |
 
 ## Main Workflows
 
-### Compute pipeline (carre 200m + IRIS)
+### Calcul (carreau 200 m + IRIS)
 
-1. On park modification: `BatchJobService.requestProcessParc(park)` or admin request for city/EPCI (`requestProcessCity`, `requestProcessCom2Co`) creates jobs (`compute_job`, `compute_iris_job`), reused/recycled when a newer park update exists.
-2. A scheduler (`@Scheduled`, every 300s, pool size 1) processes `TO_PROCESS` jobs, throttled when CPU temperature exceeds `cpu-temp-threshold` (fetched from an external metrics URL).
-3. Compute for a cell uses IGN isochrone data around entrances to determine the reachable park surface, stored as computed values per cell/year (carre-200m impl is pluggable, currently `v4`).
-4. Jobs ending in error or left `IN_PROCESS` are recycled on the next pass; `DisposableBean` + graceful shutdown (`shutdown: graceful`, 60s grace, scheduler awaits termination 50s) protects long geospatial computations.
+1. Mise à jour d'un parc ou demande admin : `BatchJobService` crée des jobs de calcul (`compute_job`, `compute_iris_job`), réutilisés/recyclés quand une mise à jour plus récente existe.
+2. Un planificateur `@Scheduled` (toutes les 300 s, un seul thread) traite les jobs en attente. Un seuil de température CPU (fourni par une URL de métriques externe) ralentit le traitement si la machine chauffe.
+3. Par job : le service cherche les parcs dont l'isochrone (IGN) atteint le carreau depuis leurs entrées, calcule surface/habitant, indicateurs OMS et déficits, et enregistre dans PostGIS.
+4. Les jobs en erreur ou restés « en cours » sont recyclés au prochain passage. L'arrêt est gracieux (grace period 60 s au redémarrage).
 
-Effects: PostGIS rows per carre/IRIS/year updated; no side effects outside the database. Failure: job moves to `IN_ERROR` and is retried by recycling; no external data is mutated. Evidence: `BatchJobService`, `ComputeJobRestControler`, `config/app cores/services` profiles in `application.yml`, [BatchJobService doc](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/docs/BatchJobService.md).
+Effets : uniquement des lignes PostGIS mises à jour. Échec : job en `IN_ERROR`, rejoué automatiquement ; aucune donnée externe modifiée. Preuves : code `BatchJobService`, [BatchJobService.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/BatchJobService.md), [ComputeCarreServiceV4.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/ComputeCarreServiceV4.md).
 
-### Auto / manual park proposals
+### NDVI par parc (végétation satellite)
 
-1. Contributor opens proposal UI; `ParksPropositionController` runs one of 6 algorithms (iterative, least-squares-neighbour2, genetic1, chi-square, PPC/constraint solving via choco-solver, see `docs/*-strategy.md`).
-2. Manual proposals (CIRCLE or POLYGON) are saved by `ManualProposalController` with meta mode MANUAL.
-3. Impact evaluation via `ManualProposalGeoJsonController` computes accessibility gains against OMS bands and persists `ManualEvalWork` rows.
+1. Pendant le calcul OMS d'un parc, si `application.ndvi.enabled=true`, le service interroge l'API statistique de Copernicus (Sentinel-2 L2A, mosaïque la moins nuageuse, nuages/ombres/eau masqués). Aucune image n'est téléchargée : le calcul se fait côté fournisseur, seules quelques centaines d'octets reviennent.
+2. Fenêtre glissante sur l'année précédente (configurable en MM-dd), avec fenêtre de secours si la première ne donne aucune donnée exploitable.
+3. Au plus **un appel par parc et par an**, uniquement à partir de septembre (date mémorisée en base `ndvi_request_date`).
+4. Toute erreur (réseau, quota, timeout) est non bloquante : colonnes NDVI nulles + log WARN, le calcul OMS se termine quand même.
+5. Le quota mensuel est persisté en base (migration `v2.1.4_ndvi_api_quota.sql`) : réservation atomique avant l'appel, remboursée si la réponse n'est pas OK ; débit plafonné à 2 req/s avec reprise sur erreur 429.
 
-Effects: DB-only; its outputs feed later publication or real park edits. Partial results remain as `ManualEvalWork` and are not automatically applied. Evidence: `service/solver/`, `service/proposal/`, docs `proposal-computation-strategy.md`.
+Effets : colonnes NDVI de `ParkAreaComputed` alimentées ou nulles ; quota préservé. Désactivé par défaut (`ndvi.enabled: false`) tant que les identifiants CDSE ne sont pas configurés. Preuves : README du composant, [copernicus-ndvi-oauth.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/copernicus-ndvi-oauth.md), migrations `v2.1.3/4/5_ndvi_*.sql`.
+
+### Propositions d'aménagement (auto ou manuelles)
+
+1. Le contributeur choisit un des 10 algorithmes (itératif ×4, solveur de contraintes PPC ×3, χ² avec voisins ×2, génétique) qui propose où créer ou agrandir un parc pour respecter l'OMS.
+2. Les propositions manuelles (cercle ou polygone) sont dessinées dans l'interface et évaluées contre les indicateurs OMS ; l'impact est persisté (`ManualEvalWork`).
+
+Effets : base de données uniquement. Les propositions ne sont **pas** appliquées automatiquement aux parcs réels — elles servent d'aide à la décision pour la collectivité. Preuves : `service/solver/`, `service/proposal/`, docs `*-strategy.md`.
 
 ### Publication
 
-1. `POST /publish/api/request` checks rights (`canPublish`: all compute jobs for the EPCI done), then delegates to `PublishService.publishAsync()`.
-2. Heavy work runs async (the request returns `202`): GeoJSON export files to disk + OMS statistics bands for dense/suburban zones.
-3. Status endpoint (`/publish/api/status`) lets the UI poll state.
+1. Depuis l'admin : `POST /publish/api/request` vérifie d'abord que **tous les calculs de l'EPCI sont terminés sans erreur** (`canPublish`), puis passe en asynchrone (réponse `202`).
+2. Phase **production** : écriture des GeoJSON (référentiels, contours de parcs, isochrones, carreaux, IRIS) et statistiques (par ville, zones denses, périurbaines, globales) sous le répertoire d'export. Toute erreur arrête la phase et **aucun push Git n'est tenté**.
+3. Phase **publication Git** (uniquement si production OK) : un commit unique, push vers le dépôt GitHub Pages ; statuts terminaux `PUBLISHED` (SHA du commit exposé), `PUSH_FAILED` ou `PUSH_NOT_CONFIGURED`.
+4. L'interface admin interroge le statut (`/publish/api/status`).
 
-Effects: writes files under `application.admin.export-path` (published static dataset) and DB rows; failure inside async job is not surfaced synchronously to the caller. Evidence: `PublishRestControler`, [publication.md](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/docs/publication.md).
+Effets : fichiers sur disque + commit Git public. Échec : visible dans le statut, pas de données partielles publiées (la production doit être entièrement propre avant push). Preuves : [publication.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/publication.md), code `PublishRestControler`/`PublishService`.
 
 ## Configuration and Dependencies
 
-- Runtime: Java 21, Spring Boot 4.1.1, Spring Security (form login + Argon2), Spring Data JPA/Hibernate Spatial, Thymeleaf, Micrometer Prometheus, optional Zipkin.
-- Key config keys in `application.yml` (`application.business.*`: OMS thresholds, INSEE years, densities, feature flips `isochrone-impl`, `carre200m-impl`, `cpu-temp-threshold`, `cpu-metrics-url`); secrets are `${VAR}` placeholders in prod, no values in this summary.
-- Database: PostgreSQL + PostGIS via `DB_URL`/`DB_USER`/`DB_PASSWORD`; Hikari pool (max 50, leak-detection 2s); `ddl-auto: none` with Flyway migrations at startup.
-- Boundary limits: multipart 8MB, session cookie deliberately named `PHPSESSID` (security camouflage), CORS restricted to configured origin.
-- Full dependency manifest: [pom.xml](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/pom.xml).
+- Runtime : Java 21, Spring Boot 4.1.1, Spring Security, Hibernate Spatial, Thymeleaf, Micrometer/Prometheus.
+- Clés de configuration importantes dans [application.yml](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/src/main/resources/application.yml) : `application.business.oms.*` (seuils OMS), `application.business.insee.densite` (1,2 = communes denses), `annees: 2015,2017,2019,2021` (population Filosofil), NDVI (`enabled: false`, quota 10 000/mois, fenêtre juin), sélecteurs d'implémentation (`isochrone-impl`, `carre200m-impl`).
+- Secrets de dev : `application-dev.yml` contient encore des valeurs inline en clair (mot de passe DB, secret JWT, clé d'export, client-secret Git) — vérifiées présentes au commit validé ; à purger de l'historique Git. Aucune valeur reproduite ici.
+- Manifeste complet : [pom.xml](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/pom.xml).
 
 ## Operational Characteristics
 
-- Deployment: Docker image (non-root uid 1001), arbitrary runner; single node assumption; scheduler is single-threaded by design.
-- Health/observability: actuator endpoints `health,info,prometheus,metrics` only (sensitive endpoints excluded); Loki logback appender ships logs; optional Zipkin tracing; CPU-temperature throttling via external metrics URL.
-- Retry/backoff: batch job recycling treats `IN_PROCESS`/`IN_ERROR` as re-processable on next scheduled pass (300s); no exponential backoff.
-- Database migrations: Flyway auto-run on startup (`baseline-on-migrate`, `clean-disabled`).
-- Graceful shutdown: 60s grace period, scheduler waits up to 50s; long computations survive deploy only under that window.
+- Déploiement : image Docker (non-root), nœud unique ; planificateur volontairement mono-thread (calculs sérialisés pour éviter la surcharge CPU et le dépassement des quotas externes).
+- Observabilité : endpoints actuator limités, Prometheus/metrics, appender Loki, Zipkin optionnel.
+- Réessai : les jobs en erreur ou bloqués en « en cours » sont recyclés au prochain passage (300 s), sans backoff exponentiel.
+- Arrêt : gracieux, 60 s de marge ; un calcul géospatial en cours est recyclé au redémarrage suivant.
+- Migrations Flyway automatiques au démarrage (`clean-disabled` : jamais de destruction automatique de la base).
 
 ## Constraints and Non-goals
 
 ### Verified Constraints
 
-- Java 21 runtime; scheduler pool size 1 — geospatial work is serialized.
-- Port 8980; CORS allows only configured origin; CSRF enforced on MVC flows.
-- Public/anonymous role is read-only (consultation map); write actions require Contributeur role and some admin actions specifically `ADMINISTRATOR` (compute city/EPCI, city association, publication).
-- Compute endpoints rely on a shared token (`TokenManagement`) plus authentication — callers must keep both valid.
-- The app assumes its export path (static geodata repository) is accessible to users; deleting that folder disables the public data feed until republished.
+- Années de population disponibles uniquement : **2015, 2017, 2019, 2021** (Filosofil). Pas d'année plus récente sans import INSEE correspondant.
+- Maillages : carreau INSEE 200 m et IRIS — pas de calcul à la parcelle ou à l'adresse.
+- Garde de publication : `canPublish` exige qu'aucun job de calcul de l'EPCI ne soit en erreur ou en attente — une publication sur données incomplètes est refusée, pas corrigée.
+- Rôles : consultation anonyme (lecture seule), contributeur (écriture des parcs), administrateur (calculs d'une ville/EPCI, association ville↔EPCI, publication).
+- Le site public consomme des **fichiers statiques figés** au moment de la publication : si le dossier export est supprimé, le flux public est coupé jusqu'à la prochaine publication.
+- Historique qualité : sur la MEL, les données sources contenaient des erreurs, corrigées par requalification (pas de suppressions) après études contradictoires (Préfecture du Nord). Toute réutilisation presse doit vérifier l'année de référence et la date de dernière mise à jour des données publiées.
 
 ### Non-goals
 
-- Hosting the published public website or static geodata (that is the `gh_pages/geoservice-data` sibling project).
-- Being the source of truth for INSEE/IGN/OSM data.
-- Email deliverability, analytics storage (Matomo), or map tile hosting — relies on external services.
-
-### Known Defects / Debt (loaded from repo security docs)
-
-- `application-dev.yml` still contains real credentials (DB, JWT, Mailjet, admin password) per the committed audit — rotate, remove, and purge from Git history. Do not use dev-profile secrets anywhere outside throwaway local setups.
-- `FileExporterControler` IP allowlist known buggy (workflow-rules doc).
-- No rate limiting on compute endpoints (expensive isochrone calculations); only login brute-force throttling.
-- `ErrorController` injects stack trace into the view model, toggled off by flag only.
-- See [SECURITY_REVIEW.md](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/SECURITY_REVIEW.md), HowtoSecurityFix.md, depsBestPractices.md for the full remediation list.
+- Produire les données INSEE/IGN/OSM sources (les portails restent la référence).
+- Héberger le site public et son contenu statique (dépôt GitHub Pages séparé).
+- Délivrabilité email, stockage analytics, hébergement de fond de carte : délégué à Matomo/Mailjet/fournisseurs de tuiles.
+- Temps réel : tout est calculé par campagne annuelle ; NDVI rafraîchi au maximum une fois par an par parc.
 
 ## Current and Planned Behavior
 
-### Implemented
+### Implemented (vérifié sur `main` au commit validé)
 
-- Cell/IRIS compute pipeline with job queue, recycling, CPU-based throttling, graceful shutdown.
-- IGN isochrone API v2 client (isochrone impl flip `ign-api-v2`), address geocoding client.
-- Six-algorithm proposal solver suite + manual proposal (circle/polygon) with OMS impact evaluation persisted as `ManualEvalWork`.
-- Contributor management with role scoping, Argon2 password hashing, brute-force login throttling, method security on admin endpoints.
-- Publication flow: preconditions (`canPublish`), async export of GeoJSON + stats, status polling.
-- Notes/flags: `application.sendEmail=false` currently disables Mailjet sending; `matomo` URL empty disables tracking.
+- Pipeline de calcul par carreau 200 m et IRIS : file de jobs, recyclage, limitation thermique CPU, arrêt gracieux ; moteur de calcul **V4** optimisé (batch population, cache surfaces, mutualisation result/OMS).
+- Client API isochrone IGN v2 (implémentation commutable), géocodage adresse.
+- **NDVI Copernicus par parc** : client API statistique, colonnes NDVI + quota persisté (migrations v2.1.3 à v2.1.5), déclenchement non bloquant, règle « un appel par parc et par an ». Feature flag `ndvi.enabled: false` par défaut.
+- **Publication Git intégrée** : production 100 % propre avant push, phases tracées (`PRODUCING`/`PRODUCED`/`PUBLISHING`/`PUBLISHED`/`PUSH_*`), SHA de commit exposé dans le statut.
+- Suite de solveurs : **10 algorithmes** (`ProposalComputationTypeAlgo`) + propositions manuelles (cercle/polygone) avec évaluation d'impact OMS.
+- Gestion des contributeurs : rôles, Argon2, limitation des tentatives de connexion.
+- Procédure de mise à jour INSEE/Overpass depuis le cadastre documentée ([maj_insee_overpass_depuis_cadastre.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/maj_insee_overpass_depuis_cadastre.md)).
 
-### Planned
+### Planned (cadrages / framings, non livrés)
 
-- Overpass-based park ingestion: parsers exist (`extern/overpass`), repository layer worked on (`ParkOverpass*`), but the compute-jobs REST hook for overpass parks is still stubbed (`TODO OVERPASS`, returns `202` with 0 cells) on the current branch `feat/overpass`.
-- Spring Boot 4 / hardened config imports (banner, whitelabel replacement page) referenced but not finalized.
+- **Restitution NDVI côté front** ([ndvi-parc-restitution-framing.md](https://github.com/cunvoas/opendata-tools/blob/main/framing-documents/ndvi-parc-restitution-framing.md), T4 2026, cadrage en cours) : écran récapitulatif `/ndvi` (table + distribution), exposition REST `/ndvi/summaries`, mode colorimétrique NDVI sur la couche Parcs, NDVI au clic dans le panneau de détail, règle « un appel par parc sur l'année de référence seulement » (791 appels/an pour la MEL au lieu de 4 appels possibles par parc aujourd'hui). Faits mesurés au 2026-10-26 sur base de dév : 230 parcs avec NDVI sur 791 attendus (2021), NDVI moyen 0.403, forte hétérogénéité intra-parc (Parc de la Citadelle : moyenne 0.593, écart-type 0.300).
+- **WMS raster Sentinel-2 sur la carte** ([recuperation-ndvi-parc-framing.md](https://github.com/cunvoas/opendata-tools/blob/main/framing-documents/recuperation-ndvi-parc-framing.md)) : calque « Végétation réelle (NDVI Satellite) », front-only, désactivé par défaut ; explicitement reporté tant que la restitution par parc n'est pas livrée.
+- **Intégration Overpass au calcul** : parseurs présents dans le code, mais le raccord REST des jobs reste un stub (marqueur `TODO OVERPASS` dans `ComputeJobRestControler`) — les parcs OSM ne sont pas encore calculés via ce chemin.
+- **Publication automatique GeoJSON des EPCI** ([publication-geojson-github-epci-framing.md](https://github.com/cunvoas/opendata-tools/blob/main/framing-documents/publication-geojson-github-epci-framing.md)) : le câblage Git ciblé par ce cadrage est désormais implémenté (phases `PUBLISHING`), mais le cadrage reste la référence d'intention et de garde-fous (publication volontaire, jamais déclenchée par les imports batch).
+- « Colonne seule » ParkAreaComputed NDVI ([ndvi-par-parc-park-area-computed-framing.md](https://github.com/cunvoas/opendata-tools/blob/main/framing-documents/ndvi-par-parc-park-area-computed-framing.md)) : les colonnes et le pipeline prévus par ce cadrage sont désormais implémentés.
 
 ### Unknown or To Verify
 
-- Whether `main` has diverged from the reviewed `feat/overpass` changes (overpass compute integration, job model fields) — check `git diff main...feat/overpass` before relying on overpass behavior.
-- The paper claim "six algorithms" — verify `ProposalComputationTypeAlgo` count against current enum in the branch you build on.
-- Behavior of `FileExporterControler` allowlist under real traffic (docs call it buggy with no test evidence).
+- Comportement du push Git JGit en production (identifiants `application.git.*`) : présent et tracé en code, non confirmé au-delà de la doc ; vérifier les statuts `PUSH_*` en cas de rotation de token GitHub.
+- NDVI désactivé en prod tant que les identifiants CDSE ne sont pas configurés : confirmer l'état réel du déploiement (le flag est `false` par défaut dans le dépôt).
+- Le raccord Overpass dans le pipeline de calcul reste en stub : la couverture des parcs français issue d'OpenStreetMap dépend de l'avancement de ce chantier.
+- Le suivi dans le temps des propositions (`ManualEvalWork`) : usage réel non attesté, à confirmer avec le mainteneur.
 
 ## Related Agent Instructions
 
-| Instruction | Scope | Purpose | Status |
+| Instruction | Périmètre | But | Statut |
 | --- | --- | --- | --- |
-| docs/workflow-rules/README.md | docs/workflow-rules | Index of per-controller architectural rules (18 controllers/services) | Accepted |
-| docs/workflow-rules/compute-job-rest-controler.md | ComputeJobRestControler | Queue entry points, token + admin gate | Accepted |
-| docs/workflow-rules/batch-job-service.md | BatchJobService | Recycling, 300s cycle, CPU overheat gate | Accepted |
-| docs/workflow-rules/manual-proposal-*, park-*, publish-*, consult-map, entrance, project-simulator, contributeur, city-association, file-exporter | Individual controllers | Behavior contracts per controller | Accepted |
-| TESTING_GUIDE.md, QUICK_START_TESTS.md | testing | How to run unit/integration tests | Accepted |
-| SECURITY_REVIEW.md (fr), HowtoSecurityFix.md (fr/en), depsBestPractices.md (fr/en) | security/deps | Audit results and remediation steps | Accepted |
+| [docs/workflow-rules/README.md](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/docs/workflow-rules) | workflow-rules | Index des règles architecturales par contrôleur/service (18 éléments) | Accepted |
+| [BatchJobService.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/BatchJobService.md) | File de jobs | Cycle 300 s, recyclage, surchauffe CPU | Accepted |
+| [ComputeCarreServiceV4.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/ComputeCarreServiceV4.md) | Moteur de calcul | Contrat de calcul par carreau, versions v2/v3/v4 | Accepted |
+| [publication.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/publication.md) | Publication | Phases production → push Git, garde `canPublish` | Accepted |
+| docs `*-strategy.md` (carre-recherche, iterative2, least-squares-neighbour2, genetic1, proposal-computation, solver3-zones-ignorees-fix) | Solveurs | Détail algorithme par algorithme | Accepted |
+| [copernicus-ndvi-oauth.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/copernicus-ndvi-oauth.md) | NDVI | OAuth CDSE, configuration et dépannage | Accepted |
+| [maj_insee_overpass_depuis_cadastre.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/maj_insee_overpass_depuis_cadastre.md) (+ `maj_insee_overpass_update.sql`) | Mise à jour | Procédure de mise à jour depuis le cadastre | Accepted |
+| README.md du composant | Sources, NDVI, quotas CDSE, OMS | Vue d'ensemble opérationnelle | Accepted |
+| [framings](https://github.com/cunvoas/opendata-tools/tree/main/framing-documents) (×4) | Restitution NDVI, WMS, publication EPCI, colonne ParkAreaComputed | Cadrages produit (T4 2026) | Draft/proposal |
+| [TESTING_GUIDE.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/TESTING_GUIDE.md), [QUICK_START_TESTS.md](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/QUICK_START_TESTS.md) | Tests | Lancer les tests unitaires/intégration | Accepted |
+| [SECURITY.md](https://github.com/cunvoas/opendata-tools/blob/main/SECURITY.md) (racine) | Politique de sécurité | Versions supportées, signalement de vulnérabilité | Accepted |
 
 ## Authoritative References
 
-- [Repository](https://github.com/cunvoas/opendata-tools) — component lives under `geoservice-isochrone-v2/`
-- [Entry point](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/src/main/java/com/github/cunvoas/geoserviceisochrone/GeoserviceIsochroneApplication.java)
-- [Workflow rules index](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/docs/workflow-rules)
-- [Batch compute service doc](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/BatchJobService.md)
-- [Publication flow doc](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/publication.md)
-- [ComputeCarreServiceV4 doc](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/docs/ComputeCarreServiceV4.md)
-- [Config root](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/src/main/resources/application.yml)
-- [Flyway migrations](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/src/main/resources/db/migration)
-- [Security audit](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/SECURITY_REVIEW.md)
+- [Dépôt](https://github.com/cunvoas/opendata-tools) — composant sous `geoservice-isochrone-v2/`
+- [Point d'entrée](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/src/main/java/com/github/cunvoas/geoserviceisochrone/GeoserviceIsochroneApplication.java)
+- [README du composant](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/README.md)
+- [Index des règles par contrôleur](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/docs/workflow-rules)
+- [Cadrages (framings)](https://github.com/cunvoas/opendata-tools/tree/main/framing-documents)
+- [Documentation technique](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/docs) (BatchJobService, ComputeCarreServiceV4, publication, NDVI, solveurs)
+- [Configuration (application.yml)](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/src/main/resources/application.yml)
+- [Migrations Flyway](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/src/main/resources/db/migration)
+- [Politique de sécurité (SECURITY.md)](https://github.com/cunvoas/opendata-tools/blob/main/SECURITY.md)
 - [Tests](https://github.com/cunvoas/opendata-tools/tree/main/geoservice-isochrone-v2/src/test)
-- [pom.xml (dependencies)](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/pom.xml)
+- [Manifeste (pom.xml)](https://github.com/cunvoas/opendata-tools/blob/main/geoservice-isochrone-v2/pom.xml)
+- Site public des données publiées : [parcs-et-jardins](https://autmel.github.io/parcs-et-jardins) (dépôt GitHub Pages alimenté par la publication)
+- Référence OMS citée par le projet : [Urbanisme et santé (OMS/Europe)](https://www.euro.who.int/__data/assets/pdf_file/0010/102106/E93982.pdf)
