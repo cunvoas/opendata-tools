@@ -12,6 +12,22 @@
                                 <div th:text="#{menu.abstract.dashboard}">g1 t1</div>
                             </a>
 
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMethodology" aria-expanded="false" aria-controls="collapseMethodology">
+                                <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                                <div th:text="#{menu.methodology}">Méthodologie</div>
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseMethodology" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" th:href="@{/mvc/methodology/opendata}" th:text="#{methodology.opendata.title}">OpenData</a>
+                                    <a class="nav-link" th:href="@{/mvc/methodology/parcs}" th:text="#{methodology.parcs.title}">Parcs</a>
+                                    <a class="nav-link" th:href="@{/mvc/methodology/insee-ign}" th:text="#{methodology.inseeIgn.title}">INSEE et IGN</a>
+                                    <a class="nav-link" th:href="@{/mvc/methodology/ndvi}" th:text="#{methodology.ndvi.title}">NDVI</a>
+                                    <a class="nav-link" th:href="@{/mvc/methodology/calculs}" th:text="#{methodology.calculs.title}">Les calculs</a>
+                                    <a class="nav-link" th:href="@{/mvc/methodology/propositions}" th:text="#{methodology.propositions.title}">Les propositions</a>
+                                </nav>
+                            </div>
+
                        <span sec:authorize="hasAuthority('ADMINISTRATOR')">
                             <div class="sb-sidenav-menu-heading" th:text="#{menu.management}">group 2</div>
                             

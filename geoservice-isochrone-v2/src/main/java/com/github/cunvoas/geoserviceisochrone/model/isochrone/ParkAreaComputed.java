@@ -76,7 +76,7 @@ public class ParkAreaComputed {
     @DateTimeFormat
     @Column(name = "ndvi_acquisition_date")
     private Date ndviAcquisitionDate;
-    /** Date de la dernière demande NDVI (au plus une par an, à partir de septembre). */
+    /** Date de la dernière demande NDVI automatique (au plus une par an, à partir de septembre) ; un bouton manuel peut aussi en déposer une. */
     @DateTimeFormat
     @Column(name = "ndvi_request_date")
     private Date ndviRequestDate;

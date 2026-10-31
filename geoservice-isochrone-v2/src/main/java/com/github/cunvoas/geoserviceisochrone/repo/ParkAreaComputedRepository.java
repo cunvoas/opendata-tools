@@ -60,6 +60,17 @@ public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComput
 	Optional<ParkAreaComputed> findByIdAndAnnee(Long id, Integer annee);
 
 	/**
+	 * Toutes les lignes calculées d'un parc, toutes années confondues.
+	 * Le NDVI Copernicus étant lissé sur plusieurs années, un seul appel
+	 * alimente toutes ces lignes.
+	 * @param id identifiant de la zone de parc
+	 * @return lignes {@code park_area_computed} du parc
+	 */
+	@Query(nativeQuery = true,
+			value = "select * from public.park_area_computed where id = :id")
+	List<ParkAreaComputed> findAllByIdPark(@Param("id") Long id);
+
+	/**
 	 * isComputedForCity.
 	 * Indique si au moins un parc de la commune possède déjà un calcul isochrone
 	 * (park_area_computed). Si oui, on ne modifie plus la géométrie des parcs.

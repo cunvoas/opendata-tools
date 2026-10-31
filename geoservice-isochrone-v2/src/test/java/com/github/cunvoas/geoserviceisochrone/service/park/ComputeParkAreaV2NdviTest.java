@@ -2,15 +2,13 @@ package com.github.cunvoas.geoserviceisochrone.service.park;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,8 +30,7 @@ import org.mockito.Mock;
 
 import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
-import com.github.cunvoas.geoserviceisochrone.extern.ndvi.ClientCopernicusNdvi;
-import com.github.cunvoas.geoserviceisochrone.extern.ndvi.NdviStatistics;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.NdviBatchJobService;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
@@ -44,8 +41,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
 /**
- * Vérifie l'intégration NDVI dans le pipeline OMS : rattrapage d'une ligne fraîche
- * sans NDVI et non-régression des indicateurs OMS en cas d'échec fournisseur.
+ * Vérifie que le NDVI est confié à la file persistante, sans appel fournisseur
+ * synchrone, et que la fenêtre de demande reste inchangée.
  */
 @DisplayName("ComputeParkAreaV2 - NDVI")
 class ComputeParkAreaV2NdviTest extends BaseUnitTest {
@@ -61,7 +58,7 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
     @Mock private ParkTypeService parkTypeService;
     @Mock private ServiceOpenData serviceOpenData;
     @Mock private ApplicationBusinessProperties applicationBusinessProperties;
-    @Mock private ClientCopernicusNdvi clientCopernicusNdvi;
+    @Mock private NdviBatchJobService ndviBatchJobService;
 
     @InjectMocks private ComputeParkAreaV2 service;
 
@@ -74,6 +71,7 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
         when(applicationBusinessProperties.getInseeAnnees()).thenReturn(new Integer[] { 2015 });
         when(applicationBusinessProperties.getIrisAnnees()).thenReturn(new Integer[] { ANNEE });
         when(applicationBusinessProperties.getDerniereAnnee()).thenReturn(ANNEE);
+        when(ndviBatchJobService.isEnabled()).thenReturn(true);
 
         GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
         Polygon polygon = factory.createPolygon(new Coordinate[] {
@@ -103,60 +101,58 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("ligne OMS fraîche sans NDVI : NDVI rattrapé, OMS inchangés")
-    void catchUpNdviOnFreshRow() {
-        NdviStatistics stats = new NdviStatistics(
-                new BigDecimal("0.4210"), new BigDecimal("0.1100"),
-                new BigDecimal("0.8000"), new BigDecimal("0.0500"), new Date(3000L));
-        when(clientCopernicusNdvi.isEnabled()).thenReturn(true);
-        when(clientCopernicusNdvi.fetchNdviForPark(eq(PARK_ID), any())).thenReturn(Optional.of(stats));
-
-        ParkAreaComputed result = service.computeGenericParkAreaV2(park, ANNEE);
-
-        assertSame(row, result);
-        assertEquals(new BigDecimal("0.4210"), result.getNdviMean());
-        assertEquals(new BigDecimal("0.0500"), result.getNdviStddev());
-        assertEquals(3000L, result.getNdviAcquisitionDate().getTime());
-        assertEquals(omsUpdated, result.getUpdated());
-        assertNull(result.getPopulation());
-        verify(parkAreaComputedRepository, times(1)).save(row);
-    }
-
-    @Test
-    @DisplayName("échec fournisseur : colonnes nulles, ligne OMS sauvegardée et intacte")
-    void ndviFailureDoesNotBreakOms() {
-        when(clientCopernicusNdvi.isEnabled()).thenReturn(true);
-        when(clientCopernicusNdvi.fetchNdviForPark(eq(PARK_ID), any()))
-                .thenThrow(new IllegalStateException("CDSE indisponible"));
-
+    @DisplayName("ligne OMS fraîche sans NDVI : demande déposée, aucun appel synchrone")
+    void ndviDemandeMiseEnFile() {
         ParkAreaComputed result = service.computeGenericParkAreaV2(park, ANNEE);
 
         assertSame(row, result);
         assertNull(result.getNdviMean());
-        assertNotNull(result.getNdviRequestDate(), "la demande doit être datée même en échec");
         assertEquals(omsUpdated, result.getUpdated());
         assertNull(result.getPopulation());
-        verify(parkAreaComputedRepository, times(1)).save(row);
+        verify(ndviBatchJobService).request(PARK_ID, ANNEE);
+        verify(parkAreaComputedRepository, never()).save(row);
     }
 
     @Test
-    @DisplayName("seule l'année de référence déclenche un appel NDVI")
+    @DisplayName("NDVI déjà présent : aucune demande en file")
+    void ndviDejaPresentSansDemande() {
+        row.setNdviMean(new BigDecimal("0.33"));
+
+        ParkAreaComputed result = service.computeGenericParkAreaV2(park, ANNEE);
+
+        assertSame(row, result);
+        verify(ndviBatchJobService, never()).request(any(), any());
+    }
+
+    @Test
+    @DisplayName("NDVI désactivé : aucune demande en file")
+    void ndviDesactiveSansFile() {
+        when(ndviBatchJobService.isEnabled()).thenReturn(false);
+
+        ParkAreaComputed result = service.computeGenericParkAreaV2(park, ANNEE);
+
+        assertSame(row, result);
+        verify(ndviBatchJobService, never()).request(any(), any());
+    }
+
+    @Test
+    @DisplayName("seule l'année de référence déclenche une demande NDVI")
     void ndviSeulementAnneeDeReference() {
         assertTrue(service.isNdviReferenceYear(row), "2019 est l'année de référence simulée");
 
         row.setAnnee(2017);
-        assertFalse(service.isNdviReferenceYear(row), "une autre année ne doit pas appeler le NDVI");
+        assertFalse(service.isNdviReferenceYear(row), "une autre année ne doit pas demander le NDVI");
     }
 
     @Test
-    @DisplayName("appel NDVI autorisé seulement à partir de septembre")
+    @DisplayName("demande NDVI autorisée seulement à partir de septembre")
     void ndviAutoriseAPartirDeSeptembre() {
         assertFalse(service.isNdviRequestDue(row, LocalDate.of(2027, 8, 31)));
         assertTrue(service.isNdviRequestDue(row, LocalDate.of(2027, 9, 1)));
     }
 
     @Test
-    @DisplayName("pas de nouvel appel NDVI avant un an")
+    @DisplayName("pas de nouvelle demande NDVI avant un an")
     void ndviLimiteAUnAn() {
         row.setNdviRequestDate(Date.from(
                 LocalDate.of(2026, 9, 15).atStartOfDay(ZoneId.systemDefault()).toInstant()));
