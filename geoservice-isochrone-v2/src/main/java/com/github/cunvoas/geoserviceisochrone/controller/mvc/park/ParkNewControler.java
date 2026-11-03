@@ -248,7 +248,7 @@ public class ParkNewControler {
 			}
 			
 		} catch (Exception e) {
-			log.error("geoman parsing error = ", sGeom);
+			log.error("geoman parsing error", e);
 		}	
 		
 		

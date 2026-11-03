@@ -420,6 +420,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 	 * @param job ComputeJob
 	 * @return true if done
 	 */
+	@Override
 	public Boolean computeCarreByComputeJob(ComputeJob job) {
 		log.info("begin computeCarre {}", job.getIdInspire());
 		Boolean ret = Boolean.FALSE;
@@ -444,6 +445,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 	 *  Used for mass update and full recompute ParkAreaEntrance.
 	 *  @param inseeCode code
 	 */
+	@Override
 	public void refreshParkEntrances(String inseeCode) {
 		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
 		refreshParkEntrances(cadastre);
@@ -454,6 +456,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 	 * @param cadastre Cadastre
 	 */
 	@Transactional(isolation = Isolation.READ_COMMITTED)
+	@Override
 	public void refreshParkEntrances(Cadastre cadastre) {
 		log.warn(">> refreshParkEntrances");
 
@@ -577,6 +580,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 	 * @return ParkAreaComputed
 	 * @TODO to be reviewed
 	 */
+	@Override
 	public ParkAreaComputed computeParkArea(ParkArea park) {
 		ParkAreaComputed parcCpu=null;
 		log.info("computePark( {}-{} )",park.getId(), park.getName());
@@ -707,6 +711,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 	 * @param geom  Geometry
 	 * @return surface of Geometry
 	 */
+	@Override
 	public Long getSurface(Geometry geom) {
 		return inseeCarre200mOnlyShapeRepository.getSurface(geom);
 	}

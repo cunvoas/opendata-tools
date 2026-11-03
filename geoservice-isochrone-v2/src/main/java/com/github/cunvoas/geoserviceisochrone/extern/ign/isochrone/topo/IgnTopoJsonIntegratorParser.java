@@ -29,20 +29,13 @@ public class IgnTopoJsonIntegratorParser {
 	/**
 	 * Parse un fichier GeoJSON IGN-TOPO et enregistre les entités  IGN-TOP correspondantes.
 	 *
-	 * @param annee Année d'intégration des données
 	 * @param fGeojson Chemin du fichier GeoJSON à parser
 	 */
 	public void parseAndSaveVegetal(String fGeojson) {
 
 		String theLine = null;
-		BufferedReader br = null;
-		Reader rGeojson = null;
 		List<IgnTopoVegetal> shapes = new ArrayList<>(100);
-		try {
-			rGeojson = new FileReader(fGeojson);
-			// open input stream test.txt for reading purpose.
-			br = new BufferedReader(rGeojson);
-
+		try (BufferedReader br = new BufferedReader(new FileReader(fGeojson))) {
 			long start = System.currentTimeMillis();
 			System.out.println();
 			int i = 0;

@@ -98,7 +98,7 @@ public class CsvRbxParkJardinParser {
 					park.setAdresse(row.get(ParkJardinCsvHeaders.adresse));
 					park.setType("Parc");
 					String s = row.get(ParkJardinCsvHeaders.surface);
-					if (!"".equals(s)) {
+					if (!s.isEmpty()) {
 						park.setSurface(Double.parseDouble(row.get(ParkJardinCsvHeaders.surface))*10000);
 					}
 					park.setCoordonnee(GeoShapeHelper.parsePointLatLng(row.get(ParkJardinCsvHeaders.coord)));

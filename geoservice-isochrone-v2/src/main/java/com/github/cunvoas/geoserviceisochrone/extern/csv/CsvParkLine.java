@@ -22,6 +22,7 @@ public class CsvParkLine {
 	/**
 	 * Retourne une représentation textuelle de l'objet, utile pour le débogage.
 	 */
+	@Override
 	public String toString() {
 		return String.format("city: %s, block:%s, park%s, entrance: %s", city, block, park, entrance);
 	}

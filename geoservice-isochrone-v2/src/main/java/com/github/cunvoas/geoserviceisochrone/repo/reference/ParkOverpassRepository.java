@@ -43,7 +43,6 @@ public interface ParkOverpassRepository extends JpaRepository<ParkOverpass, Long
 	 * findByAreaGeo.
 	 * Parcs dont la forme correspond à la commune : centroïde contenu par le cadastre,
 	 * ou au moins {@code minRatio} de la surface géodésique (m²) du parc dans le cadastre.
-	 * @param mapArea zone au format "SRID=4326;..."
 	 * @param minRatio ratio minimal de couverture (0-1)
 	 * @return list of ParkOverpass
 	 */
@@ -62,7 +61,6 @@ public interface ParkOverpassRepository extends JpaRepository<ParkOverpass, Long
 	 * findByCornerSouthWestInArea.
 	 * Recherche les parcs sans forme (shape NULL) dont le coin sud-ouest
 	 * de la bounding box est contenu dans la zone.
-	 * @param mapArea zone au format "SRID=4326;..."
 	 * @return list of ParkOverpass
 	 */
 	@Query(nativeQuery = true,

@@ -108,8 +108,6 @@ public class GeoShapeHelper {
 	
 	
 	/**
-	 *  @param string "{"coordinates": [[[9.209601633281576, 41.36781596374774], [9.209578689845031, 41.36962406021186], [9.211959235983402, 41.36964287456159], [9.211982225364531, 41.367834769580924], [9.209601633281576, 41.36781596374774]]]
-	 *                     , "type": "Polygon"}"
 	 * @param geoPolygon
 	 * @return
 	 */
@@ -352,7 +350,6 @@ public class GeoShapeHelper {
 	/**
 	 * Add the linestring given to the polygonizer
 	 * 
-	 * @param linestring line string
 	 * @param polygonizer polygonizer
 	 */
 	static void addLineString(LineString lineString, Polygonizer polygonizer){

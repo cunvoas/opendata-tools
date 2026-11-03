@@ -123,7 +123,6 @@ public class OverpassGeojsonParser extends AbstractOverpassParser {
      * Map data from Overpass Element (Node, Way, Relation) to ParkOverpass entity.
      * Remplit les champs principaux et les tags. Les géométries sont à compléter selon besoin.
      *
-     * @param element élément Overpass (Node, Way, Relation)
      * @return entité ParkOverpass partiellement remplie
      */
     public ParkOverpass map(DtoGeojsonFeature feature) {
@@ -233,7 +232,6 @@ public class OverpassGeojsonParser extends AbstractOverpassParser {
                 return com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper.getPolygon(shell);
             } else if ("MultiPolygon".equalsIgnoreCase(geom.type)) {
                 // coordinates: List<List<List<List<Double>>>>
-                List<org.locationtech.jts.geom.Polygon> outers = new java.util.ArrayList<>();
                 List<?> polygons = geom.coordinates;
                 for (Object polyObj : polygons) {
                     List<?> rings = (List<?>) polyObj;
@@ -247,7 +245,7 @@ public class OverpassGeojsonParser extends AbstractOverpassParser {
                             shell.add(com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper.getPoint(lon, lat));
                         }
                     }
-                    outers.add(com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper.getPolygon(shell));
+                    com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper.getPolygon(shell);
                 }
                 return null;//com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper.getMultiPolygon(outers);
             }

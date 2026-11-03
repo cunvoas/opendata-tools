@@ -179,7 +179,7 @@ public class EmailSender {
 			log.error("logo not found", e);
 			throw new ExceptionAdmin("ERR_EMAIL_ERROR");
 		} catch (MailjetException e) {
-			log.error("Mailjet error", e.getMessage());
+			log.error("Mailjet error: {}", e.getMessage());
 			throw new ExceptionAdmin("ERR_EMAIL_ERROR");
 		}
 	}

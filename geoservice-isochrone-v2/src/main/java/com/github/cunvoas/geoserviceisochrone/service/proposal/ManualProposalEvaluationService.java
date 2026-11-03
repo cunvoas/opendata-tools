@@ -65,8 +65,6 @@ public class ManualProposalEvaluationService {
      * Évalue l'impact des propositions manuelles pour une commune et une année données,
      * persiste les résultats dans la table 'manual_eval_work' et retourne un objet GeoJSON.
      * 
-     * @param insee Code INSEE de la commune
-     * @param annee Année du calcul
      * @return GeoJsonRoot contenant les géométries des carreaux et leurs propriétés avant/après
      */
     private String sanitizeForLog(String value) {

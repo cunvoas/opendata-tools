@@ -61,12 +61,8 @@ public class MassGeoJsonIntegratorParser {
      */
     public void parseAndSave(String fGeojson) {
         String theLine = null;
-        BufferedReader br = null;
-        Reader rGeojson = null;
         List<InseeCarre200mOnlyShape> shapes = new ArrayList<>(100);
-        try {
-            rGeojson = new FileReader(fGeojson);
-            br = new BufferedReader(rGeojson);
+        try (BufferedReader br = new BufferedReader(new FileReader(fGeojson))) {
             long start = System.currentTimeMillis();
             int i = 0;
             while ((theLine = br.readLine()) != null) {

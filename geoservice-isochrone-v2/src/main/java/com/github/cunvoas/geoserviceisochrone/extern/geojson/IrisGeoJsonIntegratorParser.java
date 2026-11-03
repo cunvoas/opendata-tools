@@ -50,14 +50,8 @@ public class IrisGeoJsonIntegratorParser {
 	public void parseAndSave(Integer annee, String fGeojson) {
 
 		String theLine = null;
-		BufferedReader br = null;
-		Reader rGeojson = null;
 		List<IrisShape> shapes = new ArrayList<>(100);
-		try {
-			rGeojson = new FileReader(fGeojson);
-			// open input stream test.txt for reading purpose.
-			br = new BufferedReader(rGeojson);
-
+		try (BufferedReader br = new BufferedReader(new FileReader(fGeojson))) {
 			long start = System.currentTimeMillis();
 			System.out.println();
 			int i = 0;

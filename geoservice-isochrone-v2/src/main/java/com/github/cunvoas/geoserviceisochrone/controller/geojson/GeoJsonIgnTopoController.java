@@ -42,7 +42,6 @@ public class GeoJsonIgnTopoController {
      * @param swLng south-west longitude
      * @param neLat north-est latitude
      * @param neLng north-est longitude
-     * @param annee year of data
      * @return list of carre insee
      */
     @CrossOrigin(origins = "${web.cors.allowed-origins}")
@@ -73,7 +72,6 @@ public class GeoJsonIgnTopoController {
 
     /**
      * get IgnTopoVegetal by com2coId & polygon.
-     * @param com2coId id of com2co
      * @param polygon seach polygon
      * @return  list of IgnTopoVegetal
      */

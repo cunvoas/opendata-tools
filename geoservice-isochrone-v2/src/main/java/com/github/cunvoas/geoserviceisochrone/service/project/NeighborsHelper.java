@@ -17,8 +17,6 @@ public class NeighborsHelper {
 	/**
 	 * Trouve les N carrés voisins d'un carré donné selon la sensité.
 	 * 
-	 * @param idInspire identifiant du carré central
-	 * @param annee année de référence
 	 * @return liste des carrés voisins (max 24 ou 143 selon densité)
 	 */
 	public static List<InseeCarre200mOnlyShape> findNeighbors(InseeCarre200mOnlyShape projectCarre, List<InseeCarre200mOnlyShape> carreShapes, Integer urbanDistance) {

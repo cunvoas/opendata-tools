@@ -399,6 +399,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 	 * @param geom  Geometry
 	 * @return surface of Geometry
 	 */
+	@Override
 	public Long getSurface(Geometry geom) {
 		return irisShapeRepository.getSurface(geom);
 	}

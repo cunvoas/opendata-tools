@@ -55,6 +55,7 @@ public enum ContributeurRole implements GrantedAuthority{
 	 * Retourne la valeur du rôle sous forme de chaîne.
 	 * @return valeur du rôle
 	 */
+	@Override
 	public String toString() {
 		return this.valeur;
 	}
