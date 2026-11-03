@@ -153,7 +153,7 @@
     <dependency>
       <groupId>com.mailjet</groupId>
       <artifactId>mailjet-client</artifactId>
-      <version>6.0.1</version>
+      <version>6.2.0</version>
     </dependency>
 
     <!-- apache commons -->
@@ -259,7 +259,7 @@
     <dependency>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-core</artifactId>
-        <version>13.11.1</version>
+        <version>13.12.0</version>
     </dependency>
 
     <!-- Testcontainers PostgreSQL/PostGIS : test E2E CUJ sanity (docs/cuj-sanity-consult-map.md) -->
@@ -322,7 +322,7 @@
       <plugin>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-maven-plugin</artifactId>
-        <version>13.11.1</version>
+        <version>13.12.0</version>
         <configuration>
           <url>${FLYWAY_URL}</url>
           <user>${FLYWAY_USER}</user>
