@@ -76,7 +76,7 @@
         </button>
       </l-control>
 
-      <l-control position="topright">
+      <l-control v-if="ndviEnabled" position="topright">
         <button
           type="button"
           class="ndvi-toggle"
@@ -271,7 +271,10 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
 import { ref, onMounted } from 'vue';
-import { hexToRgba, getNdviColor } from "../utils/color.js";
+import { hexToRgba } from "../utils/color.js";
+import { getNdviCategory, getNdviColor, NDVI_CONTOUR_DALTONIEN } from "../utils/ndvi.js";
+import { interpreterStatistiquesNdvi } from "../utils/ndviInterpretation.js";
+import { features } from "../utils/features.js";
 import axios from 'axios';
 import { buildShareableUrl, isActive } from '../utils/urlParams.js';
 import debounce from 'lodash/debounce';
@@ -403,6 +406,9 @@ function getColorLegend(legendeDense, colorblindMode = false) {
   }
 
 
+// Sélection des calques mémorisée à l'activation du mode NDVI, restaurée à sa sortie.
+const CALQUES_AVANT_NDVI = 'layers-avant-ndvi';
+
 export default {
   name: "Isochrone",
   props: {
@@ -445,6 +451,7 @@ export default {
       showCadastre: false,
       colorblindMode: colorblindMode,
       ndviMode: false,
+      ndviEnabled: features.ndvi,
       refreshKey: 0,
       legendeDense: true,
       zoom: 14,
@@ -617,7 +624,22 @@ export default {
     },
     toggleNdviMode() {
       this.ndviMode = !this.ndviMode;
+      if (this.ndviMode) {
+        localStorage.setItem(CALQUES_AVANT_NDVI, JSON.stringify({
+          showParcs: this.showParcs,
+          showIsochrones: this.showIsochrones,
+          showCarre: this.showCarre,
+          showCadastre: this.showCadastre
+        }));
+        Object.assign(this, { showParcs: true, showIsochrones: false, showCarre: false, showCadastre: false });
+      } else {
+        const memoire = JSON.parse(localStorage.getItem(CALQUES_AVANT_NDVI) || 'null');
+        localStorage.removeItem(CALQUES_AVANT_NDVI);
+        if (memoire) Object.assign(this, memoire);
+      }
       this.updateParcLayerStyle();
+      // La légende NDVI de la page parente suit le mode.
+      this.$emit('ndvi-mode-changed', this.ndviMode);
     },
     updateParcLayerStyle() {
       const parcsLayer = this.$refs.parcsLayer?.leafletObject;
@@ -638,14 +660,17 @@ export default {
       this.$emit('colorblind-mode-changed', this.colorblindMode);
     },
     computeParcStyle(feature) {
-      if (this.ndviMode) {
-        const ndviColor = getNdviColor(feature?.properties?.ndviMean);
+      if (this.ndviMode && feature?.properties?.ndviEnabled) {
+        const ndviColor = getNdviColor(feature?.properties?.ndviMean, this.colorblindMode);
+        // En mode daltonien, le contour sombre délimite chaque parc sur le fond de carte.
+        const contour = this.colorblindMode
+          ? { color: NDVI_CONTOUR_DALTONIEN, opacity: 0.8 }
+          : { color: ndviColor, opacity: 0.6 };
         return {
           weight: 1,
-          color: ndviColor,
           fillColor: ndviColor,
-          opacity: 0.6,
           fillOpacity: 0.5,
+          ...contour,
         };
       }
       const fillColor = getParkColor(
@@ -977,18 +1002,42 @@ export default {
       const date = new Date(value);
       return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('fr-FR');
     },
+    formatNdviValue(value) {
+      if (value === null || value === undefined || value === '') return 'N/A';
+      const numeric = Number.parseFloat(String(value).replace(',', '.'));
+      if (Number.isNaN(numeric)) return 'N/A';
+      return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(numeric);
+    },
     buildNdviHtml(properties) {
-      if (!properties?.ndviEnabled) return '';
-      if (properties.ndviMean == null) {
-        return "<div>NDVI : pas encore calculé</div>";
+      if (!this.ndviEnabled || !properties?.ndviEnabled) return '';
+      if (properties.ndviMean === null || properties.ndviMean === undefined || properties.ndviMean === '') {
+        return "<div>NDVI pas encore calculé</div>";
       }
-      const nf = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+      const category = getNdviCategory(properties.ndviMean);
+      const diagnostic = interpreterStatistiquesNdvi({
+        moyenne: properties.ndviMean,
+        minimum: properties.ndviMin,
+        maximum: properties.ndviMax,
+        ecartType: properties.ndviStddev
+      });
       const date = this.formatNdviDate(properties.ndviAcquisitionDate);
-      return "<div>NDVI moyen: " + nf.format(properties.ndviMean) +
-        " (min " + nf.format(properties.ndviMin) +
-        ", max " + nf.format(properties.ndviMax) +
-        ", écart-type " + nf.format(properties.ndviStddev) + ")" +
+      return "<div>NDVI moyen: " + this.formatNdviValue(properties.ndviMean) +
+        " (min " + this.formatNdviValue(properties.ndviMin) +
+        ", max " + this.formatNdviValue(properties.ndviMax) +
+        ", écart-type " + this.formatNdviValue(properties.ndviStddev) + ")" +
+        (category ? "</div><div>Catégorie NDVI: " + category.label : '') +
+        (diagnostic ? "</div><div>" + diagnostic.replace('\n', "</div><div>") : '') +
         (date ? "</div><div>Acquisition: " + date : '') + "</div>";
+    },
+    buildParkDetailHtml(properties) {
+      const name = properties?.name || 'Parc sans nom';
+      return "<div><b>" + name + "</b></div>" + this.buildNdviHtml(properties);
+    },
+    showParkDetail(properties) {
+      const detail = document.getElementById('dataDetail');
+      if (detail) {
+        detail.innerHTML = this.buildParkDetailHtml(properties);
+      }
     },
     onDetailPark(feature, layer) {
       try {
@@ -1055,28 +1104,56 @@ export default {
           { permanent: false, sticky: true }
         );
 
+        if (typeof layer.on === 'function') {
+          layer.on('click', () => this.showParkDetail(feature.properties));
+        }
+
         // Appliquer la couleur du mode courant (daltonien ou NDVI)
         const style = this.computeParcStyle(feature);
-        const fillColor = style.fillColor;
         
         // setStyle only works on paths (Polygon, Polyline), not on Point markers or FeatureGroup
         if (layer.setStyle && typeof layer.setStyle === 'function') {
           layer.setStyle({
-            fillColor: fillColor,
-            color: fillColor,
+            fillColor: style.fillColor,
+            color: style.color,
           });
         }
       } catch (error) {
         console.error('Error in onDetailPark:', error, feature);
       }
     },
+    updateShareableUrl() {
+      // Mettre à jour le lien shareable en fonction de la localisation actuelle
+      const savedLocation = localStorage.getItem('location-selected');
+      if (savedLocation) {
+        try {
+          const locationData = JSON.parse(savedLocation);
+          this.shareableUrl = buildShareableUrl(locationData);
+        } catch (e) {
+          console.error('Erreur lors de la création du lien shareable:', e);
+          this.shareableUrl = null;
+        }
+      }
+    },
+    copyShareableUrl() {
+      if (!this.shareableUrl) return;
 
+      // Copier le lien dans le presse-papiers
+      navigator.clipboard.writeText(this.shareableUrl).then(() => {
+        // Confirmation discrète via la console
+        console.log('Lien copié dans le presse-papiers:', this.shareableUrl);
+      }).catch(err => {
+        console.error('Erreur lors de la copie:', err);
+      });
+    },
   },
   /**
    * Vue lifecycle hook called after the component has been mounted to the DOM.
    * Used here to add custom HTML content to the Leaflet control element.
    */
   mounted() {
+      // Chaque arrivée sur la carte est une nouvelle consultation : sélection nominale, mémoire NDVI effacée.
+      localStorage.removeItem(CALQUES_AVANT_NDVI);
       // Émettre le mode daltonien initial au parent (depuis localStorage)
       this.$emit('colorblind-mode-changed', this.colorblindMode);
   },
@@ -1289,29 +1366,5 @@ export default {
       self.loading = false;
     });
     },
-    updateShareableUrl() {
-      // Mettre à jour le lien shareable en fonction de la localisation actuelle
-      const savedLocation = localStorage.getItem('location-selected');
-      if (savedLocation) {
-        try {
-          const locationData = JSON.parse(savedLocation);
-          this.shareableUrl = buildShareableUrl(locationData);
-        } catch (e) {
-          console.error('Erreur lors de la création du lien shareable:', e);
-          this.shareableUrl = null;
-        }
-      }
-    },
-    copyShareableUrl() {
-      if (!this.shareableUrl) return;
-      
-      // Copier le lien dans le presse-papiers
-      navigator.clipboard.writeText(this.shareableUrl).then(() => {
-        // Confirmation discrète via la console
-        console.log('Lien copié dans le presse-papiers:', this.shareableUrl);
-      }).catch(err => {
-        console.error('Erreur lors de la copie:', err);
-      });
-  },
 };
 </script>

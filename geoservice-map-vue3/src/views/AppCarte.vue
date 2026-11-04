@@ -5,7 +5,7 @@
         
         <div class="border-2 border-transparent mt-4">
             <div class="text-center relative z-10">
-                <Isochrone msg="Cartographie des parcs" :location="location" @colorblind-mode-changed="updateColorblindMode" @parcs-visibility-changed="updateParcsLegend" />
+                <Isochrone msg="Cartographie des parcs" :location="location" @colorblind-mode-changed="updateColorblindMode" @parcs-visibility-changed="updateParcsLegend" @ndvi-mode-changed="updateNdviLegend" />
             </div>
         </div>
     </div>
@@ -47,6 +47,10 @@
                         <th scope="row" class="pr-2 text-left font-normal">Parcs futur ou détruit :</th>
                         <td class="px-1" colspan="3"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getParcFuturOuDetruitColor, 0.5)}`" /></td>
                     </tr>
+                    <tr v-for="(category, index) in ndviLegend" :id="`legend-ndvi-${index}`" :key="category.range" v-show="showNdviLegend">
+                        <th scope="row" class="pr-2 text-left font-normal">NDVI {{ category.range }} : {{ category.description }}</th>
+                        <td class="px-1" colspan="3"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(ndviCouleur(category), 0.5)}`" /></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -57,6 +61,7 @@
 import Isochrone from "../components/Isochrone.vue";
 import SearchLocation from "../components/SearchLocation.vue";
 import { hexToRgba } from "../utils/color.js";
+import { NDVI_CATEGORIES, couleurCategorie } from "../utils/ndvi.js";
 
 export default {
     name: "AppCarte",
@@ -68,7 +73,9 @@ export default {
         return {
             location: null,
             colorblindMode: false,
-            showParcsLegend: false
+            showParcsLegend: false,
+            showNdviLegend: false,
+            ndviLegend: NDVI_CATEGORIES
         };
     },
     computed: {
@@ -98,6 +105,9 @@ export default {
         }
     },
     methods: {
+        ndviCouleur(category) {
+            return couleurCategorie(category, this.colorblindMode);
+        },
         swatchColor(hex, alpha) {
             return hexToRgba(hex, alpha);
         },
@@ -111,6 +121,9 @@ export default {
         },
         updateParcsLegend(isShowParcs) {
             this.showParcsLegend = isShowParcs;
+        },
+        updateNdviLegend(isNdviMode) {
+            this.showNdviLegend = isNdviMode;
         }
     }
 };

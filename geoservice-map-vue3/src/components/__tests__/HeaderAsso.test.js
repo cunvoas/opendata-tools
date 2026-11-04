@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import HeaderAsso from '../HeaderAsso.vue'
 
@@ -43,5 +43,36 @@ describe('HeaderAsso.vue', () => {
     expect(wrapper.find('header nav[aria-label="Navigation principale"]').exists()).toBe(true)
     expect(wrapper.find('header h3').exists()).toBe(false)
     expect(wrapper.find('header p').exists()).toBe(true)
+  })
+})
+
+describe('HeaderAsso.vue : feature flag NDVI', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.resetModules()
+  })
+
+  async function mountWithFlag(flag) {
+    vi.stubEnv('VITE_FEATURE_NDVI', flag)
+    vi.resetModules()
+    const { default: Header } = await import('../HeaderAsso.vue')
+    return mount(Header, globalStubs)
+  }
+
+  it('affiche les liens NDVI (navigation principale et plan du site) quand le flag est actif', async () => {
+    const wrapper = await mountWithFlag('true')
+
+    expect(wrapper.findAll('a[href="/ndvi"]')).toHaveLength(2)
+    expect(wrapper.find('header nav a[href="/ndvi"]').exists()).toBe(true)
+    expect(wrapper.find('footer nav a[href="/ndvi"]').exists()).toBe(true)
+  })
+
+  it('masque les deux liens NDVI quand le flag est inactif, sans toucher aux autres', async () => {
+    const wrapper = await mountWithFlag('false')
+
+    expect(wrapper.find('a[href="/ndvi"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('NDVI')
+    expect(wrapper.find('header nav a[href="/stats"]').exists()).toBe(true)
+    expect(wrapper.find('footer nav a[href="/stats"]').exists()).toBe(true)
   })
 })

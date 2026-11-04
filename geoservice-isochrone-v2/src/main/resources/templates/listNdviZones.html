@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/fragment-head :: head(#{ndvi.zones.title})}"></head>
+
+<body class="sb-nav-fixed">
+	<div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<main>
+				<div class="container-fluid px-4">
+					<div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+						<div>
+							<h1 class="mb-1" th:text="#{ndvi.zones.title}">NDVI par EPCI</h1>
+							<p class="text-muted mb-0" th:text="#{ndvi.zones.subtitle}">
+								Restitution publique par communauté de communes.
+							</p>
+						</div>
+						<span class="badge bg-success fs-6" th:text="'Année ' + ${annee}">Année 2021</span>
+					</div>
+
+					<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">
+						<div class="col" th:each="zone : ${zones}">
+							<div class="card h-100 shadow-sm border-0 border-start border-4 border-success">
+								<div class="card-body d-flex flex-column">
+									<div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+										<h2 class="h5 mb-0" th:text="${zone.name}">EPCI</h2>
+										<span class="badge bg-light text-dark"
+											th:text="${zone.regionName != null ? zone.regionName : '—'}">Région</span>
+									</div>
+
+									<dl class="row row-cols-2 g-0 small mb-3">
+										<dt class="col-8 fw-normal text-muted">Parcs calculés</dt>
+										<dd class="col-4 text-end fw-semibold mb-1" th:text="${zone.total}">0</dd>
+										<dt class="col-8 fw-normal text-muted">Parcs avec NDVI</dt>
+										<dd class="col-4 text-end fw-semibold mb-1" th:text="${zone.withNdvi}">0</dd>
+										<dt class="col-8 fw-normal text-muted">Dernière acquisition</dt>
+										<dd class="col-4 text-end mb-0"
+											th:text="${zone.latestAcquisitionDate != null ? zone.latestAcquisitionDate : '—'}">—</dd>
+									</dl>
+
+									<div class="mt-auto d-flex flex-wrap gap-2">
+										<a class="btn btn-success btn-sm" th:href="${zone.publicUrl}"
+											target="_blank" rel="noopener noreferrer" th:text="#{ndvi.zones.public}">
+											Restitution publique
+										</a>
+										<a class="btn btn-outline-secondary btn-sm"
+											th:href="@{/mvc/management/comm2co/edit(id=${zone.id})}"
+											th:text="#{ndvi.zones.manage}">Gérer</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="alert alert-info" role="status" th:if="${#lists.isEmpty(zones)}"
+						th:text="#{ndvi.zones.empty}">
+						Aucune donnée NDVI disponible.
+					</div>
+				</div>
+			</main>
+
+			<div th:replace="~{fragments/fragment-footer :: footer}"></div>
+		</div>
+	</div>
+
+	<div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+</body>
+</html>

@@ -4,6 +4,8 @@
 export DIST_PATH=/work/PERSO/github/opendata-tools/geoservice-map-vue3
 export GH_PAGES_LOCAL_PATH=/work/PERSO/github/gh_pages/parcs-et-jardins
 
+# Feature flags (build) : décommenter pour activer l'écran NDVI dans ce déploiement
+export VITE_FEATURE_NDVI=false
 
 npm run build
 rm -Rf $GH_PAGES_LOCAL_PATH/*.html

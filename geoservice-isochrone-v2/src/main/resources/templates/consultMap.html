@@ -537,18 +537,22 @@ function createCircleFromFeature(feature, style) {
  * @returns {string} Contenu HTML formaté pour la popup
  */
 /**
- * Catégories NDVI affichées dans l'infobulle des parcs (bornes : > 0,60 ; 0,40 à 0,60 ; 0,20 à 0,40 ; < 0,20).
+ * Grille NDVI : seuils universels par type de surface, identiques à ceux de l'application publique
+ * (geoservice-map-vue3/src/utils/ndvi.js : à tenir alignés). min = borne basse incluse.
  */
 const NDVI_CATEGORIES = [
-  { min: 0.6, strict: true, label: 'Végétation très dense / Canopée haute',
-    text: 'Arbres majeurs, forêts, parcs très boisés en pleine santé.' },
-  { min: 0.4, label: 'Végétation modérée à bonne',
-    text: 'Pelouses bien vertes, arbustes, parcs urbains classiques bien entretenus.' },
-  { min: 0.2, label: 'Végétation éparse ou en stress',
-    text: 'Prairies sèches, jeunes pousses, ou parcs fortement artificialisés.' },
-  { min: -Infinity, label: 'Sols nus ou surfaces minérales',
-    text: 'Béton, bitume, terre battue, chemins de promenade.' }
+  { min: 0.5, range: '0,5 à 1,0', color: '#006837',
+    description: 'Végétation dense et saine, forêts tempérées/tropicales ou cultures en pleine maturité.' },
+  { min: 0.2, range: '0,2 à 0,5', color: '#31a354',
+    description: 'Végétation modérée, cultures en croissance, prairies vertes ou arbustes.' },
+  { min: 0.1, range: '0,1 à 0,2', color: '#78c679',
+    description: 'Végétation très éparse, prairies sèches ou début de sénescence.' },
+  { min: 0, range: '0 à 0,1', color: '#addd8e',
+    description: 'Sols nus, roches, sable ou zones urbaines artificielles.' },
+  { min: -Infinity, range: 'moins de 0', color: '#d9f0a3',
+    description: 'Eau (mers, lacs, rivières), neige ou nuages.' }
 ];
+const NDVI_ROUNDED_FORMAT = new Intl.NumberFormat('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3, useGrouping: false });
 
 /**
  * Construit le bloc NDVI de l'infobulle d'un parc (vide si le NDVI n'est pas activé).
@@ -557,18 +561,20 @@ const NDVI_CATEGORIES = [
  */
 function createNdviHtml(props) {
   if (!props || !props.ndviEnabled) return '';
-  if (props.ndviMean === null || props.ndviMean === undefined) {
+  const mean = Number(props.ndviMean);
+  if (props.ndviMean === null || props.ndviMean === undefined || !Number.isFinite(mean)) {
     return `<span style="display:block">NDVI : pas encore calculé</span>`;
   }
   const nf = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
-  const mean = Number(props.ndviMean);
-  const category = NDVI_CATEGORIES.find(c => c.strict ? mean > c.min : mean >= c.min);
+  // Classé sur la valeur arrondie comme affichée (3 décimales), comme l'application publique.
+  const rounded = Number(NDVI_ROUNDED_FORMAT.format(mean));
+  const category = NDVI_CATEGORIES.find(c => rounded >= c.min);
   let html = `<span style="display:block;margin-top:.3em"><b>NDVI moyen : ${nf.format(mean)}</b>`;
   if (props.ndviMin !== null && props.ndviMax !== null && props.ndviMin !== undefined && props.ndviMax !== undefined) {
     html += ` (min ${nf.format(props.ndviMin)}, max ${nf.format(props.ndviMax)})`;
   }
   html += `</span>`;
-  html += `<span style="display:block"><i>${category.label}.</i> ${category.text}</span>`;
+  html += `<span style="display:block"><span style="display:inline-block;width:.8em;height:.8em;margin-right:.3em;border:1px solid #555;background:${category.color}"></span><i>${category.range} :</i> ${category.description}</span>`;
   return html;
 }
 
