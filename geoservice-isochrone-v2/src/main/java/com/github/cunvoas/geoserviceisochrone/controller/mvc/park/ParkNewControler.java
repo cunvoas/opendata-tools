@@ -249,7 +249,7 @@ public class ParkNewControler {
 			}
 			
 		} catch (Exception e) {
-			log.error("geoman parsing error = ", LogSanitizer.sanitize(sGeom));
+			log.error("geoman parsing error = {}", LogSanitizer.sanitize(sGeom));
 		}	
 		
 		
