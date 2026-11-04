@@ -552,7 +552,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 			
 			//lookup for carre200m data
 			Filosofil200m carre = filosofil200mRepository.findByAnneeAndIdInspire(annee, carreShape.getIdInspire());
-			Long popCar = 0L;
+			long popCar = 0L;
 			if (carre!=null) {
 				popCar =Math.round(carre.getNbIndividus().doubleValue());
 			}
@@ -650,7 +650,7 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 				
 				//lookup for carre200m data
 				Filosofil200m carre = filosofil200mRepository.findByAnneeAndIdInspire(annee, carreShape.getIdInspire());
-				Long popCar = 0L;
+				long popCar = 0L;
 				if (carre!=null) {
 					popCar =Math.round(carre.getNbIndividus().doubleValue());
 				}

@@ -15,7 +15,7 @@ public class AccessingSurfaceSortStrategy implements ProposalSortStrategy {
         List<ParkProposalWork> proposals = new ArrayList<>(carreMap.values());
         proposals.sort((p1, p2) -> {
             double accs1 = p1.getAccessingSurface() != null ? p1.getAccessingSurface().doubleValue() : 0;
-            Double accs2 = p2.getAccessingSurface() != null ? p2.getAccessingSurface().doubleValue() : 0;
+            double accs2 = p2.getAccessingSurface() != null ? p2.getAccessingSurface().doubleValue() : 0;
             // croissant
             return Double.compare(accs1, accs2);
         });

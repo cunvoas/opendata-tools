@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.config.security;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -10,19 +11,14 @@ import java.util.List;
  * <p>
  * Permet d'obtenir le sous-réseau local et de gérer des listes blanches ou privées d'adresses IP.
  * </p>
- * @TODO Compléter les méthodes pour une gestion avancée des réseaux locaux.
  */
 public class LocalNetworkHelper {
-
-//	public static void main(String[] args) throws Exception {
-//		System.out.println(getSubnet());
-//	}
 
 	private static List<String> whitelist = new ArrayList<String>();
 	static {
 		whitelist.add("127.0.0");
-		whitelist.add("127.0.1");
 		whitelist.add("192.168.1");
+		whitelist.add("192.168.8");
 		whitelist.add("172.19.0");
 	}
 	
@@ -41,8 +37,46 @@ public class LocalNetworkHelper {
 	 */
 	private static String getSubnet() throws UnknownHostException {
 	    InetAddress localHost = InetAddress.getLocalHost();
-	    System.out.println(localHost);
 	    byte[] ipAddr = localHost.getAddress();
 	    return String.format("%d.%d.%d", (ipAddr[0] & 0xFF), (ipAddr[1] & 0xFF), (ipAddr[2] & 0xFF));
+	}
+	
+	/**
+	 * Indique si le sous-réseau local est dans la liste blanche ou dans une plage privée.
+	 * @return vrai si le sous-réseau local est autorisé, faux sinon
+	 */
+	public boolean isLocalOrWhitelisted() {
+		try {
+			return matches(getSubnet());
+		} catch (UnknownHostException e) {
+			return false;
+		}
+	}
+
+	static boolean matches(String sub) {
+		if (whitelist.contains(sub)) {
+			return true;
+		}
+		int[] ip = toOctets(sub);
+		for (String[] range : privateNetwork) {
+			if (compare(ip, toOctets(range[0])) >= 0 && compare(ip, toOctets(range[1])) <= 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static int[] toOctets(String dotted) {
+		return Arrays.stream(dotted.split("\\.")).mapToInt(Integer::parseInt).toArray();
+	}
+
+	/** Compare les premiers octets de la borne, les bornes pouvant être plus courtes (ex: 10.0). */
+	private static int compare(int[] ip, int[] bound) {
+		for (int i = 0; i < bound.length; i++) {
+			if (ip[i] != bound[i]) {
+				return Integer.compare(ip[i], bound[i]);
+			}
+		}
+		return 0;
 	}
 }
