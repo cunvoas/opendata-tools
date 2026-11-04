@@ -15,7 +15,7 @@ public class DeficitProposalSortStrategy implements ProposalSortStrategy {
         List<ParkProposalWork> proposals = new ArrayList<>(carreMap.values());
         proposals.sort((p1, p2) -> {
             double deficit1 = p1.getNewMissingSurface() != null ? p1.getNewMissingSurface().doubleValue() : 0;
-            Double deficit2 = p2.getNewMissingSurface() != null ? p2.getNewMissingSurface().doubleValue() : 0;
+            double deficit2 = p2.getNewMissingSurface() != null ? p2.getNewMissingSurface().doubleValue() : 0;
             // décroissant
             return Double.compare(deficit2, deficit1);
         });

@@ -198,7 +198,7 @@ public class IterativeComputationDBSCANStrategy extends AbstractComputationtrate
 
                 if (neighbor.getAccessingPopulation() != null
                         && neighbor.getAccessingPopulation().doubleValue() != 0) {
-                    Double neighborNewSurfacePerCapita =
+                    double neighborNewSurfacePerCapita =
                             neighborNewTotalSurface
                                     / neighbor.getAccessingPopulation().doubleValue();
                     neighbor.setNewSurfacePerCapita(BigDecimal.valueOf(neighborNewSurfacePerCapita));

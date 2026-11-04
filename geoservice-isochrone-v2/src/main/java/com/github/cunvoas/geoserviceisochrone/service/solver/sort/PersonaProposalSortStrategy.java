@@ -15,7 +15,7 @@ public class PersonaProposalSortStrategy implements ProposalSortStrategy {
         List<ParkProposalWork> proposals = new ArrayList<>(carreMap.values());
         proposals.sort((p1, p2) -> {
             double scpc1 = p1.getNewSurfacePerCapita() != null ? p1.getNewSurfacePerCapita().doubleValue() : 0;
-            Double scpc2 = p2.getNewSurfacePerCapita() != null ? p2.getNewSurfacePerCapita().doubleValue() : 0;
+            double scpc2 = p2.getNewSurfacePerCapita() != null ? p2.getNewSurfacePerCapita().doubleValue() : 0;
             // croissant
             return Double.compare(scpc1, scpc2);
         });
