@@ -25,10 +25,11 @@ L'application utilise une méthodologie rigoureuse pour évaluer la couverture :
 - **Isochrone** : Zone atteignable à pied en un temps donné depuis un point d'entrée. 
 - **Carreau INSEE** : Maille de 200m × 200m utilisée pour agréger les données de population.
 - **m² / habitant** : Ratio entre la surface totale des parcs accessibles et la population couverte par les isochrones.
+- *NDVI** : Indice de Végétation par Différence Normalisée est un indicateur clé en télédétection et en agriculture de précision qui permet de mesurer la densité, la santé et la vigueur de la végétation verte.
 
 ## Technologies et Sources
 - **Cartographie** : Leaflet, Vue 3, Tailwind CSS.
-- **Données** : IGN (isochrones), INSEE (population et densité), Gouvernement (cadastre), OpenData MEL.
+- **Données** : IGN (isochrones), INSEE (population et densité), Gouvernement (cadastre), OpenData MEL, Copernicus.
 - **Licence** : Opensource sous licence ****.
 
 ## Liens Utiles
