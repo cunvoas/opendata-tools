@@ -26,6 +26,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.proposal.manual.ManualParkPro
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.AbstractComputationtrategy;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,18 +70,9 @@ public class ManualProposalEvaluationService {
      * @param annee Année du calcul
      * @return GeoJsonRoot contenant les géométries des carreaux et leurs propriétés avant/après
      */
-    private String sanitizeForLog(String value) {
-        if (value == null) {
-            return null;
-        }
-        return value.replace('\n', '_')
-                .replace('\r', '_')
-                .replace('\t', '_');
-    }
-
     @Transactional
     public GeoJsonRoot evaluate(String insee, Integer annee) {
-        String safeInsee = sanitizeForLog(insee);
+        String safeInsee = LogSanitizer.sanitize(insee);
         log.info("Manual proposal evaluation for INSEE={}, annee={}", safeInsee, annee);
         GeoJsonRoot root = new GeoJsonRoot();
         if (annee == null) {
@@ -121,7 +113,7 @@ public class ManualProposalEvaluationService {
         // 5. Chargement des propositions manuelles tracées par l'utilisateur
         List<ManualParkProposal> proposals = manualProposalService.findByInsee(insee, annee);
         if (proposals == null || proposals.isEmpty()) {
-            log.warn("No manual proposals found for INSEE={}", insee);
+            log.warn("No manual proposals found for INSEE={}", safeInsee);
             return root;
         }
 
@@ -233,16 +225,16 @@ public class ManualProposalEvaluationService {
      */
     @Transactional(readOnly = true)
     public GeoJsonRoot loadEvaluation(String insee, Integer annee) {
-        log.info("Load manual evaluation for INSEE={}, annee={}", insee, annee);
+        log.info("Load manual evaluation for INSEE={}, annee={}", LogSanitizer.sanitize(insee), annee);
         GeoJsonRoot root = new GeoJsonRoot();
         if (annee == null) {
-            log.warn("No annee provided for INSEE={}", insee);
+            log.warn("No annee provided for INSEE={}", LogSanitizer.sanitize(insee));
             return root;
         }
 
         ManualParkProposalMeta meta = manualParkProposalMetaRepository.findByAnneeAndInsee(annee, insee);
         if (meta == null) {
-            log.warn("No meta found for INSEE={}, annee={}", insee, annee);
+            log.warn("No meta found for INSEE={}, annee={}", LogSanitizer.sanitize(insee), annee);
             return root;
         }
 

@@ -5,6 +5,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
 import org.springframework.stereotype.Component;
 
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +40,7 @@ public class AuthenticationFailureListener implements ApplicationListener<Authen
         } else {
         	String ip = xfHeader.split(",")[0];
             loginAttemptService.loginFailed(xfHeader.split(",")[0]);
-            log.error("IP reported case 2 {}", ip);
+            log.error("IP reported case 2 {}", LogSanitizer.sanitize(ip));
         }
     }
 }

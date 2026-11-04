@@ -5,6 +5,8 @@ import java.io.IOException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +30,7 @@ public class PrometheusFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String path = request.getRequestURI();
         if (log.isInfoEnabled()) {
-            log.info("{} {} from {}", request.getMethod(), path, request.getRemoteAddr());
+            log.info("{} {} from {}", request.getMethod(), LogSanitizer.sanitize(path), request.getRemoteAddr());
         }
         filterChain.doFilter(request, response);
     }

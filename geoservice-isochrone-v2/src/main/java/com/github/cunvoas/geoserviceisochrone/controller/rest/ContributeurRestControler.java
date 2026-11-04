@@ -18,6 +18,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,7 +55,7 @@ public class ContributeurRestControler {
 			 @RequestParam(value = "r") Long idRegion,
 			 @RequestParam(value = "q", required = false) String query
 			 ) {
-		 log.info("rest search_c2c reg:{},q:{}", idRegion, query);
+		 log.info("rest search_c2c reg:{},q:{}", idRegion, LogSanitizer.sanitize(query));
         if (StringUtils.isEmpty(query)) {
             return convertListToStream(communauteCommuneRepository.findByRegionId(idRegion))
                          .limit(MAX_LINE)
@@ -84,7 +85,7 @@ public class ContributeurRestControler {
 			 @RequestParam(value = "c", required = false) Long idC2C,
 			 @RequestParam(value = "q", required = false) String query
 			 ) {
-		 log.info("rest search_city reg:{},c2c:{},q:{}", idRegion, idC2C, query);
+		 log.info("rest search_city reg:{},c2c:{},q:{}", idRegion, idC2C, LogSanitizer.sanitize(query));
 		 
 		 List<SearchListDto> ret = new ArrayList<>();
 		 

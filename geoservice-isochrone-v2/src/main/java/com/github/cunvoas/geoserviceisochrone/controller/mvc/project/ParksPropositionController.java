@@ -20,6 +20,7 @@ import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalMeta;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ParkProposalMetaRepository;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.solver.ServicePropositionParc;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,7 +62,7 @@ public class ParksPropositionController {
      */
     @GetMapping
     public String show(@ModelAttribute FormProposition form, Model model) {
-        log.debug("show() - form={}", form);
+        log.debug("show() - form={}", LogSanitizer.sanitize(form));
         populate(form, model);
        
         model.addAttribute("regions", form.getRegions());
@@ -128,7 +129,7 @@ public class ParksPropositionController {
     public String compute(
             @ModelAttribute FormProposition form,
             Model model) {
-        log.info("compute() - form={}, commune={}, algorithm={}", form, form.getCodeInsee(), form.getType());
+        log.info("compute() - form={}, commune={}, algorithm={}", LogSanitizer.sanitize(form), LogSanitizer.sanitize(form.getCodeInsee()), form.getType());
         
         
         // Anti double-soumission côté serveur: validation du token temporel
@@ -161,11 +162,11 @@ public class ParksPropositionController {
         try {
             // Launch proposal computation
             log.info("Lancement du calcul de proposition pour INSEE={}, année={}, algo={}", 
-                    form.getCodeInsee(), form.getAnnee(), form.getType());
+                    LogSanitizer.sanitize(form.getCodeInsee()), form.getAnnee(), form.getType());
             servicePropositionParc.calculeProposition(form.getCodeInsee(), form.getAnnee(), form.getType());
             
             model.addAttribute("computeSuccess", "Calcul lancé avec succès pour " + form.getNameCommune());
-            log.info("Calcul de proposition terminé pour INSEE={}", form.getCodeInsee());
+            log.info("Calcul de proposition terminé pour INSEE={}", LogSanitizer.sanitize(form.getCodeInsee()));
         
         } catch (Exception e) {
             log.error("Erreur lors du calcul de proposition", e);
@@ -182,7 +183,7 @@ public class ParksPropositionController {
     public String delete(@ModelAttribute FormProposition form, Model model) {
     	
     	
-        log.info("delete() - form={}, commune={}", form, form.getCodeInsee());
+        log.info("delete() - form={}, commune={}", LogSanitizer.sanitize(form), LogSanitizer.sanitize(form.getCodeInsee()));
         
 //        if (form.getId() == null ) {
 //            log.warn("Code manquant lors de l'effacement de la proposition");
@@ -304,7 +305,7 @@ public class ParksPropositionController {
         if (form.getCodeInsee() != null && !form.getCodeInsee().isEmpty()) {
             List<ParkProposalMeta> propositions =  parkProposalMetaRepository.findByInsee(form.getCodeInsee());
             
-            log.debug("Chargement de {} propositions pour INSEE={}", propositions.size(), form.getCodeInsee());
+            log.debug("Chargement de {} propositions pour INSEE={}", propositions.size(), LogSanitizer.sanitize(form.getCodeInsee()));
             model.addAttribute("propositions", propositions);
         } else {
             model.addAttribute("propositions", new ArrayList<>());

@@ -22,6 +22,7 @@ import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulator;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ProjectSimulatorWork;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.project.ProjectSimulatorService;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,7 +62,7 @@ public class ProjectSimulatorController {
      */
     @GetMapping
     public String show(@ModelAttribute FormProjectSimulator form, Model model) {
-        log.debug("show() - form={}", form);
+        log.debug("show() - form={}", LogSanitizer.sanitize(form));
         populate(form);
         
         List<ProjectSimulator> projects = form.getIdCommune() != null ? projectSimulatorService.findByCity(form.getIdCommune()) : List.of();
@@ -223,7 +224,7 @@ public class ProjectSimulatorController {
             @RequestParam(required = false) String sGeometry,
             @RequestParam("token") String token,
             Model model) {
-        log.info("compute() - form={}, sGeometry={}", form, sGeometry != null ? "provided" : "null");
+        log.info("compute() - form={}, sGeometry={}", LogSanitizer.sanitize(form), sGeometry != null ? "provided" : "null");
         
         // Anti double-soumission côté serveur: validation du token temporel
         Boolean isValid = tokenManagement.isTokenValid(token);
@@ -254,7 +255,7 @@ public class ProjectSimulatorController {
 				log.info("Géométrie vide ou supprimée");
 			}
 		} catch (Exception e) {
-			log.error("geoman parsing error = ", sGeom);
+			log.error("geoman parsing error = ", LogSanitizer.sanitize(sGeom));
 		}	
         
         // Traitement du simulateur avec la géométrie (comme pour NewPark)

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import com.github.cunvoas.geoserviceisochrone.extern.gouv.adress.dto.AdressBo;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,7 +47,7 @@ public class AdresseClientServiceGouvImpl implements AdresseClientService {
      */
 	@Override
 	public Set<AdressBo> getAdresses(String insee, String requete) {
-		log.info("insee={}, q={}", insee, requete);
+		log.info("insee={}, q={}", LogSanitizer.sanitize(insee), LogSanitizer.sanitize(requete));
 		
 		//FIX because select2 send an array
 		if (requete.indexOf(',')>0) {
@@ -68,7 +69,7 @@ public class AdresseClientServiceGouvImpl implements AdresseClientService {
 		StringBuilder sb = new StringBuilder(URL);
 		sb.append("search/?citycode=").append(insee);
 		sb.append("&q=").append(encodeValue(requete));
-		log.debug(sb.toString());
+		log.debug(LogSanitizer.sanitize(sb.toString()));
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
@@ -101,7 +102,7 @@ public class AdresseClientServiceGouvImpl implements AdresseClientService {
 					.retrieve()
 					.body(String.class);
 		} catch (Exception e) {
-			log.error("Request failed for url: {}", url, e);
+			log.error("Request failed for url: {}", LogSanitizer.sanitize(url), e);
 			return "";
 		}
 	}

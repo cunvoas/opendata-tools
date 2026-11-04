@@ -30,6 +30,7 @@ import com.github.cunvoas.geoserviceisochrone.service.solver.compute.AbstractCom
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalComputationStrategy;
 import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationStrategyFactory;
 import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -116,7 +117,7 @@ public class ServicePropositionParc {
 	 * @param annee
 	 */
 	public Map<String, ParkProposalWork> calculeProposition(String insee, Integer annee, ProposalComputationTypeAlgo typeAlgo) {
-		log.warn("Calcul des propositions de parc pour la commune {} en {}", insee, annee);
+		log.warn("Calcul des propositions de parc pour la commune {} en {}", LogSanitizer.sanitize(insee), annee);
 		
 		Boolean dense = serviceOpenData.isDistanceDense(insee);
 		// Distance OMS selon densité
@@ -176,10 +177,10 @@ public class ServicePropositionParc {
 		}
 		
 		if (squaresOnTerritoryMap.isEmpty()) {
-			log.info("Aucun carré avec données pour la commune {} en {}", insee, annee);
+			log.info("Aucun carré avec données pour la commune {} en {}", LogSanitizer.sanitize(insee), annee);
 		} else  {
 			log.info("Calcul des propositions pour {} carrés dans la commune {} en {} (dense={}): reco={} m²/hab, min={} m²/hab, distance={} m", 
-					squaresOnTerritoryMap.size(), insee, annee, dense, recoSquareMeterPerCapita, minSquareMeterPerCapita, urbanDistance);
+					squaresOnTerritoryMap.size(), LogSanitizer.sanitize(insee), annee, dense, recoSquareMeterPerCapita, minSquareMeterPerCapita, urbanDistance);
 		}
 		
 		ParkProposalMeta ppm  = parkProposalMetaRepository.findByAnneeAndInseeAndTypeAlgo(annee, insee, typeAlgo);
@@ -217,7 +218,7 @@ public class ServicePropositionParc {
 			parkProposalMetaRepository.save(ppm);
 			parkProposalWorkRepository.saveAll(squaresOnTerritoryMap.values());
 		} else {
-			log.warn("Aucune proposition calculée pour la commune {} en {}", insee, annee);
+			log.warn("Aucune proposition calculée pour la commune {} en {}", LogSanitizer.sanitize(insee), annee);
 		}
 		return squaresOnTerritoryMap;
 	}

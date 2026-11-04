@@ -17,6 +17,7 @@ import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
 import com.github.cunvoas.geoserviceisochrone.model.tools.ParkPhoto;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkPhotoRepository;
 import com.github.cunvoas.geoserviceisochrone.service.park.dto.PhotoDto;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 import com.google.common.hash.Hashing;
 
 import lombok.extern.slf4j.Slf4j;
@@ -67,13 +68,13 @@ public class PhotoService {
 			}
 			
 		} catch (IllegalStateException e) {
-			log.error(dto.toString(), e);
+			log.error(LogSanitizer.sanitize(dto), e);
 			throw new ExceptionPhoto("IllegalStateException");
 		} catch (ImageProcessingException e) {
-			log.error(dto.toString(), e);
+			log.error(LogSanitizer.sanitize(dto), e);
 			throw new ExceptionPhoto("ImageProcessingException");
 		} catch (IOException e) {
-			log.error(dto.toString(), e);
+			log.error(LogSanitizer.sanitize(dto), e);
 			throw new ExceptionPhoto("IOException");
 		}
 		
@@ -146,7 +147,7 @@ public class PhotoService {
 		String sha256hex = null;
 		if (originalFile.exists()) {
 			Path p = Path.of(originalFile.getPath());
-			log.info("read for hash {}", originalFile.getPath());
+			log.info("read for hash {}", LogSanitizer.sanitize(originalFile.getPath()));
 			byte[] content = Files.readAllBytes(p);
 			
 			sha256hex = Hashing.sha256()

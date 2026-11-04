@@ -39,6 +39,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkJardinService;
 import com.github.cunvoas.geoserviceisochrone.service.park.ParkTypeService;
 import com.github.cunvoas.geoserviceisochrone.service.park.PhotoService;
 import com.github.cunvoas.geoserviceisochrone.service.park.dto.PhotoDto;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -248,7 +249,7 @@ public class ParkNewControler {
 			}
 			
 		} catch (Exception e) {
-			log.error("geoman parsing error = ", sGeom);
+			log.error("geoman parsing error = ", LogSanitizer.sanitize(sGeom));
 		}	
 		
 		
@@ -266,7 +267,7 @@ public class ParkNewControler {
 	@PostMapping("/save")
 	@Transactional //(isolation = Isolation.READ_COMMITTED) //(noRollbackFor = ExceptionGeo.class)
 	public String save(@ModelAttribute FormParkNew form, @RequestParam("token") String token, Model model, BindingResult bindingResult) {
-		log.warn("Generic save: {}", form);
+		log.warn("Generic save: {}", LogSanitizer.sanitize(form));
 		
 		// Anti double-soumission côté serveur: validation du token temporel
 		Boolean isValid = tokenManagement.isTokenValid(token);
@@ -297,30 +298,30 @@ public class ParkNewControler {
 		
 		// create poly
 		if("new".equals(form.getEtatAction())) {
-			log.warn("NEW: {}", form);
+			log.warn("NEW: {}", LogSanitizer.sanitize(form));
 //			this.addPark(form, model);
 			
 		} else if("add".equals(form.getEtatAction())) {
-			log.warn("ADD: {}", form);
+			log.warn("ADD: {}", LogSanitizer.sanitize(form));
 //			this.addPark(form, model);
 			
 		} else if("edit".equals(form.getEtatAction())) {
-			log.warn("EDIT: {}", form);
+			log.warn("EDIT: {}", LogSanitizer.sanitize(form));
 //			this.updPark(form, model);
 			
 		// change poly
 		} else if("change".equals(form.getEtatAction())) {
-			log.warn("CHANGE: {}", form);
+			log.warn("CHANGE: {}", LogSanitizer.sanitize(form));
 //			this.updPark(form, model);
 		
 		// remove poly
 		} else if("remove".equals(form.getEtatAction())) {
-			log.warn("REMOVE: {}", form);
+			log.warn("REMOVE: {}", LogSanitizer.sanitize(form));
 //			this.delPark(form, model);
 			
 		} else {
 			//nothing todo
-			log.warn("Nothing to DO: {}", form);
+			log.warn("Nothing to DO: {}", LogSanitizer.sanitize(form));
 		}
 		
 		// PRG: évite la double soumission en redirigeant vers la page d'édition

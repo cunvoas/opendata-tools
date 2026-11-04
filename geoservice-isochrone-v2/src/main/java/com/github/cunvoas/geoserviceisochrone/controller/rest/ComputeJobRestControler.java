@@ -24,6 +24,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 @RestController
 @RequestMapping("/mvc/ajax/jobs/api")
@@ -49,11 +50,11 @@ public class ComputeJobRestControler {
 	public ResponseEntity<ComputeJobResponse> request(@RequestBody ComputeJobRequest req) {
 		HttpStatus code = HttpStatus.OK;
 
-		log.warn("ComputeJobRequest received: {}", req);
+		log.warn("ComputeJobRequest received: {}", LogSanitizer.sanitize(req));
 
 		Boolean isValid = tokenManagement.isTokenValid(req.getToken());
 		if (!isValid) {
-			log.error("Invalid token for ComputeJobRequest: {}", req);
+			log.error("Invalid token for ComputeJobRequest: {}", LogSanitizer.sanitize(req));
 			return new ResponseEntity<ComputeJobResponse>(HttpStatus.UNAUTHORIZED);
 		}
 		Contributeur contrib = (Contributeur) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -95,7 +96,7 @@ public class ComputeJobRestControler {
 			resp.setNbCarre(0);
 			code = HttpStatus.FORBIDDEN;
 		} else {
-			log.error("ComputeJobRequest without valid id: {}", req);
+			log.error("ComputeJobRequest without valid id: {}", LogSanitizer.sanitize(req));
 			code = HttpStatus.BAD_REQUEST;
 		}
 
