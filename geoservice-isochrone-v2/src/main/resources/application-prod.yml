@@ -1,7 +1,7 @@
 server:
   servlet:
     contextPath: /isochrone
-
+  forward-headers-strategy: native
 
 # Config for PROD
 spring:
