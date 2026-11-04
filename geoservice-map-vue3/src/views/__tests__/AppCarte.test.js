@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import AppCarte from '../AppCarte.vue';
+import { hexToRgba } from '../../utils/color.js';
+import { NDVI_CATEGORIES } from '../../utils/ndvi.js';
 
 function mountAppCarte() {
   return mount(AppCarte, {
@@ -17,6 +19,9 @@ function mountAppCarte() {
     }
   });
 }
+
+const ndviRows = (wrapper) => wrapper.findAll('tr[id^="legend-ndvi-"]');
+const isHidden = (row) => (row.attributes('style') ?? '').includes('display: none');
 
 describe('AppCarte', () => {
   it('expose swatchColor à l\'instance (hexToRgba utilisable par le template)', () => {
@@ -38,5 +43,47 @@ describe('AppCarte', () => {
     expect(wrapper.find('h1').exists()).toBe(true);
     expect(wrapper.find('caption').text()).toBe('Légende de la carte');
     expect(wrapper.find('th').exists()).toBe(true);
+  });
+
+  it('masque la légende NDVI tant que le mode NDVI de la carte n’est pas actif', () => {
+    const wrapper = mountAppCarte();
+
+    expect(ndviRows(wrapper)).toHaveLength(NDVI_CATEGORIES.length);
+    expect(ndviRows(wrapper).every(isHidden)).toBe(true);
+  });
+
+  it('affiche la légende NDVI (seuils, texte, couleurs de la grille) quand le mode NDVI est actif', async () => {
+    const wrapper = mountAppCarte();
+    const isochrone = wrapper.findComponent('[data-stub="isochrone"]');
+
+    isochrone.vm.$emit('ndvi-mode-changed', true);
+    await wrapper.vm.$nextTick();
+
+    const rows = ndviRows(wrapper);
+    expect(rows.some(isHidden)).toBe(false);
+    expect(rows.map((row) => row.find('th').text())).toEqual(
+      NDVI_CATEGORIES.map((category) => `NDVI ${category.range} : ${category.description}`)
+    );
+    rows.forEach((row, index) => {
+      // même transparence que les polygones de la carte (fillOpacity 0,5)
+      expect(row.find('td div').attributes('style')).toContain(hexToRgba(NDVI_CATEGORIES[index].color, 0.5));
+    });
+
+    isochrone.vm.$emit('ndvi-mode-changed', false);
+    await wrapper.vm.$nextTick();
+    expect(ndviRows(wrapper).every(isHidden)).toBe(true);
+  });
+
+  it('la légende NDVI suit le mode daltonien de la carte', async () => {
+    const wrapper = mountAppCarte();
+    const isochrone = wrapper.findComponent('[data-stub="isochrone"]');
+
+    isochrone.vm.$emit('colorblind-mode-changed', true);
+    isochrone.vm.$emit('ndvi-mode-changed', true);
+    await wrapper.vm.$nextTick();
+
+    ndviRows(wrapper).forEach((row, index) => {
+      expect(row.find('td div').attributes('style')).toContain(hexToRgba(NDVI_CATEGORIES[index].colorDaltonien, 0.5));
+    });
   });
 });

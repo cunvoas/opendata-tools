@@ -2,7 +2,7 @@
   "name": "geoservice-map-vue3",
   "private": true,
   "license": "AGPL-3.0",
-  "version": "2.0.9",
+  "version": "2.0.13",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,9 +11,9 @@
     "build:github": "vite build --mode github",
     "preview": "vite preview",
     "sonar": "sonar-scanner",
-    "sonar:local": "sonar-scanner -Dsonar.host.url=http://192.168.1.20:9000",
+    "sonar:local": "sonar-scanner -Dsonar.host.url=http://192.168.8.21:9000",
     "sonar:token": "sonar-scanner -Dsonar.token=$SONAR_TOKEN",
-    "sonar:full": "npm run test:coverage && sonar-scanner -Dsonar.host.url=http://192.168.1.20:9000 -Dsonar.token=$SONAR_TOKEN",
+    "sonar:full": "npm run test:coverage && sonar-scanner -Dsonar.host.url=http://192.168.8.21:9000 -Dsonar.token=$SONAR_TOKEN",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head th:replace="~{fragments/fragment-head :: head(#{menu.methodology})}" />
+
+<body class="sb-nav-fixed">
+	<div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
+	<div id="layoutSidenav">
+		<div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
+
+		<div id="layoutSidenav_content">
+			<main>
+				<div class="container-fluid px-4">
+					<nav aria-label="breadcrumb" class="mt-4">
+						<ol class="breadcrumb mb-2">
+							<li class="breadcrumb-item">
+								<a th:href="@{/mvc/dashboard}" th:text="#{menu.abstract.dashboard}">Synthèse</a>
+							</li>
+							<li class="breadcrumb-item active" aria-current="page" th:text="#{menu.methodology}">Méthodologie</li>
+						</ol>
+					</nav>
+
+					<div th:switch="${topic}">
+						<th:block th:case="'opendata'">
+							<div th:replace="~{methodology/content :: opendata}"></div>
+						</th:block>
+						<th:block th:case="'parcs'">
+							<div th:replace="~{methodology/content :: parcs}"></div>
+						</th:block>
+						<th:block th:case="'insee-ign'">
+							<div th:replace="~{methodology/content :: inseeIgn}"></div>
+						</th:block>
+						<th:block th:case="'ndvi'">
+							<div th:replace="~{methodology/content :: ndvi}"></div>
+						</th:block>
+						<th:block th:case="'calculs'">
+							<div th:replace="~{methodology/content :: calculs}"></div>
+						</th:block>
+						<th:block th:case="'propositions'">
+							<div th:replace="~{methodology/content :: propositions}"></div>
+						</th:block>
+					</div>
+				</div>
+			</main>
+
+			<div th:replace="~{fragments/fragment-footer :: footer}"></div>
+		</div>
+	</div>
+
+	<div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
+	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+</body>
+</html>

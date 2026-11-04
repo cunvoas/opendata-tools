@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.GeoJsonCadastreController;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.NdviController;
+import com.github.cunvoas.geoserviceisochrone.controller.geojson.NdviController.NdviSummaries;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
@@ -56,13 +58,15 @@ public class ServicePublicationExporter {
             ServiceReadReferences serviceReadReferences,
             CadastreRepository cadastreRepository,
             GeoJsonCadastreController geoJsonCadastreController,
-            GeoMapServiceV2 geoMapServiceV2) {
+            GeoMapServiceV2 geoMapServiceV2,
+            NdviController ndviController) {
         this.objectMapper = objectMapper;
         this.applicationBusinessProperties = applicationBusinessProperties;
         this.serviceReadReferences = serviceReadReferences;
         this.cadastreRepository = cadastreRepository;
         this.geoJsonCadastreController = geoJsonCadastreController;
         this.geoMapServiceV2 = geoMapServiceV2;
+        this.ndviController = ndviController;
     }
 
 	private final ApplicationBusinessProperties applicationBusinessProperties;
@@ -74,6 +78,8 @@ public class ServicePublicationExporter {
 	private final GeoJsonCadastreController geoJsonCadastreController;
 	
 	private final GeoMapServiceV2 geoMapServiceV2;
+
+	private final NdviController ndviController;
 	
 
 
@@ -162,6 +168,39 @@ public class ServicePublicationExporter {
 		}
 	}
 	
+	/**
+	 * Écrit les JSON NDVI publics d'un EPCI pour une année : un fichier pour l'EPCI et un par commune
+	 * ayant des mesures (une commune sans fichier est affichée « NDVI non disponible » par le front).
+	 * @param com2co communauté de communes
+	 * @param annee année de référence
+	 * @return les fichiers écrits : celui de l'EPCI, puis ceux des communes
+	 * @throws IOException en cas d'erreur d'écriture
+	 */
+	public List<File> writeNdviJson(CommunauteCommune com2co, Integer annee) throws IOException {
+		List<File> written = new ArrayList<>();
+		String path = applicationBusinessProperties.getJsonFileFolder()+"/data/ndvi/"+String.valueOf(com2co.getId());
+		File folder = new File(path);
+		folder.mkdirs();
+
+		NdviSummaries summaries = ndviController.summaries(annee, com2co.getId());
+		File file = new File(folder, "ndvi_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");
+		objectMapper.writeValue(file, summaries);
+		written.add(file);
+
+		for (City city : com2co.getCities()) {
+			NdviSummaries citySummaries = ndviController.summaries(annee, null, city.getId());
+			if (citySummaries.withNdvi() == 0) {
+				continue;
+			}
+			File cityFolder = new File(folder, String.valueOf(city.getId()));
+			cityFolder.mkdirs();
+			File cityFile = new File(cityFolder, "ndvi_"+String.valueOf(annee)+"_"+String.valueOf(city.getId())+".json");
+			objectMapper.writeValue(cityFile, citySummaries);
+			written.add(cityFile);
+		}
+		return written;
+	}
+
 	/**
 	 * Generate a square that contains the global shape of CommunauteCommune.
 	 * fast select but slower after because too many item after.

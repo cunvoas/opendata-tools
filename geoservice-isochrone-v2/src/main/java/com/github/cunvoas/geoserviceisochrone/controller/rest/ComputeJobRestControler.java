@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.TokenManagement;
 import com.github.cunvoas.geoserviceisochrone.controller.rest.bo.ComputeJobRequest;
 import com.github.cunvoas.geoserviceisochrone.controller.rest.bo.ComputeJobResponse;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.NdviBatchJobService;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
@@ -33,6 +35,10 @@ public class ComputeJobRestControler {
 	private TokenManagement tokenManagement;
 	@Autowired
 	private BatchJobService batchJobService;
+	@Autowired
+	private NdviBatchJobService ndviBatchJobService;
+	@Autowired
+	private ApplicationBusinessProperties applicationBusinessProperties;
 
 	@Autowired
 	private CommunauteCommuneRepository communauteCommuneRepository;
@@ -64,6 +70,8 @@ public class ComputeJobRestControler {
 			pj.setId(Long.valueOf(req.getParkId()));
 			resp.setParkId(req.getParkId());
 			resp.setNbCarre(batchJobService.requestProcessParc(pj));
+			// Le bouton « Calculer le parc » demande aussi le NDVI de l'année de référence.
+			ndviBatchJobService.requestForParc(pj.getId(), applicationBusinessProperties.getDerniereAnnee());
 			code = HttpStatus.ACCEPTED;
 		} else if (req.getParkOverpass() != null) {
 			// TODO OVERPASS

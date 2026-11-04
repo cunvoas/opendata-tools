@@ -13,7 +13,7 @@
   
   <groupId>com.github.cunvoas</groupId>
   <artifactId>geoservice-isochrone</artifactId>
-  <version>2.0.12</version>
+  <version>2.0.13</version>
   <name>geoservice-isochrone-v2</name>
 
   <licenses>
@@ -28,6 +28,8 @@
     <java.version>21</java.version>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
+    <!-- Classes de test exclues de l'analyse SonarQube (les tests restent exécutés par Maven) -->
+    <sonar.exclusions>**/src/test/**</sonar.exclusions>
   </properties>
   <dependencies>
 
@@ -261,7 +263,20 @@
         <artifactId>flyway-core</artifactId>
         <version>13.12.0</version>
     </dependency>
-    
+
+    <!-- Testcontainers PostgreSQL/PostGIS : test E2E CUJ sanity (docs/cuj-sanity-consult-map.md) -->
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>1.21.4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>1.21.4</version>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
   
@@ -354,20 +369,6 @@
         </plugins>
       </build>
       <dependencies>
-        <!-- Testcontainers PostgreSQL/PostGIS -->
-        <dependency>
-          <groupId>org.testcontainers</groupId>
-          <artifactId>junit-jupiter</artifactId>
-          <version>1.21.4</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.testcontainers</groupId>
-          <artifactId>postgresql</artifactId>
-          <version>1.21.4</version>
-          <scope>test</scope>
-        </dependency>
-        
         <!-- Cucumber pour Gherkin -->
         <dependency>
           <groupId>io.cucumber</groupId>

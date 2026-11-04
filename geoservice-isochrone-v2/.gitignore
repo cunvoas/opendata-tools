@@ -8,3 +8,4 @@
 deps.txt
 .env
 secret.env
+/bin/

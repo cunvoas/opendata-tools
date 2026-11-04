@@ -198,6 +198,24 @@ export default {
                 if (event && event.target && event.target.options) {
                     const selectedOption = event.target.options[event.target.selectedIndex];
                     this.selectedCom2coName = selectedOption.text;
+                    // Les écrans par EPCI (ex. NDVI) n'ont pas à attendre le choix d'une commune.
+                    this.$emit('com2co-selected', {
+                        regionId: this.selectedRegion,
+                        com2coId: this.selectedCom2co,
+                        com2coName: this.selectedCom2coName
+                    });
+                    // Sans commune choisie, l'EPCI doit quand même être retrouvé au rechargement.
+                    localStorage.setItem('location-selected', JSON.stringify({
+                        locType: 'com2co',
+                        regionId: this.selectedRegion,
+                        com2coId: this.selectedCom2co,
+                        com2coName: this.selectedCom2coName,
+                        cityId: null,
+                        cityName: null,
+                        cityInsee: null,
+                        lonX: null,
+                        latY: null
+                    }));
                 } else if (!this.selectedCom2coName) {
                     // If no name is set yet, find it from the loaded com2cos
                     const com2coOption = this.com2cos.find(c => c.id === this.selectedCom2co);
@@ -309,6 +327,8 @@ export default {
 
             //console.log("handleCityChange.emit"+JSON.stringify(loc));
             this.$emit('update-location', loc);
+            // Choix explicite d'une commune : les écrans qui filtrent par commune (ex. NDVI) rappellent leurs données.
+            this.$emit('city-selected', loc);
         },
         handleLocationSelected(loc) {
            //console.log("handleLocationSelected.emit"+JSON.stringify(loc));

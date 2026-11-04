@@ -37,9 +37,13 @@ import tools.jackson.databind.ObjectMapper;
  * Composant d'intégration avec l'API Statistical de Copernicus Data Space Ecosystem (CDSE).
  * Récupère les statistiques NDVI (moyenne, min, max, écart-type) d'un polygone de parc.
  *
- * <p>Toute erreur (configuration absente, indisponibilité, quota, timeout) est absorbée :
- * un log WARN est émis et {@link Optional#empty()} est retourné afin de ne jamais bloquer
- * le calcul des indicateurs OMS.</p>
+ * <p>Le résultat porte aussi la période d'agrégation et le nombre de pixels valides :
+ * ces métadonnées sont conservées dans l'historique {@code ndvi_observation}, car le
+ * satellite ne repasse pas tous les ans au même endroit.</p>
+ *
+ * <p>Une configuration absente ou une absence de donnée retourne {@link Optional#empty()}.
+ * Les erreurs techniques (indisponibilité, quota, timeout) sont propagées à l'appelant :
+ * {@link NdviBatchJobService} les marque {@code IN_ERROR} pour reprise ultérieure.</p>
  *
  * @see <a href="https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Statistical.html">CDSE - Statistical API</a>
  * @see <a href="https://documentation.dataspace.copernicus.eu/APIs/Token.html">CDSE - Access Token</a>
@@ -190,30 +194,26 @@ public class ClientCopernicusNdvi {
      *
      * @param parkId identifiant du parc (traçabilité des logs)
      * @param parkGeometry polygone JTS du parc (EPSG:4326)
-     * @return les statistiques NDVI, ou vide en cas d'échec ou d'absence de données
+     * @return les statistiques NDVI, ou vide si le fournisseur n'a aucune donnée
+     * @throws RuntimeException en cas d'erreur technique (réseau, quota, HTTP)
      */
     public Optional<NdviStatistics> fetchNdviForPark(Long parkId, Polygon parkGeometry) {
         if (!isEnabled()) {
             log.warn("NDVI non récupéré pour le parc {} : configuration CDSE absente ou désactivée", parkId);
             return Optional.empty();
         }
-        try {
-            Optional<NdviStatistics> stats = fetchWindow(parkId, parkGeometry, windowFrom, windowTo);
-            if (stats.isEmpty() && StringUtils.hasText(fallbackWindowFrom) && StringUtils.hasText(fallbackWindowTo)) {
-                log.info("NDVI: aucune donnée sur la période principale pour le parc {}, essai de la période de secours", parkId);
-                stats = fetchWindow(parkId, parkGeometry, fallbackWindowFrom, fallbackWindowTo);
-            }
-            if (stats.isEmpty()) {
-                log.warn("NDVI: aucune donnée exploitable pour le parc {}", parkId);
-            }
-            return stats;
-        } catch (Exception e) {
-            log.warn("NDVI non récupéré pour le parc {} : {}", parkId, e.getMessage());
-            return Optional.empty();
+        Optional<NdviStatistics> stats = fetchWindow(parkId, parkGeometry, windowFrom, windowTo);
+        if (stats.isEmpty() && StringUtils.hasText(fallbackWindowFrom) && StringUtils.hasText(fallbackWindowTo)) {
+            log.info("NDVI: aucune donnée sur la période principale pour le parc {}, essai de la période de secours", parkId);
+            stats = fetchWindow(parkId, parkGeometry, fallbackWindowFrom, fallbackWindowTo);
         }
+        if (stats.isEmpty()) {
+            log.warn("NDVI: aucune donnée exploitable pour le parc {}", parkId);
+        }
+        return stats;
     }
 
-    private Optional<NdviStatistics> fetchWindow(Long parkId, Polygon parkGeometry, String from, String to) throws Exception {
+    private Optional<NdviStatistics> fetchWindow(Long parkId, Polygon parkGeometry, String from, String to) {
         JsonNode response = restClient.post()
                 .uri(statisticsUrl)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
@@ -230,7 +230,7 @@ public class ClientCopernicusNdvi {
         return stats;
     }
 
-    private Map<String, Object> buildRequest(Polygon parkGeometry, String from, String to) throws Exception {
+    private Map<String, Object> buildRequest(Polygon parkGeometry, String from, String to) {
         JsonNode geometry = OBJECT_MAPPER.readTree(new GeoJsonWriter().write(parkGeometry));
 
         // Fenêtre configurée (année précédente pour disposer de l'archive L2A complète)
@@ -291,12 +291,17 @@ public class ClientCopernicusNdvi {
             JsonNode item = data.get(i);
             JsonNode stats = item.path("outputs").path("ndvi").path("bands").path("B0").path("stats");
             if (stats.path("mean").isNumber() && stats.path("sampleCount").asInt(0) > 0) {
+                JsonNode interval = item.path("interval");
+                // La période retournée est conservée pour l'historique : elle permet
+                // de rattacher l'observation à la bonne année lors d'une reventilation.
                 return Optional.of(new NdviStatistics(
                         toDecimal(stats, "mean"),
                         toDecimal(stats, "min"),
                         toDecimal(stats, "max"),
                         toDecimal(stats, "stDev"),
-                        toDate(item.path("interval").path("to").asText(null))));
+                        toDate(interval.path("to").asText(null)),
+                        toDate(interval.path("from").asText(null)),
+                        stats.path("sampleCount").asInt(0)));
             }
         }
         return Optional.empty();

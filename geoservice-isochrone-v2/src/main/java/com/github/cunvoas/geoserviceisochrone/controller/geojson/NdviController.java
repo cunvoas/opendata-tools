@@ -1,4 +1,4 @@
-package com.github.cunvoas.geoserviceisochrone.controller.rest;
+package com.github.cunvoas.geoserviceisochrone.controller.geojson;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,8 +22,8 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository.Nd
  * Restitution des mesures NDVI par parc.
  */
 @RestController
-@RequestMapping("/ndvi")
-public class NdviRestControler {
+@RequestMapping("/map/ndvi")
+public class NdviController {
 
 	/** Une mesure NDVI de parc. */
 	public record NdviSummary(String parkId, String name, BigDecimal surface,
@@ -40,7 +40,7 @@ public class NdviRestControler {
 	private final ApplicationBusinessProperties applicationBusinessProperties;
 
 	@Autowired
-	public NdviRestControler(ParkAreaComputedRepository parkAreaComputedRepository,
+	public NdviController(ParkAreaComputedRepository parkAreaComputedRepository,
 			ApplicationBusinessProperties applicationBusinessProperties) {
 		this.parkAreaComputedRepository = parkAreaComputedRepository;
 		this.applicationBusinessProperties = applicationBusinessProperties;
@@ -51,19 +51,55 @@ public class NdviRestControler {
 	 * @param annee année demandée, facultative
 	 * @return summaries
 	 */
+	public NdviSummaries summaries(Integer annee) {
+		return summaries(annee, null);
+	}
+
+	/**
+	 * Mesures NDVI des parcs pour une année et, facultativement, un EPCI.
+	 * @param annee année demandée, facultative
+	 * @param com2co identifiant de la communauté de communes, facultatif
+	 * @return summaries
+	 */
+	public NdviSummaries summaries(Integer annee, Long com2co) {
+		return summaries(annee, com2co, null);
+	}
+
+	/**
+	 * Mesures NDVI des parcs pour une année et, facultativement, un EPCI ou une commune
+	 * (la commune prime sur l'EPCI).
+	 * @param annee année demandée, facultative
+	 * @param com2co identifiant de la communauté de communes, facultatif
+	 * @param city identifiant de la commune, facultatif
+	 * @return summaries
+	 */
 	@CrossOrigin(origins = "${web.cors.allowed-origins}")
 	@GetMapping("/summaries")
-	public NdviSummaries summaries(@RequestParam(required = false) Integer annee) {
+	public NdviSummaries summaries(@RequestParam(required = false) Integer annee,
+			@RequestParam(required = false) Long com2co,
+			@RequestParam(required = false) Long city) {
 		Integer target = annee != null ? annee : applicationBusinessProperties.getDerniereAnnee();
-		List<NdviSummary> parks = parkAreaComputedRepository.findNdviSummariesByAnnee(target).stream()
-				.map(NdviRestControler::toSummary)
+		List<NdviSummaryProjection> projections;
+		long total;
+		if (city != null) {
+			projections = parkAreaComputedRepository.findNdviSummariesByAnneeAndCity(target, city);
+			total = parkAreaComputedRepository.countByAnneeAndCity(target, city);
+		} else if (com2co != null) {
+			projections = parkAreaComputedRepository.findNdviSummariesByAnneeAndCom2co(target, com2co);
+			total = parkAreaComputedRepository.countByAnneeAndCom2co(target, com2co);
+		} else {
+			projections = parkAreaComputedRepository.findNdviSummariesByAnnee(target);
+			total = parkAreaComputedRepository.countByAnnee(target);
+		}
+		List<NdviSummary> parks = projections.stream()
+				.map(NdviController::toSummary)
 				.toList();
 		String latest = parks.stream()
 				.map(NdviSummary::acquisitionDate)
 				.filter(Objects::nonNull)
 				.max(String::compareTo)
 				.orElse(null);
-		return new NdviSummaries(target, parkAreaComputedRepository.countByAnnee(target), parks.size(), latest, parks);
+		return new NdviSummaries(target, total, parks.size(), latest, parks);
 	}
 
 	private static NdviSummary toSummary(NdviSummaryProjection projection) {

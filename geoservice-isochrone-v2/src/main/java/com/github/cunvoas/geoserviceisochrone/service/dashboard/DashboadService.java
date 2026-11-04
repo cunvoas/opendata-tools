@@ -17,6 +17,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.AssociationRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ComputeJobRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.admin.NdviJobRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.Filosofil200mRepository;
@@ -55,6 +56,8 @@ public class DashboadService {
 	private ApplicationBusinessProperties applicationBusinessProperties;
 		@Autowired
 		private ComputeJobRepository computeJobRepository;
+	@Autowired
+	private NdviJobRepository ndviJobRepository;
 	
 	/**
 	 * refresh.
@@ -74,6 +77,7 @@ public class DashboadService {
 		cache.add(new DashboardCache(DashboardCache.PARC_ENTREE, parkEntranceRepository.count()));
 		cache.add(new DashboardCache(DashboardCache.PARC_REF, parkJardinRepository.count()));
 				cache.add(new DashboardCache(DashboardCache.COMPUTE_JOB_PENDING, computeJobRepository.countByStatus(ComputeJobStatusEnum.TO_PROCESS)));
+		cache.add(new DashboardCache(DashboardCache.NDVI_JOB_PENDING, ndviJobRepository.countByStatus(ComputeJobStatusEnum.TO_PROCESS)));
 		
 		dashboardCacheRepository.saveAll(cache);
 	}
@@ -93,7 +97,7 @@ public class DashboadService {
 	 */
 	public DashboardSummary getDashboard() {
 		
-		if (12!=dashboardCacheRepository.count()) {
+		if (13!=dashboardCacheRepository.count()) {
 			refresh();
 		}
 		
@@ -114,6 +118,7 @@ public class DashboadService {
 		ret.setNbParcIsochrone(dashboardCacheRepository.findById(DashboardCache.PARC_CALC).get().getIndicator());
 		ret.setNbParcEntance(dashboardCacheRepository.findById(DashboardCache.PARC_ENTREE).get().getIndicator());
 				ret.setNbComputeJobPending(dashboardCacheRepository.findById(DashboardCache.COMPUTE_JOB_PENDING).get().getIndicator());
+		ret.setNbNdviJobPending(dashboardCacheRepository.findById(DashboardCache.NDVI_JOB_PENDING).get().getIndicator());
 		
 		return ret;
 	}

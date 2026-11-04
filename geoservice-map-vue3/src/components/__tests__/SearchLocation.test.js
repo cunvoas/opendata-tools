@@ -186,6 +186,56 @@ describe('SearchLocation.vue', () => {
     })
   })
 
+  describe('city-selected', () => {
+    it('est émis au choix d’une commune, pas au chargement initial', async () => {
+      mockAxiosForAllCalls()
+      const wrapper = mount(SearchLocation)
+      await flushPromises()
+      expect(wrapper.emitted('city-selected')).toBeUndefined()
+
+      await wrapper.find('#selCity').setValue('100')
+
+      expect(wrapper.emitted('city-selected')).toHaveLength(1)
+      const location = wrapper.emitted('city-selected')[0][0]
+      expect(location).toMatchObject({ regionId: '9', com2coId: '1', cityId: '100', cityInsee: '59512' })
+      // jsdom garde une espace finale dans option.text, contrairement aux navigateurs.
+      expect(location.cityName.trim()).toBe('ROUBAIX (59512)')
+    })
+  })
+
+  describe('com2co-selected', () => {
+    it('est émis au choix d’un EPCI, sans attendre la commune', async () => {
+      mockAxiosForAllCalls()
+      const wrapper = mount(SearchLocation)
+      await flushPromises()
+      expect(wrapper.emitted('com2co-selected')).toBeUndefined()
+
+      await wrapper.find('#selCom2co').setValue('2')
+      await flushPromises()
+
+      expect(wrapper.emitted('com2co-selected')).toEqual([
+        [{ regionId: '9', com2coId: '2', com2coName: 'Communauté Urbaine Dunkerque' }]
+      ])
+    })
+
+    it('mémorise l’EPCI choisi dans localStorage, même sans commune', async () => {
+      mockAxiosForAllCalls()
+      const allCalls = axios.get.getMockImplementation()
+      // Dunkerque n'a pas Lille : la commune précédente n'est donc plus dans la liste.
+      axios.get.mockImplementation((url) => url.includes('cities_2.json')
+        ? Promise.resolve({ data: [{ id: '900', name: 'DUNKERQUE', inseeCode: '59183', lonX: '2.37', latY: '51.03' }] })
+        : allCalls(url))
+      const wrapper = mount(SearchLocation)
+      await flushPromises()
+
+      await wrapper.find('#selCom2co').setValue('2')
+      await flushPromises()
+
+      const saved = JSON.parse(localStorage.getItem('location-selected'))
+      expect(saved).toMatchObject({ regionId: '9', com2coId: '2', cityId: null })
+    })
+  })
+
   describe('fetchAddresses', () => {
     it('ne fait pas d\'appel API si query < 3 caractères', async () => {
       mockAxiosForAllCalls()

@@ -1,0 +1,26 @@
+name: Dependabot auto-merge notify
+
+on:
+  schedule:
+    - cron: "15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notifier les auto-merges Dependabot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          # shortcut: retard max 1h, un merge GITHUB_TOKEN ne déclenche aucun workflow ; token App/PAT pour du temps réel
+          gh pr list --repo "$REPO" --state merged --search "author:app/dependabot merged:>=$(date -u -d '-1 day' +%F)" --json number,mergedBy --jq '.[] | select(.mergedBy.login == "app/github-actions") | .number' |
+          while read -r pr; do
+            gh pr view "$pr" --repo "$REPO" --json comments --jq '.comments[].body' | grep -q 'auto-merge effectué' && continue
+            gh pr comment "$pr" --repo "$REPO" --body "@$OWNER auto-merge effectué ✅"
+          done

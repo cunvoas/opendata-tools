@@ -1,12 +1,16 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc;
 
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurAction;
@@ -24,6 +28,9 @@ import com.github.cunvoas.geoserviceisochrone.service.dashboard.DashboadService;
 @Controller
 @RequestMapping("/mvc")
 public class MvcDashBoardControler {
+
+	private static final Set<String> METHODOLOGY_TOPICS = Set.of(
+			"opendata", "parcs", "insee-ign", "ndvi", "calculs", "propositions");
 	
 	private final DashboadService dashboadService;
 	private final ActivityTrackerService activityTrackerService;
@@ -45,6 +52,30 @@ public class MvcDashBoardControler {
     public String infos(Model model, ModelAndView modelAndView) {
         return "infos";
     }
+
+	/**
+	 * Methodology entry point.
+	 * @return redirection to the first topic
+	 */
+	@GetMapping("/methodology")
+	public String methodology() {
+		return "redirect:/mvc/methodology/opendata";
+	}
+
+	/**
+	 * Methodology page for one topic.
+	 * @param topic topic slug (opendata, parcs, insee-ign, ndvi, calculs, propositions)
+	 * @param model model
+	 * @return page
+	 */
+	@GetMapping("/methodology/{topic}")
+	public String methodology(@PathVariable String topic, Model model) {
+		if (!METHODOLOGY_TOPICS.contains(topic)) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+		model.addAttribute("topic", topic);
+		return "methodology";
+	}
 
 	/**
 	 * release page.

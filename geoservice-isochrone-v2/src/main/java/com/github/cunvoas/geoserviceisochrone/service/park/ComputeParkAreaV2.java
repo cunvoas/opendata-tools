@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
-import com.github.cunvoas.geoserviceisochrone.extern.ndvi.ClientCopernicusNdvi;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.NdviBatchJobService;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
@@ -71,7 +71,7 @@ public class ComputeParkAreaV2 {
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
 	@Autowired
-	private ClientCopernicusNdvi clientCopernicusNdvi;
+	private NdviBatchJobService ndviBatchJobService;
 	
 	
 
@@ -195,32 +195,26 @@ public class ComputeParkAreaV2 {
 	}
 
 	/**
-	 * Remplit les colonnes NDVI à partir du fournisseur satellite.
-	 * L'appel n'a lieu qu'à partir de septembre et au plus une fois par an et par parc.
-	 * Un échec laisse les colonnes NDVI inchangées sans impacter le calcul OMS ; la date
-	 * de demande est tout de même posée pour ne pas relancer l'appel avant un an.
+	 * Dépose une demande de rafraîchissement NDVI dans la file persistante.
 	 *
-	 * @return vrai si un appel fournisseur a été tenté (la ligne doit être sauvegardée)
+	 * <p>L'appel fournisseur n'est plus fait ici : il est traité par lots par
+	 * {@link com.github.cunvoas.geoserviceisochrone.extern.ndvi.NdviBatchJobService}
+	 * pour ne pas bloquer le calcul OMS. La demande n'a lieu qu'à partir de
+	 * septembre, au plus une fois par an et par parc, et pour l'année de référence.</p>
+	 *
+	 * <p>Aucune demande n'est déposée si le NDVI est déjà présent sur la ligne :
+	 * la donnée existante est conservée et aucun crédit fournisseur n'est consommé.</p>
+	 *
+	 * <p>La réponse du fournisseur sera historisée dans {@code ndvi_observation}
+	 * par le service de traitement, en plus de la recopie sur les lignes du parc.</p>
 	 */
-	private boolean refreshNdvi(ParkAreaComputed parcCpu, ParkArea park) {
-		if (!clientCopernicusNdvi.isEnabled() || park!= null && park.getPolygon()==null
+	private void requestNdviRefresh(ParkAreaComputed parcCpu, ParkArea park) {
+		if (!ndviBatchJobService.isEnabled() || park == null || park.getPolygon() == null
+				|| parcCpu.getNdviMean() != null
 				|| !isNdviReferenceYear(parcCpu) || !isNdviRequestDue(parcCpu)) {
-			return false;
+			return;
 		}
-		parcCpu.setNdviRequestDate(new Date());
-		try {
-			clientCopernicusNdvi.fetchNdviForPark(park.getId(), park.getPolygon())
-					.ifPresent(stats -> {
-						parcCpu.setNdviMean(stats.mean());
-						parcCpu.setNdviMin(stats.min());
-						parcCpu.setNdviMax(stats.max());
-						parcCpu.setNdviStddev(stats.stdDev());
-						parcCpu.setNdviAcquisitionDate(stats.acquisitionDate());
-				});
-		} catch (Exception e) {
-			log.warn("NDVI non récupéré pour le parc {}-{} : {}", park.getId(), park.getName(), e.getMessage());
-		}
-		return true;
+		ndviBatchJobService.request(parcCpu.getId(), parcCpu.getAnnee());
 	}
 
 	/**
@@ -257,16 +251,10 @@ public class ComputeParkAreaV2 {
 	}
 
 	/**
-	 * Rattrapage NDVI d'une ligne OMS déjà à jour : la ligne est sauvegardée
-	 * sans recalculer les indicateurs OMS ni modifier sa date de mise à jour.
+	 * Calcule la ligne OMS pour toutes les années configurées.
+	 * @param park zone de parc
+	 * @return la dernière ligne calculée, ou null
 	 */
-	private ParkAreaComputed refreshNdviIfDue(ParkAreaComputed parcCpu, ParkArea park) {
-		if (this.refreshNdvi(parcCpu, park)) {
-			return parkAreaComputedRepository.save(parcCpu);
-		}
-		return parcCpu;
-	}
-
 	public ParkAreaComputed computeGenericParkAreaV2(ParkArea park) {
 		return this.computeGenericParkAreaV2(park, null);
 	}
@@ -315,7 +303,9 @@ public class ComputeParkAreaV2 {
 			
 			Boolean alreadyProcessed = this.computeGenericHead(parcCpu, park, wAnnee);
 			if (alreadyProcessed) {
-				return this.refreshNdviIfDue(parcCpu, park);
+				// Ligne OMS déjà à jour : on ne sauvegarde rien, on dépose seulement la demande NDVI.
+				this.requestNdviRefresh(parcCpu, park);
+				return parcCpu;
 			}
 			
 			if (carreAnnees.indexOf(wAnnee)!=-1) {
@@ -326,8 +316,9 @@ public class ComputeParkAreaV2 {
 				this.computeGenericIris(parcCpu, park, wAnnee);
 			}
 			 
-			this.refreshNdvi(parcCpu, park);
 			parcCpu = parkAreaComputedRepository.save(parcCpu);
+			// Enqueue après le save : le job NDVI pourra réécrire la ligne sans être écrasé par ce calcul.
+			this.requestNdviRefresh(parcCpu, park);
 			return parcCpu;
 		} else {
 			
@@ -345,7 +336,8 @@ public class ComputeParkAreaV2 {
 
 				Boolean alreadyProcessed = this.computeGenericHead(parcCpu, park, wAnnee);
 				if (alreadyProcessed) {
-					this.refreshNdviIfDue(parcCpu, park);
+					// Ligne OMS déjà à jour : seule la demande NDVI est déposée.
+					this.requestNdviRefresh(parcCpu, park);
 					continue;
 				}
 				
@@ -358,8 +350,9 @@ public class ComputeParkAreaV2 {
 				}
 				 
 				parcCpu.setUpdated(new Date());
-				this.refreshNdvi(parcCpu, park);
 				parcCpu = parkAreaComputedRepository.save(parcCpu);
+				// Enqueue après le save pour éviter qu'un traitement NDVI rapide soit écrasé.
+				this.requestNdviRefresh(parcCpu, park);
 			}
 		}
 

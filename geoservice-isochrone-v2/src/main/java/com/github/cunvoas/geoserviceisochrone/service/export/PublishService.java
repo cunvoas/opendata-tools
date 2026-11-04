@@ -98,6 +98,8 @@ public class PublishService {
                     "stats-suburbs", statsPath(c2cId, requestedYear, "suburbs"));
             produce(status, () -> statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(requestedYear, c2cId),
                     "stats-all", statsPath(c2cId, requestedYear, "all"));
+            produce(status, () -> servicePublicationExporter.writeNdviJson(com2co, requestedYear),
+                    "ndvi", ndviPath(c2cId, requestedYear));
 
             if (status.getPhase() == PublicationStatus.Phase.PRODUCTION_FAILED) {
                 log.error("Publication {} stopped: production failed ({})", key(c2cId, requestedYear), status.getMessage());
@@ -222,6 +224,7 @@ public class PublishService {
         folders.add(dataRoot.resolve("geojson/iris").resolve(c2cId));
         // statistiques de l'EPCI et de ses villes
         folders.add(dataRoot.resolve("data/stats/com2co").resolve(c2cId));
+        folders.add(dataRoot.resolve("data/ndvi").resolve(c2cId));
         for (City city : cities(com2co)) {
             String insee = city.getInseeCode();
             folders.add(dataRoot.resolve("data/stats").resolve(insee.substring(0, 2)).resolve(insee));
@@ -291,6 +294,11 @@ public class PublishService {
     private String statsPath(Long c2cId, Integer year, String suffix) {
         return applicationBusinessProperties.getJsonFileFolder()
                 + "/data/stats/com2co/" + c2cId + "/stats_c2c_" + c2cId + "_" + suffix + "_" + year + ".json";
+    }
+
+    private String ndviPath(Long c2cId, Integer year) {
+        return applicationBusinessProperties.getJsonFileFolder()
+                + "/data/ndvi/" + c2cId + "/ndvi_" + year + "_" + c2cId + ".json";
     }
 
     private String key(Long c2cId, Integer year) {

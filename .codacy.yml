@@ -1,0 +1,9 @@
+---
+# Tests exclus de l'analyse Codacy : classes de test Java (Maven) et tests JavaScript (Vitest).
+exclude_paths:
+  - "**/src/test/**"
+  - "**/__tests__/**"
+  - "**/*.test.js"
+  - "**/*.spec.js"
+  - "**/*.test.ts"
+  - "**/*.spec.ts"

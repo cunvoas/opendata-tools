@@ -5,9 +5,9 @@
 import { createWebHistory, createRouter } from "vue-router";
 import AppCarte from "../views/AppCarte.vue";
 import AppStatistics from "../views/AppStatistics.vue";
-import AppNdvi from "../views/AppNdvi.vue";
 import AppInformation from "../views/AppInformation.vue";
 import AppVideoAdmin from "../views/AppVideoAdmin.vue";
+import { features } from "../utils/features.js";
 
 //Vue.use(Router);
 
@@ -30,15 +30,16 @@ const routes = [
       description: 'Statistiques détaillées sur la superficie et la répartition des espaces verts par habitant dans la MEL. Comparaison avec les standards OMS (10 m² par habitant).',
     },
   },
-  {
+  // Écran NDVI derrière le flag VITE_FEATURE_NDVI : sans lui, /ndvi retombe sur la redirection vers /carte.
+  ...(features.ndvi ? [{
     path: '/ndvi',
     name: 'ndvi',
-    component: AppNdvi,
+    component: () => import("../views/AppNdvi.vue"),
     meta: {
       title: 'NDVI des parcs et jardins – MEL | Parcs & Jardins',
       description: 'Indice de végétation NDVI mesuré par satellite sur les parcs et jardins de la Métropole Européenne de Lille : moyenne, minimum, maximum et écart-type par parc.',
     },
-  },
+  }] : []),
   {
     path: '/information',
     name: 'appInformation',

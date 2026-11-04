@@ -9,7 +9,7 @@
 ### In scope
 
 - S01 — Écran récapitulatif dédié `/ndvi` : table des parcs (NDVI moyen, min, max, écart-type, date d'acquisition) + une vue graphique de distribution. Le patron existant du front `/stats` (`AppStatistics.vue`, `StatsGraph.vue`, `StatsTableAccessibility.vue`) sert de socle.
-- S02 — Exposition REST des mesures NDVI par parc (`GET /ndvi/summaries?annee=`) pour alimenter l'écran, et champ NDVI ajouté au GeoJSON des parcs existant (`ParkView`).
+- S02 — Exposition REST des mesures NDVI par parc (`GET /map/ndvi/summaries?annee=`) pour alimenter l'écran, et champ NDVI ajouté au GeoJSON des parcs existant (`ParkView`).
 - S03 — Mode colorimétrique NDVI sur la couche Parcs **existante** (recolore les polygones par `ndvi_mean`, sur le modèle du bouton « Mode daltonien »). Pas de nouvelle couche.
 - S04 — NDVI visible au clic d'un parc dans le panneau « Détail des données » existant de la carte (moyen, min, max, écart-type, date d'acquisition).
 - S05 — Backend : NDVI demandé **une fois par parc et par an**, uniquement sur la ligne de l'**année de référence** (dernier élément de `application.business.insee.annees`) — au plus 791 appels/an pour la MEL au lieu de 4 appels possibles par parc aujourd'hui.
@@ -81,7 +81,7 @@ Ces faits confortent deux choix du v1 : la fenêtre de secours est réellement u
 
 - **CA01 — NDVI demandé une seule fois par (parc, année de référence)** : `refreshNdvi` est restreint à la ligne de référence ; les autres années ne déclenchent pas d'appel.
   - `implements` : IM04 · `is realized by` : AV03
-- **CA02 — Endpoint REST NDVI** `GET /ndvi/summaries?annee=` : par parc — id, nom, surface, NDVI moyen/min/max/écart-type, date d'acquisition, année. S'appuie sur le repository existant, sans nouvelle table.
+- **CA02 — Endpoint REST NDVI** `GET /map/ndvi/summaries?annee=` : par parc — id, nom, surface, NDVI moyen/min/max/écart-type, date d'acquisition, année. S'appuie sur le repository existant, sans nouvelle table.
   - `implements` : IM01 · `is realized by` : AV01
 - **CA03 — Écran récapitulatif `/ndvi`** : table accessible, graphique de distribution, indication de fraîcheur (date d'acquisition la plus récente), gestion de l'absence de donnée (D05).
   - `implements` : IM02 · `is realized by` : AV01, AV02, AV04

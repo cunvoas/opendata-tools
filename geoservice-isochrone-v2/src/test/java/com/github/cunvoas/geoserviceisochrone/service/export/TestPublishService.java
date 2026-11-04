@@ -81,6 +81,32 @@ class TestPublishService {
 	void testPublishedAfterSuccessfulProduction(@TempDir Path tempDir) throws Exception {
 		Files.createDirectories(tempDir.resolve("geojson/carres/1"));
 		Files.createDirectories(tempDir.resolve("data/stats/com2co/1"));
+		Files.createDirectories(tempDir.resolve("data/ndvi/1/2878"));
+
+		String[] folders = publishedFolders(tempDir);
+
+		PublicationStatus status = tested.getStatus(1L, 2025);
+		assertEquals(PublicationStatus.Phase.PUBLISHED, status.getPhase());
+		assertEquals("abc123", status.getGitSha());
+		assertEquals(11, status.getFiles().size());
+		assertEquals("referentiels", status.getFiles().get(0).getType());
+		assertEquals("ndvi", status.getFiles().get(10).getType());
+		assertEquals(tempDir + "/data/ndvi/1/ndvi_2025_1.json", status.getFiles().get(10).getPath());
+		// le dossier de l'EPCI contient aussi les sous-dossiers des villes (data/ndvi/1/2878)
+		assertArrayEquals(new String[] { "geojson/carres/1", "data/stats/com2co/1", "data/ndvi/1" }, folders);
+	}
+
+	@Test
+	void testNdviFolderIsNotPublishedWhenAbsent(@TempDir Path tempDir) throws Exception {
+		Files.createDirectories(tempDir.resolve("geojson/carres/1"));
+		Files.createDirectories(tempDir.resolve("data/stats/com2co/1"));
+
+		String[] folders = publishedFolders(tempDir);
+
+		assertArrayEquals(new String[] { "geojson/carres/1", "data/stats/com2co/1" }, folders);
+	}
+
+	private String[] publishedFolders(Path tempDir) throws Exception {
 		when(properties.getJsonFileFolder()).thenReturn(tempDir.toString());
 		when(gitHelper.isConfigured()).thenReturn(true);
 		when(gitHelper.getLocalPath()).thenReturn(tempDir.toString());
@@ -88,14 +114,8 @@ class TestPublishService {
 
 		tested.publishAsync(1L, 2025);
 
-		PublicationStatus status = tested.getStatus(1L, 2025);
-		assertEquals(PublicationStatus.Phase.PUBLISHED, status.getPhase());
-		assertEquals("abc123", status.getGitSha());
-		assertEquals(10, status.getFiles().size());
-		assertEquals("referentiels", status.getFiles().get(0).getType());
-
 		org.mockito.ArgumentCaptor<String[]> folders = org.mockito.ArgumentCaptor.forClass(String[].class);
 		verify(gitHelper).addCommitPush(eq(tempDir.toString()), folders.capture());
-		assertArrayEquals(new String[] { "geojson/carres/1", "data/stats/com2co/1" }, folders.getValue());
+		return folders.getValue();
 	}
 }

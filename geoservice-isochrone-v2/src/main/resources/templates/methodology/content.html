@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ===================================================================== -->
+<!-- OpenData                                                              -->
+<!-- ===================================================================== -->
+<div th:fragment="opendata">
+	<h1 class="mt-2 mb-3" th:text="#{methodology.opendata.title}">OpenData</h1>
+	<p class="lead">
+		L'application s'appuie volontairement sur des données ouvertes et des référentiels publics.
+		L'OpenData n'est pas ici un simple catalogue : c'est la chaîne de référence qui relie un territoire,
+		ses communes, ses parcs, sa population et ses limites administratives.
+	</p>
+
+	<div class="alert alert-info" role="alert">
+		<i class="fas fa-circle-info me-2"></i>
+		Un même objet peut venir de plusieurs sources. La règle est de conserver la source d'origine,
+		de rattacher l'objet à un code INSEE, puis de qualifier les données avant de les utiliser dans les calculs.
+	</div>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-primary text-white">
+			<h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>Les données généralistes</h5>
+		</div>
+		<div class="card-body">
+			<div class="table-responsive">
+				<table class="table table-sm table-striped align-middle mb-0">
+					<thead>
+						<tr>
+							<th scope="col">Niveau</th>
+							<th scope="col">Rôle métier</th>
+							<th scope="col">Point de vigilance</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><strong>Région</strong></td>
+							<td>Regroupement administratif supérieur. Sert à organiser la navigation, les tableaux de bord et les exports.</td>
+							<td>Une région ne porte pas directement les parcs : elle agrège des EPCI et des communes.</td>
+						</tr>
+						<tr>
+							<td><strong>EPCI</strong></td>
+							<td>Établissement public de coopération intercommunale : communauté de communes, d'agglomération, métropole. C'est souvent l'unité de publication cartographique.</td>
+							<td>Les limites et les compétences varient dans le temps. Un EPCI peut changer de nom, de périmètre ou fusionner.</td>
+						</tr>
+						<tr>
+							<td><strong>Commune</strong></td>
+							<td>Point d'entrée principal : code INSEE, nom, rattachement à l'EPCI et à la région. Presque toutes les données métier sont rattachées à une commune.</td>
+							<td>Le code INSEE est la clé stable. Le nom seul n'est pas une clé fiable.</td>
+						</tr>
+						<tr>
+							<td><strong>Cadastre</strong></td>
+							<td>Contour administratif de la commune, utilisé pour rattacher les parcs et vérifier les limites du territoire.</td>
+							<td>Dans cette application, le cadastre fournit le contour communal, pas le parcellaire individuel.</td>
+						</tr>
+						<tr>
+							<td><strong>Densité INSEE</strong></td>
+							<td>Classe la commune en zone dense ou périurbaine. Les communes des catégories 1 et 2 de l'INSEE sont considérées comme denses.</td>
+							<td>Si la commune est absente du référentiel, elle est traitée par défaut comme dense. C'est un choix à vérifier lors d'un ajout de territoire.</td>
+						</tr>
+						<tr>
+							<td><strong>Adresse</strong></td>
+							<td>Géocodage des adresses lors de la saisie et de la localisation des parcs.</td>
+							<td>Le géocodage donne un point ; il ne remplace pas le contour du parc.</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-secondary text-white">
+			<h5 class="mb-0"><i class="fas fa-diagram-project me-2"></i>Chaîne de rattachement</h5>
+		</div>
+		<div class="card-body">
+			<ol class="mb-0">
+				<li class="mb-2"><strong>Import</strong> : les données publiques sont chargées dans les référentiels territoriaux (régions, EPCI, communes, cadastre).</li>
+				<li class="mb-2"><strong>Rattachement</strong> : un parc, une entrée ou un carreau est rattaché à une commune par son code INSEE. Les objets à cheval sur plusieurs communes peuvent porter un code composite.</li>
+				<li class="mb-2"><strong>Contrôle spatial</strong> : les intersections et les contenances sont vérifiées entre commune, parc, carreau et isochrone.</li>
+				<li class="mb-2"><strong>Qualification</strong> : les données ambiguës restent « à qualifier » et ne sont pas utilisées comme vérité terrain tant qu'elles ne sont pas validées.</li>
+				<li><strong>Publication</strong> : les données calculées sont exportées pour la carte publique, par EPCI.</li>
+			</ol>
+		</div>
+	</div>
+
+	<div class="alert alert-warning" role="alert">
+		<h6 class="alert-heading"><i class="fas fa-triangle-exclamation me-2"></i>Limites à connaître</h6>
+		<ul class="mb-0">
+			<li>Les portails open data n'ont ni les mêmes dates, ni les mêmes nomenclatures, ni la même qualité de géométrie.</li>
+			<li>Un contour communal peut être simplifié pour la carte : il ne faut pas l'utiliser pour un calcul cadastral fin.</li>
+			<li>Les données doivent être réimportées lorsque la collectivité publie une nouvelle version ; l'application ne devine pas les mises à jour.</li>
+			<li>Les licences diffèrent : Etalab pour une grande partie des données publiques françaises, ODbL pour OpenStreetMap. Toute réutilisation doit conserver l'attribution.</li>
+		</ul>
+	</div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- Parcs                                                                 -->
+<!-- ===================================================================== -->
+<div th:fragment="parcs">
+	<h1 class="mt-2 mb-3" th:text="#{methodology.parcs.title}">Parcs et OpenStreetMap</h1>
+	<p class="lead">
+		Le référentiel des parcs combine des jeux open data publiés par les collectivités,
+		OpenStreetMap via le service Overpass, et un travail de qualification / complétion par les contributeurs.
+		Aucune source n'est considérée comme parfaite : elles se complètent.
+	</p>
+
+	<div class="row g-4 mb-4">
+		<div class="col-lg-6">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-success text-white">
+					<h5 class="mb-0"><i class="fas fa-city me-2"></i>Open data des collectivités</h5>
+				</div>
+				<div class="card-body">
+					<p>Des imports dédiés existent pour plusieurs territoires :</p>
+					<ul>
+						<li><strong>Métropole Européenne de Lille (MEL)</strong>, dont Lille, Roubaix, Tourcoing et Villeneuve-d'Ascq ;</li>
+						<li><strong>Lyon</strong> ;</li>
+						<li><strong>Toulouse</strong> ;</li>
+						<li><strong>Nantes</strong> ;</li>
+						<li>jardins familiaux de Roubaix.</li>
+					</ul>
+					<p class="mb-0 small text-muted">
+						Les jeux locaux apportent souvent le nom, la surface, le type ou l'ouverture.
+						Ils sont normalisés puis rattachés à la commune.
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-primary text-white">
+					<h5 class="mb-0"><i class="fas fa-map me-2"></i>OpenStreetMap / Overpass</h5>
+				</div>
+				<div class="card-body">
+					<p>
+						Le service <strong>Overpass</strong> interroge OpenStreetMap par emprise ou par commune.
+						Il permet de récupérer les objets de type parc, jardin, square et leurs contours.
+					</p>
+					<p>
+						Les objets sont conservés avec leur identifiant OpenStreetMap,
+						leur nom, leur contour, leur surface, leurs horaires et le code INSEE de rattachement.
+					</p>
+					<p class="mb-0 small text-muted">
+						Overpass est un service public gratuit : les échanges doivent rester ciblés et raisonnables.
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-secondary text-white">
+			<h5 class="mb-0"><i class="fas fa-code-branch me-2"></i>De la donnée brute au parc métier</h5>
+		</div>
+		<div class="card-body">
+			<ol class="mb-0">
+				<li class="mb-2"><strong>Import local</strong> : le parc est enregistré avec sa source (donnée de la métropole, opendata, préfecture, OpenStreetMap) et un statut de qualification.</li>
+				<li class="mb-2"><strong>Rattachement OSM</strong> : le contour cadastral de chaque commune est comparé avec le parc Overpass pour trouver la commune d'appartenance. Si un parc chevauche plusieurs communes, un code INSEE composite est conservé.</li>
+				<li class="mb-2"><strong>Appariement</strong> : la recherche vérifie si un parc existant est contenu dans la géométrie OSM, ou si son contour intersecte celui d'OpenStreetMap.</li>
+				<li class="mb-2"><strong>Enrichissement</strong> : si le parc existant n'a pas de contour, de surface ou d'horaires, les valeurs OpenStreetMap sont recopiées. Les noms et quartiers déjà saisis sont conservés.</li>
+				<li class="mb-2"><strong>Création si absent</strong> : un parc OpenStreetMap sans équivalent est créé « à qualifier ». Il devra être vérifié avant d'être considéré comme un espace vert de référence.</li>
+				<li><strong>Entrées et isochrones</strong> : les entrées sont saisies ou complétées par les contributeurs. Chaque entrée reçoit ensuite une isochrone IGN, qui porte l'accessibilité piétonne du parc.</li>
+			</ol>
+		</div>
+	</div>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-dark text-white">
+			<h5 class="mb-0"><i class="fas fa-screwdriver-wrench me-2"></i>Corriger le détourage, saisir les entrées, fusionner les isochrones</h5>
+		</div>
+		<div class="card-body">
+			<p>
+				Le détourage OpenStreetMap est un point de départ, pas une vérité cadastrale. Le contributeur
+				peut corriger le contour, ajouter les accès réels du parc, puis fusionner les zones accessibles
+				de chaque entrée pour obtenir l'emprise utilisée dans les calculs.
+			</p>
+
+			<div class="row g-4">
+				<div class="col-lg-4">
+					<h6 class="text-success"><span class="badge bg-success me-2">1</span>Corriger le détourage</h6>
+					<ol class="mb-0">
+						<li class="mb-2">Ouvrir la fiche du parc dans l'éditeur de parc.</li>
+						<li class="mb-2">Afficher le cadastre et la couche des parcs OpenStreetMap pour situer le terrain.</li>
+						<li class="mb-2">Lorsqu'un contour OpenStreetMap est proposé pour un parc qui n'en a pas encore, cliquer sur le tracé bleu et accepter « recopier le détourage ».</li>
+						<li class="mb-2">Utiliser l'outil polygone pour dessiner le contour, puis les outils de modification pour déplacer, ajouter ou supprimer des sommets. Pour repartir de zéro, supprimer l'ancien tracé puis en dessiner un nouveau.</li>
+						<li>Enregistrer : la surface du contour est recalculée. Le tracé doit rester un polygone simple, sans auto-intersection.</li>
+					</ol>
+				</div>
+				<div class="col-lg-4">
+					<h6 class="text-primary"><span class="badge bg-primary me-2">2</span>Saisir les entrées</h6>
+					<ol class="mb-0">
+						<li class="mb-2">Depuis la fiche du parc, ouvrir « Editer les entrées ».</li>
+						<li class="mb-2">Utiliser le bouton de mode pour passer en « Mode ajout ».</li>
+						<li class="mb-2">Cliquer sur la carte au niveau de l'accès réel, puis faire glisser le repère pour ajuster la position.</li>
+						<li class="mb-2">Renseigner un nom explicite (« Entrée ouest », « Accès rue… »), un lien utile et, si besoin, la date.</li>
+						<li class="mb-2">Cliquer « Valider » : l'entrée est enregistrée. Si le point est nouveau ou déplacé, son isochrone IGN est calculée pour 5 minutes de marche en zone dense, 20 minutes sinon.</li>
+						<li>Répéter pour chaque accès, puis cocher « Afficher les isochrones » pour contrôler le résultat.</li>
+					</ol>
+				</div>
+				<div class="col-lg-4">
+					<h6 class="text-warning"><span class="badge bg-warning text-dark me-2">3</span>Fusionner les isochrones</h6>
+					<ol class="mb-0">
+						<li class="mb-2">Vérifier que toutes les entrées sont validées et disposent d'une isochrone.</li>
+						<li class="mb-2">Cliquer sur « Fusionner les entrées ».</li>
+						<li class="mb-2">Le contour du parc, lorsqu'il est présent, sert de base ; chaque isochrone d'entrée est ensuite ajoutée par fusion, sans trou.</li>
+						<li class="mb-2">Le résultat devient l'emprise accessible du parc, utilisée pour croiser les carreaux et la population.</li>
+						<li>Après tout ajout ou modification d'entrée, valider puis relancer la fusion.</li>
+					</ol>
+				</div>
+			</div>
+
+			<div class="alert alert-warning mt-4 mb-0" role="alert">
+				<i class="fas fa-triangle-exclamation me-2"></i>
+				<strong>Ordre important :</strong> « Fusionner les entrées » ne sauvegarde pas l'entrée en cours.
+				Il faut d'abord cliquer « Valider ». Si une entrée n'a pas d'isochrone ou si le contour est invalide,
+				la fusion peut échouer : corriger la géométrie puis recommencer.
+			</div>
+		</div>
+	</div>
+
+	<div class="row g-4 mb-4">
+		<div class="col-lg-7">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-info text-white">
+					<h5 class="mb-0"><i class="fas fa-filter me-2"></i>Ce qui compte comme espace vert</h5>
+				</div>
+				<div class="card-body">
+					<p>
+						L'application distingue les parcs et jardins publics de proximité des autres espaces.
+						Certaines collectivités comptabilisent des cimetières, des bosquets ou des places minéralisées.
+						Ces objets peuvent rester visibles dans les détails, mais ils ne sont pas retenus dans la surface OMS.
+					</p>
+					<p class="mb-0">
+						Le type de parc détermine s'il compte dans le calcul OMS.
+						Un parc peut aussi être marqué manuellement comme OMS ou non OMS lorsqu'il existe un cas particulier.
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-5">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-warning text-dark">
+					<h5 class="mb-0"><i class="fas fa-triangle-exclamation me-2"></i>Limites</h5>
+				</div>
+				<div class="card-body">
+					<ul class="mb-0">
+						<li>Un objet OSM peut être incomplet, déplacé ou fusionné avec un autre.</li>
+						<li>Les surfaces OSM et locales peuvent différer.</li>
+						<li>Un parc sans entrée saisie n'a pas d'isochrone exploitable.</li>
+						<li>La présence d'un parc dans OSM ne prouve pas son accès public réel.</li>
+						<li>La qualification humaine reste indispensable avant publication.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- INSEE et IGN                                                          -->
+<!-- ===================================================================== -->
+<div th:fragment="inseeIgn">
+	<h1 class="mt-2 mb-3" th:text="#{methodology.inseeIgn.title}">INSEE et IGN</h1>
+	<p class="lead">
+		INSEE fournit la population et la maille de calcul ; IGN fournit le réseau piéton et les isochrones.
+		Le croisement des deux permet de passer d'une surface de parc à une population réellement couverte.
+	</p>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-primary text-white">
+			<h5 class="mb-0"><i class="fas fa-users me-2"></i>INSEE : Filosofi et carreaux de 200 m</h5>
+		</div>
+		<div class="card-body">
+			<p>
+				La population utilisée est issue des données carroyées <strong>Filosofi 200 m</strong> de l'INSEE.
+				Chaque carreau est une maille carrée de <strong>200 m × 200 m</strong>, soit <strong>40 000 m²</strong>,
+				identifiée par un code de carreau.
+			</p>
+			<p>Les données Filosofi 200 m conservent notamment :</p>
+			<div class="row">
+				<div class="col-md-6">
+					<ul>
+						<li>la population totale et les classes d'âge ;</li>
+						<li>le nombre de ménages et leur composition ;</li>
+						<li>les indicateurs de revenu et de pauvreté ;</li>
+						<li>les logements par époque de construction et le logement social.</li>
+					</ul>
+				</div>
+				<div class="col-md-6">
+					<ul>
+						<li>l'année de référence : 2015, 2017, 2019, 2021 ;</li>
+						<li>le carreau de 1 km parent ;</li>
+						<li>le code officiel géographique ;</li>
+						<li>l'indicateur d'imputation de la valeur.</li>
+					</ul>
+				</div>
+			</div>
+			<p class="mb-0">
+				Le calcul V4 charge la population Filosofi en une seule fois sur l'union du carreau courant
+				et des parcs qui l'intersectent. Il évite ainsi un chargement par carreau.
+			</p>
+		</div>
+	</div>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-success text-white">
+			<h5 class="mb-0"><i class="fas fa-person-walking me-2"></i>IGN : l'isochrone piétonne</h5>
+		</div>
+		<div class="card-body">
+			<p>
+				Une isochrone est la zone atteignable à pied depuis un point de départ en un temps donné.
+				Elle ne représente pas un cercle : elle suit le réseau de rues, les passages piétons et les obstacles.
+				L'application appelle le service d'isochrones de l'IGN (Géoplateforme), avec le profil piéton
+				et le réseau de rues de la base IGN.
+			</p>
+			<div class="table-responsive">
+				<table class="table table-sm table-bordered align-middle">
+					<thead class="table-light">
+						<tr>
+							<th scope="col">Contexte</th>
+							<th scope="col">Temps OMS</th>
+							<th scope="col">Distance indicative</th>
+							<th scope="col">Surface minimale</th>
+							<th scope="col">Surface conseillée</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Zone dense (INSEE 1 ou 2)</td>
+							<td>5 min, soit 300 s</td>
+							<td>environ 300 m</td>
+							<td>10 m²/habitant</td>
+							<td>12 m²/habitant</td>
+						</tr>
+						<tr>
+							<td>Zone périurbaine</td>
+							<td>20 min, soit 1 200 s</td>
+							<td>environ 1 200 m</td>
+							<td>25 m²/habitant</td>
+							<td>45 m²/habitant</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<p class="mb-0">
+				Le paramètre transmis à l'IGN est un temps en secondes.
+				Les valeurs 300 et 1 200 sont donc des temps, pas des distances à vol d'oiseau.
+				La distance réelle parcourue peut être supérieure à 300 m ou 1 200 m.
+			</p>
+		</div>
+	</div>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-secondary text-white">
+			<h5 class="mb-0"><i class="fas fa-location-dot me-2"></i>Fichiers de localisation</h5>
+		</div>
+		<div class="card-body">
+			<p>
+				Le calcul ne travaille jamais sur un point isolé : il s'appuie sur les contours et les positions du territoire.
+				Les principales localisations sont :
+			</p>
+			<div class="table-responsive">
+				<table class="table table-sm table-striped align-middle mb-0">
+					<thead>
+						<tr>
+							<th scope="col">Élément localisé</th>
+							<th scope="col">Usage métier</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Contour de la commune</td>
+							<td>Rattacher les parcs et vérifier les limites administratives.</td>
+						</tr>
+						<tr>
+							<td>Carreau INSEE 200 m</td>
+							<td>Maille de calcul et de proratisation de la population.</td>
+						</tr>
+						<tr>
+							<td>Contour du parc</td>
+							<td>Surface, intersection avec les carreaux et union des zones accessibles.</td>
+						</tr>
+						<tr>
+							<td>Entrée du parc</td>
+							<td>Point de départ de l'isochrone piétonne.</td>
+						</tr>
+						<tr>
+							<td>Zone accessible calculée par l'IGN</td>
+							<td>Emprise de l'isochrone et traçabilité de l'appel.</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-secondary text-white">
+			<h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Population couverte et prorata</h5>
+		</div>
+		<div class="card-body">
+			<p>
+				La zone d'accessibilité d'un parc est comparée aux carreaux INSEE de 200 m.
+				Pour chaque carreau touché :
+			</p>
+			<ul>
+				<li>si le carreau est entièrement couvert par la zone accessible, toute sa population est comptée ;</li>
+				<li>si le carreau est partiellement couvert, la population est estimée au prorata de la surface d'intersection.</li>
+			</ul>
+			<pre class="bg-light border rounded p-3 mb-0"><code>population_contribuée = population_carreau × (surface_intersection / 40 000 m²)</code></pre>
+		</div>
+	</div>
+
+	<div class="alert alert-warning" role="alert">
+		<h6 class="alert-heading"><i class="fas fa-triangle-exclamation me-2"></i>Limites</h6>
+		<ul class="mb-0">
+			<li>L'isochrone dépend de la qualité du réseau IGN et de la date de la base.</li>
+			<li>Les barrières physiques, les horaires ou les fermetures ne sont pas tous modélisés.</li>
+			<li>La population est annuelle et carroyée : elle ne représente pas une fréquentation réelle.</li>
+			<li>Le prorata suppose une population uniformément répartie dans le carreau, ce qui est une approximation.</li>
+			<li>Une commune absente du référentiel de densité est traitée par défaut comme dense : le résultat doit être vérifié.</li>
+		</ul>
+	</div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- NDVI                                                                  -->
+<!-- ===================================================================== -->
+<div th:fragment="ndvi">
+	<h1 class="mt-2 mb-3" th:text="#{methodology.ndvi.title}">NDVI</h1>
+	<p class="lead">
+		Le NDVI (Normalized Difference Vegetation Index) mesure la vigueur de la végétation à partir d'images satellite.
+		Il ne remplace pas la surface OMS : il apporte une lecture de la végétation réelle à l'intérieur du parc.
+	</p>
+
+	<div class="row g-4 mb-4">
+		<div class="col-lg-7">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-success text-white">
+					<h5 class="mb-0"><i class="fas fa-leaf me-2"></i>Ce que mesure le NDVI</h5>
+				</div>
+				<div class="card-body">
+					<pre class="bg-light border rounded p-3"><code>NDVI = (proche infrarouge − rouge) / (proche infrarouge + rouge)
+     = (B08 − B04) / (B08 + B04)</code></pre>
+					<p>Le résultat est compris entre -1 et 1 :</p>
+					<ul>
+						<li>valeurs élevées : végétation dense, active ;</li>
+						<li>valeurs moyennes : pelouse, végétation clairsemée ;</li>
+						<li>valeurs faibles ou négatives : sol nu, minéral, eau, ombre ou nuage.</li>
+					</ul>
+					<p class="mb-0">
+						L'application conserve la moyenne, le minimum, le maximum, l'écart-type et la date d'acquisition.
+						Un parc très minéralisé peut donc avoir une surface OMS correcte mais un NDVI faible.
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-5">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-primary text-white">
+					<h5 class="mb-0"><i class="fas fa-satellite me-2"></i>Source</h5>
+				</div>
+				<div class="card-body">
+					<ul class="mb-0">
+						<li><strong>Sentinel-2 L2A</strong> (réflectance de surface) ;</li>
+						<li><strong>Copernicus Data Space Ecosystem</strong> (CDSE) ;</li>
+						<li>mosaïque : l'image la moins nuageuse ;</li>
+						<li>masque de qualité : nuages, ombres, eau et pixels saturés exclus ;</li>
+						<li>calcul statistique côté fournisseur : aucune image n'est téléchargée.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-secondary text-white">
+			<h5 class="mb-0"><i class="fas fa-gears me-2"></i>Traitement dans l'application</h5>
+		</div>
+		<div class="card-body">
+			<ol class="mb-0">
+				<li class="mb-2"><strong>Déclenchement</strong> : le NDVI est demandé pendant le calcul d'un parc, via le bouton « Calculer le parc », ou par la file de traitement.</li>
+				<li class="mb-2"><strong>Fenêtre</strong> : l'appel porte sur l'année précédente, sur une fenêtre estivale configurable (par défaut du 1er au 15 juin, avec une fenêtre de secours fin juin).</li>
+				<li class="mb-2"><strong>Un seul appel par parc et par année de référence</strong> : le NDVI Copernicus est lissé sur plusieurs années. Une seule réponse est recopiée sur tous les résultats annuels du parc pour économiser le quota.</li>
+				<li class="mb-2"><strong>File persistante</strong> : les demandes sont traitées par lots de 10 toutes les 5 minutes. Les traitements bloqués en cours sont recyclés, et les erreurs sont rejouées quotidiennement.</li>
+				<li class="mb-2"><strong>Historique</strong> : chaque réponse contenant des statistiques est conservée avec la période, le nombre de pixels valides et les valeurs. Cet historique n'est pas dédoublonné : il garde la trace de chaque observation.</li>
+				<li><strong>Non bloquant</strong> : une erreur réseau, un quota dépassé ou un timeout laisse les colonnes NDVI vides et n'empêche pas le calcul OMS de se terminer.</li>
+			</ol>
+		</div>
+	</div>
+
+	<div class="row g-4 mb-4">
+		<div class="col-lg-6">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-info text-white">
+					<h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Usages</h5>
+				</div>
+				<div class="card-body">
+					<ul class="mb-0">
+						<li>repérer les parcs minéralisés ou peu végétalisés ;</li>
+						<li>comparer la végétation entre quartiers ou entre années ;</li>
+						<li>suivre l'effet de travaux de végétalisation ;</li>
+						<li>compléter l'analyse OMS par une lecture écologique du parc.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-warning text-dark">
+					<h5 class="mb-0"><i class="fas fa-triangle-exclamation me-2"></i>Limites</h5>
+				</div>
+				<div class="card-body">
+					<ul class="mb-0">
+						<li>Le NDVI n'est pas un critère de surface OMS : il ne remplace ni les m²/habitant ni l'accessibilité.</li>
+						<li>Une même valeur est recopiée sur toutes les années du parc tant que la reventilation par période n'est pas faite.</li>
+						<li>Le satellite ne repasse pas tous les ans au même endroit ; certaines fenêtres restent sans donnée exploitable.</li>
+						<li>Le masque de nuages peut retirer une partie du parc et fausser la moyenne.</li>
+						<li>La fonctionnalité est désactivée par défaut tant que les identifiants CDSE ne sont pas configurés.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- Calculs                                                               -->
+<!-- ===================================================================== -->
+<div th:fragment="calculs">
+	<h1 class="mt-2 mb-3" th:text="#{methodology.calculs.title}">Les calculs</h1>
+	<p class="lead">
+		Le moteur de calcul V4 transforme une grille de carreaux INSEE, des parcs et des isochrones
+		en indicateurs de surface accessible par habitant, comparés aux seuils OMS.
+	</p>
+
+	<div class="alert alert-info" role="alert">
+		<i class="fas fa-circle-info me-2"></i>
+		Un carreau fait 200 m × 200 m, soit 40 000 m². Le calcul est mené pour chaque carreau et chaque année
+		de population INSEE. Le résultat est conservé pour chaque carreau et chaque année.
+	</div>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-primary text-white">
+			<h5 class="mb-0"><i class="fas fa-list-ol me-2"></i>Déroulé du calcul</h5>
+		</div>
+		<div class="card-body">
+			<ol class="mb-0">
+				<li class="mb-2"><strong>Carreau et densité</strong> : identification du carreau, de sa géométrie et de la commune. La densité INSEE détermine le seuil et le temps d'accès.</li>
+				<li class="mb-2"><strong>Parcs intersectants</strong> : recherche spatiale de tous les parcs dont le polygone touche le carreau.</li>
+				<li class="mb-2"><strong>Population groupée</strong> : chargement des carreaux Filosofi couvrant le carreau et les zones d'influence des parcs.</li>
+				<li class="mb-2"><strong>Calcul par parc</strong> : pour chaque parc actif à l'année traitée, récupération ou calcul de son résultat : surface du parc, population couverte, surface par habitant.</li>
+				<li class="mb-2"><strong>Unions</strong> : union des polygones de tous les parcs, des parcs OMS, et des parcs OMS « durables » (surface supérieure au seuil minimal, 5 000 m² par défaut).</li>
+				<li class="mb-2"><strong>Population dans l'isochrone</strong> : intersection de l'union avec les carreaux INSEE et proratisation de la population selon la surface couverte.</li>
+				<li><strong>Indicateurs</strong> : surface par habitant, population incluse / exclue, surface manquante pour le minimum et pour la recommandation, indicateur de parc durable.</li>
+			</ol>
+		</div>
+	</div>
+
+	<div class="row g-4 mb-4">
+		<div class="col-lg-6">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-success text-white">
+					<h5 class="mb-0"><i class="fas fa-square-root-variable me-2"></i>Formules</h5>
+				</div>
+				<div class="card-body">
+					<pre class="bg-light border rounded p-3 mb-3"><code>population_contribuée =
+  population_carreau × (surface_intersection / 40 000)
+
+surface_par_habitant =
+  surface_totale_des_parcs_accessibles / population_dans_l_isochrone
+
+surface_manquante =
+  MAX(0, seuil_OMS × population_dans_l_isochrone
+           − surface_totale_des_parcs_OMS)</code></pre>
+					<p class="mb-0">
+						Le calcul est appliqué deux fois : sur le périmètre « tous parcs » et sur le périmètre
+						« parcs OMS ». Les parcs non OMS restent visibles dans les détails, mais ne comptent pas
+						dans la surface OMS.
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-secondary text-white">
+					<h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Optimisations V4</h5>
+				</div>
+				<div class="card-body">
+					<ul class="mb-0">
+						<li><strong>Chargement groupé</strong> : la population Filosofi est lue en une seule fois au lieu d'une lecture par carreau.</li>
+						<li><strong>Cache de surface</strong> : les intersections déjà calculées sont réutilisées.</li>
+						<li><strong>Mutualisation</strong> : quand tous les parcs d'un carreau sont OMS, les résultats « tous parcs » et « OMS » sont calculés une seule fois.</li>
+						<li><strong>Constante de surface</strong> : 40 000 m² est partagé par tous les calculs de prorata.</li>
+						<li><strong>Bascule</strong> : le moteur V4 peut être remplacé par une version antérieure si nécessaire.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="alert alert-warning" role="alert">
+		<h6 class="alert-heading"><i class="fas fa-triangle-exclamation me-2"></i>Limites</h6>
+		<ul class="mb-0">
+			<li>La population est celle de l'année INSEE disponible ; le résultat n'est pas temps réel.</li>
+			<li>Le prorata suppose une répartition uniforme de la population dans chaque carreau.</li>
+			<li>La qualité de l'isochrone dépend du réseau IGN et de la saisie des entrées.</li>
+			<li>Un parc sans entrée ou sans géométrie ne peut pas être correctement pris en compte.</li>
+			<li>Les changements de contour de parc ou de commune nécessitent un recalcul.</li>
+		</ul>
+	</div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- Propositions                                                          -->
+<!-- ===================================================================== -->
+<div th:fragment="propositions">
+	<h1 class="mt-2 mb-3" th:text="#{methodology.propositions.title}">Les propositions</h1>
+	<p class="lead">
+		Les propositions répondent à une question simple : où créer ou agrandir un parc pour réduire le déficit
+		d'espaces verts par habitant ? Plusieurs algorithmes coexistent, avec des compromis différents
+		entre rapidité, qualité de la distribution et surface totale proposée. Une méthode manuelle permet
+		aussi de dessiner une proposition et d'en suivre l'impact au fil de l'eau.
+	</p>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-primary text-white">
+			<h5 class="mb-0"><i class="fas fa-database me-2"></i>Données d'entrée communes</h5>
+		</div>
+		<div class="card-body">
+			<ul class="mb-0">
+				<li>les carreaux INSEE 200 m de la commune ;</li>
+				<li>la population et la surface accessible par carreau ;</li>
+				<li>le déficit par rapport au seuil minimal et à la recommandation OMS ;</li>
+				<li>le rayon de propagation : 300 m en zone dense, 1 200 m en zone périurbaine ;</li>
+				<li>les seuils de surface : minimum acceptable de 650 m² pour une proposition, parc « durable » à partir de 5 000 m².</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-success text-white">
+			<h5 class="mb-0"><i class="fas fa-pen-ruler me-2"></i>Méthode manuelle : dessiner et évaluer au fil de l'eau</h5>
+		</div>
+		<div class="card-body">
+			<p>
+				L'utilisateur peut choisir lui-même l'emplacement d'un parc, sans passer par un algorithme.
+				Il dessine une proposition sur la carte, l'enregistre, puis mesure immédiatement son effet
+				sur les indicateurs OMS de la commune.
+			</p>
+
+			<div class="row g-3 mb-3">
+				<div class="col-md-6">
+					<div class="border rounded p-3 h-100">
+						<h6><i class="fas fa-circle me-2 text-success"></i>Cercle</h6>
+						<p class="mb-0">
+							Un point et un diamètre suffisent. C'est le mode rapide pour tester une idée
+							ou estimer l'ordre de grandeur d'un parc.
+						</p>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="border rounded p-3 h-100">
+						<h6><i class="fas fa-draw-polygon me-2 text-primary"></i>Polygone</h6>
+						<p class="mb-0">
+							Le contour est tracé librement pour coller à la forme réelle du terrain.
+							C'est le mode précis pour une proposition argumentée.
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<p><strong>Principe de l'évaluation au fil de l'eau</strong></p>
+			<ol>
+				<li class="mb-2">Choisir la commune et l'année INSEE de travail.</li>
+				<li class="mb-2">Dessiner une proposition, lui donner un nom, une surface ou un diamètre, puis l'enregistrer.</li>
+				<li class="mb-2">Lancer l'évaluation : toutes les propositions manuelles de la commune et de l'année sont prises en compte.</li>
+				<li class="mb-2">La carte affiche, pour chaque carreau, la surface manquante avant et après, la surface accessible ajoutée et la nouvelle surface par habitant.</li>
+				<li>Ajouter, modifier ou supprimer une proposition, puis relancer l'évaluation : le résultat est remplacé à chaque nouveau calcul.</li>
+			</ol>
+
+			<div class="alert alert-info mb-0" role="alert">
+				<i class="fas fa-circle-info me-2"></i>
+				L'évaluation manuelle utilise une distance à vol d'oiseau, avec une marge de tolérance autour du seuil OMS.
+				Elle ne remplace pas l'isochrone piétonne utilisée pour les parcs existants : elle donne une tendance
+				rapide, à confirmer par une analyse plus fine. Seuls les carreaux déjà calculés pour l'année sont évalués.
+			</div>
+		</div>
+	</div>
+
+	<div class="card shadow-sm mb-4">
+		<div class="card-header bg-secondary text-white">
+			<h5 class="mb-0"><i class="fas fa-code me-2"></i>Algorithmes actifs</h5>
+		</div>
+		<div class="card-body">
+			<div class="table-responsive">
+				<table class="table table-sm table-striped align-middle mb-0">
+					<thead>
+						<tr>
+							<th scope="col">Méthode</th>
+							<th scope="col">Principe</th>
+							<th scope="col">Point fort</th>
+							<th scope="col">Limite</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><a href="https://fr.wikipedia.org/wiki/Algorithme_glouton" target="_blank" rel="noopener noreferrer">Glouton par déficit</a></td>
+							<td>Traiter le carreau au plus fort déficit, puis propager aux voisins.</td>
+							<td>Simple, rapide, facile à expliquer.</td>
+							<td>Solution locale, dépend de l'ordre de traitement.</td>
+						</tr>
+						<tr>
+							<td><a href="https://fr.wikipedia.org/wiki/Algorithme_glouton" target="_blank" rel="noopener noreferrer">Glouton par population</a></td>
+							<td>Variante qui priorise le déficit multiplié par la population.</td>
+							<td>Favorise l'impact humain total.</td>
+							<td>Même logique gloutonne.</td>
+						</tr>
+						<tr>
+							<td><a href="https://fr.wikipedia.org/wiki/DBSCAN" target="_blank" rel="noopener noreferrer">Regroupement DBSCAN</a></td>
+							<td>Regroupe les carreaux déficitaires en zones avant d'itérer.</td>
+							<td>Meilleure lecture spatiale des grappes de déficit.</td>
+							<td>Paramétrage du regroupement à surveiller.</td>
+						</tr>
+						<tr>
+							<td><a href="https://fr.wikipedia.org/wiki/Programmation_par_contraintes" target="_blank" rel="noopener noreferrer">Programmation par contraintes</a></td>
+							<td>Optimisation sur des sous-ensembles de carreaux non voisins, avec des contraintes de surface et de déficit.</td>
+							<td>Optimisation locale explicite, meilleure distribution.</td>
+							<td>Plus coûteux ; passe finale nécessaire pour les zones bloquées.</td>
+						</tr>
+						<tr>
+							<td><a href="https://fr.wikipedia.org/wiki/M%C3%A9thode_des_moindres_carr%C3%A9s" target="_blank" rel="noopener noreferrer">Moindres carrés (χ²)</a></td>
+							<td>Le χ² sert de filtre de convergence ; le montant proposé reste le déficit complet.</td>
+							<td>Bonne stabilité, montants non sous-estimés.</td>
+							<td>Boucle plus longue ; le χ² n'optimise pas directement la surface.</td>
+						</tr>
+						<tr>
+							<td><a href="https://fr.wikipedia.org/wiki/Algorithme_g%C3%A9n%C3%A9tique" target="_blank" rel="noopener noreferrer">Algorithme génétique</a></td>
+							<td>Chaque solution associe une surface de parc à chaque carreau.</td>
+							<td>Exploration globale, bonne réduction du déficit.</td>
+							<td>Temps de calcul plus long ; résultat non déterministe.</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="row g-4 mb-4">
+		<div class="col-lg-4">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-success text-white">
+					<h5 class="mb-0"><i class="fas fa-puzzle-piece me-2"></i><a class="text-white" href="https://fr.wikipedia.org/wiki/Programmation_par_contraintes" target="_blank" rel="noopener noreferrer">Programmation par contraintes</a></h5>
+				</div>
+				<div class="card-body">
+					<p><strong>Programmation par contraintes</strong> sur des sous-ensembles de carreaux non voisins.</p>
+					<ul>
+						<li>discrétisation en unités de 500 m² ;</li>
+						<li>maximum 80 unités par carreau (40 000 m²) ;</li>
+						<li>sélection d'environ 20 % des carreaux non voisins à chaque itération ;</li>
+						<li>objectif : minimiser d'abord les écarts résiduels, ensuite la surface ajoutée ;</li>
+						<li>repli sur une méthode gloutonne si le solveur échoue.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-4">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-info text-white">
+					<h5 class="mb-0"><i class="fas fa-chart-simple me-2"></i><a class="text-white" href="https://fr.wikipedia.org/wiki/M%C3%A9thode_des_moindres_carr%C3%A9s" target="_blank" rel="noopener noreferrer">Moindres carrés (χ²)</a></h5>
+				</div>
+				<div class="card-body">
+					<p><strong>Moindres carrés pondérés</strong> par la population.</p>
+					<ul>
+						<li>le χ² estime une moyenne pondérée du déficit ;</li>
+						<li>il sert de filtre d'arrêt et de journal, pas de plafond de surface ;</li>
+						<li>le carreau choisi est celui du plus fort déficit ;</li>
+						<li>la surface proposée est le déficit complet, plafonnée à 40 000 m² ;</li>
+						<li>la surface accessible est propagée aux voisins dans le rayon OMS.</li>
+					</ul>
+					<p class="mb-0 small text-muted">L'ancienne version plafonnait au χ² et sous-estimait les surfaces d'environ 38 %.</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-4">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-warning text-dark">
+					<h5 class="mb-0"><i class="fas fa-dna me-2"></i><a class="text-dark" href="https://fr.wikipedia.org/wiki/Algorithme_g%C3%A9n%C3%A9tique" target="_blank" rel="noopener noreferrer">Algorithme génétique</a></h5>
+				</div>
+				<div class="card-body">
+					<p><strong>Algorithme génétique</strong> : chaque solution candidate associe une surface de parc à chaque carreau.</p>
+					<ul>
+						<li>une surface proposée par carreau, entre 0 et 40 000 m² ;</li>
+						<li>population de 200 à 2 000 solutions, 300 générations ;</li>
+						<li>croisement uniforme (0,9), mutation gaussienne (0,25), élitisme 5 % ;</li>
+						<li>score : réduction du déficit × population, moins une pénalité de parcimonie de 5 % ;</li>
+						<li>balayage final pour les zones restées déficitaires.</li>
+					</ul>
+					<p class="mb-0 small text-muted">Le résultat est une aide à la décision, pas une localisation cadastrale exacte.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="alert alert-warning" role="alert">
+		<h6 class="alert-heading"><i class="fas fa-triangle-exclamation me-2"></i>Limites et bonnes pratiques</h6>
+		<ul class="mb-0">
+			<li>Une proposition indique une <strong>surface à créer dans un carreau</strong>, pas un terrain disponible ni un projet validé.</li>
+			<li>Les algorithmes ne connaissent ni le prix du foncier, ni le PLU, ni la pollution, ni la volonté politique.</li>
+			<li>Deux algorithmes peuvent proposer des distributions différentes pour un même déficit.</li>
+			<li>Les surfaces inférieures à 650 m² ne sont pas retenues ; un parc est considéré « durable » à partir de 5 000 m².</li>
+			<li>Toute proposition doit être confrontée au terrain, aux services techniques et à la population avant décision.</li>
+		</ul>
+	</div>
+</div>
+
+</body>
+</html>
