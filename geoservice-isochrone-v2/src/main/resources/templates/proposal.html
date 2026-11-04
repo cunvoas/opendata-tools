@@ -933,9 +933,15 @@ function viewProposition(button) {
   // Mettre à jour le titre de la carte avec l'année et l'algorithme
   const cardHeader = document.querySelector('.map-block .card-header');
   if (cardHeader) {
-    cardHeader.innerHTML = propositionAnnee && propositionType
-      ? `Carte des propositions - <strong><em>${propositionAnnee} - ${propositionType}</em></strong>`
-      : 'Carte des propositions';
+    cardHeader.textContent = 'Carte des propositions';
+    if (propositionAnnee && propositionType) {
+      const strong = document.createElement('strong');
+      const em = document.createElement('em');
+      em.textContent = `${propositionAnnee} - ${propositionType}`;
+      strong.appendChild(em);
+      cardHeader.textContent = 'Carte des propositions - ';
+      cardHeader.appendChild(strong);
+    }
   }
   
   console.log('[Simulateur] Visualisation de la proposition:', propositionId, 'INSEE:', propositionInsee, 'Année:', propositionAnnee, 'Algo:', propositionType);
