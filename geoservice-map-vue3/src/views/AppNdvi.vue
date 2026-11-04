@@ -62,7 +62,7 @@
                 <div v-for="bucket in distribution" :key="bucket.range" class="flex items-center gap-2 mb-1">
                     <span class="w-48 sm:w-96 shrink-0">{{ bucket.range }} : {{ bucket.label }}</span>
                     <span class="flex-1 bg-gray-100">
-                        <span class="block h-4" :style="{ width: bucket.barWidth, backgroundColor: bucket.color }" />
+                        <span class="block h-4" :style="{ width: bucket.barWidth, backgroundColor: pastille(bucket.color) }" />
                     </span>
                     <span class="w-10 text-right">{{ bucket.count }} <span class="sr-only">{{ bucket.count > 1 ? 'parcs' : 'parc' }}</span></span>
                 </div>
@@ -99,7 +99,7 @@
                             <td class="pr-3">{{ formatNumber(park.ndviMean, 3) }}</td>
                             <td class="pr-3 whitespace-nowrap">
                                 <span v-if="ndviColor(park.ndviMean)" class="inline-block w-3 h-3 mr-1 align-middle border border-gray-600"
-                                    :style="{ backgroundColor: ndviColor(park.ndviMean) }" aria-hidden="true" />{{ ndviCategory(park.ndviMean) }}
+                                    :style="{ backgroundColor: pastille(ndviColor(park.ndviMean)) }" aria-hidden="true" />{{ ndviCategory(park.ndviMean) }}
                             </td>
                             <td class="pr-3">{{ formatNumber(park.ndviMin, 3) }}</td>
                             <td class="pr-3">{{ formatNumber(park.ndviMax, 3) }}</td>
@@ -116,6 +116,7 @@
 <script>
 import SearchLocation from '../components/SearchLocation.vue';
 import { NDVI_CATEGORIES, couleurCategorie, getNdviCategory } from '../utils/ndvi.js';
+import { hexToRgba } from '../utils/color.js';
 
 const MODE = import.meta.env.DEV ? 'dynamic' : 'static';
 const STATIC_ON_GIT = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
@@ -259,6 +260,10 @@ export default {
         this.load();
     },
     methods: {
+        // Même transparence (0,5) que les polygones et la légende de la carte.
+        pastille(hex) {
+            return hexToRgba(hex, 0.5);
+        },
         ndviCategory(value) {
             return getNdviCategory(value)?.label ?? 'N/A';
         },

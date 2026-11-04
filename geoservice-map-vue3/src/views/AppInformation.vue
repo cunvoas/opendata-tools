@@ -196,6 +196,50 @@
                 </div>
             </div>
 
+            <section v-if="ndviEnabled" aria-labelledby="thesaurus-ndvi" class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                <h3 id="thesaurus-ndvi" class="text-lg font-semibold">NDVI : indice de végétation</h3>
+                <p class="mt-2 text-sm leading-relaxed">
+                    Le NDVI mesure la vigueur de la végétation d'un parc à partir d'images satellite Sentinel-2. Plus la valeur est élevée, plus la végétation est dense et active. C'est une lecture écologique du parc : il ne remplace ni la surface OMS ni l'accessibilité. Il est visible sur la carte (bouton NDVI) et dans l'écran NDVI.
+                </p>
+                <h4 class="mt-4 font-semibold">Calcul</h4>
+                <p class="mt-1 text-sm leading-relaxed">
+                    NDVI = (proche infrarouge − rouge) / (proche infrarouge + rouge). La valeur est comprise entre −1 et 1. Pour chaque parc, l'application affiche la moyenne, le minimum, le maximum et l'écart-type des pixels, ainsi que la date de l'image utilisée.
+                </p>
+                <h4 class="mt-4 font-semibold">Lire les valeurs</h4>
+                <div class="mt-2 overflow-x-auto">
+                    <table class="w-full text-sm border-collapse">
+                        <caption class="text-left mb-2">Seuils NDVI par type de surface</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col" class="text-left pr-3 pb-1">Valeur NDVI</th>
+                                <th scope="col" class="text-left pr-3 pb-1">Type de surface / interprétation</th>
+                                <th scope="col" class="text-left pr-3 pb-1">Couleur</th>
+                                <th scope="col" class="text-left pb-1">Couleur en mode daltonien</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="category in ndviScale" :key="category.range" class="align-top">
+                                <th scope="row" class="text-left pr-3 py-1 font-medium whitespace-nowrap">{{ category.range }}</th>
+                                <td class="pr-3 py-1">{{ category.description }}</td>
+                                <td class="pr-3 py-1"><span class="inline-block w-4 h-4 border border-gray-600 align-middle" :style="{ backgroundColor: pastille(category.color) }" aria-hidden="true" /></td>
+                                <td class="py-1"><span class="inline-block w-4 h-4 border border-gray-600 align-middle" :style="{ backgroundColor: pastille(category.colorDaltonien) }" aria-hidden="true" /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h4 class="mt-4 font-semibold">Limites</h4>
+                <ul class="mt-1 text-sm leading-relaxed list-disc list-inside space-y-1">
+                    <li>La colonne « Acquisition » donne la date de l'image réellement utilisée. Une même valeur peut être recopiée sur plusieurs années : cette date peut donc être plus récente que l'année affichée.</li>
+                    <li>Les nuages, les ombres et l'eau sont exclus des mesures. Le masque peut retirer une partie du parc et fausser la moyenne.</li>
+                    <li>Pour une année sans donnée exploitable, l'écran NDVI indique « NDVI non disponible ».</li>
+                    <li>Un parc sans mesure est affiché « NDVI pas encore calculé » sur la carte et « N/A » dans le tableau de l'écran NDVI.</li>
+                    <li>En mode daltonien, la carte et l'écran NDVI utilisent une autre palette (du jaune au bleu nuit) : les libellés restent identiques.</li>
+                </ul>
+                <p class="mt-3 text-sm leading-relaxed">
+                    Source : images Sentinel-2 L2A. Les statistiques sont calculées par le fournisseur Copernicus Data Space Ecosystem, sans téléchargement d'image.
+                </p>
+            </section>
+
             <div v-if="showIsochroneDetail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showIsochroneDetail = false">
                 <div class="mx-4 max-w-lg rounded-lg bg-white p-6 shadow-xl">
                     <div class="flex items-start justify-between">
@@ -274,6 +318,9 @@
 </template>
 
 <script>
+import { features } from '../utils/features.js';
+import { NDVI_CATEGORIES } from '../utils/ndvi.js';
+import { hexToRgba } from '../utils/color.js';
 
 export default {
     name: "AppInformation",
@@ -287,10 +334,20 @@ export default {
             showEspacesVertsDetail: false,
             showM2Detail: false,
             showZoneDetail: false,
-            inseeCarreauUrl: 'https://www.insee.fr/fr/statistiques/8272002'
+            inseeCarreauUrl: 'https://www.insee.fr/fr/statistiques/8272002',
+            ndviEnabled: features.ndvi,
+            ndviScale: NDVI_CATEGORIES
         }
     },
     methods: {
+        /**
+         * Pastille d'une couleur NDVI : même transparence (0,5) que les polygones et la légende de la carte.
+         * @param {string} hex - couleur #rrggbb de la grille.
+         * @returns {string} rgba() de la pastille.
+         */
+        pastille(hex) {
+            return hexToRgba(hex, 0.5);
+        },
         /**
          * Classes du bouton de bascule Détail / Diagramme.
          * Les couples fond/texte sont définis ici (et non dans le template)

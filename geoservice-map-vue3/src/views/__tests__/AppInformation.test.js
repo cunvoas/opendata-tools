@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import AppInformation from '../AppInformation.vue'
+import { features } from '../../utils/features.js'
+import { NDVI_CATEGORIES } from '../../utils/ndvi.js'
+import { hexToRgba } from '../../utils/color.js'
+
+vi.mock('../../utils/features.js', () => ({ features: { ndvi: true } }))
 
 describe('AppInformation.vue', () => {
   it('les boutons de bascule Détail/Diagramme exposent aria-pressed', async () => {
@@ -42,5 +47,53 @@ describe('AppInformation.vue', () => {
     expect(svg.exists()).toBe(true)
     expect(svg.attributes('role')).toBe('img')
     expect(svg.attributes('aria-label')).toBeTruthy()
+  })
+})
+
+describe('AppInformation.vue - encart NDVI du thésaurus', () => {
+  const encart = (wrapper) => wrapper.find('section[aria-labelledby="thesaurus-ndvi"]')
+  const cssColor = (hex) => {
+    const probe = document.createElement('span')
+    probe.style.backgroundColor = hex
+    return probe.style.backgroundColor
+  }
+
+  afterEach(() => {
+    features.ndvi = true
+  })
+
+  it('affiche l’encart NDVI avec les seuils de la grille partagée', () => {
+    const wrapper = mount(AppInformation)
+    const section = encart(wrapper)
+
+    expect(section.exists()).toBe(true)
+    expect(section.find('h3').text()).toBe('NDVI : indice de végétation')
+    expect(section.find('caption').exists()).toBe(true)
+    const rows = section.findAll('tbody tr')
+    expect(rows).toHaveLength(NDVI_CATEGORIES.length)
+    rows.forEach((row, index) => {
+      expect(row.find('th').text()).toBe(NDVI_CATEGORIES[index].range)
+      expect(row.findAll('td')[0].text()).toBe(NDVI_CATEGORIES[index].description)
+    })
+  })
+
+  it('n’affiche pas l’encart quand le feature flag NDVI est inactif', () => {
+    features.ndvi = false
+    const wrapper = mount(AppInformation)
+
+    expect(encart(wrapper).exists()).toBe(false)
+  })
+
+  it('montre les deux palettes en pastilles décoratives à 50 %, comme la carte : le texte reste l’information', () => {
+    const wrapper = mount(AppInformation)
+    const rows = encart(wrapper).findAll('tbody tr')
+
+    expect(rows).toHaveLength(NDVI_CATEGORIES.length)
+    rows.forEach((row, index) => {
+      const pastilles = row.findAll('span[aria-hidden="true"]')
+      expect(pastilles).toHaveLength(2)
+      expect(pastilles[0].element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[index].color, 0.5)))
+      expect(pastilles[1].element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[index].colorDaltonien, 0.5)))
+    })
   })
 })

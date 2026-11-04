@@ -3,6 +3,7 @@ import { mount, flushPromises, config } from '@vue/test-utils';
 import AppNdvi from '../AppNdvi.vue';
 import SearchLocation from '../../components/SearchLocation.vue';
 import { NDVI_CATEGORIES } from '../../utils/ndvi.js';
+import { hexToRgba } from '../../utils/color.js';
 
 // Le sélecteur charge ses référentiels sur GitHub : il est stubé et ses événements sont émis à la main.
 config.global.stubs = { SearchLocation: true };
@@ -419,7 +420,7 @@ describe('AppNdvi', () => {
       const wrapper = await mountWith();
 
       chartRows(wrapper).forEach((row, index) => {
-        expect(row.bar.element.style.backgroundColor, row.label).toBe(cssColor(NDVI_CATEGORIES[index].color));
+        expect(row.bar.element.style.backgroundColor, row.label).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[index].color, 0.5)));
       });
     });
 
@@ -491,8 +492,8 @@ describe('AppNdvi', () => {
       const wrapper = await mountWith([{ ...payload.parks[0], parkId: '1', name: 'Dense', ndviMean: 0.6 }]);
 
       const swatch = rowOf(wrapper, 'Dense').find('td span[aria-hidden="true"]');
-      expect(swatch.element.style.backgroundColor).toBe(cssColor(NDVI_CATEGORIES[4].colorDaltonien));
-      expect(chartRows(wrapper)[4].bar.element.style.backgroundColor).toBe(cssColor(NDVI_CATEGORIES[4].colorDaltonien));
+      expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[4].colorDaltonien, 0.5)));
+      expect(chartRows(wrapper)[4].bar.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[4].colorDaltonien, 0.5)));
     });
 
     it('affiche la couleur de la catégorie dans une pastille, sans pastille quand le NDVI est absent', async () => {
@@ -502,7 +503,7 @@ describe('AppNdvi', () => {
       ]);
 
       const swatch = rowOf(wrapper, 'Dense').find('td span[aria-hidden="true"]');
-      expect(swatch.element.style.backgroundColor).toBe(cssColor(NDVI_CATEGORIES[4].color));
+      expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[4].color, 0.5)));
       expect(rowOf(wrapper, 'Sans mesure').find('td span[aria-hidden="true"]').exists()).toBe(false);
     });
 
