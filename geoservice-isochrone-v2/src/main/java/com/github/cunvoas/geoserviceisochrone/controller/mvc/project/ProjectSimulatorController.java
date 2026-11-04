@@ -255,7 +255,7 @@ public class ProjectSimulatorController {
 				log.info("Géométrie vide ou supprimée");
 			}
 		} catch (Exception e) {
-			log.error("geoman parsing error = ", LogSanitizer.sanitize(sGeom));
+			log.error("geoman parsing error = {}", LogSanitizer.sanitize(sGeom));
 		}	
         
         // Traitement du simulateur avec la géométrie (comme pour NewPark)
