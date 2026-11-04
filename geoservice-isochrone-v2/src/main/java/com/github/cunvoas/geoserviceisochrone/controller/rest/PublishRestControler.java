@@ -19,6 +19,7 @@ import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceServ
 import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 import com.github.cunvoas.geoserviceisochrone.service.export.PublishService;
 import com.github.cunvoas.geoserviceisochrone.service.export.ServicePublicationExporter;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,11 +60,11 @@ public class PublishRestControler {
 	public ResponseEntity<ComputeJobResponse> request(@RequestBody ComputeJobRequest req) {
 		HttpStatus code= HttpStatus.OK;
 		
-		log.warn("ComputeJobRequest received: {}", req);
+		log.warn("ComputeJobRequest received: {}", LogSanitizer.sanitize(req));
 		
-		Boolean isValid = tokenManagement.isTokenValid(req.getToken());
+		boolean isValid = tokenManagement.isTokenValid(req.getToken());
 		if (!isValid) {
-			log.error("Invalid token for ComputeJobRequest: {}", req);
+			log.error("Invalid token for ComputeJobRequest: {}", LogSanitizer.sanitize(req));
 			return new ResponseEntity<ComputeJobResponse>(HttpStatus.UNAUTHORIZED);
 		}
 		
@@ -101,7 +102,7 @@ public class PublishRestControler {
 			}
 			
 		} else {
-			log.error("ComputeJobRequest without valid id: {}", req);
+			log.error("ComputeJobRequest without valid id: {}", LogSanitizer.sanitize(req));
 			code= HttpStatus.BAD_REQUEST;
 		}
 		
@@ -116,7 +117,7 @@ public class PublishRestControler {
 	 */
 	@PostMapping("/status")
 	public ResponseEntity<ComputeJobResponse> status(@RequestBody ComputeJobRequest req) {
-		Boolean isValid = tokenManagement.isTokenValid(req.getToken());
+		boolean isValid = tokenManagement.isTokenValid(req.getToken());
 		if (!isValid) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}

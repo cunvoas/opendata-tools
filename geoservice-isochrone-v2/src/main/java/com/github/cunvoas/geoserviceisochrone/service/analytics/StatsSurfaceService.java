@@ -285,8 +285,8 @@ public class StatsSurfaceService {
 	 * @Deprecated
 	 */
 	void populateAll(StatsSurfaceJson json, List<StatsSurface> stats, String[] seuils) {
-		Integer populationTotalExclue = 0;
-		Integer populationTotale = 0;
+		int populationTotalExclue = 0;
+		int populationTotale = 0;
 		
 		for (StatsSurface statsSurface : stats) {
 			Stat stat = new Stat();
@@ -328,8 +328,8 @@ public class StatsSurfaceService {
 	void populateSurface(StatsSurfaceJson json, List<StatsSurface> stats, int[] seuils) {
 		Iterator<StatsSurface> iter = stats.iterator();
 		StatsSurface statsSurface = iter.next(); // premier élément de liste (0 à 5 éléments)
-		Integer populationTotalExclue = 0;
-		Integer populationTotale = 0;
+		int populationTotalExclue = 0;
+		int populationTotale = 0;
 		int fin=0;
 		
 		for (int i = 0; i < colors.length; i++) {

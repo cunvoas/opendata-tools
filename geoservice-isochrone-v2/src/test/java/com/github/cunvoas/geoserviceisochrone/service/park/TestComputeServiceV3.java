@@ -50,7 +50,7 @@ class TestComputeServiceV3 {
 		
 		inhabitant = allpop.doubleValue();
 		
-		Long popIn = Math.round(inhabitant * surfaceParkAccess / 40_000d);
+		long popIn = Math.round(inhabitant * surfaceParkAccess / 40_000d);
 		BigDecimal inClud = new BigDecimal(popIn);
 		BigDecimal exClud = new BigDecimal(inhabitant - popIn);
 		
@@ -69,7 +69,7 @@ class TestComputeServiceV3 {
 		
 		inhabitant = allpop.doubleValue();
 		
-		Long popIn = Math.round(inhabitant * surfaceParkAccess / 40_000d);
+		long popIn = Math.round(inhabitant * surfaceParkAccess / 40_000d);
 		
 		assertEquals(0L, popIn);
 	}
@@ -83,7 +83,7 @@ class TestComputeServiceV3 {
 		
 		inhabitant = allpop.doubleValue();
 		
-		Long popIn = Math.round(inhabitant * surfaceParkAccess / 40_000d);
+		long popIn = Math.round(inhabitant * surfaceParkAccess / 40_000d);
 		
 		assertEquals(0L, popIn);
 	}
@@ -97,7 +97,7 @@ class TestComputeServiceV3 {
 		
 		inhabitant = allpop.doubleValue();
 		
-		Long popIn = Math.round(inhabitant * surfaceParkAccess / 40_000d);
+		long popIn = Math.round(inhabitant * surfaceParkAccess / 40_000d);
 		BigDecimal inClud = new BigDecimal(popIn);
 		BigDecimal exClud = new BigDecimal(inhabitant - popIn);
 		

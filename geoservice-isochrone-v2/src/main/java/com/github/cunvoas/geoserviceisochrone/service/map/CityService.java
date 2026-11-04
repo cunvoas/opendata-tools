@@ -220,11 +220,13 @@ public class CityService {
 		OutputStream out = new OutputStream() {
 			private StringBuilder sb = new StringBuilder();
 
+			@Override
 			public void write(int b) throws IOException {
 				this.sb.append((char) b);
 			}
 
 			// overrides this toString()
+			@Override
 			public String toString() {
 				return this.sb.toString();
 			}

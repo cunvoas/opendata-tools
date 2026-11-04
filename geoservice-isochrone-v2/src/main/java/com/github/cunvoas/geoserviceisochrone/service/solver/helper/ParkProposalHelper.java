@@ -42,7 +42,7 @@ public class ParkProposalHelper {
 		for (Map.Entry<String, ParkProposalWork> parkProposal : squaresOnTerritoryMap.entrySet()) {
 			if (!parkProposal.getKey().equals(idInspire)) {
 				// calcul de la distance au centroïde mètres
-				Double distance = 1_000 * DistanceHelper.crowFlyDistance(
+				double distance = 1_000 * DistanceHelper.crowFlyDistance(
 						centroid.y, 
 						centroid.x,
 						parkProposal.getValue().getCentre().getCentroid().getY(),

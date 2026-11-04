@@ -19,6 +19,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.manual.ManualParkProposal;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 import com.github.cunvoas.geoserviceisochrone.service.proposal.ManualProposalService;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,7 +55,7 @@ public class ManualProposalController {
      */
     @GetMapping
     public String show(@ModelAttribute FormManualProposal form, Model model) {
-        log.debug("show() - form={}", form);
+        log.debug("show() - form={}", LogSanitizer.sanitize(form));
         populate(form, model);
         loadProposals(form, model);
         return VIEW;
@@ -97,7 +98,7 @@ public class ManualProposalController {
      */
     @PostMapping("/save")
     public String save(@ModelAttribute FormManualProposal form, Model model) {
-        log.info("save() - form={}", form);
+        log.info("save() - form={}", LogSanitizer.sanitize(form));
 
         Boolean isValid = tokenManagement.isTokenValid(form.getToken());
         if (Boolean.FALSE.equals(isValid)) {
@@ -138,7 +139,7 @@ public class ManualProposalController {
      */
     @PostMapping("/delete")
     public String delete(@ModelAttribute FormManualProposal form, Model model) {
-        log.info("delete() - form={}", form);
+        log.info("delete() - form={}", LogSanitizer.sanitize(form));
 
         if (form.getId() == null) {
             model.addAttribute("deleteError", "Erreur: Aucune proposition sélectionnée");

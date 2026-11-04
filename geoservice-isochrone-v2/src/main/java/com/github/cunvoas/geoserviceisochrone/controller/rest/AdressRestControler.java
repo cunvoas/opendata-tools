@@ -19,6 +19,7 @@ import com.github.cunvoas.geoserviceisochrone.extern.gouv.adress.AdresseClientSe
 import com.github.cunvoas.geoserviceisochrone.extern.gouv.adress.dto.AdressBo;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,7 +53,7 @@ public class AdressRestControler {
 			 @RequestParam(value = "idCity", required = false) Long idCity,
 			 @RequestParam(value = "q", required = false) String query
 			 ) {
-		 log.info("rest search_city idCity:{},q:{}", idCity,  query);
+		 log.info("rest search_city idCity:{},q:{}", idCity,  LogSanitizer.sanitize(query));
 		 
 		 List<SearchListDto> ret = new ArrayList<>();
 		 

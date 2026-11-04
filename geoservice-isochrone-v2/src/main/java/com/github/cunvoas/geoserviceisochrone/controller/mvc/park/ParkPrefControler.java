@@ -219,7 +219,7 @@ public class ParkPrefControler {
 					for (ParkEntrance entr : pa.getEntrances()) {
 						if (maxDate==null && entr.getUpdateDate()!=null) {
 							maxDate = entr.getUpdateDate();
-						} else if (maxDate.compareTo(entr.getUpdateDate())<0) {
+						} else if (maxDate!=null && entr.getUpdateDate()!=null && maxDate.compareTo(entr.getUpdateDate())<0) {
 							maxDate = entr.getUpdateDate();
 						}
 					}

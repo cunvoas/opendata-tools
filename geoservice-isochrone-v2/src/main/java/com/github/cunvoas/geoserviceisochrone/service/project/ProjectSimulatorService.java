@@ -200,7 +200,7 @@ public class ProjectSimulatorService {
 
 		// Calcul de la projection du projet sur les parcs disponibles
 		// 1. Calculer la surface du projet de parc
-		Long surfaceParkProjet = projectSimulator.getSurfacePark() != null ? 
+		long surfaceParkProjet = projectSimulator.getSurfacePark() != null ? 
 				projectSimulator.getSurfacePark().longValue() : 0L;
 
 
@@ -222,7 +222,7 @@ public class ProjectSimulatorService {
 					newSurfacePark.divide(popAccessing, RoundingMode.HALF_UP) : BigDecimal.ZERO;
 			
 			// Surface manquante après le projet
-			Double densiteMissingAfter = Math.max(recoSquareMeterPerCapita - newSurfacePerCapita.doubleValue(), 0);
+			double densiteMissingAfter = Math.max(recoSquareMeterPerCapita - newSurfacePerCapita.doubleValue(), 0);
 			BigDecimal missingAfter = BigDecimal.valueOf(densiteMissingAfter * popAccessing.doubleValue());
 
 			// Mettre à jour les champs du carré
@@ -281,7 +281,7 @@ public class ProjectSimulatorService {
 				parkProposal.setIsDense(dense);
 				parkProposal.setSurfacePerCapita(carreCputd.getSurfaceParkPerCapitaOms());
 
-				Double densiteMissing = Math.max(recoSquareMeterPerCapita - carreCputd.getSurfaceParkPerCapitaOms().doubleValue(), 0);
+				double densiteMissing = Math.max(recoSquareMeterPerCapita - carreCputd.getSurfaceParkPerCapitaOms().doubleValue(), 0);
 
 				BigDecimal accessingPop =carreCputd.getPopulationInIsochroneOms();
 				if (accessingPop==null) {

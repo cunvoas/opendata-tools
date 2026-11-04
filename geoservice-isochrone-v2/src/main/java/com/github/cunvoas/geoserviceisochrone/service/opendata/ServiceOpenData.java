@@ -15,6 +15,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeDensiteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -86,7 +87,7 @@ public class ServiceOpenData {
 				isdense=Boolean.TRUE;
 			}
 		} else {
-			log.warn("City not found, insee={}", idInsee);
+			log.warn("City not found, insee={}", LogSanitizer.sanitize(idInsee));
 		}
 		return isdense;
 	}

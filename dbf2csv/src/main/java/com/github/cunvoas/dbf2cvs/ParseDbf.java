@@ -74,7 +74,9 @@ public class ParseDbf {
         finally {
             DBFUtils.close(reader);
             try {
-                fileWriter.close();
+                if (fileWriter != null) {
+                    fileWriter.close();
+                }
 
             } catch (Exception e) {
 

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.cunvoas.geoserviceisochrone.service.export.ServicePublicationExporter;
+import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -94,7 +95,7 @@ public class FileExporterControler {
 	 * @return Vrai si l'adresse IP est autorisée, faux sinon
 	 */
 	private Boolean matchOk(String ip) {
-		log.info("exportLocations->matchOk: {}", ip);
+		log.info("exportLocations->matchOk: {}", LogSanitizer.sanitize(ip));
 		Boolean ret = Boolean.FALSE;
 		String[] creds = credIp.split("\\.");
 		String[] ips = ip.split("\\.");

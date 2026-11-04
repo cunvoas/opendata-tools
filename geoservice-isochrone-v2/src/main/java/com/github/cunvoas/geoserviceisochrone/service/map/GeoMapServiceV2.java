@@ -705,7 +705,7 @@ public class GeoMapServiceV2 {
 	 */
 	public GeoJsonRoot findParkProposalByArea(Polygon polygon, Integer annee, ProposalComputationTypeAlgo typeAlgo, Long idMeta) {
 		GeoJsonRoot root = new GeoJsonRoot();
-		List<ParkProposal> proposals =  null;
+		List<ParkProposal> proposals = List.of();
 		
 		if (idMeta!=null) {
 			proposals =  parkProposalRepository.findParkProposalByIdMeta(idMeta);
@@ -1076,7 +1076,7 @@ public class GeoMapServiceV2 {
 			}
 
 			pv.setAreaPerPeople(areaCputed.getSurfacePerInhabitant().toPlainString());
-			Double sph = BigDecimalMath.roundToDouble(areaCputed.getSurfacePerInhabitant(), RoundingMode.HALF_EVEN);
+			double sph = BigDecimalMath.roundToDouble(areaCputed.getSurfacePerInhabitant(), RoundingMode.HALF_EVEN);
 			if (sph>thresholdReco) {
 				color = THRESHOLD_PERFECT;
 			} else if (sph>thresholdMin) {
@@ -1153,9 +1153,9 @@ public class GeoMapServiceV2 {
 				spc=BigDecimal.ZERO;
 			}
 			
-			Double sph = BigDecimalMath.roundToDouble(spc, RoundingMode.HALF_EVEN);
+			double sph = BigDecimalMath.roundToDouble(spc, RoundingMode.HALF_EVEN);
 			
-			Boolean allInhabitant = pacEd.getPopAll()!=null?pacEd.getPopAll().equals(pacEd.getPopIncludedOms()):Boolean.FALSE;
+			boolean allInhabitant = pacEd.getPopAll()!=null?pacEd.getPopAll().equals(pacEd.getPopIncludedOms()):Boolean.FALSE;
 			
 			if (sph>thresholdReco && allInhabitant) {
 				color = THRESHOLD_PERFECT;
@@ -1186,7 +1186,7 @@ public class GeoMapServiceV2 {
 	protected String getColorGrey(Double sph) {
 		String color=THRESHOLD_BAD;
 		// color from 0 to 255
-		Long v = Math.round(123+sph*10);
+		long v = Math.round(123+sph*10);
 		String s = Integer.toString(Ints.checkedCast(v), 16);
 		color = String.format("#%s%s%s", s, s, s);
 		return color;

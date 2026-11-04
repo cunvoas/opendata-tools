@@ -43,8 +43,8 @@ public class LimitedUserDetailsService  implements UserDetailsService {
      * Ajoute un délai aléatoire pour limiter les attaques par force brute.
      */
     private void mitigateTimeHack() {
-    	Double d = Math.random()*timeHack/7;
-    	Long time = timeHack+d.longValue();
+    	double d = Math.random()*timeHack/7;
+    	long time = timeHack + (long) d;
     	try {
     		log.warn("mitigateTimeHack: {} ms", time);
 			Thread.sleep(time);

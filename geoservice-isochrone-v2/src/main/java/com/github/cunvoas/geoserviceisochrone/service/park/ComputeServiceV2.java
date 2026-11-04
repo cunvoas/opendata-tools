@@ -324,7 +324,7 @@ public class ComputeServiceV2 implements IComputeCarreService {
 		
 
 		// population located in all the isochrones
-		Long surfacePopulationIso = 0L;
+		long surfacePopulationIso = 0L;
 		
 		// ctrl des carres proches inclus dans les isochrones
 		// recherche des population sur l'ensembles des isochrones mergées
@@ -339,7 +339,7 @@ public class ComputeServiceV2 implements IComputeCarreService {
 					dto.popAll = carreData.getNbIndividus();
 				}
 				
-				Double nbHabCarre = carreData.getNbIndividus().doubleValue();
+				double nbHabCarre = carreData.getNbIndividus().doubleValue();
 				// proratisation à la surface intersection(carre, isochrne)
 				Geometry isoOnCarre = carreWithIso.getGeoShape().intersection(geometryToAnalyse);
 				Long surfaceIsoSurCarre = getSurface(isoOnCarre);
@@ -357,7 +357,7 @@ public class ComputeServiceV2 implements IComputeCarreService {
 		crDto.populationInIsochrone = BigDecimal.valueOf(surfacePopulationIso);
 		
 
-		Double inhabitant = dto.popAll.doubleValue();
+		double inhabitant = dto.popAll.doubleValue();
 		
 		
 		// compute surface with accessible parks
@@ -365,7 +365,7 @@ public class ComputeServiceV2 implements IComputeCarreService {
 		Long surfaceParkAccess = getSurface(parkOnCarre);
 
 		// protata des surfaces pour habitants avec un parc
-		Long popIn = Math.round(inhabitant*surfaceParkAccess/SURFACE_CARRE);
+		long popIn = Math.round(inhabitant*surfaceParkAccess/SURFACE_CARRE);
 		
 		crDto.popInc = new BigDecimal(popIn);
 		crDto.popExc = new BigDecimal(inhabitant-popIn);
@@ -376,7 +376,7 @@ public class ComputeServiceV2 implements IComputeCarreService {
 		Long surfaceSustainable = getSurface(parkSustainable);
 
 		// protata des surfaces pour habitants avec un parc
-		Long popSustainable = Math.round(inhabitant*surfaceSustainable/SURFACE_CARRE);
+		long popSustainable = Math.round(inhabitant*surfaceSustainable/SURFACE_CARRE);
 		dto.popWithSufficient = new BigDecimal(popSustainable);
 		
 		return crDto;
@@ -408,6 +408,7 @@ public class ComputeServiceV2 implements IComputeCarreService {
 	 * @param job ComputeJob
 	 * @return true if done
 	 */
+	@Override
 	public Boolean computeCarreByComputeJob(ComputeJob job) {
 		log.info("begin computeCarre {}", job.getIdInspire());
 		Boolean ret = Boolean.FALSE;
@@ -489,6 +490,7 @@ public class ComputeServiceV2 implements IComputeCarreService {
 	 *  Used for mass update and full recompute ParkAreaEntrance.
 	 *  @param inseeCode code
 	 */
+	@Override
 	public void refreshParkEntrances(String inseeCode) {
 		Cadastre cadastre = cadastreRepository.findById(inseeCode).get();
 		refreshParkEntrances(cadastre);
@@ -499,6 +501,7 @@ public class ComputeServiceV2 implements IComputeCarreService {
 	 * @param cadastre Cadastre
 	 */
 	@Transactional(isolation = Isolation.READ_COMMITTED)
+	@Override
 	public void refreshParkEntrances(Cadastre cadastre) {
 		log.warn(">> refreshParkEntrances");
 
@@ -523,6 +526,7 @@ public class ComputeServiceV2 implements IComputeCarreService {
 	 * @param geom  Geometry
 	 * @return surface of Geometry
 	 */
+	@Override
 	public Long getSurface(Geometry geom) {
 		return inseeCarre200mOnlyShapeRepository.getSurface(geom);
 	}
