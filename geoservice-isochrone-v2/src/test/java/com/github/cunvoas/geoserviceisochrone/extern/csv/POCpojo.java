@@ -9,6 +9,7 @@ public class POCpojo {
 	private String nom;
 	private String geom;
 	
+	@Override
 	public String toString() {
 		return  id+" "+nom;
 	}

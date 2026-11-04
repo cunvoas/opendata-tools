@@ -275,7 +275,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		}
 		
 		// population located in all the isochrones
-		Long surfacePopulationIso = 0L;
+		long surfacePopulationIso = 0L;
 		
 		// ctrl des carres proches inclus dans les isochrones
 		// recherche des population sur l'ensembles des isochrones mergées
@@ -290,7 +290,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 					dto.popAll = irisData.getPop();
 				}
 				
-				Double nbHabCarre = irisData.getPop().doubleValue();
+				double nbHabCarre = irisData.getPop().doubleValue();
 				// proratisation à la surface intersection(carre, isochrne)
 				Geometry isoOnCarre = carreWithIso.getContour().intersection(geometryToAnalyse);
 				Long surfaceIsoSurCarre = getSurface(isoOnCarre);
@@ -308,7 +308,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		crDto.populationInIsochrone = BigDecimal.valueOf(surfacePopulationIso);
 		
 
-		Double inhabitant = dto.popAll.doubleValue();
+		double inhabitant = dto.popAll.doubleValue();
 		
 		
 		// compute surface with accessible parks
@@ -316,7 +316,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		Long surfaceParkAccess = getSurface(parkOnCarre);
 
 		// protata des surfaces pour habitants avec un parc
-		Long popIn = Math.round(inhabitant*surfaceParkAccess/irisShape.getSurface());
+		long popIn = Math.round(inhabitant*surfaceParkAccess/irisShape.getSurface());
 		
 		crDto.popInc = new BigDecimal(popIn);
 		crDto.popExc = new BigDecimal(inhabitant-popIn);
@@ -330,7 +330,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		}
 
 		// protata des surfaces pour habitants avec un parc
-		Long popSustainable = Math.round(inhabitant*surfaceSustainable/irisShape.getSurface());
+		long popSustainable = Math.round(inhabitant*surfaceSustainable/irisShape.getSurface());
 		dto.popWithSufficient = new BigDecimal(popSustainable);
 		
 		return crDto;
@@ -399,6 +399,7 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 	 * @param geom  Geometry
 	 * @return surface of Geometry
 	 */
+	@Override
 	public Long getSurface(Geometry geom) {
 		return irisShapeRepository.getSurface(geom);
 	}

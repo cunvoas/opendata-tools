@@ -52,7 +52,7 @@ public class ComputeJobRestControler {
 
 		log.warn("ComputeJobRequest received: {}", LogSanitizer.sanitize(req));
 
-		Boolean isValid = tokenManagement.isTokenValid(req.getToken());
+		boolean isValid = tokenManagement.isTokenValid(req.getToken());
 		if (!isValid) {
 			log.error("Invalid token for ComputeJobRequest: {}", LogSanitizer.sanitize(req));
 			return new ResponseEntity<ComputeJobResponse>(HttpStatus.UNAUTHORIZED);

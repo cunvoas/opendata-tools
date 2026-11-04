@@ -37,7 +37,7 @@ public class DistanceHelper {
 		Double lat1 = toRad(vLat1);
 		Double lat2 = toRad(vLat2);
 
-		Double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+		double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
 				 + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
 		return EARTH_RADIUS_KM * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	}

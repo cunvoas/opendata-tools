@@ -62,7 +62,7 @@ public class PublishRestControler {
 		
 		log.warn("ComputeJobRequest received: {}", LogSanitizer.sanitize(req));
 		
-		Boolean isValid = tokenManagement.isTokenValid(req.getToken());
+		boolean isValid = tokenManagement.isTokenValid(req.getToken());
 		if (!isValid) {
 			log.error("Invalid token for ComputeJobRequest: {}", LogSanitizer.sanitize(req));
 			return new ResponseEntity<ComputeJobResponse>(HttpStatus.UNAUTHORIZED);
@@ -117,7 +117,7 @@ public class PublishRestControler {
 	 */
 	@PostMapping("/status")
 	public ResponseEntity<ComputeJobResponse> status(@RequestBody ComputeJobRequest req) {
-		Boolean isValid = tokenManagement.isTokenValid(req.getToken());
+		boolean isValid = tokenManagement.isTokenValid(req.getToken());
 		if (!isValid) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}

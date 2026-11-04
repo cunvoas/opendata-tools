@@ -142,7 +142,7 @@ class TestPasswordService {
 		long deb = System.currentTimeMillis();
 		String cypher = tested.encode(plain);
 		
-		Boolean matched = tested.matches(plain, cypher);
+		boolean matched = tested.matches(plain, cypher);
 		Assertions.assertTrue(matched, "correct");
 
 

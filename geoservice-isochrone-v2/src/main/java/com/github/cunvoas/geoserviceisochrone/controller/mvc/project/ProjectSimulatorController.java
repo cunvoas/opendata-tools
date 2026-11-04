@@ -268,7 +268,7 @@ public class ProjectSimulatorController {
     
     private ProjectSimulator mapToBo(FormProjectSimulator form, Geometry geometry ) {
     	ProjectSimulator bo =null;
-    	if (form != null && form.getId()!=null) {
+    	if (form.getId()!=null) {
     		bo  = projectSimulatorService.getById(form.getId());
 		}
     	if(bo == null) {

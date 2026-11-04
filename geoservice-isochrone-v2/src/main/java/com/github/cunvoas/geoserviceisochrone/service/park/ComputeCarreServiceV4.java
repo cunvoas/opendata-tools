@@ -421,7 +421,7 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
             Map<String, Filosofil200m> filosofilMap,
             SurfaceCache surfaceCache) {
 
-        Long surfacePopulationIso = 0L;
+        long surfacePopulationIso = 0L;
         List<InseeCarre200mOnlyShape> shapesWithIso =
             inseeCarre200mOnlyShapeRepository.findCarreInMapArea(
                 GeometryQueryHelper.toText(geometryToAnalyse));
@@ -431,7 +431,7 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
                 if (carreShape.getIdInspire().equals(carreData.getIdInspire())) {
                     dto.popAll = carreData.getNbIndividus();
                 }
-                Double nbHabCarre = carreData.getNbIndividus().doubleValue();
+                double nbHabCarre = carreData.getNbIndividus().doubleValue();
                 // Proratisation : surface_intersection / 40000 × population_du_carré
                 Long surfaceIsoSurCarre = surfaceCache.getOrCompute(
                     carreWithIso.getGeoShape(), geometryToAnalyse, this::getSurface);
@@ -444,10 +444,10 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
         }
         crDto.populationInIsochrone = BigDecimal.valueOf(surfacePopulationIso);
 
-        Double inhabitant = dto.popAll.doubleValue();
+        double inhabitant = dto.popAll.doubleValue();
         Geometry parkOnCarre = carreShape.getGeoShape().intersection(shapeParkOnSquare);
         Long surfaceParkAccess = getSurface(parkOnCarre);
-        Long popIn = Math.round(inhabitant * surfaceParkAccess / SURFACE_CARRE);
+        long popIn = Math.round(inhabitant * surfaceParkAccess / SURFACE_CARRE);
         crDto.popInc = new BigDecimal(popIn);
         crDto.popExc = new BigDecimal(inhabitant - popIn);
 
@@ -457,7 +457,7 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
                 dto.polygonParkAreasSustainableOms);
             surfaceSustainable = getSurface(parkSustainable);
         }
-        Long popSustainable = Math.round(inhabitant * surfaceSustainable / SURFACE_CARRE);
+        long popSustainable = Math.round(inhabitant * surfaceSustainable / SURFACE_CARRE);
         dto.popWithSufficient = new BigDecimal(popSustainable);
 
         return crDto;
@@ -516,11 +516,11 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
             Long surfIntersect = getSurface(
                 carreShape.getGeoShape().intersection(park.getPolygon()));
             Filosofil200m carre = filosofilMap.get(carreShape.getIdInspire());
-            Long popCar = 0L;
+            long popCar = 0L;
             if (carre != null) {
                 popCar = Math.round(carre.getNbIndividus().doubleValue());
             }
-            Long popIntersect = Math.round(popCar * surfIntersect / SURFACE_CARRE);
+            long popIntersect = Math.round(popCar * surfIntersect / SURFACE_CARRE);
             population = population.add(new BigDecimal(popIntersect));
         }
         parcCpu.setPopulation(population);

@@ -67,6 +67,9 @@ public class MassUpdatePreProcess {
 				pivot.setParcEtJardin(pj);
 			}
 
+			if (pivot == null) {
+				continue;
+			}
 			ParkEntrance pa = new ParkEntrance();
 			pa.setDescription(line.getNomE());
 			pa.setEntranceLink(line.getCoord());

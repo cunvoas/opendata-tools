@@ -255,6 +255,9 @@ public class ParkService {
 		// existing one
 		ParcEtJardin pj = null;
 		ParcEtJardin pivotPj = pivot.getParcEtJardin();
+		if (pivotPj == null) {
+			return;
+		}
 		if (pivotPj!=null && pivotPj.getId()!=null) {
 			Optional<ParcEtJardin> optPj = parkJardinRepository.findById(pivotPj.getId());
 			if (!optPj.isEmpty()) {

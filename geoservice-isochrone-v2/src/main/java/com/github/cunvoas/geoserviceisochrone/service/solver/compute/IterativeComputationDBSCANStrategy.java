@@ -183,7 +183,7 @@ public class IterativeComputationDBSCANStrategy extends AbstractComputationtrate
                     .subtract(BigDecimal.valueOf(proposedParkSurface))
                     .max(BigDecimal.ZERO));
 
-            Double newSurfacePerCapita = newTotalSurface
+            double newSurfacePerCapita = newTotalSurface
                     / toProcess.getAccessingPopulation().doubleValue();
             toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
 

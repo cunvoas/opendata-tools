@@ -48,7 +48,7 @@ class TestGeoMapService {
 	
 	@Test
 	void testGreyColor() {
-		for (Double i = 0d; i < 13; i++) {
+		for (double i = 0d; i < 13; i++) {
 			System.out.println(i+" "+tested.getColorGrey(i));
 		}
 	}
@@ -57,7 +57,7 @@ class TestGeoMapService {
 	@Test
 	void testColorGet() {
 		System.out.println("testColorGet");
-		for (Double i = 0.0; i < 10; i+=0.1) {
+		for (double i = 0.0; i < 10; i+=0.1) {
 //			
 //			Double iSph = 224-i*10;
 //			Long sph = Math.round(iSph);

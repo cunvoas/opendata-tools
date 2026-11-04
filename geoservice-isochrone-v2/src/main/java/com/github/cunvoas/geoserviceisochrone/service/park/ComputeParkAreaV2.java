@@ -84,7 +84,7 @@ public class ComputeParkAreaV2 {
 	protected Boolean computeGenericHead(ParkAreaComputed parcCpu, ParkArea park, Integer annee) {
 		
 		// check update date
-		Boolean alreadyProcessed = parcCpu.getUpdated().after(park.getUpdated());
+		boolean alreadyProcessed = parcCpu.getUpdated().after(park.getUpdated());
 		if (alreadyProcessed) {
 			// check data insee
 			alreadyProcessed = parcCpu.getSurfacePerInhabitant()!=null && parcCpu.getSurfacePerInhabitant()!=null;
@@ -141,11 +141,11 @@ public class ComputeParkAreaV2 {
 			
 			//lookup for carre200m data
 			Filosofil200m carre = filosofil200mRepository.findByAnneeAndIdInspire(annee, carreShape.getIdInspire());
-			Long popCar = 0L;
+			long popCar = 0L;
 			if (carre!=null) {
 				popCar =Math.round(carre.getNbIndividus().doubleValue());
 			}
-			Long popIntersect = Math.round(popCar*surfIntersect/SURFACE_CARRE);
+			long popIntersect = Math.round(popCar*surfIntersect/SURFACE_CARRE);
 			population = population.add(new BigDecimal(popIntersect));
 		}
 		parcCpu.setPopulation(population);
@@ -179,11 +179,11 @@ public class ComputeParkAreaV2 {
 			
 			//lookup for carre200m data
 			Filosofil200m carre = filosofil200mRepository.findByAnneeAndIdInspire(annee, shapeIris.getIris());
-			Long popCar = 0L;
+			long popCar = 0L;
 			if (carre!=null) {
 				popCar =Math.round(carre.getNbIndividus().doubleValue());
 			}
-			Long popIntersect = Math.round(popCar*surfIntersect/surfaceIris);
+			long popIntersect = Math.round(popCar*surfIntersect/surfaceIris);
 			population = population.add(new BigDecimal(popIntersect));
 		}
 		parcCpu.setPopulationIris(population);

@@ -120,7 +120,7 @@ public class IterativeComputationPopulation1Strategy extends AbstractComputation
 						.max(BigDecimal.ZERO));
 
 				// mettre à jour la surface par habitant
-				Double newSurfacePerCapita = newTotalSurface / toProcess.getAccessingPopulation().doubleValue();
+				double newSurfacePerCapita = newTotalSurface / toProcess.getAccessingPopulation().doubleValue();
 				toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
 
 				List<ParkProposalWork> neighbors = findNeighbors(toProcess.getIdInspire(), squaresOnTerritoryMap, urbanDistance);

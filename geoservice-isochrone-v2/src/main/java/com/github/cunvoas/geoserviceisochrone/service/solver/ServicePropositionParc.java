@@ -154,7 +154,7 @@ public class ServicePropositionParc {
 				parkProposal.setSurfacePerCapita(carreCputd.getSurfaceParkPerCapitaOms());
 				
 				// ( Seuil OMS – MAX (0, surface disponible  - seuil OMS) ) * Nb Habitant qui ont accès
-				Double densiteMissing = Math.max(recoSquareMeterPerCapita - carreCputd.getSurfaceParkPerCapitaOms().doubleValue(), 0);
+				double densiteMissing = Math.max(recoSquareMeterPerCapita - carreCputd.getSurfaceParkPerCapitaOms().doubleValue(), 0);
 				
 				BigDecimal popToAnalyse = carreCputd.getPopAll();
 				if (popToAnalyse==null) {

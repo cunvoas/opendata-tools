@@ -31,7 +31,7 @@ public class NeighborsHelper {
 		
 		for (InseeCarre200mOnlyShape carreShape : carreShapes) {
 			// calcul de la distance au centroïde mètres
-			Double distance = 1_000 * DistanceHelper.crowFlyDistance(
+			double distance = 1_000 * DistanceHelper.crowFlyDistance(
 					centroid.y, 
 					centroid.x,
 					carreShape.getGeoShape().getCentroid().getY(),

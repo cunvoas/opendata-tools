@@ -158,7 +158,7 @@ public class IterativeComputationDeficit2Strategy extends AbstractComputationtra
 						.max(BigDecimal.ZERO));
 
 				// Recalcule la densite du carre apres ajout du parc
-				Double newSurfacePerCapita = newTotalSurface / toProcess.getAccessingPopulation().doubleValue();
+				double newSurfacePerCapita = newTotalSurface / toProcess.getAccessingPopulation().doubleValue();
 				toProcess.setNewSurfacePerCapita(BigDecimal.valueOf(newSurfacePerCapita));
 
 				// Propague la mise a jour aux voisins :

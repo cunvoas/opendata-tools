@@ -161,7 +161,7 @@ public class EntranceControler {
 			form.setParks(serviceReadReferences.getParcEtJardinByCityId(form.getIdCommune()));
 			City city = serviceReadReferences.getCityById(form.getIdCommune());
 			form.setNameCommune(city!=null?city.getName():"");
-			if (form.getIdPark()==null && city.getCoordinate()!=null) {
+			if (form.getIdPark()==null && city!=null && city.getCoordinate()!=null) {
 				Point point = city.getCoordinate();
 				form.setMapLng(String.valueOf(point.getCoordinates()[0].x));
 				form.setMapLat(String.valueOf(point.getCoordinates()[0].y));
