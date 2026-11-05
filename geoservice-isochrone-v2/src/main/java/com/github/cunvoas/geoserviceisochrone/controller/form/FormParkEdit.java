@@ -20,6 +20,11 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=false)
 public class FormParkEdit extends AbstractFormLocate {
 
+	@Override
+	protected boolean canEqual(final Object other) {
+		return other instanceof FormParkEdit;
+	}
+
 	private Long idPark;//parcEtJardin
 
 	// data from DB

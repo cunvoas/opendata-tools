@@ -12,6 +12,7 @@ import com.github.cunvoas.geoserviceisochrone.extern.helper.UrlPointParser;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 /**
  * Parseur de fichiers pour la préparation des mises à jour massives de parcs.
@@ -50,19 +51,19 @@ public class MassUpdatePreProcess {
 				pivot = new CsvMassUpdatePivot();
 				preprocessed.add(pivot);
 				
-				if (!StringUtils.isBlank(line.getCityId())) {
+				if (NumberHelper.toLong(line.getCityId()) != null) {
 					City c = new City();
-					c.setId(Long.parseLong(line.getCityId()));
+					c.setId(NumberHelper.toLong(line.getCityId()));
 					pivot.setCommune(c);
 				}
 				
 				ParcEtJardin pj = new ParcEtJardin();
 				if (line.getParkId().matches("[0-9]+")) {
-					pj.setId(Long.parseLong(line.getParkId()));
+					pj.setId(NumberHelper.toLong(line.getParkId()));
 				}
 				pj.setName(line.getNom());
 				if (!StringUtils.isBlank(line.getSurface())) {
-					pj.setSurface(Double.parseDouble(line.getSurface().replaceAll(",", ".")));
+					pj.setSurface(NumberHelper.toDouble(line.getSurface().replaceAll(",", ".")));
 				}
 				pivot.setParcEtJardin(pj);
 			}

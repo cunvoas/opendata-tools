@@ -890,7 +890,6 @@ public class GeoMapServiceV2 {
 
 	/**
 	 * findProjetSimulationWorkByArea.
-	 * @param polygon Polygon
 	 * @return   park proposal geojson
 	 */
 	public GeoJsonRoot findProjetSimulationWorkById(Long idSimulation) {
@@ -1229,7 +1228,6 @@ public class GeoMapServiceV2 {
 	
 	 /**
 	 * findAllCarreByArea.
-	 * @param polygon Polygon
 	 * @return GeoJson Carre
 	 * @FIXME until final front permit to change year.
 	 * @deprecated
@@ -1325,7 +1323,6 @@ public class GeoMapServiceV2 {
 	
 	/**
 	 * findAllIrisByArea.
-	 * @param carres shapes
 	 * @param annee year
 	 * @return GeoJson carre 
 	 */

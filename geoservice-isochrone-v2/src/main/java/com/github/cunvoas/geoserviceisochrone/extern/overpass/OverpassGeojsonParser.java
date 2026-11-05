@@ -123,7 +123,6 @@ public class OverpassGeojsonParser extends AbstractOverpassParser {
      * Map data from Overpass Element (Node, Way, Relation) to ParkOverpass entity.
      * Remplit les champs principaux et les tags. Les géométries sont à compléter selon besoin.
      *
-     * @param element élément Overpass (Node, Way, Relation)
      * @return entité ParkOverpass partiellement remplie
      */
     public ParkOverpass map(DtoGeojsonFeature feature) {

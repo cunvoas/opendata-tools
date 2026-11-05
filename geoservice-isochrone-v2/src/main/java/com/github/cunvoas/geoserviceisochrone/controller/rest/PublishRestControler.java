@@ -20,6 +20,7 @@ import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 import com.github.cunvoas.geoserviceisochrone.service.export.PublishService;
 import com.github.cunvoas.geoserviceisochrone.service.export.ServicePublicationExporter;
 import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -76,7 +77,10 @@ public class PublishRestControler {
 		}
 		
 		if (req.getCom2coId()!=null) {
-			Long c2cId = Long.valueOf(req.getCom2coId());
+			Long c2cId = NumberHelper.toLong(req.getCom2coId());
+			if (c2cId == null) {
+				return new ResponseEntity<ComputeJobResponse>(HttpStatus.BAD_REQUEST);
+			}
 			resp.setCom2coId(req.getCom2coId());
 			
 			List<ComputeJobProgressStat> stats =  batchJobService.getProgressStatsEpciLevel(
@@ -124,7 +128,10 @@ public class PublishRestControler {
 		
 		ComputeJobResponse resp = new ComputeJobResponse(req);
 		if (req.getCom2coId() != null) {
-			Long c2cId = Long.valueOf(req.getCom2coId());
+			Long c2cId = NumberHelper.toLong(req.getCom2coId());
+			if (c2cId == null) {
+				return new ResponseEntity<ComputeJobResponse>(HttpStatus.BAD_REQUEST);
+			}
 			List<ComputeJobProgressStat> stats = batchJobService.getProgressStatsEpciLevel(
 					c2cId, null, req.getRequestedYear());
 			

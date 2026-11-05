@@ -27,6 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyS
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.AbstractComputationtrategy;
 import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -82,7 +83,7 @@ public class ManualProposalEvaluationService {
 
         // 1. Détermination du type de zone (dense ou périurbaine) pour adapter les distances de marche OMS et les objectifs de surface par habitant
         Boolean dense = serviceOpenData.isDistanceDense(insee);
-        Integer urbanDistance = Integer.valueOf(dense
+        Integer urbanDistance = NumberHelper.parseIntOrThrow(dense
                 ? applicationBusinessProperties.getOmsUrbanDistance()
                 : applicationBusinessProperties.getOmsSubUrbanDistance());
         Double recoSquareMeterPerCapita = dense

@@ -9,6 +9,11 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class FormManualProposal extends AbstractFormLocate {
 
+    @Override
+    protected boolean canEqual(final Object other) {
+        return other instanceof FormManualProposal;
+    }
+
     private Long id;
     private Long idMeta;
     private String name;

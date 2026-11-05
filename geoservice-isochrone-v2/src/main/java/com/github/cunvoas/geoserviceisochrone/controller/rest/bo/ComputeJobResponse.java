@@ -6,6 +6,11 @@ import lombok.Data;
 
 @Data
 public class ComputeJobResponse extends ComputeJobRequest {
+
+	@Override
+	protected boolean canEqual(final Object other) {
+		return other instanceof ComputeJobResponse;
+	}
 	private Integer nbCarre;
 	private Integer nbIris;
 	private boolean canPublish;

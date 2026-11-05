@@ -31,6 +31,7 @@ import com.github.cunvoas.geoserviceisochrone.service.solver.compute.ProposalCom
 import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationStrategyFactory;
 import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
 import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -121,7 +122,7 @@ public class ServicePropositionParc {
 		
 		Boolean dense = serviceOpenData.isDistanceDense(insee);
 		// Distance OMS selon densité
-		Integer urbanDistance = Integer.valueOf(dense ? 
+		Integer urbanDistance = NumberHelper.parseIntOrThrow(dense ? 
 				applicationBusinessProperties.getOmsUrbanDistance() :
 					applicationBusinessProperties.getOmsSubUrbanDistance());
 		// Surface recommandée par habitant

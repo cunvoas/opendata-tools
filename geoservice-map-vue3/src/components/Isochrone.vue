@@ -1068,7 +1068,7 @@ export default {
         }
         
         let oms = feature.properties.oms;
-        let valid = ''
+        let valid = '';
         if (oms === false) {
           valid = "✖";
         }

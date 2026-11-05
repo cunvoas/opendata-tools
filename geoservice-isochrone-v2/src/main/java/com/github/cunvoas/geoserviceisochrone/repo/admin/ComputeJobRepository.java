@@ -38,7 +38,6 @@ public interface ComputeJobRepository extends JpaRepository<ComputeJob, InseeCar
     
     /**
      * findByStatusAndProcessed.
-     * @param status enum
      * @param processed a date before
      * @return list ComputeJob
      */
@@ -49,7 +48,6 @@ public interface ComputeJobRepository extends JpaRepository<ComputeJob, InseeCar
     
     /**
      * findByStatusAndProcessed.
-     * @param status enum
      * @param processed a date before
      * @return list ComputeJob
      */

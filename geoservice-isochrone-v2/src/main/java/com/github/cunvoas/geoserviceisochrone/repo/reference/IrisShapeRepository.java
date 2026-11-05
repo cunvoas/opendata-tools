@@ -35,8 +35,6 @@ public interface IrisShapeRepository extends JpaRepository< IrisShape,String> {
 	
 	/**
 	 * findByAnneeAndIdInspire.
-	 * @param annee annee
-	 * @param idIris code Iris
 	 * @return IrisShape
 	 */
 //	IrisShape findByAnneeAndIris(Integer annee, String idIris);

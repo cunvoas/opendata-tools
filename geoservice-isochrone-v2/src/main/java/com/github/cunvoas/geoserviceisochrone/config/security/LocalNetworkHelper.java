@@ -58,6 +58,9 @@ public class LocalNetworkHelper {
 			return true;
 		}
 		int[] ip = toOctets(sub);
+		if (ip == null) {
+			return false;
+		}
 		for (String[] range : privateNetwork) {
 			if (compare(ip, toOctets(range[0])) >= 0 && compare(ip, toOctets(range[1])) <= 0) {
 				return true;
@@ -67,7 +70,11 @@ public class LocalNetworkHelper {
 	}
 
 	private static int[] toOctets(String dotted) {
-		return Arrays.stream(dotted.split("\\.")).mapToInt(Integer::parseInt).toArray();
+		try {
+			return Arrays.stream(dotted.split("\\.")).mapToInt(Integer::parseInt).toArray();
+		} catch (NumberFormatException e) {
+			return null;
+		}
 	}
 
 	/** Compare les premiers octets de la borne, les bornes pouvant être plus courtes (ex: 10.0). */

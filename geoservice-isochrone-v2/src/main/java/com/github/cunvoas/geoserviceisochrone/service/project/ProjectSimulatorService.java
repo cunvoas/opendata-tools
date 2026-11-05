@@ -24,6 +24,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepo
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlIsochroneRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWorkRepository;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -174,7 +175,7 @@ public class ProjectSimulatorService {
 		Boolean dense = serviceReadReferences.isCityDense(projectSimulator.getIdCommune());
 		//		Boolean dense = serviceOpenData.isDistanceDense(insee);
 		// Distance OMS selon densité
-		Integer urbanDistance = Integer.valueOf(dense ? 
+		Integer urbanDistance = NumberHelper.parseIntOrThrow(dense ? 
 				applicationBusinessProperties.getOmsUrbanDistance() :
 					applicationBusinessProperties.getOmsSubUrbanDistance());
 		// Surface recommandée par habitant

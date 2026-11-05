@@ -39,6 +39,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.LaposteRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParcPrefectureRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -266,7 +267,11 @@ public class ServiceReadReferences {
 				if (poste!=null) {
 					String gps = poste.getCoordonneesGps();
 					String[] coord = gps.split(", ");
-					location = new Coordinate(Double.valueOf(coord[1]), Double.valueOf(coord[1]));
+					Double lon = NumberHelper.toDouble(coord[1]);
+					Double lat = NumberHelper.toDouble(coord[1]);
+					if (lon != null && lat != null) {
+						location = new Coordinate(lon, lat);
+					}
 				}
 			}
 		}

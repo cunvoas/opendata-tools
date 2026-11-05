@@ -7,7 +7,6 @@ public abstract class AbstractOverpassParser {
     /**
      * Calcule l'aire géodésique (en m²) d'un polygone défini par une liste de LatLon (WGS84).
      * Utilise la formule sphérique adaptée (algorithme de l'aire de Shoelace sur la sphère).
-     * @param geometry liste de LatLon (doit être fermée ou sera fermée automatiquement)
      * @return aire en mètres carrés
      */
     public double geodeticArea(List<LatLon> coords) {

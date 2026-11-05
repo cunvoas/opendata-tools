@@ -16,6 +16,11 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=false)
 public class FormContributor extends AbstractFormLocate {
 
+	@Override
+	protected boolean canEqual(final Object other) {
+		return other instanceof FormContributor;
+	}
+
 
 	private Long id;
 	

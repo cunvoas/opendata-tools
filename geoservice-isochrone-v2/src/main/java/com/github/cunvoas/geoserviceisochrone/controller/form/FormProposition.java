@@ -13,6 +13,11 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class FormProposition extends AbstractFormLocate {
+
+    @Override
+    protected boolean canEqual(final Object other) {
+        return other instanceof FormProposition;
+    }
     
     private Long id;
     private Integer annee = Year.now().getValue();

@@ -5,6 +5,7 @@ import java.util.Date;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -56,8 +57,8 @@ public class FormParkEntranceDetail {
 			ignDate = bo.getIgnDate();
 			updateDate  = bo.getUpdateDate();
 			entranceLink = bo.getEntranceLink();
-			entranceLat = Double.valueOf(bo.getEntryLat());
-			entranceLng = Double.valueOf(bo.getEntryLng());
+			entranceLat = NumberHelper.toDouble(bo.getEntryLat());
+			entranceLng = NumberHelper.toDouble(bo.getEntryLng());
 			entrancePolygon = String.valueOf(bo.getPolygon());
 		}
 	}

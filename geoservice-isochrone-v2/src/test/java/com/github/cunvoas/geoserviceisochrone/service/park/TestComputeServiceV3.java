@@ -44,8 +44,8 @@ class TestComputeServiceV3 {
 	@Test
 	@DisplayName("calcul de la population par surface avec arrondi correcte")
 	void testMath_PopulationDistribution() {
-		Long surfaceParkAccess = Long.valueOf("20001");
-		Double inhabitant = Double.valueOf("400.6");
+		Long surfaceParkAccess = 20001L;
+		Double inhabitant = 400.6;
 		BigDecimal allpop = new BigDecimal(Math.round(inhabitant));
 		
 		inhabitant = allpop.doubleValue();
@@ -63,8 +63,8 @@ class TestComputeServiceV3 {
 	@Test
 	@DisplayName("calcul avec surface zéro")
 	void testMath_ZeroSurface() {
-		Long surfaceParkAccess = Long.valueOf("0");
-		Double inhabitant = Double.valueOf("400.6");
+		Long surfaceParkAccess = 0L;
+		Double inhabitant = 400.6;
 		BigDecimal allpop = new BigDecimal(Math.round(inhabitant));
 		
 		inhabitant = allpop.doubleValue();
@@ -77,8 +77,8 @@ class TestComputeServiceV3 {
 	@Test
 	@DisplayName("calcul avec population zéro")
 	void testMath_ZeroPopulation() {
-		Long surfaceParkAccess = Long.valueOf("20001");
-		Double inhabitant = Double.valueOf("0");
+		Long surfaceParkAccess = 20001L;
+		Double inhabitant = 0d;
 		BigDecimal allpop = new BigDecimal(Math.round(inhabitant));
 		
 		inhabitant = allpop.doubleValue();
@@ -91,8 +91,8 @@ class TestComputeServiceV3 {
 	@Test
 	@DisplayName("calcul avec grands nombres")
 	void testMath_LargeNumbers() {
-		Long surfaceParkAccess = Long.valueOf("1000000");
-		Double inhabitant = Double.valueOf("100000.5");
+		Long surfaceParkAccess = 1000000L;
+		Double inhabitant = 100000.5;
 		BigDecimal allpop = new BigDecimal(Math.round(inhabitant));
 		
 		inhabitant = allpop.doubleValue();

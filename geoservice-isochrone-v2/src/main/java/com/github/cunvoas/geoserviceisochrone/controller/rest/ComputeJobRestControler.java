@@ -25,6 +25,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 @RestController
 @RequestMapping("/mvc/ajax/jobs/api")
@@ -68,7 +69,11 @@ public class ComputeJobRestControler {
 
 		if (req.getParkId() != null) {
 			ParcEtJardin pj = new ParcEtJardin();
-			pj.setId(Long.valueOf(req.getParkId()));
+			Long parkId = NumberHelper.toLong(req.getParkId());
+			if (parkId == null) {
+				return new ResponseEntity<ComputeJobResponse>(HttpStatus.BAD_REQUEST);
+			}
+			pj.setId(parkId);
 			resp.setParkId(req.getParkId());
 			resp.setNbCarre(batchJobService.requestProcessParc(pj));
 			// Le bouton « Calculer le parc » demande aussi le NDVI de l'année de référence.
@@ -81,12 +86,20 @@ public class ComputeJobRestControler {
 			resp.setNbCarre(0);
 			code = HttpStatus.ACCEPTED;
 		} else if (req.getCityId() != null && ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
-			City n = cityRepository.getReferenceById(Long.valueOf(req.getCityId()));
+			Long cityId = NumberHelper.toLong(req.getCityId());
+			if (cityId == null) {
+				return new ResponseEntity<ComputeJobResponse>(HttpStatus.BAD_REQUEST);
+			}
+			City n = cityRepository.getReferenceById(cityId);
 			resp.setCityId(req.getCityId());
 			resp.setNbCarre(batchJobService.requestProcessCity(n, requestedYear));
 			code = HttpStatus.ACCEPTED;
 		} else if (req.getCom2coId() != null && ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
-			CommunauteCommune com2co = communauteCommuneRepository.getReferenceById(Long.valueOf(req.getCom2coId()));
+			Long com2coId = NumberHelper.toLong(req.getCom2coId());
+			if (com2coId == null) {
+				return new ResponseEntity<ComputeJobResponse>(HttpStatus.BAD_REQUEST);
+			}
+			CommunauteCommune com2co = communauteCommuneRepository.getReferenceById(com2coId);
 			resp.setCom2coId(req.getCom2coId());
 			resp.setNbCarre(batchJobService.requestProcessCom2Co(com2co, requestedYear));
 			code = HttpStatus.ACCEPTED;

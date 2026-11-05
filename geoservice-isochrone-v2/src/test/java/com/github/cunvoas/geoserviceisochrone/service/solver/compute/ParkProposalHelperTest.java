@@ -22,6 +22,7 @@ import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ParkProposalHelper;
 import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j;
@@ -225,8 +226,8 @@ class ParkProposalHelperTest extends BaseUnitTest {
     private static Point parseWktPoint(String wkt) {
         String inner = wkt.replace("POINT(", "").replace(")", "").trim();
         String[] parts = inner.split("\\s+");
-        double lon = Double.parseDouble(parts[0]);
-        double lat = Double.parseDouble(parts[1]);
+        double lon = NumberHelper.parseDoubleOrThrow(parts[0]);
+        double lat = NumberHelper.parseDoubleOrThrow(parts[1]);
         return GF.createPoint(new Coordinate(lon, lat));
     }
 

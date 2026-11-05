@@ -20,7 +20,6 @@ public class ParkProposalHelper {
 	 * Trouve les N carrés voisins d'un carré donné selon la sensité.
 	 * 
 	 * @param idInspire identifiant du carré central
-	 * @param annee année de référence
 	 * @return liste des carrés voisins (max 24 ou 143 selon densité)
 	 */
 	public static List<ParkProposalWork> findNeighbors(String idInspire, Map<String, ParkProposalWork> squaresOnTerritoryMap, Integer distanceOnMap) {

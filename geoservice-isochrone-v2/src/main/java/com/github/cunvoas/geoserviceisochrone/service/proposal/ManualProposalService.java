@@ -18,6 +18,7 @@ import com.github.cunvoas.geoserviceisochrone.model.proposal.manual.ManualParkPr
 import com.github.cunvoas.geoserviceisochrone.model.proposal.manual.ManualParkProposalMeta;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.manual.ManualParkProposalMetaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.manual.ManualParkProposalRepository;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -94,8 +95,8 @@ public class ManualProposalService {
         } else {
             if (form.getMapLat() != null && form.getMapLng() != null) {
                 Coordinate coord = new Coordinate(
-                    Double.parseDouble(form.getMapLng()),
-                    Double.parseDouble(form.getMapLat())
+                    NumberHelper.parseDoubleOrThrow(form.getMapLng()),
+                    NumberHelper.parseDoubleOrThrow(form.getMapLat())
                 );
                 GeometryFactory factory = new GeometryFactory();
                 proposal.setCentre(factory.createPoint(coord));
@@ -112,7 +113,7 @@ public class ManualProposalService {
             if (form.getSurface() != null && !form.getSurface().isEmpty()) {
                 proposal.setSurface(new BigDecimal(form.getSurface()));
             } else if (form.getDiameter() != null && !form.getDiameter().isEmpty()) {
-                double radius = Double.parseDouble(form.getDiameter()) / 2.0;
+                double radius = NumberHelper.parseDoubleOrThrow(form.getDiameter()) / 2.0;
                 double area = Math.PI * radius * radius;
                 proposal.setSurface(BigDecimal.valueOf(area));
             }
