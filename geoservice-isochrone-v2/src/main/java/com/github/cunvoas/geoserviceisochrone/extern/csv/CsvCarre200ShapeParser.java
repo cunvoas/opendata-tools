@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 /**
  * Parseur CSV pour l'import de carreaux INSEE 200m. Permet de gérer les entêtes et la conversion de colonnes.
@@ -73,7 +74,10 @@ public class CsvCarre200ShapeParser {
 		Double ret = Double.valueOf(0);
 		
 		if (val!=null && val.trim().length()>0) {
-			ret = Double.valueOf(val);
+			Double parsed = NumberHelper.toDouble(val);
+			if (parsed != null) {
+				ret = parsed;
+			}
 		}
 		return ret;
 	}

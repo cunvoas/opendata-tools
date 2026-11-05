@@ -32,6 +32,8 @@ import lombok.ToString;
 @Entity(name = "adm_contrib")
 public class Contributeur implements UserDetails {
 
+	@Override public String getPassword() { return password; }
+
 	private static final long serialVersionUID = -7295077909019064322L;
 
 	/**

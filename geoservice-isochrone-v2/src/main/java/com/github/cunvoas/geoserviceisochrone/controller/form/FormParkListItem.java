@@ -12,6 +12,11 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=false)
 public class FormParkListItem extends AbstractFormLocate{
 
+	@Override
+	protected boolean canEqual(final Object other) {
+		return other instanceof FormParkListItem;
+	}
+
 	private Long idPark;
 	private Long idArea;
 

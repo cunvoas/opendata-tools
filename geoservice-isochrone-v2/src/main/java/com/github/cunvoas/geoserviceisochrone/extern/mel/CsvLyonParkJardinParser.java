@@ -27,6 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 
 /**
@@ -136,12 +137,15 @@ public class CsvLyonParkJardinParser {
 					
 					String s = row.get(CsvHeaders.surface);
 					if (StringUtils.isNotBlank(s)) {
-						park.setSurface(Double.parseDouble(s));
+						park.setSurface(NumberHelper.toDouble(s));
 					}
 					
 					s = row.get(CsvHeaders.annee);
 					if (s!=null && StringUtils.isNotBlank(s.trim()) && s.trim().matches("[0-9]{4}")) {
-						park.setDateDebut(new Date(Integer.parseInt(s.trim()), 0, 1));
+						Integer year = NumberHelper.toInteger(s.trim());
+						if (year != null) {
+							park.setDateDebut(new Date(year, 0, 1));
+						}
 					}
 					
 					// get with IGN API

@@ -59,9 +59,6 @@ public class ClientIsoChroneUi1 implements IsoChroneClientService {
 
 	/**
 	 * //point=3.1069023679917662,50.62485026020619
-	 * @param longitude x approx  3 for Lille
-	 * @param latitude  y  approx 50 for Lille
-	 * @param distance  
 	 * @return
 	 */
 	@Override

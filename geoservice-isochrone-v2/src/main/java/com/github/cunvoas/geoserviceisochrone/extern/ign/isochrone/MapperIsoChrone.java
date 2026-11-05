@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoCoordinate;
 import com.github.cunvoas.geoserviceisochrone.extern.ign.isochrone.client.dto.DtoIsoChrone;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 /**
  * mapper.
@@ -52,10 +53,10 @@ public class MapperIsoChrone {
 			
 			
 			String[] coords = dto.getPoint().split(",");
-			Double lat = Double.valueOf(coords[0]);
-			Double lon = Double.valueOf(coords[1]);
+			Double lat = NumberHelper.toDouble(coords[0]);
+			Double lon = NumberHelper.toDouble(coords[1]);
 			
-			Point point = factory.createPoint(new Coordinate(lat, lon));
+			Point point = lat != null && lon != null ? factory.createPoint(new Coordinate(lat, lon)) : null;
 			model.setEntrancePoint(point);
 			
 			List<Coordinate> shape = map(dto.getGeometry().getCoordinates());

@@ -294,7 +294,7 @@ export default {
 
       this.loaded = false;
       try {
-        const respData = await fetch(callUrl)
+        const respData = await fetch(callUrl);
         if (!respData.ok) {
             throw new Error(`HTTP error! status: ${respData.status}`);
         }   

@@ -12,6 +12,11 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class FormProjectSimulator extends AbstractFormLocate {
+
+    @Override
+    protected boolean canEqual(final Object other) {
+        return other instanceof FormProjectSimulator;
+    }
     
     private Long id;
     private Integer annee = Year.now().getValue();

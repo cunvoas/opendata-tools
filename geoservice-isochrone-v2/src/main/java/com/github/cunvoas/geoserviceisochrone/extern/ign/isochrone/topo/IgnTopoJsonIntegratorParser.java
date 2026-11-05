@@ -29,7 +29,6 @@ public class IgnTopoJsonIntegratorParser {
 	/**
 	 * Parse un fichier GeoJSON IGN-TOPO et enregistre les entités  IGN-TOP correspondantes.
 	 *
-	 * @param annee Année d'intégration des données
 	 * @param fGeojson Chemin du fichier GeoJSON à parser
 	 */
 	public void parseAndSaveVegetal(String fGeojson) {

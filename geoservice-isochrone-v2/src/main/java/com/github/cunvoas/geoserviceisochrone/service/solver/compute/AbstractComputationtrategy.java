@@ -63,7 +63,6 @@ public abstract class AbstractComputationtrategy implements ProposalComputationS
 	 * Trouve les N carrés voisins d'un carré donné selon la sensité.
 	 * 
 	 * @param idInspire identifiant du carré central
-	 * @param annee année de référence
 	 * @return liste des carrés voisins (max 24 ou 143 selon densité)
 	 */
 	public List<ParkProposalWork> findNeighbors(String idInspire, Map<String, ParkProposalWork> squaresOnTerritoryMap, Integer urbanDistance) {

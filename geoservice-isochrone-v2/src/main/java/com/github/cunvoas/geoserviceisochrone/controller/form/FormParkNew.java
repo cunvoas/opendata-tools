@@ -26,6 +26,11 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class FormParkNew extends AbstractFormLocate{
+
+	@Override
+	protected boolean canEqual(final Object other) {
+		return other instanceof FormParkNew;
+	}
 	
 	private static final DateFormat DF =new SimpleDateFormat("dd/MM/yyyy");
 

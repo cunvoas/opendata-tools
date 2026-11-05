@@ -16,6 +16,19 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class FormParkEntrance extends AbstractFormLocate {
+
+	@Override
+	protected boolean canEqual(final Object other) {
+		return other instanceof FormParkEntrance;
+	}
+
+	@Override public String getMapLat() { return mapLat; }
+
+	@Override public void setMapLat(String mapLat) { this.mapLat = mapLat; }
+
+	@Override public String getMapLng() { return mapLng; }
+
+	@Override public void setMapLng(String mapLng) { this.mapLng = mapLng; }
 	
 	/**
 	 * constructor.

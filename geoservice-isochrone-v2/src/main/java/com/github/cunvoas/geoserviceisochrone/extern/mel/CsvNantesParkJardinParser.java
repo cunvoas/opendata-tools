@@ -21,6 +21,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 
 /**
@@ -103,8 +104,8 @@ public class CsvNantesParkJardinParser {
 					park.setName(row.get(CsvHeaders.nom));
 					park.setType(row.get(CsvHeaders.type));
 					park.setAdresse(row.get(CsvHeaders.adresse));
-					Double lng = Double.valueOf(row.get(CsvHeaders.x));
-					Double lat = Double.valueOf(row.get(CsvHeaders.y));
+					Double lng = NumberHelper.toDouble(row.get(CsvHeaders.x));
+					Double lat = NumberHelper.toDouble(row.get(CsvHeaders.y));
 					
 					String insee = row.get(CsvHeaders.codeInsee);
 					City c = cityRepository.findByInseeCode(insee);
@@ -113,7 +114,7 @@ public class CsvNantesParkJardinParser {
 					park.setSource(ParcSourceEnum.OPENDATA);
 					park.setTypeId(1L);
 					
-					Point p = GeoShapeHelper.getPoint(lng, lat);
+					Point p = lng != null && lat != null ? GeoShapeHelper.getPoint(lng, lat) : null;
 					park.setCoordonnee(p);
 					parks.add(park);
 				}

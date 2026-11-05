@@ -149,7 +149,7 @@ public class GeometryReducerIsochroneCarreRechercheStrategy implements CarreRech
      * comparator for binary search.
      */
     private PSIComparator COMP_INSTANCE = new PSIComparator();
-    private class PSIComparator implements Comparator<ProjectSimulatorIsochone> {
+    private static class PSIComparator implements Comparator<ProjectSimulatorIsochone> {
 		@Override
 		public int compare(ProjectSimulatorIsochone o1, ProjectSimulatorIsochone o2) {
 			CompareToBuilder cbt=new CompareToBuilder();

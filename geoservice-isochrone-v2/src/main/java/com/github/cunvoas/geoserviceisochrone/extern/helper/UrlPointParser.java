@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionParseUrl;
 import com.github.cunvoas.geoserviceisochrone.model.Coordinate;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 /**
  * Composant utilitaire pour extraire des coordonnées à partir d'URL ou de chaînes de texte.
@@ -56,7 +57,11 @@ public class UrlPointParser {
 			String y = m.group(1);
 			String x = m.group(2);
 			
-			coord = new Coordinate(Double.parseDouble(x), Double.parseDouble(y));
+			Double lon = NumberHelper.toDouble(x);
+			Double lat = NumberHelper.toDouble(y);
+			if (lon != null && lat != null) {
+				coord = new Coordinate(lon, lat);
+			}
 	    }
 		
 		return coord;
@@ -76,7 +81,11 @@ public class UrlPointParser {
 			String y = m.group(1);
 			String x = m.group(2);
 			
-			coord = new Coordinate(Double.parseDouble(x), Double.parseDouble(y));
+			Double lon = NumberHelper.toDouble(x);
+			Double lat = NumberHelper.toDouble(y);
+			if (lon != null && lat != null) {
+				coord = new Coordinate(lon, lat);
+			}
 	    }
 		
 		return coord;
@@ -94,7 +103,11 @@ public class UrlPointParser {
 			String x = m.group(1);
 			String y = m.group(2);
 			
-			coord = new Coordinate(Double.parseDouble(x), Double.parseDouble(y));
+			Double lon = NumberHelper.toDouble(x);
+			Double lat = NumberHelper.toDouble(y);
+			if (lon != null && lat != null) {
+				coord = new Coordinate(lon, lat);
+			}
 	    }
 		
 		return coord;

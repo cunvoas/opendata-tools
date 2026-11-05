@@ -19,7 +19,6 @@ public interface ProjectSimulatorRepository extends JpaRepository<ProjectSimulat
 
 	/** 
 	 * findParkProposalInMapArea.
-	 * @param mapArea shape in string
 	 * @return list of ParkArea
 	 */
 	@Query(nativeQuery = true, 

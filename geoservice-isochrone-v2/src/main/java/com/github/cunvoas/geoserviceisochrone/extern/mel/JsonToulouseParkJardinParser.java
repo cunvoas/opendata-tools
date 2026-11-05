@@ -16,6 +16,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcSourceEnum;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.JsonNode;
@@ -84,9 +85,9 @@ public class JsonToulouseParkJardinParser {
 					park.setSource(ParcSourceEnum.OPENDATA);
 					park.setTypeId(1L);
 					
-					Double lat = Double.valueOf(jsonNode.findValue("latitude").asText());
-					Double lng = Double.valueOf(jsonNode.findValue("longitude").asText());
-					Point p = GeoShapeHelper.getPoint(lng, lat);
+					Double lat = NumberHelper.toDouble(jsonNode.findValue("latitude").asText());
+					Double lng = NumberHelper.toDouble(jsonNode.findValue("longitude").asText());
+					Point p = lng != null && lat != null ? GeoShapeHelper.getPoint(lng, lat) : null;
 					park.setCoordonnee(p);
 
 					log.error("JsonToulouse {}", park);

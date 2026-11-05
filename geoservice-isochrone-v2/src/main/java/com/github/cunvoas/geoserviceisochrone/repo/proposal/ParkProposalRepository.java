@@ -18,7 +18,6 @@ public interface ParkProposalRepository extends JpaRepository<ParkProposal, Inse
 
 	/** 
 	 * findParkProposalInMapArea.
-	 * @param mapArea shape in string
 	 * @return list of ParkArea
 	 */
 	public List<ParkProposal> findParkProposalByIdMeta(Long meta);
@@ -28,7 +27,6 @@ public interface ParkProposalRepository extends JpaRepository<ParkProposal, Inse
 	
 	/** 
 	 * findParkProposalInMapArea.
-	 * @param mapArea shape in string
 	 * @return list of ParkArea
 	 */
 	@Query(nativeQuery = true, 

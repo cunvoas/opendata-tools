@@ -10,6 +10,11 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class FormConsultMap extends AbstractFormLocate {
+
+    @Override
+    protected boolean canEqual(final Object other) {
+        return other instanceof FormConsultMap;
+    }
     /** Nom logique du formulaire (utilisé dans le modèle Thymeleaf). */
     private String formName = "territoire";
 

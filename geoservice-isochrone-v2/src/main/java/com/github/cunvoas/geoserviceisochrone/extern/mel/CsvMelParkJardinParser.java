@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvCarre200ShapeParser.ParkEntranceCsvHeaders;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GeoShapeHelper;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 
 /**
@@ -115,7 +116,7 @@ public class CsvMelParkJardinParser {
 					park.setEtatOuverture(row.get(ParkJardinCsvHeaders.etatOuverture));
 					park.setAireJeux(row.get(ParkJardinCsvHeaders.aireJeux));
 					park.setAdresse(row.get(ParkJardinCsvHeaders.adresse));
-					park.setSurface(Double.parseDouble(row.get(ParkJardinCsvHeaders.surface)));
+					park.setSurface(NumberHelper.toDouble(row.get(ParkJardinCsvHeaders.surface)));
 					park.setCoordonnee(GeoShapeHelper.parsePointLatLng(row.get(ParkJardinCsvHeaders.coord)));
 					parks.add(park);
 				}

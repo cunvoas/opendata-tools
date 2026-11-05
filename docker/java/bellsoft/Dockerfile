@@ -1,4 +1,4 @@
-FROM bellsoft/liberica-openjdk-alpine-musl:27-cds
+FROM bellsoft/liberica-openjdk-alpine-musl:27-cds@sha256:ef4f0963921e907a66f8a6d2baebc56c33e075f82afb2c38156acb9e5f17c7a2
 
 RUN apk update && apk --no-cache add curl \
     && addgroup -S app \

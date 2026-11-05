@@ -1026,7 +1026,7 @@ export default {
         ", max " + this.formatNdviValue(properties.ndviMax) +
         ", écart-type " + this.formatNdviValue(properties.ndviStddev) + ")" +
         (category ? "</div><div>Catégorie NDVI: " + category.label : '') +
-        (diagnostic ? "</div><div>" + diagnostic.replace('\n', "</div><div>") : '') +
+        (diagnostic ? "</div><div>" + diagnostic.replaceAll('\n', "</div><div>") : '') +
         (date ? "</div><div>Acquisition: " + date : '') + "</div>";
     },
     buildParkDetailHtml(properties) {
@@ -1068,7 +1068,7 @@ export default {
         }
         
         let oms = feature.properties.oms;
-        let valid = ''
+        let valid = '';
         if (oms === false) {
           valid = "✖";
         }

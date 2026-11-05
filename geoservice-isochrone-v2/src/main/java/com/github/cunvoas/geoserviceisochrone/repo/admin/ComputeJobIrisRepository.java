@@ -39,7 +39,6 @@ public interface ComputeJobIrisRepository extends JpaRepository<ComputeIrisJob, 
 
     /**
      * findByStatusAndProcessed.
-     * @param status enum
      * @param processed a date before
      * @return list ComputeIrisJob
      */
@@ -50,7 +49,6 @@ public interface ComputeJobIrisRepository extends JpaRepository<ComputeIrisJob, 
     
     /**
      * findByStatusAndProcessed.
-     * @param status enum
      * @param processed a date before
      * @return list ComputeIrisJob
      */

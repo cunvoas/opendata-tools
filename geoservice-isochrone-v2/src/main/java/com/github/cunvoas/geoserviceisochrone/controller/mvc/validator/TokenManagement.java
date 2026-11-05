@@ -1,6 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.validator;
 
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
@@ -71,13 +72,13 @@ public class TokenManagement {
 			String hmac = parts[1];
 
 			String expected = hmac(timestamp);
-			if (!hmac.equals(expected)) {
+			if (!MessageDigest.isEqual(hmac.getBytes(), expected.getBytes())) {
 				log.warn("Invalid HMAC");
 				return false;
 			}
 
 			long tokenTime = Long.parseLong(timestamp);
-			return System.currentTimeMillis() < tokenTime + tokenExpirationMillis;
+			return System.currentTimeMillis() < Math.addExact(tokenTime, tokenExpirationMillis);
 
 		} catch (Exception e) {
 			log.error("Token validation error", e);

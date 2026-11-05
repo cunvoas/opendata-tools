@@ -21,6 +21,7 @@ import org.locationtech.jts.operation.polygonize.Polygonizer;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
+import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 /**
  * Classe utilitaire pour la manipulation de géométries (JTS).
@@ -54,8 +55,11 @@ public class GeoShapeHelper {
 		Point point= null;
 		
 		String[] coords = geoPoint.split(",");
-		Double lat = Double.valueOf(coords[0].trim());
-		Double lng = Double.valueOf(coords[1].trim());
+		Double lat = NumberHelper.toDouble(coords[0].trim());
+		Double lng = NumberHelper.toDouble(coords[1].trim());
+		if (lat == null || lng == null) {
+			return null;
+		}
 		
 		point = factory.createPoint(new Coordinate(lng, lat));
 		return point;
@@ -83,8 +87,11 @@ public class GeoShapeHelper {
 		Point point= null;
 		
 		String[] coords = geoPoint.split(",");
-		Double lat = Double.valueOf(coords[0].trim());
-		Double lng = Double.valueOf(coords[1].trim());
+		Double lat = NumberHelper.toDouble(coords[0].trim());
+		Double lng = NumberHelper.toDouble(coords[1].trim());
+		if (lat == null || lng == null) {
+			return null;
+		}
 		point = factory.createPoint(new Coordinate(lng, lat));
 		return point;
 		
@@ -99,8 +106,11 @@ public class GeoShapeHelper {
 		Point point= null;
 		
 		String[] coords = geoPoint.split(",");
-		Double lng = Double.valueOf(coords[0].trim());
-		Double lat = Double.valueOf(coords[1].trim());
+		Double lng = NumberHelper.toDouble(coords[0].trim());
+		Double lat = NumberHelper.toDouble(coords[1].trim());
+		if (lat == null || lng == null) {
+			return null;
+		}
 		point = factory.createPoint(new Coordinate(lng, lat));
 		return point;
 		
@@ -108,7 +118,6 @@ public class GeoShapeHelper {
 	
 	
 	/**
-	 *  @param string "{"coordinates": [[[9.209601633281576, 41.36781596374774], [9.209578689845031, 41.36962406021186], [9.211959235983402, 41.36964287456159], [9.211982225364531, 41.367834769580924], [9.209601633281576, 41.36781596374774]]]
 	 *                     , "type": "Polygon"}"
 	 * @param geoPolygon
 	 * @return
@@ -352,7 +361,6 @@ public class GeoShapeHelper {
 	/**
 	 * Add the linestring given to the polygonizer
 	 * 
-	 * @param linestring line string
 	 * @param polygonizer polygonizer
 	 */
 	static void addLineString(LineString lineString, Polygonizer polygonizer){
