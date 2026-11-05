@@ -1,4 +1,4 @@
-FROM pilotfishtechnology/eiplatform:23R1-openjdk-hardened
+FROM pilotfishtechnology/eiplatform:23R1-openjdk-hardened@sha256:28eaa058dc2859458010a5714de4ea3a5c65fa4f2897d5f4cdfabab2ab56efe9
 
 # Create dedicated runtime user for least-privilege execution
 RUN addgroup -S app && adduser -S -G app app
