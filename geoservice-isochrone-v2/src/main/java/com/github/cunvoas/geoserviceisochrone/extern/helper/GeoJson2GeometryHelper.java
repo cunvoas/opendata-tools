@@ -292,7 +292,7 @@ public class GeoJson2GeometryHelper {
 		return ret;
 	}
 	
-	public class GeoJsonInspire {
+	public static class GeoJsonInspire {
 		public String idInspire;
 		public String id1km;
 		public Polygon geometry;
@@ -310,7 +310,7 @@ public class GeoJson2GeometryHelper {
 	 *  "type_iris": "H"
 	 *   }, 
 	 */
-	public class GeoJsonIris {
+	public static class GeoJsonIris {
 		public Integer fid;
 		public String cleabs;
 		public String codeInsee;
