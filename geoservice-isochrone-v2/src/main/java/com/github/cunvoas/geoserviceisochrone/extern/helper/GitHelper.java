@@ -14,6 +14,8 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Classe utilitaire pour l'intégration de fonctionnalités Git.
  * (À compléter selon les besoins du projet)
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
  * @see https://git-scm.com/book/en/v2/Appendix-B%3A-Embedding-Git-in-your-Applications-JGit
  */
 @Component
+@Slf4j
 public class GitHelper {
 	
 
@@ -44,6 +47,8 @@ public class GitHelper {
 	private String token;
     @Value("${application.git.localPath:}")
 	private String localPath;
+    @Value("${application.feature-flipping.publishGeoData:false}")
+	private boolean publishGeoData;
 
 	/**
 	 * @return chemin du clone local du dépôt de publication (peut être vide)
@@ -80,13 +85,18 @@ public class GitHelper {
 			throw new IllegalArgumentException("Repository root invalid or .git missing: " + repositoryRoot);
 		}
 
-		try (Git git = Git.open(repoDir)) {
-			for (String folderPath : folderPaths) {
-				stageFolder(git, folderPath);
+		if (publishGeoData) {
+			try (Git git = Git.open(repoDir)) {
+				for (String folderPath : folderPaths) {
+					stageFolder(git, folderPath);
+				}
+				String sha = commit(git, folderPaths[0]);
+				push(git);
+				return sha;
 			}
-			String sha = commit(git, folderPaths[0]);
-			push(git);
-			return sha;
+		} else {
+			log.info("git publication is disabled");
+			return null;
 		}
 	}
 
@@ -109,13 +119,17 @@ public class GitHelper {
 	}
 
 	private String commit(Git git, String folderPath) throws Exception {
-		String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
-		String message = String.format("chore(%s): automatic data update %s", folderPath, timestamp);
-		org.eclipse.jgit.revwalk.RevCommit rev = git.commit()
-				.setMessage(message)
-				.setAuthor(username, username + "@local")
-				.call();
-		return rev == null ? null : rev.getName();
+		
+		if (publishGeoData) {
+			String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+			String message = String.format("chore(%s): automatic data update %s", folderPath, timestamp);
+			org.eclipse.jgit.revwalk.RevCommit rev = git.commit()
+					.setMessage(message)
+					.setAuthor(username, username + "@local")
+					.call();
+			return rev == null ? null : rev.getName();
+		}
+		return null;
 	}
 
 	private void push(Git git) throws Exception {

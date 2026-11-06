@@ -169,6 +169,7 @@ application:
     sendEmail: false
     salaryAnalysisEnabled: false
     pollutionAnalysisEnabled: false
+    publishGeoData: true
     isochrone-impl: ign-api-v2
     carre200m-impl: v4
     cpu-temp-threshold: 75
