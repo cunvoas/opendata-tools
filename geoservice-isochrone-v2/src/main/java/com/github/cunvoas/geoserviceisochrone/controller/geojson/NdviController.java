@@ -70,14 +70,14 @@ public class NdviController {
 	 * (la commune prime sur l'EPCI).
 	 * @param annee année demandée, facultative
 	 * @param com2co identifiant de la communauté de communes, facultatif
-	 * @param city identifiant de la commune, facultatif
+	 * @param city code INSEE de la commune, facultatif
 	 * @return summaries
 	 */
 	@CrossOrigin(origins = "${web.cors.allowed-origins}")
 	@GetMapping("/summaries")
 	public NdviSummaries summaries(@RequestParam(required = false) Integer annee,
 			@RequestParam(required = false) Long com2co,
-			@RequestParam(required = false) Long city) {
+			@RequestParam(required = false) String city) {
 		Integer target = annee != null ? annee : applicationBusinessProperties.getDerniereAnnee();
 		List<NdviSummaryProjection> projections;
 		long total;

@@ -182,6 +182,13 @@ public class PublishService {
             status.setUpdatedAt(LocalDateTime.now());
             return;
         }
+        
+        if (!gitHelper.isAutorisedToPublish()) {
+            status.setPhase(PublicationStatus.Phase.PUSH_NOT_CONFIGURED);
+            status.setMessage("Toggle Feature: publication Git déasctivée).");
+            status.setUpdatedAt(LocalDateTime.now());
+            return;
+        }
 
         status.setPhase(PublicationStatus.Phase.PUBLISHING);
         status.setUpdatedAt(LocalDateTime.now());

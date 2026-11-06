@@ -89,7 +89,7 @@ public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComput
 	/**
 	 * Mesures NDVI des parcs d'une année pour une commune, triées par NDVI moyen décroissant.
 	 * @param annee année de référence
-	 * @param cityId identifiant de la commune
+	 * @param inseeCode code INSEE de la commune
 	 * @return summaries
 	 */
 	@Query(nativeQuery = true,
@@ -100,23 +100,25 @@ public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComput
 					+ " FROM park_area_computed pac"
 					+ " JOIN park_area pa ON pa.id = pac.id"
 					+ " JOIN parc_jardin pj ON pj.identifiant = pa.id_parc_jardin"
-					+ " WHERE pac.annee = :annee AND pj.id_city = :cityId AND pac.ndvi_mean IS NOT NULL"
+					+ " JOIN city ci ON ci.id = pj.id_city"
+					+ " WHERE pac.annee = :annee AND ci.insee_code = :inseeCode AND pac.ndvi_mean IS NOT NULL"
 					+ " ORDER BY pac.ndvi_mean DESC")
 	List<NdviSummaryProjection> findNdviSummariesByAnneeAndCity(@Param("annee") Integer annee,
-			@Param("cityId") Long cityId);
+			@Param("inseeCode") String inseeCode);
 
 	/**
 	 * Nombre de lignes calculées d'une année pour une commune.
 	 * @param annee année de référence
-	 * @param cityId identifiant de la commune
+	 * @param inseeCode code INSEE de la commune
 	 * @return nombre de lignes
 	 */
 	@Query(nativeQuery = true,
 			value = "SELECT count(1) FROM park_area_computed pac"
 					+ " JOIN park_area pa ON pa.id = pac.id"
 					+ " JOIN parc_jardin pj ON pj.identifiant = pa.id_parc_jardin"
-					+ " WHERE pac.annee = :annee AND pj.id_city = :cityId")
-	long countByAnneeAndCity(@Param("annee") Integer annee, @Param("cityId") Long cityId);
+					+ " JOIN city ci ON ci.id = pj.id_city"
+					+ " WHERE pac.annee = :annee AND ci.insee_code = :inseeCode")
+	long countByAnneeAndCity(@Param("annee") Integer annee, @Param("inseeCode") String inseeCode);
 
 	/**
 	 * Identifiants des EPCI disposant de lignes calculées.

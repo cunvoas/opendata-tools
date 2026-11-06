@@ -139,17 +139,17 @@ describe('AppNdvi', () => {
   });
 
   it('reprend la commune mémorisée quand elle appartient à l’EPCI affiché', async () => {
-    localStorage.setItem('location-selected', JSON.stringify({ com2coId: 1, cityId: '2878', cityName: 'LILLE (59350)' }));
+    localStorage.setItem('location-selected', JSON.stringify({ com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' }));
     mockFetch({ ok: true, json: () => Promise.resolve(payload) });
     const wrapper = mount(AppNdvi);
     await flushPromises();
 
-    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/map/ndvi/summaries?annee=2021&com2co=1&city=2878'));
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/map/ndvi/summaries?annee=2021&com2co=1&city=59350'));
     expect(wrapper.text()).toContain('Commune : LILLE (59350)');
   });
 
   it('ignore la commune mémorisée quand l’URL demande un autre EPCI', async () => {
-    localStorage.setItem('location-selected', JSON.stringify({ com2coId: 1, cityId: '2878', cityName: 'LILLE (59350)' }));
+    localStorage.setItem('location-selected', JSON.stringify({ com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' }));
     window.history.replaceState({}, '', '/?com2co=2');
     mockFetch({ ok: true, json: () => Promise.resolve(payload) });
     const wrapper = mount(AppNdvi);
@@ -194,28 +194,28 @@ describe('AppNdvi', () => {
     it('rappelle le service avec la commune choisie et l’indique au-dessus de la liste', async () => {
       const wrapper = await mountWith();
 
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       expect(fetch).toHaveBeenCalledTimes(2);
-      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('/map/ndvi/summaries?annee=2021&com2co=1&city=2878'));
+      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('/map/ndvi/summaries?annee=2021&com2co=1&city=59350'));
       expect(wrapper.text()).toContain('Commune : LILLE (59350)');
     });
 
     it('suit une commune d’un autre EPCI', async () => {
       const wrapper = await mountWith();
 
-      emitFrom(wrapper, 'city-selected', { com2coId: 809, cityId: 5, cityName: 'BETHUNE (62119)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 809, cityInsee: '62119', cityName: 'BETHUNE (62119)' });
       await flushPromises();
 
-      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('com2co=809&city=5'));
+      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('com2co=809&city=62119'));
     });
 
     it('ne rappelle pas le service quand la même commune est signalée deux fois (nombre ou texte)', async () => {
       const wrapper = await mountWith();
 
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
-      emitFrom(wrapper, 'city-selected', { com2coId: '1', cityId: '2878', cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: '1', cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       expect(fetch).toHaveBeenCalledTimes(2);
@@ -224,28 +224,28 @@ describe('AppNdvi', () => {
     it('change de commune sans repasser par l’EPCI', async () => {
       const wrapper = await mountWith();
 
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 100, cityName: 'ROUBAIX (59512)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59512', cityName: 'ROUBAIX (59512)' });
       await flushPromises();
 
-      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('com2co=1&city=100'));
+      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('com2co=1&city=59512'));
       expect(wrapper.text()).toContain('Commune : ROUBAIX (59512)');
     });
 
     it('conserve la commune quand on change d’année', async () => {
       const wrapper = await mountWith();
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       await wrapper.find('#ndviAnnee').setValue('2019');
       await flushPromises();
 
-      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('annee=2019&com2co=1&city=2878'));
+      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('annee=2019&com2co=1&city=59350'));
     });
 
     it('un nouvel EPCI efface la commune', async () => {
       const wrapper = await mountWith();
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       emitFrom(wrapper, 'com2co-selected', { com2coId: 809 });
@@ -257,7 +257,7 @@ describe('AppNdvi', () => {
 
     it('revient à toute l’intercommunalité depuis la commune', async () => {
       const wrapper = await mountWith();
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       await wrapper.findAll('button').find((button) => button.text() === 'Voir toute l\'intercommunalité').trigger('click');
@@ -273,7 +273,7 @@ describe('AppNdvi', () => {
       emitFrom(wrapper, 'com2co-selected', { regionId: 9 });
       emitFrom(wrapper, 'com2co-selected', null);
       emitFrom(wrapper, 'city-selected', { com2coId: 1 });
-      emitFrom(wrapper, 'city-selected', { cityId: 2878 });
+      emitFrom(wrapper, 'city-selected', { cityInsee: '59350' });
       emitFrom(wrapper, 'city-selected', null);
       await flushPromises();
 
@@ -294,7 +294,7 @@ describe('AppNdvi', () => {
       await filterBy(wrapper, 'citadelle');
       expect(parkNames(wrapper)).toEqual(['Citadelle']);
 
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       expect(wrapper.find('#ndviFiltreParc').element.value).toBe('');
@@ -312,7 +312,7 @@ describe('AppNdvi', () => {
     });
 
     it('lit le fichier de l’EPCI, puis celui de la commune choisie', async () => {
-      vi.stubEnv('DEV', false);
+      vi.stubEnv('VITE_DATA_MODE', 'static');
       vi.resetModules();
       const { default: StaticAppNdvi } = await import('../AppNdvi.vue');
       mockFetch({ ok: true, json: () => Promise.resolve(payload) });
@@ -321,10 +321,10 @@ describe('AppNdvi', () => {
 
       expect(fetch).toHaveBeenLastCalledWith(`${RAW}/1/ndvi_2021_1.json`);
 
-      wrapper.findComponent({ name: 'SearchLocation' }).vm.$emit('city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      wrapper.findComponent({ name: 'SearchLocation' }).vm.$emit('city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
-      expect(fetch).toHaveBeenLastCalledWith(`${RAW}/1/2878/ndvi_2021_2878.json`);
+      expect(fetch).toHaveBeenLastCalledWith(`${RAW}/1/59350/ndvi_2021_59350.json`);
     });
   });
 

@@ -318,7 +318,7 @@
 </template>
 
 <script>
-import { features } from '../utils/features.js';
+import { features } from '../utils/config.js';
 import { NDVI_CATEGORIES } from '../utils/ndvi.js';
 import { hexToRgba } from '../utils/color.js';
 

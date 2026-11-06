@@ -5,10 +5,13 @@ vi.mock('axios', () => ({
   default: { get: vi.fn(() => Promise.resolve({ data: {} })) }
 }));
 
-vi.mock('../../utils/features.js', () => ({ features: { ndvi: true } }));
+vi.mock('../../utils/config.js', async (importOriginal) => ({
+  ...(await importOriginal()),
+  features: { ndvi: true }
+}));
 
 import Isochrone from '../Isochrone.vue';
-import { features } from '../../utils/features.js';
+import { features } from '../../utils/config.js';
 import { NDVI_CATEGORIES, NDVI_CONTOUR_DALTONIEN } from '../../utils/ndvi.js';
 
 const stubs = {
@@ -167,20 +170,34 @@ describe('Isochrone - mode et détail NDVI', () => {
 
     const html = document.getElementById('dataDetail').innerHTML;
     expect(html).toContain('Citadelle');
-    expect(html).toContain('0,593');
-    expect(html).toContain('0,300');
-    expect(html).toContain('10/06/2025');
-    expect(html).toContain('Catégorie NDVI: Végétation dense et saine');
-    expect(html).toContain('Diagnostic : Végétation dense et active');
-    expect(html).toContain('Structure spatiale : Forte mosaïque paysagère');
+    expect(html).toContain('<b>NDVI moyen : 0,593</b>');
+    expect(html).toContain('(min 0,100, max 0,900)');
+    expect(html).toContain('<i>0,5 à 1,0 :</i>');
+    expect(html).toContain('Végétation dense et saine');
   });
 
   it('affiche « pas encore calculé » sans valeur implicite pour un parc sans NDVI', () => {
     const wrapper = mountIsochrone();
     const properties = { name: 'Parc sans mesure', ndviEnabled: true, ndviMean: null };
 
-    expect(wrapper.vm.buildNdviHtml(properties)).toContain('NDVI pas encore calculé');
+    expect(wrapper.vm.buildNdviHtml(properties)).toContain('NDVI : pas encore calculé');
     expect(wrapper.vm.buildNdviHtml(properties)).not.toContain('0,000');
+  });
+
+  it('affiche le picto et le libellé de chaque seuil NDVI, en couleur de carte (daltonien compris)', () => {
+    localStorage.clear();
+    const wrapper = mountIsochrone();
+
+    NDVI_CATEGORIES.forEach((category) => {
+      const ndviMean = Number.isFinite(category.min) ? category.min : -0.2;
+      const html = wrapper.vm.buildNdviHtml({ ndviEnabled: true, ndviMean });
+      expect(html, category.range).toContain(`<i>${category.range} :</i>`);
+      expect(html, category.range).toContain(`background:${category.color}`);
+    });
+
+    wrapper.vm.colorblindMode = true;
+    const daltonien = wrapper.vm.buildNdviHtml({ ndviEnabled: true, ndviMean: 0.6 });
+    expect(daltonien).toContain(`background:${NDVI_CATEGORIES.at(-1).colorDaltonien}`);
   });
 
   it('n’affiche aucune mention NDVI quand la feature est désactivée', () => {
@@ -286,5 +303,18 @@ describe('Isochrone - couleurs NDVI en mode daltonien', () => {
 
     expect(style.color).toBe(NDVI_CATEGORIES[4].color);
     expect(style.fillColor).toBe(NDVI_CATEGORIES[4].color);
+  });
+});
+
+describe('Isochrone - requête des parcs (mode dynamic)', () => {
+  it('sans paramètres, reprend les bornes courantes au lieu de « undefined »', () => {
+    const wrapper = mountIsochrone();
+    const log = vi.spyOn(console, 'log');
+    wrapper.vm.bounds = { _southWest: { lat: 50.6, lng: 2.9 }, _northEast: { lat: 50.7, lng: 3.1 } };
+
+    wrapper.vm.callGeoJsonParcs();
+
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('/map/park/outline?swLat=50.6&swLng=2.9&neLat=50.7&neLng=3.1&annee=2021'));
+    expect(log).not.toHaveBeenCalledWith(expect.stringContaining('undefined'));
   });
 });

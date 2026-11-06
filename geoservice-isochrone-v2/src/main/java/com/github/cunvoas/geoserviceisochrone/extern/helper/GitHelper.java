@@ -64,6 +64,13 @@ public class GitHelper {
 		return !isBlank(username) && !isBlank(token);
 	}
 
+	/**
+	 * @return true si les credentials Git sont renseignés
+	 */
+	public boolean isAutorisedToPublish() {
+		return publishGeoData;
+	}
+
 
 	/**
 	 * Ajoute tous les fichiers des dossiers (pattern JGit), crée un commit avec la date/heure du jour et pousse sur origin.

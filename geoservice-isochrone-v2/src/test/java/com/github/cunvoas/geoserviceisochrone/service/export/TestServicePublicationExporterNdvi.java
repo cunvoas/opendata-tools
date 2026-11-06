@@ -37,8 +37,8 @@ import tools.jackson.databind.ObjectMapper;
  */
 class TestServicePublicationExporterNdvi {
 
-	private static final long LILLE = 2878L;
-	private static final long ROUBAIX = 27046L;
+	private static final String LILLE = "59350";
+	private static final String ROUBAIX = "59512";
 
 	@TempDir
 	Path tempDir;
@@ -59,7 +59,7 @@ class TestServicePublicationExporterNdvi {
 
 		com2co = new CommunauteCommune();
 		com2co.setId(1L);
-		com2co.setCities(List.of(city(LILLE, "LILLE", "59350"), city(ROUBAIX, "ROUBAIX", "59512")));
+		com2co.setCities(List.of(city(2878L, "LILLE", LILLE), city(27046L, "ROUBAIX", ROUBAIX)));
 	}
 
 	@Test
@@ -70,9 +70,9 @@ class TestServicePublicationExporterNdvi {
 
 		assertEquals(List.of(
 				tempDir.resolve("data/ndvi/1/ndvi_2021_1.json").toFile(),
-				tempDir.resolve("data/ndvi/1/2878/ndvi_2021_2878.json").toFile()), written);
+				tempDir.resolve("data/ndvi/1/59350/ndvi_2021_59350.json").toFile()), written);
 		assertTrue(Files.isRegularFile(tempDir.resolve("data/ndvi/1/ndvi_2021_1.json")));
-		assertTrue(Files.isRegularFile(tempDir.resolve("data/ndvi/1/2878/ndvi_2021_2878.json")));
+		assertTrue(Files.isRegularFile(tempDir.resolve("data/ndvi/1/59350/ndvi_2021_59350.json")));
 	}
 
 	@Test
@@ -81,7 +81,7 @@ class TestServicePublicationExporterNdvi {
 
 		tested.writeNdviJson(com2co, 2021);
 
-		assertFalse(Files.exists(tempDir.resolve("data/ndvi/1/27046")));
+		assertFalse(Files.exists(tempDir.resolve("data/ndvi/1/59512")));
 	}
 
 	@Test
@@ -91,7 +91,7 @@ class TestServicePublicationExporterNdvi {
 		tested.writeNdviJson(com2co, 2021);
 
 		NdviSummaries lille = objectMapper.readValue(
-				tempDir.resolve("data/ndvi/1/2878/ndvi_2021_2878.json").toFile(), NdviSummaries.class);
+				tempDir.resolve("data/ndvi/1/59350/ndvi_2021_59350.json").toFile(), NdviSummaries.class);
 		assertEquals(230, lille.total());
 		assertEquals(List.of("Citadelle"), lille.parks().stream().map(NdviSummary::name).toList());
 	}

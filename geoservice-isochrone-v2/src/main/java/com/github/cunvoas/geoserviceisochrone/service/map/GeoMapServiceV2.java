@@ -558,6 +558,18 @@ public class GeoMapServiceV2 {
 						pv.setOms(park.getOmsCustom());
 					}
 					pv.setActif(getActif(park));
+					ParkArea pa = parkAreaRepository.findByIdParcEtJardin(park.getId());
+					pv.setNdviEnabled(clientCopernicusNdvi.isEnabled());
+					if (pa != null) {
+						parkAreaComputedRepository.findByIdAndAnnee(pa.getId(), annee)
+								.ifPresent(pac -> {
+									pv.setNdviMean(pac.getNdviMean());
+									pv.setNdviMin(pac.getNdviMin());
+									pv.setNdviMax(pac.getNdviMax());
+									pv.setNdviStddev(pac.getNdviStddev());
+									pv.setNdviAcquisitionDate(pac.getNdviAcquisitionDate());
+								});
+					}
 					
 					
     			}

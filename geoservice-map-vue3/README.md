@@ -24,7 +24,7 @@ npm run lint
 
 ### Feature flags
 
-Une fonctionnalité en cours de déploiement est activée au build par une variable Vite `VITE_FEATURE_<NOM>=true|false`.
+Une fonctionnalité en cours de déploiement est activée au build par une variable Vite `VITE_FEATURE_<NOM>=true|false` (déclarée dans `src/utils/config.js`).
 Sans valeur, elle est **active en développement** (`npm run dev`) et **inactive dans un build de production** :
 rien n'est exposé tant qu'on ne l'active pas explicitement.
 
@@ -40,6 +40,20 @@ VITE_FEATURE_NDVI=true npm run build
 En local, `.env.local` (ignoré par git) permet de forcer une valeur, par exemple `VITE_FEATURE_NDVI=false`.
 
 Le flag couvre aussi la carte : inactif, le bouton NDVI, les informations NDVI des parcs (infobulle, détail) et la légende NDVI sont masqués.
+
+### Source des données
+
+Les écrans carte, isochrone, NDVI et stats lisent leurs données depuis `src/utils/config.js` (source des données et feature flags, une seule configuration) :
+
+| Variable | Valeur par défaut | Rôle |
+|----------|-------------------|------|
+| `VITE_DATA_MODE` | `static` | `static` : JSON publiés sur GitHub ; `dynamic` : API locale (`http://localhost:8980/isochrone`) |
+| `VITE_STATIC_ON_GIT` | dépôt `autmel/geoservice-data` | racine des JSON publiés |
+| `VITE_DYNAMIC_API` | `http://localhost:8980/isochrone` | racine de l'API locale (mode `dynamic`), sans barre finale |
+| `VITE_DEV_PROXY` | `false` | dev uniquement, positionné dans `test.sh` : `true` fait passer `/isochrone` par le proxy Vite (pas de CORS) et règle `VITE_DYNAMIC_API=/isochrone` ; `false` appelle le backend directement |
+
+`deployGhP.sh` les fixe explicitement pour le déploiement. Pour travailler avec le backend local, mettre `VITE_DATA_MODE=dynamic` dans `.env.local`. Les stats n'ont pas d'API : elles lisent toujours les JSON publiés.
+
 
 ### Grille NDVI
 

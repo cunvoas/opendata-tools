@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import AppInformation from '../AppInformation.vue'
-import { features } from '../../utils/features.js'
+import { features } from '../../utils/config.js'
 import { NDVI_CATEGORIES } from '../../utils/ndvi.js'
 import { hexToRgba } from '../../utils/color.js'
 
-vi.mock('../../utils/features.js', () => ({ features: { ndvi: true } }))
+vi.mock('../../utils/config.js', async (importOriginal) => ({
+  ...(await importOriginal()),
+  features: { ndvi: true }
+}))
 
 describe('AppInformation.vue', () => {
   it('les boutons de bascule Détail/Diagramme exposent aria-pressed', async () => {

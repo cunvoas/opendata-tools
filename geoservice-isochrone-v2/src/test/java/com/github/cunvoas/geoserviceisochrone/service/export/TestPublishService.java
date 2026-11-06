@@ -81,7 +81,7 @@ class TestPublishService {
 	void testPublishedAfterSuccessfulProduction(@TempDir Path tempDir) throws Exception {
 		Files.createDirectories(tempDir.resolve("geojson/carres/1"));
 		Files.createDirectories(tempDir.resolve("data/stats/com2co/1"));
-		Files.createDirectories(tempDir.resolve("data/ndvi/1/2878"));
+		Files.createDirectories(tempDir.resolve("data/ndvi/1/59350"));
 
 		String[] folders = publishedFolders(tempDir);
 
@@ -92,7 +92,7 @@ class TestPublishService {
 		assertEquals("referentiels", status.getFiles().get(0).getType());
 		assertEquals("ndvi", status.getFiles().get(10).getType());
 		assertEquals(tempDir + "/data/ndvi/1/ndvi_2025_1.json", status.getFiles().get(10).getPath());
-		// le dossier de l'EPCI contient aussi les sous-dossiers des villes (data/ndvi/1/2878)
+		// le dossier de l'EPCI contient aussi les sous-dossiers des villes (data/ndvi/1/59350)
 		assertArrayEquals(new String[] { "geojson/carres/1", "data/stats/com2co/1", "data/ndvi/1" }, folders);
 	}
 

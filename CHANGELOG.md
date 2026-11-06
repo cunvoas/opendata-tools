@@ -1,32 +1,48 @@
 # Changelog
 
  
-## V2.0.9 - 2026-07.30
+## V2.0.13 - 2026-11-04
+
+ - Traitement des alertes liées à la vague de vulnérabilités découvertes par l'IA
+ - Intégration du NDVI sur le site public
+
+## V2.0.12 - 2026-10-31
+
+ - Activation des publications de données de parcs publics depuis le site de gestion
+
+## V2.0.11 - 2026-10-24
+
+ - Ajout de l'indice NDVI par parc (moyenne, min, max, écart-type, date de fenêtre) via l'API Statistical de Copernicus
+ - Fenêtre NDVI configurable (1–6 juin, secours 1–6 juillet) sur Sentinel-2 L2A
+ - Quota mensuel CDSE (10 000 requêtes / 10 000 PU) persisté en base : seules les réponses 2XX sont décomptées, le token OAuth est exclu, sans blocage des calculs OMS en cas d'échec
+ - NDVI limité à un appel par parc et par an, à partir de septembre, et requête CDSE à la résolution native 10 m pour maîtriser les PU
+
+## V2.0.9 - 2026-07-30
 
  - Ajout de proposition manuelle
  
  
-## V2.0.8 - 2026-07.18
+## V2.0.8 - 2026-07-18
 
  - Ajout de proposition avec DBSCAN
  - Affinage des carreaux de couleurs pour les résultats de Proposition
  - Suppression d'algos de proposition
 
-## V2.0.7 - 2026-07.14
+## V2.0.7 - 2026-07-14
 
  - Ajout des carreaux de couleurs pour les résultats de Proposition
  - Fix Sécurité/CVE
 
-## V2.0.6 - 2026-06.25
+## V2.0.6 - 2026-06-25
 
  - Ajout d'un contrôle température avant lancement des calculs
  - Revue de la page d'erreur
 
-## V2.0.5 - 2026-06.19
+## V2.0.5 - 2026-06-19
 
  - Revue de mailing et gestion utilisateur
  
-## V2.0.4 - 2026-06.12
+## V2.0.4 - 2026-05-12
 
  - Moteur de calcul V4
  
@@ -42,12 +58,14 @@
 
  - Correction de la fonction couleur en simulation
     
-## V2.0.0 - 2026-05-02
+## V2.0.0 - 2026-05-05
 
  - Migration technique
     - Spring Boot 4
     - Hibernate 7
     - Jackson 3
+ - Ajout des parcs OSM via OverPass
+ - Ajout de tous les EPCI de la métropole française
 
 ## V1.1.8 - 2026-04-22
 

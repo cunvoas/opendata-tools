@@ -101,6 +101,8 @@ export default defineConfig({
     cors: {
       origin: false,
     },
+    // VITE_DEV_PROXY=true (test.sh) : /isochrone est redirigé vers le backend local, sans CORS
+    proxy: process.env.VITE_DEV_PROXY === 'true' ? { '/isochrone': 'http://localhost:8980' } : undefined,
 
     //middlewareMode: "html"
   },
