@@ -105,33 +105,62 @@ public class StatsSurfaceService {
 	}
 	
 	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAllDense(Integer annee, Long com2CoId) throws StreamWriteException, DatabindException, IOException {
-		StatsSurfaceJson ret = new StatsSurfaceJson();
-		
-		ret.setAnnee(String.valueOf(annee));
-		ret.setInsee("C2C_dense_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
-		
-		Optional<CommunauteCommune> opt=communauteCommuneRepository.findById(com2CoId);
-		if (opt.isEmpty()) {
-			log.warn("Communauté de commune with id {} not found", com2CoId);
-			return null;
-		} else {
-			ret.setNom(opt.get().getName() +" - Urbain");
-			
-			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2CoDense(annee, com2CoId);
-			this.populateSurface(ret, stats, seuilDense);
-			
-			
+		StatsSurfaceJson ret = computeStatsSurfaceByCom2CoAndAnneeAllDense(annee, com2CoId);
+		if (ret != null) {
 			String sPath = applicationBusinessProperties.getJsonFileFolder()+"/data/stats/com2co/"+String.valueOf(com2CoId);
 			File file = new File(sPath);
 			file.mkdirs();
-			
+
 			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_urbans_"+String.valueOf(annee)+".json");
 			objectMapper.writeValue(file, ret);
 		}
 		return ret;
 	}
-	
+
+	/**
+	 * Statistiques urbaines d'un EPCI, sans écriture de fichier.
+	 * @return statistiques, null si l'EPCI est inconnu
+	 * @throws NoStatsException si l'EPCI n'a aucune ligne de stats pour l'année
+	 */
+	public StatsSurfaceJson computeStatsSurfaceByCom2CoAndAnneeAllDense(Integer annee, Long com2CoId) {
+		StatsSurfaceJson ret = new StatsSurfaceJson();
+		ret.setAnnee(String.valueOf(annee));
+		ret.setInsee("C2C_dense_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
+
+		Optional<CommunauteCommune> opt=communauteCommuneRepository.findById(com2CoId);
+		if (opt.isEmpty()) {
+			log.warn("Communauté de commune with id {} not found", com2CoId);
+			return null;
+		}
+		ret.setNom(opt.get().getName() +" - Urbain");
+
+		List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2CoDense(annee, com2CoId);
+		if (stats.isEmpty()) {
+			throw new NoStatsException("EPCI " + com2CoId + " (urbain) " + annee);
+		}
+		this.populateSurface(ret, stats, seuilDense);
+		return ret;
+	}
+
 	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAllSuburbs(Integer annee, Long com2CoId) throws StreamWriteException, DatabindException, IOException {
+		StatsSurfaceJson ret = computeStatsSurfaceByCom2CoAndAnneeAllSuburbs(annee, com2CoId);
+		if (ret != null) {
+			String sPath = applicationBusinessProperties.getJsonFileFolder()+"/data/stats/com2co/"+String.valueOf(com2CoId);
+			File file = new File(sPath);
+			file.mkdirs();
+
+			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_suburbs_"+String.valueOf(annee)+".json");
+			objectMapper.writeValue(file, ret);
+		}
+		return ret;
+	}
+
+	/**
+	 * Statistiques périurbaines d'un EPCI, sans écriture de fichier.
+	 * @return statistiques, null si l'EPCI est inconnu
+	 * @throws NoStatsException si l'EPCI n'a aucune ligne de stats pour l'année
+	 */
+	public StatsSurfaceJson computeStatsSurfaceByCom2CoAndAnneeAllSuburbs(Integer annee, Long com2CoId) {
 		StatsSurfaceJson ret = new StatsSurfaceJson();
 		ret.setAnnee(String.valueOf(annee));
 		ret.setInsee("C2C_suburbs_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
@@ -139,20 +168,14 @@ public class StatsSurfaceService {
 		if (opt.isEmpty()) {
 			log.warn("Communauté de commune with id {} not found", com2CoId);
 			return null;
-		} else {
-			ret.setNom(opt.get().getName() + " - Périurbain");
-			
-			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2CoSubUrbs(annee, com2CoId);
-			this.populateSurface(ret, stats, seuilSuburbs);
-			
-
-			String sPath = applicationBusinessProperties.getJsonFileFolder()+"/data/stats/com2co/"+String.valueOf(com2CoId);
-			File file = new File(sPath);
-			file.mkdirs();
-			
-			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_suburbs_"+String.valueOf(annee)+".json");
-			objectMapper.writeValue(file, ret);
 		}
+		ret.setNom(opt.get().getName() + " - Périurbain");
+
+		List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2CoSubUrbs(annee, com2CoId);
+		if (stats.isEmpty()) {
+			throw new NoStatsException("EPCI " + com2CoId + " (périurbain) " + annee);
+		}
+		this.populateSurface(ret, stats, seuilSuburbs);
 		return ret;
 	}
 
@@ -181,6 +204,24 @@ public class StatsSurfaceService {
 	}
 	
 	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAllV2(Integer annee, Long com2CoId) throws StreamWriteException, DatabindException, IOException {
+		StatsSurfaceJson ret = computeStatsSurfaceByCom2CoAndAnneeAllV2(annee, com2CoId);
+		if (ret != null) {
+			String sPath = applicationBusinessProperties.getJsonFileFolder()+"/data/stats/com2co/"+String.valueOf(com2CoId);
+			File file = new File(sPath);
+			file.mkdirs();
+
+			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_all_"+String.valueOf(annee)+".json");
+			objectMapper.writeValue(file, ret);
+		}
+		return ret;
+	}
+
+	/**
+	 * Statistiques urbaines et périurbaines d'un EPCI, sans écriture de fichier.
+	 * @return statistiques, null si l'EPCI est inconnu
+	 * @throws NoStatsException si l'EPCI n'a aucune ligne de stats pour l'année
+	 */
+	public StatsSurfaceJson computeStatsSurfaceByCom2CoAndAnneeAllV2(Integer annee, Long com2CoId) {
 		StatsSurfaceJson ret = new StatsSurfaceJson();
 		ret.setAnnee(String.valueOf(annee));
 		ret.setInsee("C2C_all_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
@@ -188,46 +229,38 @@ public class StatsSurfaceService {
 		if (opt.isEmpty()) {
 			log.warn("Communauté de commune with id {} not found", com2CoId);
 			return null;
-		} else {
-			ret.setNom(opt.get().getName() + " - Dense et Périurbain");
-			
-			List<StatsSurface> statsDense = statsSurfaceRepository.getStatsForCom2CoDense(annee, com2CoId);
-			List<StatsSurface> statsSubrubs = statsSurfaceRepository.getStatsForCom2CoSubUrbs(annee, com2CoId);
-			
-			
-			// fusion des listes
-			List<StatsSurface> stats = setupSurfaceAll();
-			for (StatsSurface statsSurface : stats) {
-				for (StatsSurface stat : statsDense) {
-					if (statsSurface.getSeuil().equals(stat.getSeuil())) {
-						statsSurface.setAnnee(annee);
-						statsSurface.setPopulationInclue(statsSurface.getPopulationInclue().add(stat.getPopulationInclue()));
-						statsSurface.setPopulationExclue(statsSurface.getPopulationExclue().add(stat.getPopulationExclue()));
-					}
-				}
-				for (StatsSurface stat : statsSubrubs) {
-					if (statsSurface.getSeuil().equals(stat.getSeuil())) {
-						statsSurface.setAnnee(annee);
-						statsSurface.setPopulationInclue(statsSurface.getPopulationInclue().add(stat.getPopulationInclue()));
-						statsSurface.setPopulationExclue(statsSurface.getPopulationExclue().add(stat.getPopulationExclue()));
-					}
-				}
-				
-			}
-			
-			this.populateAll(ret, stats, txtSeuilOMS);
-			
-			
-			String sPath = applicationBusinessProperties.getJsonFileFolder()+"/data/stats/com2co/"+String.valueOf(com2CoId);
-			File file = new File(sPath);
-			file.mkdirs();
-			
-			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_all_"+String.valueOf(annee)+".json");
-			objectMapper.writeValue(file, ret);
 		}
+		ret.setNom(opt.get().getName() + " - Dense et Périurbain");
+
+		List<StatsSurface> statsDense = statsSurfaceRepository.getStatsForCom2CoDense(annee, com2CoId);
+		List<StatsSurface> statsSubrubs = statsSurfaceRepository.getStatsForCom2CoSubUrbs(annee, com2CoId);
+		if (statsDense.isEmpty() && statsSubrubs.isEmpty()) {
+			throw new NoStatsException("EPCI " + com2CoId + " (tous) " + annee);
+		}
+
+		// fusion des listes
+		List<StatsSurface> stats = setupSurfaceAll();
+		for (StatsSurface statsSurface : stats) {
+			for (StatsSurface stat : statsDense) {
+				if (statsSurface.getSeuil().equals(stat.getSeuil())) {
+					statsSurface.setAnnee(annee);
+					statsSurface.setPopulationInclue(statsSurface.getPopulationInclue().add(stat.getPopulationInclue()));
+					statsSurface.setPopulationExclue(statsSurface.getPopulationExclue().add(stat.getPopulationExclue()));
+				}
+			}
+			for (StatsSurface stat : statsSubrubs) {
+				if (statsSurface.getSeuil().equals(stat.getSeuil())) {
+					statsSurface.setAnnee(annee);
+					statsSurface.setPopulationInclue(statsSurface.getPopulationInclue().add(stat.getPopulationInclue()));
+					statsSurface.setPopulationExclue(statsSurface.getPopulationExclue().add(stat.getPopulationExclue()));
+				}
+			}
+		}
+
+		this.populateAll(ret, stats, txtSeuilOMS);
 		return ret;
 	}
-		
+
 	@Deprecated
 	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAll(Integer annee, Long com2CoId) throws StreamWriteException, DatabindException, IOException {
 		StatsSurfaceJson ret = new StatsSurfaceJson();
@@ -273,6 +306,9 @@ public class StatsSurfaceService {
 		} else {
 			 stats = statsSurfaceRepository.getStatsForSuburbs(annee, "%"+insee+"%");
 			 seuils=  seuilSuburbs;
+		}
+		if (stats.isEmpty()) {
+			throw new NoStatsException(insee);
 		}
 		this.populateSurface(ret, stats, seuils);
 		return ret;
