@@ -13,15 +13,15 @@ export function interpreterStatistiquesNdvi({ moyenne, minimum, maximum, ecartTy
 
   let vigueur;
   if (moy < 0.1) {
-    vigueur = "Absence de végétation (Surfaces minérales, eau, sols nus)";
-  } else if (moy < 0.3) {
-    vigueur = "Végétation très éparse ou en grand stress (zones arides, début d'émergence)";
-  } else if (moy < 0.5) {
-    vigueur = "Végétation modérée (pelouses, arbustes)";
+    vigueur = "Absence de végétation (surfaces minérales, eau, sols nus)";
+  } else if (moy < 0.2) {
+    vigueur = "Sol nu ou végétation morte/sèche";
+  } else if (moy < 0.4) {
+    vigueur = "Végétation très clairsemée ou en stress (pelouse tondue, début de levée)";
   } else if (moy < 0.7) {
-    vigueur = "Végétation dense et active (arbres, massifs et pelouses bien développés, bois)";
+    vigueur = "Végétation en croissance active, couverture du sol modérée";
   } else {
-    vigueur = "Végétation exceptionnellement dense (canopée forestière, biomasse maximale)";
+    vigueur = "Zone de saturation : canopée dense, forêt ou végétation à son maximum ; une plante malade peut encore afficher 0,85";
   }
 
   let heterogeneite;

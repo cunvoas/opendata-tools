@@ -541,18 +541,54 @@ function createCircleFromFeature(feature, style) {
  * (geoservice-map-vue3/src/utils/ndvi.js : à tenir alignés). min = borne basse incluse.
  */
 const NDVI_CATEGORIES = [
-  { min: 0.5, range: '0,5 à 1,0', color: '#006837',
-    description: 'Végétation dense et saine, forêts tempérées/tropicales ou cultures en pleine maturité.' },
-  { min: 0.2, range: '0,2 à 0,5', color: '#31a354',
-    description: 'Végétation modérée, cultures en croissance, prairies vertes ou arbustes.' },
-  { min: 0.1, range: '0,1 à 0,2', color: '#78c679',
-    description: 'Végétation très éparse, prairies sèches ou début de sénescence.' },
-  { min: 0, range: '0 à 0,1', color: '#addd8e',
-    description: 'Sols nus, roches, sable ou zones urbaines artificielles.' },
-  { min: -Infinity, range: 'moins de 0', color: '#d9f0a3',
-    description: 'Eau (mers, lacs, rivières), neige ou nuages.' }
+  { min: 0.7, range: '0,7 à 1,0', color: '#006837',
+    description: 'Zone de saturation. Canopée dense, forêt, culture en pleine maturité. Attention : une plante malade peut encore afficher 0,85.' },
+  { min: 0.4, range: '0,4 à 0,7', color: '#31a354',
+    description: 'Végétation en croissance active, couverture du sol modérée.' },
+  { min: 0.2, range: '0,2 à 0,4', color: '#78c679',
+    description: 'Végétation très clairsemée, début de levée, ou pelouse tondue/brûlée.' },
+  { min: 0.1, range: '0,1 à 0,2', color: '#addd8e',
+    description: 'Sol nu, sable ou végétation morte/sèche.' },
+  { min: -Infinity, range: '-1,0 à 0,1', color: '#d9f0a3',
+    description: 'Eau, neige, roche, routes et bâtiments.' }
 ];
 const NDVI_ROUNDED_FORMAT = new Intl.NumberFormat('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3, useGrouping: false });
+
+/**
+ * Grille NDRE : seuils de santé de la végétation dense (red-edge).
+ * min = borne basse incluse, classement du plus élevé au plus faible.
+ */
+const NDRE_CATEGORIES = [
+  { min: 0.7, range: '0,7 à 1,0',
+    description: 'Très rare, ultra-haute densité exceptionnelle (ex. forêts tropicales denses).' },
+  { min: 0.45, range: '0,45 à 0,7',
+    description: 'Zone cible. Végétation dense, saine, avec une excellente concentration en azote/chlorophylle.' },
+  { min: 0.3, range: '0,3 à 0,45',
+    description: 'Végétation jeune, ou végétation mature subissant un stress modéré à sévère.' },
+  { min: 0.1, range: '0,1 à 0,3',
+    description: 'Sol nu ou végétation en très grand danger (perte massive de chlorophylle).' },
+  { min: -Infinity, range: '-1,0 à 0,1',
+    description: 'Surfaces non végétales.' }
+];
+
+/**
+ * Grille GNDVI : seuils d'activité photosynthétique et d'hydratation (bande verte).
+ * min = borne basse incluse, classement du plus élevé au plus faible.
+ */
+const GNDVI_CATEGORIES = [
+  { min: 0.75, range: '0,75 à 1,0',
+    description: 'Végétation luxuriante, vigueur maximale.' },
+  { min: 0.5, range: '0,5 à 0,75',
+    description: 'Zone cible. Végétation saine, bonne activité photosynthétique, bonne hydratation.' },
+  { min: 0.3, range: '0,3 à 0,5',
+    description: 'Végétation en début de cycle ou souffrant d\'une carence nutritionnelle visible.' },
+  { min: 0.15, range: '0,15 à 0,3',
+    description: 'Sol nu ou végétation totalement desséchée.' },
+  { min: -Infinity, range: '-1,0 à 0,15',
+    description: 'Eau et infrastructures.' }
+];
+
+const INDICE_FORMAT = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 
 /**
  * Construit le bloc NDVI de l'infobulle d'un parc (vide si le NDVI n'est pas activé).
@@ -565,16 +601,83 @@ function createNdviHtml(props) {
   if (props.ndviMean === null || props.ndviMean === undefined || !Number.isFinite(mean)) {
     return `<span style="display:block">NDVI : pas encore calculé</span>`;
   }
-  const nf = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
   // Classé sur la valeur arrondie comme affichée (3 décimales), comme l'application publique.
   const rounded = Number(NDVI_ROUNDED_FORMAT.format(mean));
   const category = NDVI_CATEGORIES.find(c => rounded >= c.min);
-  let html = `<span style="display:block;margin-top:.3em"><b>NDVI moyen : ${nf.format(mean)}</b>`;
+  let html = `<span style="display:block;margin-top:.3em"><b>NDVI moyen : ${INDICE_FORMAT.format(mean)}</b>`;
   if (props.ndviMin !== null && props.ndviMax !== null && props.ndviMin !== undefined && props.ndviMax !== undefined) {
-    html += ` (min ${nf.format(props.ndviMin)}, max ${nf.format(props.ndviMax)})`;
+    html += ` (min ${INDICE_FORMAT.format(props.ndviMin)}, max ${INDICE_FORMAT.format(props.ndviMax)})`;
   }
   html += `</span>`;
   html += `<span style="display:block"><span style="display:inline-block;width:.8em;height:.8em;margin-right:.3em;border:1px solid #555;background:${category.color}"></span><i>${category.range} :</i> ${category.description}</span>`;
+  return html;
+}
+
+/**
+ * Construit le bloc d'un indice complémentaire (NDRE ou GNDVI).
+ * @param {string} nom - Nom affiché de l'indice
+ * @param {number|string|null} mean - Valeur moyenne
+ * @param {number|string|null} min - Valeur minimale
+ * @param {number|string|null} max - Valeur maximale
+ * @param {Array<Object>} categories - Grille de seuils de l'indice
+ * @returns {string} HTML du bloc indice
+ */
+function createIndiceHtml(nom, mean, min, max, categories) {
+  const valeur = Number(mean);
+  if (mean === null || mean === undefined || !Number.isFinite(valeur)) {
+    return `<span style="display:block;margin-top:.3em">${nom} : non calculé</span>`;
+  }
+  const rounded = Number(NDVI_ROUNDED_FORMAT.format(valeur));
+  const category = categories.find(c => rounded >= c.min);
+  let html = `<span style="display:block;margin-top:.3em"><b>${nom} moyen : ${INDICE_FORMAT.format(valeur)}</b>`;
+  if (min !== null && max !== null && min !== undefined && max !== undefined) {
+    html += ` (min ${INDICE_FORMAT.format(min)}, max ${INDICE_FORMAT.format(max)})`;
+  }
+  html += `</span>`;
+  html += `<span style="display:block"><i>${category.range} :</i> ${category.description}</span>`;
+  return html;
+}
+
+/**
+ * Croise les trois indices pour détecter les anomalies invisibles au NDVI seul.
+ * Les seuils sont appliqués sur la valeur arrondie à 3 décimales, comme affichée.
+ * @param {number|string|null} ndviMean - NDVI moyen
+ * @param {number|string|null} ndreMean - NDRE moyen
+ * @param {number|string|null} gndviMean - GNDVI moyen
+ * @returns {string} Diagnostic croisé, ou chaîne vide si un indice manque
+ */
+function diagnostiquerCroisement(ndviMean, ndreMean, gndviMean) {
+  const valeurs = [ndviMean, ndreMean, gndviMean]
+    .map(v => (v === null || v === undefined || v === '') ? NaN : Number(v));
+  if (!valeurs.every(Number.isFinite)) return '';
+  const [ndvi, ndre, gndvi] = valeurs.map(v => Number(NDVI_ROUNDED_FORMAT.format(v)));
+  if (ndvi > 0.75 && (ndre < 0.45 || gndvi < 0.45)) {
+    return '<b>Alerte maladie / stress précoce :</b> la plante a encore ses feuilles, mais la chlorophylle ou l\'eau manquent. La maladie est là même si le NDVI reste vert.';
+  }
+  if (ndvi < 0.25 && gndvi > 0.4) {
+    return '<b>Alerte bruit du sol :</b> le NDVI est perturbé par la couleur du sol ; le GNDVI montre des jeunes pousses actives et en bonne santé.';
+  }
+  if (ndvi > 0.8 && ndre > 0.55 && gndvi > 0.65) {
+    return '<b>Vigueur maximale confirmée :</b> végétation dense, bien nourrie et sans stress hydrique.';
+  }
+  return '<b>Pas d\'anomalie croisée détectée.</b>';
+}
+
+/**
+ * Construit le bloc complet des indices de végétation de l'infobulle d'un parc.
+ * Méthode spécialisée : NDVI, NDRE, GNDVI puis diagnostic croisé.
+ * @param {Object} props - Propriétés GeoJSON du parc
+ * @returns {string} HTML des indices, vide si le NDVI n'est pas activé
+ */
+function createIndicesVegetationHtml(props) {
+  if (!props || !props.ndviEnabled) return '';
+  let html = createNdviHtml(props);
+  html += createIndiceHtml('NDRE', props.ndreMean, props.ndreMin, props.ndreMax, NDRE_CATEGORIES);
+  html += createIndiceHtml('GNDVI', props.gndviMean, props.gndviMin, props.gndviMax, GNDVI_CATEGORIES);
+  const diagnostic = diagnostiquerCroisement(props.ndviMean, props.ndreMean, props.gndviMean);
+  if (diagnostic) {
+    html += `<span style="display:block;margin-top:.3em">${diagnostic}</span>`;
+  }
   return html;
 }
 
@@ -600,7 +703,7 @@ function createPopupContent(feat, layerName) {
   // Lien édition parcs
   if (layerName === 'Parcs' && feat.properties.id) {
     const sUrlEditPark = window.location.protocol + "//" + window.location.host + urlEditPark + '?idPark=' + feat.properties.id;
-    popupContent += `<p>Surface: `+ formatedSurface(feat) +`<br />${createNdviHtml(feat.properties)}<a href='${sUrlEditPark}'>Éditer</a></p>`;
+    popupContent += `<p>Surface: `+ formatedSurface(feat) +`<br />${createIndicesVegetationHtml(feat.properties)}<a href='${sUrlEditPark}'>Éditer</a></p>`;
 
     // changer la couleur si feat.properties.oms=true => #3aa637
     // changer la couleur si feat.properties.oms=false => #e96020

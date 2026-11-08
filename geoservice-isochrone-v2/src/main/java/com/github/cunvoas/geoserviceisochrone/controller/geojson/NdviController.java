@@ -28,6 +28,8 @@ public class NdviController {
 	/** Une mesure NDVI de parc. */
 	public record NdviSummary(String parkId, String name, BigDecimal surface,
 			BigDecimal ndviMean, BigDecimal ndviMin, BigDecimal ndviMax, BigDecimal ndviStddev,
+			BigDecimal ndreMean, BigDecimal ndreMin, BigDecimal ndreMax, BigDecimal ndreStddev,
+			BigDecimal gndviMean, BigDecimal gndviMin, BigDecimal gndviMax, BigDecimal gndviStddev,
 			String acquisitionDate, Integer annee) {
 	}
 
@@ -111,6 +113,14 @@ public class NdviController {
 				projection.getNdviMin(),
 				projection.getNdviMax(),
 				projection.getNdviStddev(),
+				projection.getNdreMean(),
+				projection.getNdreMin(),
+				projection.getNdreMax(),
+				projection.getNdreStddev(),
+				projection.getGndviMean(),
+				projection.getGndviMin(),
+				projection.getGndviMax(),
+				projection.getGndviStddev(),
 				formatDate(projection.getAcquisitionDate()),
 				projection.getAnnee());
 	}

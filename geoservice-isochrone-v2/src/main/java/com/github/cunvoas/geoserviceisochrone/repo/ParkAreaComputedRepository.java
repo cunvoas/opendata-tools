@@ -30,6 +30,14 @@ public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComput
 		BigDecimal getNdviMin();
 		BigDecimal getNdviMax();
 		BigDecimal getNdviStddev();
+		BigDecimal getNdreMean();
+		BigDecimal getNdreMin();
+		BigDecimal getNdreMax();
+		BigDecimal getNdreStddev();
+		BigDecimal getGndviMean();
+		BigDecimal getGndviMin();
+		BigDecimal getGndviMax();
+		BigDecimal getGndviStddev();
 		Date getAcquisitionDate();
 		Integer getAnnee();
 	}
@@ -43,6 +51,10 @@ public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComput
 			value = "SELECT pac.id AS \"parkId\", pa.name AS \"name\", pac.surface AS \"surface\","
 					+ " pac.ndvi_mean AS \"ndviMean\", pac.ndvi_min AS \"ndviMin\","
 					+ " pac.ndvi_max AS \"ndviMax\", pac.ndvi_stddev AS \"ndviStddev\","
+					+ " pac.ndre_mean AS \"ndreMean\", pac.ndre_min AS \"ndreMin\","
+					+ " pac.ndre_max AS \"ndreMax\", pac.ndre_stddev AS \"ndreStddev\","
+					+ " pac.gndvi_mean AS \"gndviMean\", pac.gndvi_min AS \"gndviMin\","
+					+ " pac.gndvi_max AS \"gndviMax\", pac.gndvi_stddev AS \"gndviStddev\","
 					+ " pac.ndvi_acquisition_date AS \"acquisitionDate\", pac.annee AS \"annee\""
 					+ " FROM park_area_computed pac"
 					+ " JOIN park_area pa ON pa.id = pac.id"
@@ -60,6 +72,10 @@ public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComput
 			value = "SELECT pac.id AS \"parkId\", pa.name AS \"name\", pac.surface AS \"surface\","
 					+ " pac.ndvi_mean AS \"ndviMean\", pac.ndvi_min AS \"ndviMin\","
 					+ " pac.ndvi_max AS \"ndviMax\", pac.ndvi_stddev AS \"ndviStddev\","
+					+ " pac.ndre_mean AS \"ndreMean\", pac.ndre_min AS \"ndreMin\","
+					+ " pac.ndre_max AS \"ndreMax\", pac.ndre_stddev AS \"ndreStddev\","
+					+ " pac.gndvi_mean AS \"gndviMean\", pac.gndvi_min AS \"gndviMin\","
+					+ " pac.gndvi_max AS \"gndviMax\", pac.gndvi_stddev AS \"gndviStddev\","
 					+ " pac.ndvi_acquisition_date AS \"acquisitionDate\", pac.annee AS \"annee\""
 					+ " FROM park_area_computed pac"
 					+ " JOIN park_area pa ON pa.id = pac.id"
@@ -96,6 +112,10 @@ public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComput
 			value = "SELECT pac.id AS \"parkId\", pa.name AS \"name\", pac.surface AS \"surface\","
 					+ " pac.ndvi_mean AS \"ndviMean\", pac.ndvi_min AS \"ndviMin\","
 					+ " pac.ndvi_max AS \"ndviMax\", pac.ndvi_stddev AS \"ndviStddev\","
+					+ " pac.ndre_mean AS \"ndreMean\", pac.ndre_min AS \"ndreMin\","
+					+ " pac.ndre_max AS \"ndreMax\", pac.ndre_stddev AS \"ndreStddev\","
+					+ " pac.gndvi_mean AS \"gndviMean\", pac.gndvi_min AS \"gndviMin\","
+					+ " pac.gndvi_max AS \"gndviMax\", pac.gndvi_stddev AS \"gndviStddev\","
 					+ " pac.ndvi_acquisition_date AS \"acquisitionDate\", pac.annee AS \"annee\""
 					+ " FROM park_area_computed pac"
 					+ " JOIN park_area pa ON pa.id = pac.id"
@@ -131,6 +151,22 @@ public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComput
 					+ " JOIN city ci ON ci.id = pj.id_city"
 					+ " WHERE ci.id_comm2co IS NOT NULL")
 	List<Long> findCom2coIdsWithComputedParks();
+
+	/**
+	 * Identifiants des parcs calculés d'un EPCI pour une année.
+	 * @param annee année de référence
+	 * @param com2coId identifiant de la communauté de communes
+	 * @return identifiants {@code park_area.id}
+	 */
+	@Query(nativeQuery = true,
+			value = "SELECT DISTINCT pac.id FROM park_area_computed pac"
+					+ " JOIN park_area pa ON pa.id = pac.id"
+					+ " JOIN parc_jardin pj ON pj.identifiant = pa.id_parc_jardin"
+					+ " JOIN city ci ON ci.id = pj.id_city"
+					+ " WHERE pac.annee = :annee AND ci.id_comm2co = :com2coId")
+	List<Long> findParkIdsByAnneeAndCom2co(@Param("annee") Integer annee,
+			@Param("com2coId") Long com2coId);
+
 	/**
 	 * findByIdAndAnnee.
 	 * @param id ParkAreaComputed

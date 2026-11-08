@@ -6,31 +6,31 @@ import { NDVI_CATEGORIES, NDVI_NEUTRAL_COLOR, NDVI_NEUTRAL_COLOR_DALTONIEN, getN
 describe('NDVI_CATEGORIES', () => {
   it('reprend les cinq seuils universels par type de surface, du plus faible au plus élevé', () => {
     expect(NDVI_CATEGORIES.map((category) => [category.range, category.min])).toEqual([
-      ['moins de 0', -Infinity],
-      ['0 à 0,1', 0],
+      ['-1,0 à 0,1', -Infinity],
       ['0,1 à 0,2', 0.1],
-      ['0,2 à 0,5', 0.2],
-      ['0,5 à 1,0', 0.5]
+      ['0,2 à 0,4', 0.2],
+      ['0,4 à 0,7', 0.4],
+      ['0,7 à 1,0', 0.7]
     ]);
   });
 
   it('porte le texte complet de chaque type de surface', () => {
     expect(NDVI_CATEGORIES.map((category) => category.description)).toEqual([
-      'Eau (mers, lacs, rivières), neige ou nuages.',
-      'Sols nus, roches, sable ou zones urbaines artificielles.',
-      'Végétation très éparse, prairies sèches ou début de sénescence.',
-      'Végétation modérée, cultures en croissance, prairies vertes ou arbustes.',
-      'Végétation dense et saine, forêts tempérées/tropicales ou cultures en pleine maturité.'
+      'Eau, neige, roche, routes et bâtiments.',
+      'Sol nu, sable ou végétation morte/sèche.',
+      'Végétation très clairsemée, début de levée, ou pelouse tondue/brûlée.',
+      'Végétation en croissance active, couverture du sol modérée.',
+      'Zone de saturation. Canopée dense, forêt, culture en pleine maturité. Attention : une plante malade peut encore afficher 0,85.'
     ]);
   });
 
   it('donne à chaque niveau un libellé court et une couleur propres', () => {
     expect(NDVI_CATEGORIES.map((category) => category.label)).toEqual([
-      'Eau, neige ou nuages',
-      'Sols nus et zones artificielles',
-      'Végétation très éparse',
-      'Végétation modérée',
-      'Végétation dense et saine'
+      'Eau, neige, roche, bâti',
+      'Sol nu ou végétation morte',
+      'Végétation très clairsemée',
+      'Végétation en croissance',
+      'Zone de saturation'
     ]);
     const colors = NDVI_CATEGORIES.map((category) => category.color);
     expect(new Set(colors).size).toBe(NDVI_CATEGORIES.length);
@@ -42,30 +42,33 @@ describe('getNdviCategory', () => {
   const labelOf = (value) => getNdviCategory(value)?.label;
 
   it('classe chaque valeur dans sa tranche, borne basse incluse', () => {
-    expect(labelOf(-0.5)).toBe('Eau, neige ou nuages');
-    expect(labelOf(-0.001)).toBe('Eau, neige ou nuages');
-    expect(labelOf(0)).toBe('Sols nus et zones artificielles');
-    expect(labelOf(0.099)).toBe('Sols nus et zones artificielles');
-    expect(labelOf(0.1)).toBe('Végétation très éparse');
-    expect(labelOf(0.199)).toBe('Végétation très éparse');
-    expect(labelOf(0.2)).toBe('Végétation modérée');
-    expect(labelOf(0.499)).toBe('Végétation modérée');
-    expect(labelOf(0.5)).toBe('Végétation dense et saine');
-    expect(labelOf(1)).toBe('Végétation dense et saine');
-    expect(labelOf(1.3)).toBe('Végétation dense et saine');
+    expect(labelOf(-0.5)).toBe('Eau, neige, roche, bâti');
+    expect(labelOf(-0.001)).toBe('Eau, neige, roche, bâti');
+    expect(labelOf(0)).toBe('Eau, neige, roche, bâti');
+    expect(labelOf(0.099)).toBe('Eau, neige, roche, bâti');
+    expect(labelOf(0.1)).toBe('Sol nu ou végétation morte');
+    expect(labelOf(0.199)).toBe('Sol nu ou végétation morte');
+    expect(labelOf(0.2)).toBe('Végétation très clairsemée');
+    expect(labelOf(0.399)).toBe('Végétation très clairsemée');
+    expect(labelOf(0.4)).toBe('Végétation en croissance');
+    expect(labelOf(0.699)).toBe('Végétation en croissance');
+    expect(labelOf(0.7)).toBe('Zone de saturation');
+    expect(labelOf(1)).toBe('Zone de saturation');
+    expect(labelOf(1.3)).toBe('Zone de saturation');
   });
 
-  it('classe sur la valeur arrondie à l’affichage : 0,500 n’est jamais rangé sous le seuil 0,5', () => {
-    expect(labelOf(0.4996)).toBe('Végétation dense et saine');
-    expect(labelOf(0.4994)).toBe('Végétation modérée');
-    expect(labelOf(0.1996)).toBe('Végétation modérée');
-    expect(labelOf(0.0996)).toBe('Végétation très éparse');
-    expect(labelOf(-0.0004)).toBe('Sols nus et zones artificielles');
+  it('classe sur la valeur arrondie à l’affichage : 0,700 n’est jamais rangé sous le seuil 0,7', () => {
+    expect(labelOf(0.6996)).toBe('Zone de saturation');
+    expect(labelOf(0.6994)).toBe('Végétation en croissance');
+    expect(labelOf(0.3996)).toBe('Végétation en croissance');
+    expect(labelOf(0.1996)).toBe('Végétation très clairsemée');
+    expect(labelOf(0.0996)).toBe('Sol nu ou végétation morte');
+    expect(labelOf(-0.0004)).toBe('Eau, neige, roche, bâti');
   });
 
   it('accepte un texte, avec virgule décimale', () => {
-    expect(labelOf('0,593')).toBe('Végétation dense et saine');
-    expect(labelOf('0.15')).toBe('Végétation très éparse');
+    expect(labelOf('0,593')).toBe('Végétation en croissance');
+    expect(labelOf('0.15')).toBe('Sol nu ou végétation morte');
   });
 
   it('retourne null pour une valeur absente ou non numérique', () => {
@@ -97,7 +100,7 @@ const consultMap = resolve(process.cwd(), '../geoservice-isochrone-v2/src/main/r
 function loadBackendGrid() {
   const source = readFileSync(consultMap, 'utf8');
   const block = source.slice(source.indexOf('const NDVI_CATEGORIES'), source.indexOf('function createPopupContent'));
-  return new Function(`${block}; return { NDVI_CATEGORIES, createNdviHtml };`)();
+  return new Function(`${block}; return { NDVI_CATEGORIES, createNdviHtml, createIndicesVegetationHtml, diagnostiquerCroisement };`)();
 }
 
 describe.skipIf(!existsSync(consultMap))('alignement avec la popup du backend (consultMap.html)', () => {
@@ -124,6 +127,29 @@ describe.skipIf(!existsSync(consultMap))('alignement avec la popup du backend (c
     expect(createNdviHtml({ ndviEnabled: false, ndviMean: 0.5 })).toBe('');
     expect(createNdviHtml({ ndviEnabled: true, ndviMean: null })).toContain('pas encore calculé');
     expect(createNdviHtml({ ndviEnabled: true, ndviMean: 'abc' })).toContain('pas encore calculé');
+  });
+
+  it('ajoute les seuils NDRE et GNDVI à l’infobulle', () => {
+    const { createIndicesVegetationHtml } = loadBackendGrid();
+    const html = createIndicesVegetationHtml({
+      ndviEnabled: true, ndviMean: 0.6, ndviMin: 0.2, ndviMax: 0.8,
+      ndreMean: 0.5, ndreMin: 0.3, ndreMax: 0.6,
+      gndviMean: 0.55, gndviMin: 0.4, gndviMax: 0.7
+    });
+    expect(html).toContain('NDRE moyen');
+    expect(html).toContain('0,45 à 0,7 :');
+    expect(html).toContain('GNDVI moyen');
+    expect(html).toContain('0,5 à 0,75 :');
+  });
+
+  it('croise les trois indices pour détecter les anomalies', () => {
+    const { diagnostiquerCroisement } = loadBackendGrid();
+    expect(diagnostiquerCroisement(0.8, 0.4, 0.7)).toContain('Alerte maladie');
+    expect(diagnostiquerCroisement(0.8, 0.6, 0.4)).toContain('Alerte maladie');
+    expect(diagnostiquerCroisement(0.2, 0.2, 0.45)).toContain('Alerte bruit du sol');
+    expect(diagnostiquerCroisement(0.85, 0.6, 0.7)).toContain('Vigueur maximale confirmée');
+    expect(diagnostiquerCroisement(0.5, 0.4, 0.5)).toContain("Pas d'anomalie croisée détectée");
+    expect(diagnostiquerCroisement(0.5, null, 0.5)).toBe('');
   });
 });
 
@@ -184,8 +210,8 @@ describe('palette du mode daltonien', () => {
   });
 
   it('getNdviColor applique la palette du mode demandé', () => {
-    expect(getNdviColor(0.6, true)).toBe('#00224e');
-    expect(getNdviColor(0.6)).toBe('#006837');
+    expect(getNdviColor(0.6, true)).toBe('#434e6c');
+    expect(getNdviColor(0.6)).toBe('#31a354');
     expect(getNdviColor(null, true)).toBe(NDVI_NEUTRAL_COLOR_DALTONIEN);
     expect(getNdviColor(null)).toBe(NDVI_NEUTRAL_COLOR);
   });

@@ -67,4 +67,36 @@ public class NdviObservation {
 	/** Écart-type du NDVI observé. */
 	@Column(name = "ndvi_stddev", precision = 6, scale = 4)
 	private BigDecimal ndviStddev;
+
+	/** NDRE moyen observé (B08/B05). */
+	@Column(name = "ndre_mean", precision = 6, scale = 4)
+	private BigDecimal ndreMean;
+
+	/** NDRE minimal observé. */
+	@Column(name = "ndre_min", precision = 6, scale = 4)
+	private BigDecimal ndreMin;
+
+	/** NDRE maximal observé. */
+	@Column(name = "ndre_max", precision = 6, scale = 4)
+	private BigDecimal ndreMax;
+
+	/** Écart-type du NDRE observé. */
+	@Column(name = "ndre_stddev", precision = 6, scale = 4)
+	private BigDecimal ndreStddev;
+
+	/** GNDVI moyen observé (B08/B03). */
+	@Column(name = "gndvi_mean", precision = 6, scale = 4)
+	private BigDecimal gndviMean;
+
+	/** GNDVI minimal observé. */
+	@Column(name = "gndvi_min", precision = 6, scale = 4)
+	private BigDecimal gndviMin;
+
+	/** GNDVI maximal observé. */
+	@Column(name = "gndvi_max", precision = 6, scale = 4)
+	private BigDecimal gndviMax;
+
+	/** Écart-type du GNDVI observé. */
+	@Column(name = "gndvi_stddev", precision = 6, scale = 4)
+	private BigDecimal gndviStddev;
 }

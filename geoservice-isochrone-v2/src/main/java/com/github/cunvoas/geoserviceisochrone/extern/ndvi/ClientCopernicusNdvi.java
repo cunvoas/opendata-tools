@@ -35,7 +35,13 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Composant d'intégration avec l'API Statistical de Copernicus Data Space Ecosystem (CDSE).
- * Récupère les statistiques NDVI (moyenne, min, max, écart-type) d'un polygone de parc.
+ * Récupère les statistiques de trois indices Sentinel-2 (moyenne, min, max, écart-type)
+ * d'un polygone de parc : NDVI, NDRE et GNDVI.
+ *
+ * <p>Les trois indices sont calculés dans le même appel : le NDVI (B08/B04) mesure la
+ * vigueur, le NDRE (B08/B05) reste sensible dans les couverts denses où le NDVI sature,
+ * et le GNDVI (B08/B03) suit la concentration en chlorophylle. Le capteur MSI de
+ * Sentinel-2 fournit les bandes B03 et B05 dont ces deux indices ont besoin.</p>
  *
  * <p>Le résultat porte aussi la période d'agrégation et le nombre de pixels valides :
  * ces métadonnées sont conservées dans l'historique {@code ndvi_observation}, car le
@@ -55,31 +61,40 @@ public class ClientCopernicusNdvi {
     private static final Logger log = LoggerFactory.getLogger(ClientCopernicusNdvi.class);
 
     private static final String CRS_WGS84 = "http://www.opengis.net/def/crs/EPSG/0/4326";
-    /** Sentinel-2 Level-2A (surface reflectance) : bandes B04/B08 et masque SCL disponibles. */
+    /** Sentinel-2 Level-2A (surface reflectance) : bandes B03/B04/B05/B08 et masque SCL disponibles. */
     private static final String COLLECTION_L2A = "sentinel-2-l2a";
     // Marge de sécurité avant l'expiration effective du token (30 s)
     private static final Duration TOKEN_EXPIRY_MARGIN = Duration.ofSeconds(30);
 
     /**
-     * NDVI calculé sur les bandes rouge/proche infrarouge.
+     * NDVI (B08/B04), NDRE (B08/B05) et GNDVI (B08/B03) calculés dans le même appel.
+     * La sortie est demandée à 10 m : Sentinel Hub rééchantillonne B03 (10 m) et B05 (20 m)
+     * sur cette grille, donc les trois indices sont comparables pixel à pixel.
      * Pixels nuageux, saturés, ombres et eau exclus via le masque SCL.
      */
-    private static final String NDVI_EVALSCRIPT = """
+    private static final String VEGETATION_INDICES_EVALSCRIPT = """
             //VERSION=3
             function setup() {
               return {
-                input: [{ bands: ["B04", "B08", "SCL", "dataMask"] }],
+                input: [{ bands: ["B03", "B04", "B05", "B08", "SCL", "dataMask"] }],
                 output: [
                   { id: "ndvi", bands: 1, sampleType: "FLOAT32" },
+                  { id: "ndre", bands: 1, sampleType: "FLOAT32" },
+                  { id: "gndvi", bands: 1, sampleType: "FLOAT32" },
                   { id: "dataMask", bands: 1 }
                 ]
               };
             }
             function evaluatePixel(s) {
               var ndvi = (s.B08 - s.B04) / (s.B08 + s.B04);
-              var valid = s.dataMask === 1 && (s.B04 + s.B08) !== 0
+              var ndre = (s.B08 - s.B05) / (s.B08 + s.B05);
+              var gndvi = (s.B08 - s.B03) / (s.B08 + s.B03);
+              var valid = s.dataMask === 1
+                  && (s.B04 + s.B08) !== 0
+                  && (s.B05 + s.B08) !== 0
+                  && (s.B03 + s.B08) !== 0
                   && [1, 3, 6, 8, 9, 10].indexOf(s.SCL) === -1;
-              return { ndvi: [ndvi], dataMask: [valid ? 1 : 0] };
+              return { ndvi: [ndvi], ndre: [ndre], gndvi: [gndvi], dataMask: [valid ? 1 : 0] };
             }
             """;
 
@@ -253,7 +268,7 @@ public class ClientCopernicusNdvi {
                         "from", isoFrom,
                         "to", isoTo),
                 "aggregationInterval", Map.of("of", aggregationInterval),
-                "evalscript", NDVI_EVALSCRIPT,
+                "evalscript", VEGETATION_INDICES_EVALSCRIPT,
                 "width", size[0],
                 "height", size[1]);
 
@@ -282,7 +297,7 @@ public class ClientCopernicusNdvi {
         };
     }
 
-    private Optional<NdviStatistics> parseResponse(JsonNode response) {
+    static Optional<NdviStatistics> parseResponse(JsonNode response) {
         JsonNode data = response == null ? null : response.path("data");
         if (data == null || !data.isArray()) {
             return Optional.empty();
@@ -290,21 +305,36 @@ public class ClientCopernicusNdvi {
         for (int i = data.size() - 1; i >= 0; i--) {
             JsonNode item = data.get(i);
             JsonNode stats = item.path("outputs").path("ndvi").path("bands").path("B0").path("stats");
-            if (stats.path("mean").isNumber() && stats.path("sampleCount").asInt(0) > 0) {
+            NdviStatistics.IndexStatistics ndvi = toIndexStatistics(item, "ndvi");
+            NdviStatistics.IndexStatistics ndre = toIndexStatistics(item, "ndre");
+            NdviStatistics.IndexStatistics gndvi = toIndexStatistics(item, "gndvi");
+            if (stats.path("sampleCount").asInt(0) > 0
+                    && (ndvi != null || ndre != null || gndvi != null)) {
                 JsonNode interval = item.path("interval");
                 // La période retournée est conservée pour l'historique : elle permet
                 // de rattacher l'observation à la bonne année lors d'une reventilation.
                 return Optional.of(new NdviStatistics(
-                        toDecimal(stats, "mean"),
-                        toDecimal(stats, "min"),
-                        toDecimal(stats, "max"),
-                        toDecimal(stats, "stDev"),
+                        ndvi,
+                        ndre,
+                        gndvi,
                         toDate(interval.path("to").asText(null)),
                         toDate(interval.path("from").asText(null)),
                         stats.path("sampleCount").asInt(0)));
             }
         }
         return Optional.empty();
+    }
+
+    private static NdviStatistics.IndexStatistics toIndexStatistics(JsonNode item, String index) {
+        JsonNode stats = item.path("outputs").path(index).path("bands").path("B0").path("stats");
+        if (!stats.path("mean").isNumber()) {
+            return null;
+        }
+        return new NdviStatistics.IndexStatistics(
+                toDecimal(stats, "mean"),
+                toDecimal(stats, "min"),
+                toDecimal(stats, "max"),
+                toDecimal(stats, "stDev"));
     }
 
     private static BigDecimal toDecimal(JsonNode stats, String field) {

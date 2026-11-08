@@ -400,11 +400,11 @@ describe('AppNdvi', () => {
       const wrapper = await mountWith();
 
       expect(chartRows(wrapper).map((row) => row.label)).toEqual([
-        'moins de 0 : Eau, neige ou nuages',
-        '0 à 0,1 : Sols nus et zones artificielles',
-        '0,1 à 0,2 : Végétation très éparse',
-        '0,2 à 0,5 : Végétation modérée',
-        '0,5 à 1,0 : Végétation dense et saine'
+        '-1,0 à 0,1 : Eau, neige, roche, bâti',
+        '0,1 à 0,2 : Sol nu ou végétation morte',
+        '0,2 à 0,4 : Végétation très clairsemée',
+        '0,4 à 0,7 : Végétation en croissance',
+        '0,7 à 1,0 : Zone de saturation'
       ]);
     });
 
@@ -412,8 +412,8 @@ describe('AppNdvi', () => {
       const wrapper = await mountWith();
 
       const rows = chartRows(wrapper);
-      expect(rows.map((row) => row.countText)).toEqual(['0 parc', '0 parc', '1 parc', '2 parcs', '1 parc']);
-      expect(rows.map((row) => row.bar.element.style.width)).toEqual(['0%', '0%', '50%', '100%', '50%']);
+      expect(rows.map((row) => row.countText)).toEqual(['0 parc', '1 parc', '2 parcs', '1 parc', '0 parc']);
+      expect(rows.map((row) => row.bar.element.style.width)).toEqual(['0%', '50%', '100%', '50%', '0%']);
     });
 
     it('colore chaque barre avec la couleur de sa catégorie', async () => {
@@ -455,16 +455,18 @@ describe('AppNdvi', () => {
   describe('catégorie NDVI', () => {
     it('classe chaque parc selon les seuils universels, bornes comprises', async () => {
       const cases = [
-        [-0.05, 'Eau, neige ou nuages'],
-        [-0.001, 'Eau, neige ou nuages'],
-        [0, 'Sols nus et zones artificielles'],
-        [0.099, 'Sols nus et zones artificielles'],
-        [0.1, 'Végétation très éparse'],
-        [0.199, 'Végétation très éparse'],
-        [0.2, 'Végétation modérée'],
-        [0.499, 'Végétation modérée'],
-        [0.5, 'Végétation dense et saine'],
-        [1, 'Végétation dense et saine']
+        [-0.05, 'Eau, neige, roche, bâti'],
+        [-0.001, 'Eau, neige, roche, bâti'],
+        [0, 'Eau, neige, roche, bâti'],
+        [0.099, 'Eau, neige, roche, bâti'],
+        [0.1, 'Sol nu ou végétation morte'],
+        [0.199, 'Sol nu ou végétation morte'],
+        [0.2, 'Végétation très clairsemée'],
+        [0.399, 'Végétation très clairsemée'],
+        [0.4, 'Végétation en croissance'],
+        [0.699, 'Végétation en croissance'],
+        [0.7, 'Zone de saturation'],
+        [1, 'Zone de saturation']
       ];
       const wrapper = await mountWith(cases.map(([ndviMean], i) => (
         { ...payload.parks[0], parkId: String(i), name: `Parc ${ndviMean}`, ndviMean }
@@ -475,16 +477,16 @@ describe('AppNdvi', () => {
       });
     });
 
-    it('classe sur la valeur affichée : 0,500 n’est jamais rangé sous le seuil 0,5', async () => {
+    it('classe sur la valeur affichée : 0,700 n’est jamais rangé sous le seuil 0,7', async () => {
       const wrapper = await mountWith([
-        { ...payload.parks[0], parkId: '1', name: 'Limite haute', ndviMean: 0.4996 },
+        { ...payload.parks[0], parkId: '1', name: 'Limite haute', ndviMean: 0.6996 },
         { ...payload.parks[1], parkId: '2', name: 'Limite basse', ndviMean: 0.1996 }
       ]);
 
-      expect(rowOf(wrapper, 'Limite haute').text()).toContain('0,500');
-      expect(categoryOf(wrapper, 'Limite haute')).toBe('Végétation dense et saine');
+      expect(rowOf(wrapper, 'Limite haute').text()).toContain('0,700');
+      expect(categoryOf(wrapper, 'Limite haute')).toBe('Zone de saturation');
       expect(rowOf(wrapper, 'Limite basse').text()).toContain('0,200');
-      expect(categoryOf(wrapper, 'Limite basse')).toBe('Végétation modérée');
+      expect(categoryOf(wrapper, 'Limite basse')).toBe('Végétation très clairsemée');
     });
 
     it('suit le mode daltonien mémorisé : pastilles et barres de la palette daltonienne', async () => {
@@ -492,8 +494,8 @@ describe('AppNdvi', () => {
       const wrapper = await mountWith([{ ...payload.parks[0], parkId: '1', name: 'Dense', ndviMean: 0.6 }]);
 
       const swatch = rowOf(wrapper, 'Dense').find('td span[aria-hidden="true"]');
-      expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[4].colorDaltonien, 0.5)));
-      expect(chartRows(wrapper)[4].bar.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[4].colorDaltonien, 0.5)));
+      expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].colorDaltonien, 0.5)));
+      expect(chartRows(wrapper)[3].bar.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].colorDaltonien, 0.5)));
     });
 
     it('affiche la couleur de la catégorie dans une pastille, sans pastille quand le NDVI est absent', async () => {
@@ -503,7 +505,7 @@ describe('AppNdvi', () => {
       ]);
 
       const swatch = rowOf(wrapper, 'Dense').find('td span[aria-hidden="true"]');
-      expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[4].color, 0.5)));
+      expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].color, 0.5)));
       expect(rowOf(wrapper, 'Sans mesure').find('td span[aria-hidden="true"]').exists()).toBe(false);
     });
 

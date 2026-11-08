@@ -133,6 +133,10 @@ function currentEpciId() {
     return String(params.get('com2co') || params.get('c2c') || saved.com2coId || '1');
 }
 
+function currentCityInsee() {
+    return new URLSearchParams(window.location.search).get('city');
+}
+
 const COLUMNS = [
     { key: 'name', label: 'Parc', type: 'text' },
     { key: 'surface', label: 'Surface (m²)', type: 'number' },
@@ -248,9 +252,13 @@ export default {
     },
     mounted() {
         this.epciId = currentEpciId();
-        // La commune préremplie par le sélecteur doit aussi cadrer les données, si elle appartient à cet EPCI.
+        // La commune peut venir du lien (écran MVC) ou du sélecteur mémorisé, si elle appartient à cet EPCI.
         const saved = savedLocation();
-        if (saved.cityInsee && String(saved.com2coId) === this.epciId) {
+        const cityParam = currentCityInsee();
+        if (cityParam) {
+            this.cityInsee = String(cityParam);
+            this.cityName = String(saved.cityInsee) === this.cityInsee ? (saved.cityName || '') : '';
+        } else if (saved.cityInsee && String(saved.com2coId) === this.epciId) {
             this.cityInsee = String(saved.cityInsee);
             this.cityName = saved.cityName || '';
         }

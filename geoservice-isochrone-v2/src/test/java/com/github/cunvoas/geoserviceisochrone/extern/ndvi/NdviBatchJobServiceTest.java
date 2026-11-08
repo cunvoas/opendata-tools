@@ -87,13 +87,19 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
         when(parkAreaComputedRepository.findAllByIdPark(PARK_ID)).thenReturn(List.of(row, olderRow));
     }
 
+    private static NdviStatistics.IndexStatistics index(String mean, String min, String max, String stdDev) {
+        return new NdviStatistics.IndexStatistics(
+                new BigDecimal(mean), new BigDecimal(min), new BigDecimal(max), new BigDecimal(stdDev));
+    }
+
     @Test
     @DisplayName("un job traité remplit le NDVI de toutes les années du parc")
     void processJobRemplitNdviToutesAnnees() {
         NdviStatistics stats = new NdviStatistics(
-                new BigDecimal("0.42"), new BigDecimal("0.10"),
-                new BigDecimal("0.80"), new BigDecimal("0.05"), new Date(3000L),
-                new Date(2000L), 150);
+                index("0.42", "0.10", "0.80", "0.05"),
+                index("0.31", "0.08", "0.60", "0.04"),
+                index("0.55", "0.20", "0.90", "0.06"),
+                new Date(3000L), new Date(2000L), 150);
         when(clientCopernicusNdvi.fetchNdviForPark(eq(PARK_ID), any())).thenReturn(Optional.of(stats));
 
         service.processJobs();
@@ -102,6 +108,10 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
         assertEquals(new BigDecimal("0.42"), row.getNdviMean());
         assertEquals(new BigDecimal("0.42"), olderRow.getNdviMean());
         assertEquals(3000L, olderRow.getNdviAcquisitionDate().getTime());
+        assertEquals(new BigDecimal("0.31"), row.getNdreMean());
+        assertEquals(new BigDecimal("0.31"), olderRow.getNdreMean());
+        assertEquals(new BigDecimal("0.55"), row.getGndviMean());
+        assertEquals(new BigDecimal("0.55"), olderRow.getGndviMean());
         assertNotNull(row.getNdviRequestDate());
         assertNotNull(olderRow.getNdviRequestDate());
         verify(parkAreaComputedRepository).saveAll(List.of(row, olderRow));
@@ -114,6 +124,8 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
         assertEquals(3000L, observation.getPeriodEnd().getTime());
         assertEquals(150, observation.getSampleCount());
         assertEquals(new BigDecimal("0.42"), observation.getNdviMean());
+        assertEquals(new BigDecimal("0.31"), observation.getNdreMean());
+        assertEquals(new BigDecimal("0.55"), observation.getGndviMean());
     }
 
     @Test
@@ -189,6 +201,41 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
         assertNull(row.getNdviMean());
         verify(parkAreaComputedRepository, never()).saveAll(any());
         verify(ndviObservationRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("relance forcée : appelle Copernicus même si un NDVI existe déjà")
+    void relanceForceeIgnoreNdviExistant() {
+        olderRow.setNdviMean(new BigDecimal("0.33"));
+        job.setForce(true);
+        NdviStatistics stats = new NdviStatistics(
+                index("0.42", "0.10", "0.80", "0.05"),
+                index("0.31", "0.08", "0.60", "0.04"),
+                index("0.55", "0.20", "0.90", "0.06"),
+                new Date(3000L), new Date(2000L), 150);
+        when(clientCopernicusNdvi.fetchNdviForPark(eq(PARK_ID), any())).thenReturn(Optional.of(stats));
+
+        service.processJobs();
+
+        assertEquals(ComputeJobStatusEnum.PROCESSED, job.getStatus());
+        assertFalse(job.isForce());
+        assertEquals(new BigDecimal("0.42"), row.getNdviMean());
+        assertEquals(new BigDecimal("0.42"), olderRow.getNdviMean());
+        verify(clientCopernicusNdvi).fetchNdviForPark(eq(PARK_ID), any());
+    }
+
+    @Test
+    @DisplayName("relance forcée d'un EPCI : un job forcé par parc calculé")
+    void relanceForceeEpci() {
+        when(parkAreaComputedRepository.findParkIdsByAnneeAndCom2co(ANNEE, 1L))
+                .thenReturn(List.of(PARK_ID));
+
+        int count = service.requestForcedForCom2Co(1L, ANNEE);
+
+        assertEquals(1, count);
+        ArgumentCaptor<NdviJob> captor = ArgumentCaptor.forClass(NdviJob.class);
+        verify(ndviJobRepository).save(captor.capture());
+        assertTrue(captor.getValue().isForce());
     }
 
     @Test

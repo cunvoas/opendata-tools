@@ -83,6 +83,10 @@
                                 
                                 <button id="btnPublish" onclick="requestPublish()" type="button" class="btn btn-outline-secondary" th:text="#{communautecommune.publish}" th:disabled="${!canPublish}">Publier</button>
                                 
+                                <button id="btnNdviForce" onclick="requestNdviForce()" type="button" class="btn btn-outline-danger"
+                                    th:text="#{communautecommune.ndvi.force}"
+                                    th:title="#{communautecommune.ndvi.force.title}">Relancer Copernicus</button>
+                                
                                 <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
@@ -266,6 +270,41 @@
                 
                 // async call controler compute
                 this.doPostPublish(document.getElementById("id").value, requestedYear);
+            }
+        }
+
+        async function requestNdviForce() {
+            const com2coId = document.getElementById("id").value;
+            if (!com2coId) return;
+
+            const btn = document.getElementById("btnNdviForce");
+            btn.disabled = true;
+            const requestedYear = document.getElementById("requestedYear").value || null;
+            try {
+                const response = await fetch([[@{/mvc/ajax/jobs/api/ndvi/request}]], {
+                    method: "POST",
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: [[${token}]],
+                        com2coId: com2coId,
+                        requestedYear: requestedYear
+                    })
+                });
+                if (response.status === 202 || response.status === 200) {
+                    const content = await response.json();
+                    alert(content.nbCarre > 0
+                        ? "Relance Copernicus demandée pour " + content.nbCarre + " parc(s)."
+                        : "Aucun parc NDVI trouvé pour cette année.");
+                } else if (response.status === 403) {
+                    alert("Action réservée aux administrateurs.");
+                } else {
+                    alert("Relance Copernicus impossible.");
+                }
+            } catch (error) {
+                console.error("Error requesting NDVI refresh:", error);
+                alert("Relance Copernicus impossible.");
+            } finally {
+                btn.disabled = false;
             }
         }
         /*]]>*/

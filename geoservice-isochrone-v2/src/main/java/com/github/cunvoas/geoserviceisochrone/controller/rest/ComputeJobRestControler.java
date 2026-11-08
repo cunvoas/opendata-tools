@@ -115,4 +115,31 @@ public class ComputeJobRestControler {
 
 		return new ResponseEntity<ComputeJobResponse>(resp, code);
 	}
+
+	/**
+	 * Relance forcée de l'appel Copernicus pour tous les parcs d'un EPCI.
+	 * Réservé aux administrateurs : contourne la règle d'un appel par an.
+	 * @param req demande (token, com2coId, requestedYear facultatif)
+	 * @return nombre de parcs relancés
+	 */
+	@PostMapping("/ndvi/request")
+	public ResponseEntity<ComputeJobResponse> requestNdvi(@RequestBody ComputeJobRequest req) {
+		if (!tokenManagement.isTokenValid(req.getToken())) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		Contributeur contrib = (Contributeur) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (!ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+		Long com2coId = NumberHelper.toLong(req.getCom2coId());
+		if (com2coId == null) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		Integer annee = req.getRequestedYear() != null
+				? req.getRequestedYear()
+				: applicationBusinessProperties.getDerniereAnnee();
+		ComputeJobResponse resp = new ComputeJobResponse(req);
+		resp.setNbCarre(ndviBatchJobService.requestForcedForCom2Co(com2coId, annee));
+		return new ResponseEntity<>(resp, HttpStatus.ACCEPTED);
+	}
 }

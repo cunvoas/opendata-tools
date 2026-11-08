@@ -12,12 +12,77 @@
 				<div class="container-fluid px-4">
 					<div class="d-flex justify-content-between align-items-center mt-4 mb-2">
 						<div>
-							<h1 class="mb-1" th:text="#{ndvi.zones.title}">NDVI par EPCI</h1>
+							<h1 class="mb-1" th:text="#{ndvi.zones.title}">NDVI par territoire</h1>
 							<p class="text-muted mb-0" th:text="#{ndvi.zones.subtitle}">
-								Restitution publique par communauté de communes.
+								Restitution publique par région, intercommunalité ou commune.
 							</p>
 						</div>
 						<span class="badge bg-success fs-6" th:text="'Année ' + ${annee}">Année 2021</span>
+					</div>
+
+					<div class="card border-0 shadow-sm mb-4">
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-4">
+									<form th:action="@{/mvc/ndvi}" method="get">
+										<div class="form-floating">
+											<select class="form-select" id="idRegion" name="idRegion"
+												onchange="this.form.submit()">
+												<option value="" th:selected="${selectedRegionId == null}"
+													th:text="#{ndvi.zones.allRegions}">Toutes les régions</option>
+												<option th:each="region : ${regions}" th:value="${region.id}"
+													th:text="${region.name}"
+													th:selected="${selectedRegionId != null && selectedRegionId == region.id}"></option>
+											</select>
+											<label for="idRegion"><i class="fas fa-map me-2"></i><span
+													th:text="#{entrance.region}">Région</span></label>
+										</div>
+									</form>
+								</div>
+								<div class="col-md-4">
+									<form th:action="@{/mvc/ndvi}" method="get">
+										<input type="hidden" name="idRegion" th:value="${selectedRegionId}" />
+										<fieldset th:disabled="${selectedRegionId == null}">
+											<div class="form-floating">
+												<select class="form-select" id="idCommunauteDeCommunes"
+													name="idCommunauteDeCommunes" onchange="this.form.submit()">
+													<option value=""
+														th:selected="${selectedCommunauteDeCommunesId == null}"
+														th:text="#{ndvi.zones.allEpci}">Toutes les intercommunalités</option>
+													<option th:each="commDeCo : ${communautesDeCommunes}"
+														th:value="${commDeCo.id}" th:text="${commDeCo.name}"
+														th:selected="${selectedCommunauteDeCommunesId != null && selectedCommunauteDeCommunesId == commDeCo.id}"></option>
+												</select>
+												<label for="idCommunauteDeCommunes"><i
+														class="fas fa-building me-2"></i><span
+														th:text="#{entrance.communateDeCommunes}">EPCI</span></label>
+											</div>
+										</fieldset>
+									</form>
+								</div>
+								<div class="col-md-4">
+									<form id="formSelectCity" th:action="@{/mvc/ndvi}" method="get">
+										<input type="hidden" name="idRegion" th:value="${selectedRegionId}" />
+										<input type="hidden" name="idCommunauteDeCommunes"
+											th:value="${selectedCommunauteDeCommunesId}" />
+										<fieldset th:disabled="${selectedCommunauteDeCommunesId == null}">
+											<div class="form-floating">
+												<input class="form-select" list="communes" id="idCommune-filter"
+													autocomplete="off" />
+												<label for="idCommune-filter"><i class="fas fa-city me-2"></i><span
+														th:text="#{entrance.commune}">Ville</span></label>
+												<datalist id="communes" class="form-label">
+													<option th:each="commune : ${communes}" th:value="${commune.name}"
+														th:attr="data-value=${commune.id}" th:label="${commune.name}"></option>
+												</datalist>
+												<input type="hidden" id="idCommune" name="idCommune"
+													th:value="${selectedCommuneId}" />
+											</div>
+										</fieldset>
+									</form>
+								</div>
+							</div>
+						</div>
 					</div>
 
 					<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">
@@ -45,7 +110,7 @@
 											target="_blank" rel="noopener noreferrer" th:text="#{ndvi.zones.public}">
 											Restitution publique
 										</a>
-										<a class="btn btn-outline-secondary btn-sm"
+										<a class="btn btn-outline-secondary btn-sm" th:if="${zone.id != null}"
 											th:href="@{/mvc/management/comm2co/edit(id=${zone.id})}"
 											th:text="#{ndvi.zones.manage}">Gérer</a>
 									</div>
@@ -56,7 +121,7 @@
 
 					<div class="alert alert-info" role="status" th:if="${#lists.isEmpty(zones)}"
 						th:text="#{ndvi.zones.empty}">
-						Aucune donnée NDVI disponible.
+						Aucune donnée NDVI disponible pour ce territoire.
 					</div>
 				</div>
 			</main>
@@ -67,5 +132,28 @@
 
 	<div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
 	<script th:src="@{/mvc/static/js/scripts.js}"></script>
+	<script th:inline="javascript">
+		/* manage correct ID for COMMUNE SELECTION */
+		// th:field broke the datalist work
+		document.querySelector('#idCommune-filter').value = [[${selectedCommuneName}]];
+		document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
+			const input = e.target;
+			const list = input.getAttribute('list');
+			const options = document.querySelectorAll('#' + list + ' option');
+			const hiddenInput = document.querySelector("#" + input.getAttribute('id').split("-")[0]);
+			const inputValue = input.value;
+
+			hiddenInput.value = inputValue;
+
+			for (let i = 0; i < options.length; i++) {
+				const option = options[i];
+				if (option.value === inputValue) {
+					hiddenInput.value = option.getAttribute('data-value');
+					document.querySelector("#formSelectCity").submit();
+					break;
+				}
+			}
+		});
+	</script>
 </body>
 </html>

@@ -107,7 +107,7 @@ describe('Isochrone - mode et détail NDVI', () => {
     const wrapper = mountIsochrone();
     wrapper.vm.ndviMode = true;
 
-    expect(wrapper.vm.computeParcStyle(feature).fillColor).toBe('#006837');
+    expect(wrapper.vm.computeParcStyle(feature).fillColor).toBe(NDVI_CATEGORIES[3].color);
     expect(wrapper.vm.computeParcStyle({ properties: { ndviEnabled: true } }).fillColor).toBe('#959595');
   });
 
@@ -137,7 +137,7 @@ describe('Isochrone - mode et détail NDVI', () => {
     const geoJsonStub = { template: '<div />', data: () => ({ leafletObject: { setStyle } }) };
     const wrapper = mount(Isochrone, { global: { stubs: { ...stubs, 'l-geo-json': geoJsonStub } } });
     const button = wrapper.find('button.ndvi-toggle');
-    const dense = NDVI_CATEGORIES.at(-1).color;
+    const dense = NDVI_CATEGORIES[3].color;
 
     await button.trigger('click');
     expect(setStyle).toHaveBeenCalledTimes(1);
@@ -172,8 +172,8 @@ describe('Isochrone - mode et détail NDVI', () => {
     expect(html).toContain('Citadelle');
     expect(html).toContain('<b>NDVI moyen : 0,593</b>');
     expect(html).toContain('(min 0,100, max 0,900)');
-    expect(html).toContain('<i>0,5 à 1,0 :</i>');
-    expect(html).toContain('Végétation dense et saine');
+    expect(html).toContain('<i>0,4 à 0,7 :</i>');
+    expect(html).toContain('Végétation en croissance');
   });
 
   it('affiche « pas encore calculé » sans valeur implicite pour un parc sans NDVI', () => {
@@ -197,7 +197,7 @@ describe('Isochrone - mode et détail NDVI', () => {
 
     wrapper.vm.colorblindMode = true;
     const daltonien = wrapper.vm.buildNdviHtml({ ndviEnabled: true, ndviMean: 0.6 });
-    expect(daltonien).toContain(`background:${NDVI_CATEGORIES.at(-1).colorDaltonien}`);
+    expect(daltonien).toContain(`background:${NDVI_CATEGORIES[3].colorDaltonien}`);
   });
 
   it('n’affiche aucune mention NDVI quand la feature est désactivée', () => {
@@ -291,7 +291,7 @@ describe('Isochrone - couleurs NDVI en mode daltonien', () => {
 
     const style = wrapper.vm.computeParcStyle({ properties: { ndviEnabled: true, ndviMean: 0.6 } });
 
-    expect(style.fillColor).toBe(NDVI_CATEGORIES[4].colorDaltonien);
+    expect(style.fillColor).toBe(NDVI_CATEGORIES[3].colorDaltonien);
     expect(style.color).toBe(NDVI_CONTOUR_DALTONIEN);
   });
 
@@ -301,8 +301,8 @@ describe('Isochrone - couleurs NDVI en mode daltonien', () => {
 
     const style = wrapper.vm.computeParcStyle({ properties: { ndviEnabled: true, ndviMean: 0.6 } });
 
-    expect(style.color).toBe(NDVI_CATEGORIES[4].color);
-    expect(style.fillColor).toBe(NDVI_CATEGORIES[4].color);
+    expect(style.color).toBe(NDVI_CATEGORIES[3].color);
+    expect(style.fillColor).toBe(NDVI_CATEGORIES[3].color);
   });
 });
 

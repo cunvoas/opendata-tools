@@ -88,6 +88,39 @@ public class NdviBatchJobService {
 	 * @param annee année de référence ({@code park_area_computed.annee})
 	 */
 	public void request(Long parkId, Integer annee) {
+		request(parkId, annee, false);
+	}
+
+	/**
+	 * Dépose une demande de rafraîchissement NDVI en ignorant le NDVI existant
+	 * et la règle du un appel par an. Réservé à l'administration.
+	 *
+	 * @param parkId identifiant de la zone de parc
+	 * @param annee année de référence
+	 */
+	public void requestForced(Long parkId, Integer annee) {
+		request(parkId, annee, true);
+	}
+
+	/**
+	 * Dépose les relances forcées de tous les parcs calculés d'un EPCI.
+	 *
+	 * @param com2coId identifiant de la communauté de communes
+	 * @param annee année de référence
+	 * @return nombre de parcs relancés
+	 */
+	public int requestForcedForCom2Co(Long com2coId, Integer annee) {
+		if (!isEnabled() || com2coId == null || annee == null) {
+			return 0;
+		}
+		List<Long> parkIds = parkAreaComputedRepository.findParkIdsByAnneeAndCom2co(annee, com2coId);
+		for (Long parkId : parkIds) {
+			requestForced(parkId, annee);
+		}
+		return parkIds.size();
+	}
+
+	private void request(Long parkId, Integer annee, boolean force) {
 		// Clé = ligne de référence du parc : une seule demande par parc et par année de référence.
 		ParkAreaComputedId key = new ParkAreaComputedId();
 		key.setId(parkId);
@@ -97,17 +130,22 @@ public class NdviBatchJobService {
 		NdviJob job;
 		if (existing.isPresent()) {
 			job = existing.get();
-			if (ComputeJobStatusEnum.TO_PROCESS.equals(job.getStatus())
-					|| ComputeJobStatusEnum.IN_PROCESS.equals(job.getStatus())) {
+			if (ComputeJobStatusEnum.IN_PROCESS.equals(job.getStatus())) {
+				// Ne pas dupliquer un appel en cours ; la relance sera à refaire.
+				return;
+			}
+			if (!force && ComputeJobStatusEnum.TO_PROCESS.equals(job.getStatus())) {
 				return;
 			}
 			job.setStatus(ComputeJobStatusEnum.TO_PROCESS);
 			job.setDemand(new Date());
 			job.setProcessed(null);
+			job.setForce(force);
 		} else {
 			job = new NdviJob();
 			job.setId(parkId);
 			job.setAnnee(annee);
+			job.setForce(force);
 		}
 		ndviJobRepository.save(job);
 	}
@@ -187,7 +225,8 @@ public class NdviBatchJobService {
 			}
 
 			// NDVI déjà disponible : ne pas rappeler le fournisseur, réutiliser la donnée.
-			if (rows.stream().anyMatch(row -> row.getNdviMean() != null)) {
+			// Une relance forcée par un administrateur ignore ce court-circuit.
+			if (!job.isForce() && rows.stream().anyMatch(row -> row.getNdviMean() != null)) {
 				reuseExistingNdvi(rows);
 				job.setStatus(ComputeJobStatusEnum.PROCESSED);
 				return;
@@ -207,10 +246,7 @@ public class NdviBatchJobService {
 			// période ; ndvi_observation conserve les dates nécessaires à ce post-traitement.
 			for (ParkAreaComputed row : rows) {
 				if (observation != null) {
-					row.setNdviMean(observation.mean());
-					row.setNdviMin(observation.min());
-					row.setNdviMax(observation.max());
-					row.setNdviStddev(observation.stdDev());
+					copyIndices(row, observation);
 					row.setNdviAcquisitionDate(observation.acquisitionDate());
 				}
 				// Date posée aussi sans donnée (fenêtre vide) : évite de rejouer chaque année
@@ -226,6 +262,9 @@ public class NdviBatchJobService {
 			job.setStatus(ComputeJobStatusEnum.IN_ERROR);
 		} finally {
 			job.setProcessed(new Date());
+			// Une relance forcée ne vaut que pour une tentative : évite de rejouer
+			// chaque jour un appel Copernicus coûteux en cas d'erreur persistante.
+			job.setForce(false);
 			ndviJobRepository.save(job);
 		}
 	}
@@ -245,11 +284,52 @@ public class NdviBatchJobService {
 		observation.setPeriodStart(stats.periodStart());
 		observation.setPeriodEnd(stats.acquisitionDate());
 		observation.setSampleCount(stats.sampleCount());
-		observation.setNdviMean(stats.mean());
-		observation.setNdviMin(stats.min());
-		observation.setNdviMax(stats.max());
-		observation.setNdviStddev(stats.stdDev());
+		if (stats.ndvi() != null) {
+			observation.setNdviMean(stats.ndvi().mean());
+			observation.setNdviMin(stats.ndvi().min());
+			observation.setNdviMax(stats.ndvi().max());
+			observation.setNdviStddev(stats.ndvi().stdDev());
+		}
+		if (stats.ndre() != null) {
+			observation.setNdreMean(stats.ndre().mean());
+			observation.setNdreMin(stats.ndre().min());
+			observation.setNdreMax(stats.ndre().max());
+			observation.setNdreStddev(stats.ndre().stdDev());
+		}
+		if (stats.gndvi() != null) {
+			observation.setGndviMean(stats.gndvi().mean());
+			observation.setGndviMin(stats.gndvi().min());
+			observation.setGndviMax(stats.gndvi().max());
+			observation.setGndviStddev(stats.gndvi().stdDev());
+		}
 		return observation;
+	}
+
+	/**
+	 * Recopie les statistiques des trois indices sur une ligne {@code park_area_computed}.
+	 *
+	 * @param row ligne cible
+	 * @param stats statistiques retournées par Copernicus
+	 */
+	private static void copyIndices(ParkAreaComputed row, NdviStatistics stats) {
+		if (stats.ndvi() != null) {
+			row.setNdviMean(stats.ndvi().mean());
+			row.setNdviMin(stats.ndvi().min());
+			row.setNdviMax(stats.ndvi().max());
+			row.setNdviStddev(stats.ndvi().stdDev());
+		}
+		if (stats.ndre() != null) {
+			row.setNdreMean(stats.ndre().mean());
+			row.setNdreMin(stats.ndre().min());
+			row.setNdreMax(stats.ndre().max());
+			row.setNdreStddev(stats.ndre().stdDev());
+		}
+		if (stats.gndvi() != null) {
+			row.setGndviMean(stats.gndvi().mean());
+			row.setGndviMin(stats.gndvi().min());
+			row.setGndviMax(stats.gndvi().max());
+			row.setGndviStddev(stats.gndvi().stdDev());
+		}
 	}
 
 	/**
@@ -272,6 +352,14 @@ public class NdviBatchJobService {
 				row.setNdviMin(source.getNdviMin());
 				row.setNdviMax(source.getNdviMax());
 				row.setNdviStddev(source.getNdviStddev());
+				row.setNdreMean(source.getNdreMean());
+				row.setNdreMin(source.getNdreMin());
+				row.setNdreMax(source.getNdreMax());
+				row.setNdreStddev(source.getNdreStddev());
+				row.setGndviMean(source.getGndviMean());
+				row.setGndviMin(source.getGndviMin());
+				row.setGndviMax(source.getGndviMax());
+				row.setGndviStddev(source.getGndviStddev());
 				row.setNdviAcquisitionDate(source.getNdviAcquisitionDate());
 				if (source.getNdviRequestDate() != null) {
 					row.setNdviRequestDate(source.getNdviRequestDate());

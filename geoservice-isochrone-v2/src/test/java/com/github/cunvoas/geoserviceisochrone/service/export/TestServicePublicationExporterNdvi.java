@@ -127,7 +127,8 @@ class TestServicePublicationExporterNdvi {
 	private NdviSummaries summaries(long total, long withNdvi, String... parkNames) {
 		List<NdviSummary> parks = Arrays.stream(parkNames)
 				.map(name -> new NdviSummary("1", name, new BigDecimal("1200"), new BigDecimal("0.5"),
-						new BigDecimal("0.1"), new BigDecimal("0.9"), new BigDecimal("0.2"), "2025-06-16", 2021))
+						new BigDecimal("0.1"), new BigDecimal("0.9"), new BigDecimal("0.2"),
+						null, null, null, null, null, null, null, null, "2025-06-16", 2021))
 				.toList();
 		return new NdviSummaries(2021, total, withNdvi, withNdvi == 0 ? null : "2025-06-16", parks);
 	}

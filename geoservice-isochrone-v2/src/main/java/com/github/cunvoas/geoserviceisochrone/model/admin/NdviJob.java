@@ -49,4 +49,8 @@ public class NdviJob {
 	/** Statut du traitement. */
 	@Column(name = "status")
 	private ComputeJobStatusEnum status = ComputeJobStatusEnum.TO_PROCESS;
+
+	/** Relance forcée : ignore le NDVI existant et la règle du un appel par an. */
+	@Column(name = "force")
+	private boolean force;
 }

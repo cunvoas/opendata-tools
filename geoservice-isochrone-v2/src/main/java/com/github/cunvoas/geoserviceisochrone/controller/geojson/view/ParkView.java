@@ -31,6 +31,14 @@ public class ParkView extends GeoJsonProperty {
 	private BigDecimal ndviMin;
 	private BigDecimal ndviMax;
 	private BigDecimal ndviStddev;
+	private BigDecimal ndreMean;
+	private BigDecimal ndreMin;
+	private BigDecimal ndreMax;
+	private BigDecimal ndreStddev;
+	private BigDecimal gndviMean;
+	private BigDecimal gndviMin;
+	private BigDecimal gndviMax;
+	private BigDecimal gndviStddev;
 	private Date ndviAcquisitionDate;
 	
 }
