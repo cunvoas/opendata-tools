@@ -76,8 +76,8 @@ public class ComputeJobRestControler {
 			pj.setId(parkId);
 			resp.setParkId(req.getParkId());
 			resp.setNbCarre(batchJobService.requestProcessParc(pj));
-			// Le bouton « Calculer le parc » demande aussi le NDVI de l'année de référence.
-			ndviBatchJobService.requestForParc(pj.getId(), applicationBusinessProperties.getDerniereAnnee());
+			// Le bouton « Calculer le parc » demande aussi le NDVI du parc.
+			ndviBatchJobService.requestForParc(pj.getId());
 			code = HttpStatus.ACCEPTED;
 		} else if (req.getParkOverpass() != null) {
 			// TODO OVERPASS
@@ -155,12 +155,9 @@ public class ComputeJobRestControler {
 		if (parkId == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
-		Integer annee = req.getRequestedYear() != null
-				? req.getRequestedYear()
-				: applicationBusinessProperties.getDerniereAnnee();
 		ComputeJobResponse resp = new ComputeJobResponse(req);
 		resp.setParkId(req.getParkId());
-		resp.setNbCarre(ndviBatchJobService.requestForParc(parkId, annee) ? 1 : 0);
+		resp.setNbCarre(ndviBatchJobService.requestForParc(parkId) ? 1 : 0);
 		return new ResponseEntity<>(resp, HttpStatus.ACCEPTED);
 	}
 }

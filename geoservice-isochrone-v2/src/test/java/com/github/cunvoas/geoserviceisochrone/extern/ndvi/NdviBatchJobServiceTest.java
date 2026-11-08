@@ -88,7 +88,7 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
 
         job = new NdviJob();
         job.setId(PARK_ID);
-        job.setAnnee(ANNEE);
+        job.setObjectType(NdviResultObjectType.PARK_AREA_COMPUTED);
 
         City city = new City();
         city.setInseeCode("59350");
@@ -97,7 +97,8 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
         parc.setCommune(city);
 
         when(clientCopernicusNdvi.isEnabled()).thenReturn(true);
-        when(ndviJobRepository.findByStatusOrderByDemandAsc(eq(ComputeJobStatusEnum.TO_PROCESS), any()))
+        when(ndviJobRepository.findByStatusAndObjectTypeOrderByDemandAsc(eq(ComputeJobStatusEnum.TO_PROCESS),
+                eq(NdviResultObjectType.PARK_AREA_COMPUTED), any()))
                 .thenReturn(List.of(job));
         when(parkAreaRepository.findById(PARK_ID)).thenReturn(Optional.of(park));
         when(parkAreaComputedRepository.findAllByIdPark(PARK_ID)).thenReturn(List.of(row));
@@ -162,16 +163,16 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("demande NDVI pour un parc : utilise park_area.id et l'année de référence")
+    @DisplayName("demande NDVI pour un parc : utilise park_area.id et le type PARK_AREA_COMPUTED")
     void requestForParcEnqueue() {
         when(parkAreaRepository.findByIdParcEtJardin(PARC_ID)).thenReturn(park);
 
-        assertTrue(service.requestForParc(PARC_ID, ANNEE));
+        assertTrue(service.requestForParc(PARC_ID));
 
         ArgumentCaptor<NdviJob> captor = ArgumentCaptor.forClass(NdviJob.class);
         verify(ndviJobRepository).save(captor.capture());
         assertEquals(PARK_ID, captor.getValue().getId());
-        assertEquals(ANNEE, captor.getValue().getAnnee());
+        assertEquals(NdviResultObjectType.PARK_AREA_COMPUTED, captor.getValue().getObjectType());
     }
 
     @Test
@@ -181,7 +182,7 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
         when(ndviResultRepository.existsByObjectTypeAndParkAreaComputedId(
                 NdviResultObjectType.PARK_AREA_COMPUTED, PARK_ID)).thenReturn(true);
 
-        assertFalse(service.requestForParc(PARC_ID, ANNEE));
+        assertFalse(service.requestForParc(PARC_ID));
 
         verify(ndviJobRepository, never()).save(any());
     }
@@ -245,8 +246,8 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
     @DisplayName("dernière date de traitement NDVI d'un parc")
     void derniereDateTraitement() {
         job.setProcessed(new Date(6000L));
-        when(ndviJobRepository.findFirstByIdAndProcessedIsNotNullOrderByProcessedDesc(PARK_ID))
-                .thenReturn(Optional.of(job));
+        when(ndviJobRepository.findFirstByIdAndObjectTypeAndProcessedIsNotNullOrderByProcessedDesc(
+                PARK_ID, NdviResultObjectType.PARK_AREA_COMPUTED)).thenReturn(Optional.of(job));
 
         assertEquals(6000L, service.lastRequestDate(PARK_ID).getTime());
     }

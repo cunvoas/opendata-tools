@@ -12,21 +12,32 @@ import org.springframework.stereotype.Repository;
 
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.admin.NdviJob;
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputedId;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviResultObjectType;
 
 /**
  * File d'attente persistante des rafraîchissements NDVI.
  */
 @Repository
-public interface NdviJobRepository extends JpaRepository<NdviJob, ParkAreaComputedId> {
+public interface NdviJobRepository extends JpaRepository<NdviJob, Long> {
 
 	/**
-	 * Jobs à traiter, dans l'ordre de demande.
+	 * Jobs à traiter pour un type d'objet, dans l'ordre de demande.
 	 * @param status statut recherché
+	 * @param objectType type d'objet consommé
 	 * @param page pagination
 	 * @return liste de jobs
 	 */
-	List<NdviJob> findByStatusOrderByDemandAsc(ComputeJobStatusEnum status, Pageable page);
+	List<NdviJob> findByStatusAndObjectTypeOrderByDemandAsc(ComputeJobStatusEnum status,
+			NdviResultObjectType objectType, Pageable page);
+
+	/**
+	 * Job d'un parc : {@code id_inspire} vaut {@link NdviJob#NO_ID_INSPIRE}.
+	 * @param id identifiant de la zone de parc
+	 * @param idInspire code Inspire ou sentinelle
+	 * @param objectType type d'objet
+	 * @return job existant
+	 */
+	Optional<NdviJob> findByIdAndIdInspireAndObjectType(Long id, String idInspire, NdviResultObjectType objectType);
 
 	/**
 	 * Jobs restés {@code IN_PROCESS} avant un crash ou redémarrage.
@@ -131,9 +142,11 @@ public interface NdviJobRepository extends JpaRepository<NdviJob, ParkAreaComput
 			@Param("type") String type);
 
 	/**
-	 * Dernier traitement connu pour un parc, toutes années confondues.
-	 * @param id identifiant de la zone de parc
+	 * Dernier traitement connu pour un objet NDVI.
+	 * @param id identifiant de l'objet
+	 * @param objectType type d'objet
 	 * @return dernier job traité
 	 */
-	Optional<NdviJob> findFirstByIdAndProcessedIsNotNullOrderByProcessedDesc(Long id);
+	Optional<NdviJob> findFirstByIdAndObjectTypeAndProcessedIsNotNullOrderByProcessedDesc(Long id,
+			NdviResultObjectType objectType);
 }

@@ -19,7 +19,6 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviResult;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviResultObjectType;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputedId;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
@@ -106,7 +105,8 @@ public class NdviBatchJobService {
 	 * @return date du dernier traitement, ou null
 	 */
 	public Date lastRequestDate(Long parkId) {
-		return ndviJobRepository.findFirstByIdAndProcessedIsNotNullOrderByProcessedDesc(parkId)
+		return ndviJobRepository.findFirstByIdAndObjectTypeAndProcessedIsNotNullOrderByProcessedDesc(
+				parkId, NdviResultObjectType.PARK_AREA_COMPUTED)
 				.map(NdviJob::getProcessed)
 				.orElse(null);
 	}
@@ -157,13 +157,12 @@ public class NdviBatchJobService {
 	 * Dépose (ou redépose) une demande de rafraîchissement NDVI.
 	 *
 	 * <p>Un job déjà en attente ou en cours n'est pas dupliqué : la file est
-	 * idempotente sur la clé (parc, année).</p>
+	 * idempotente sur la clé (parc, PARK_AREA_COMPUTED).</p>
 	 *
 	 * @param parkId identifiant de la zone de parc
-	 * @param annee année de référence ({@code park_area_computed.annee})
 	 */
-	public void request(Long parkId, Integer annee) {
-		request(parkId, annee, false);
+	public void request(Long parkId) {
+		request(parkId, false);
 	}
 
 	/**
@@ -171,17 +170,16 @@ public class NdviBatchJobService {
 	 * et la règle du un appel par an. Réservé à l'administration.
 	 *
 	 * @param parkId identifiant de la zone de parc
-	 * @param annee année de référence
 	 */
-	public void requestForced(Long parkId, Integer annee) {
-		request(parkId, annee, true);
+	public void requestForced(Long parkId) {
+		request(parkId, true);
 	}
 
 	/**
 	 * Dépose les relances forcées de tous les parcs calculés d'un EPCI.
 	 *
 	 * @param com2coId identifiant de la communauté de communes
-	 * @param annee année de référence
+	 * @param annee année de référence (sélection des parcs calculés)
 	 * @return nombre de parcs relancés
 	 */
 	public int requestForcedForCom2Co(Long com2coId, Integer annee) {
@@ -190,18 +188,15 @@ public class NdviBatchJobService {
 		}
 		List<Long> parkIds = parkAreaComputedRepository.findParkIdsByAnneeAndCom2co(annee, com2coId);
 		for (Long parkId : parkIds) {
-			requestForced(parkId, annee);
+			requestForced(parkId);
 		}
 		return parkIds.size();
 	}
 
-	private void request(Long parkId, Integer annee, boolean force) {
-		// Clé = ligne de référence du parc : une seule demande par parc et par année de référence.
-		ParkAreaComputedId key = new ParkAreaComputedId();
-		key.setId(parkId);
-		key.setAnnee(annee);
-
-		Optional<NdviJob> existing = ndviJobRepository.findById(key);
+	private void request(Long parkId, boolean force) {
+		// Une seule demande par parc : ligne PARK_AREA_COMPUTED, id_inspire = sentinelle.
+		Optional<NdviJob> existing = ndviJobRepository
+				.findByIdAndIdInspireAndObjectType(parkId, NdviJob.NO_ID_INSPIRE, NdviResultObjectType.PARK_AREA_COMPUTED);
 		NdviJob job;
 		if (existing.isPresent()) {
 			job = existing.get();
@@ -219,7 +214,7 @@ public class NdviBatchJobService {
 		} else {
 			job = new NdviJob();
 			job.setId(parkId);
-			job.setAnnee(annee);
+			job.setObjectType(NdviResultObjectType.PARK_AREA_COMPUTED);
 			job.setForce(force);
 		}
 		ndviJobRepository.save(job);
@@ -232,11 +227,10 @@ public class NdviBatchJobService {
 	 * {@code ParcEtJardin.id}, alors que la file NDVI utilise {@code ParkArea.id}.</p>
 	 *
 	 * @param parcEtJardinId identifiant du parc
-	 * @param annee année de référence
 	 * @return vrai si une demande a été déposée
 	 */
-	public boolean requestForParc(Long parcEtJardinId, Integer annee) {
-		if (!isEnabled() || parcEtJardinId == null || annee == null) {
+	public boolean requestForParc(Long parcEtJardinId) {
+		if (!isEnabled() || parcEtJardinId == null) {
 			return false;
 		}
 		ParkArea park = parkAreaRepository.findByIdParcEtJardin(parcEtJardinId);
@@ -246,7 +240,7 @@ public class NdviBatchJobService {
 		if (hasResult(park.getId())) {
 			return false;
 		}
-		request(park.getId(), annee);
+		request(park.getId());
 		return true;
 	}
 
@@ -264,8 +258,11 @@ public class NdviBatchJobService {
 		try {
 			// shortcut: un seul lot par cycle car le scheduler est mono-thread,
 			// augmenter si un TaskScheduler dédié est ajouté.
+			// shortcut: seul PARK_AREA_COMPUTED est consommé, les autres types restent TO_PROCESS,
+			// à activer quand leur fournisseur NDVI sera branché.
 			List<NdviJob> jobs = ndviJobRepository
-					.findByStatusOrderByDemandAsc(ComputeJobStatusEnum.TO_PROCESS, Pageable.ofSize(PAGE_SIZE));
+					.findByStatusAndObjectTypeOrderByDemandAsc(ComputeJobStatusEnum.TO_PROCESS,
+							NdviResultObjectType.PARK_AREA_COMPUTED, Pageable.ofSize(PAGE_SIZE));
 			for (NdviJob job : jobs) {
 				processOne(job);
 			}
@@ -290,7 +287,7 @@ public class NdviBatchJobService {
 			List<ParkAreaComputed> rows = parkAreaComputedRepository.findAllByIdPark(job.getId());
 			if (park == null || park.getPolygon() == null || rows.isEmpty()) {
 				log.warn("NDVI impossible pour le parc {}-{} : parc ou calcul absent",
-						job.getId(), job.getAnnee());
+						job.getId(), job.getObjectType());
 				job.setStatus(ComputeJobStatusEnum.IN_ERROR);
 				return;
 			}
@@ -313,7 +310,7 @@ public class NdviBatchJobService {
 			job.setStatus(ComputeJobStatusEnum.PROCESSED);
 		} catch (Exception e) {
 			log.warn("NDVI non récupéré pour le parc {}-{} : {}",
-					job.getId(), job.getAnnee(), e.getMessage());
+					job.getId(), job.getObjectType(), e.getMessage());
 			job.setStatus(ComputeJobStatusEnum.IN_ERROR);
 		} finally {
 			job.setProcessed(new Date());

@@ -214,7 +214,7 @@ public class ComputeParkAreaV2 {
 				|| !isNdviRequestDue(parcCpu)) {
 			return;
 		}
-		ndviBatchJobService.request(parcCpu.getId(), parcCpu.getAnnee());
+		ndviBatchJobService.request(parcCpu.getId());
 	}
 
 	/**

@@ -109,7 +109,7 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
         assertNull(result.getNdviMean());
         assertEquals(omsUpdated, result.getUpdated());
         assertNull(result.getPopulation());
-        verify(ndviBatchJobService).request(PARK_ID, ANNEE);
+        verify(ndviBatchJobService).request(PARK_ID);
         verify(parkAreaComputedRepository, never()).save(row);
     }
 
@@ -121,7 +121,7 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
         ParkAreaComputed result = service.computeGenericParkAreaV2(park, ANNEE);
 
         assertSame(row, result);
-        verify(ndviBatchJobService, never()).request(any(), any());
+        verify(ndviBatchJobService, never()).request(any());
     }
 
     @Test
@@ -132,7 +132,7 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
         ParkAreaComputed result = service.computeGenericParkAreaV2(park, ANNEE);
 
         assertSame(row, result);
-        verify(ndviBatchJobService, never()).request(any(), any());
+        verify(ndviBatchJobService, never()).request(any());
     }
 
     @Test
