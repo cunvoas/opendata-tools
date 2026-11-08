@@ -72,7 +72,7 @@ describe('getNdviCategory', () => {
   });
 
   it('retourne null pour une valeur absente ou non numérique', () => {
-    [null, undefined, '', 'N/A', NaN, Infinity, -Infinity].forEach((value) => {
+    [null, undefined, '', 'N/A', Number.NaN, Infinity, -Infinity].forEach((value) => {
       expect(getNdviCategory(value), String(value)).toBeNull();
     });
   });

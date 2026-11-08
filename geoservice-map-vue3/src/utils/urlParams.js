@@ -62,7 +62,7 @@ export function getUrlParams() {
       };
       
       // Validate coordinates
-      if (isNaN(result.city.latY) || isNaN(result.city.lonX)) {
+      if (Number.isNaN(result.city.latY) || Number.isNaN(result.city.lonX)) {
         console.warn('Invalid city coordinates in URL parameters');
         result.city = null;
       }

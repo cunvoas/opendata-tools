@@ -142,4 +142,25 @@ public class ComputeJobRestControler {
 		resp.setNbCarre(ndviBatchJobService.requestForcedForCom2Co(com2coId, annee));
 		return new ResponseEntity<>(resp, HttpStatus.ACCEPTED);
 	}
+
+	/**
+	 * Demande un calcul NDVI (sans force) pour un parc.
+	 */
+	@PostMapping("/ndvi/request/park")
+	public ResponseEntity<ComputeJobResponse> requestNdviForPark(@RequestBody ComputeJobRequest req) {
+		if (!tokenManagement.isTokenValid(req.getToken())) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		Long parkId = NumberHelper.toLong(req.getParkId());
+		if (parkId == null) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		Integer annee = req.getRequestedYear() != null
+				? req.getRequestedYear()
+				: applicationBusinessProperties.getDerniereAnnee();
+		ComputeJobResponse resp = new ComputeJobResponse(req);
+		resp.setParkId(req.getParkId());
+		resp.setNbCarre(ndviBatchJobService.requestForParc(parkId, annee) ? 1 : 0);
+		return new ResponseEntity<>(resp, HttpStatus.ACCEPTED);
+	}
 }
