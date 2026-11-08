@@ -45,7 +45,7 @@ public abstract class AbstractFormLocate {
 	public void autoLocate() {
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication.getPrincipal() instanceof Contributeur) {
+		if (authentication != null && authentication.getPrincipal() instanceof Contributeur) {
 			Contributeur contributeur = (Contributeur)authentication.getPrincipal();
 			this.idRegion = contributeur.getIdRegion();
 			this.idCommunauteDeCommunes = contributeur.getIdCommunauteCommune();

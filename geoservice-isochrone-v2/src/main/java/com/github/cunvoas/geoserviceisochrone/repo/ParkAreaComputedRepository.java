@@ -1,7 +1,5 @@
 package com.github.cunvoas.geoserviceisochrone.repo;
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,73 +17,6 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputedId
 @Repository
 public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComputed, ParkAreaComputedId>{
 	
-	/**
-	 * Projection des mesures NDVI d'un parc pour une année.
-	 */
-	interface NdviSummaryProjection {
-		Long getParkId();
-		String getName();
-		BigDecimal getSurface();
-		BigDecimal getNdviMean();
-		BigDecimal getNdviMin();
-		BigDecimal getNdviMax();
-		BigDecimal getNdviStddev();
-		BigDecimal getNdreMean();
-		BigDecimal getNdreMin();
-		BigDecimal getNdreMax();
-		BigDecimal getNdreStddev();
-		BigDecimal getGndviMean();
-		BigDecimal getGndviMin();
-		BigDecimal getGndviMax();
-		BigDecimal getGndviStddev();
-		Date getAcquisitionDate();
-		Integer getAnnee();
-	}
-
-	/**
-	 * Mesures NDVI des parcs d'une année, triées par NDVI moyen décroissant.
-	 * @param annee année de référence
-	 * @return summaries
-	 */
-	@Query(nativeQuery = true,
-			value = "SELECT pac.id AS \"parkId\", pa.name AS \"name\", pac.surface AS \"surface\","
-					+ " pac.ndvi_mean AS \"ndviMean\", pac.ndvi_min AS \"ndviMin\","
-					+ " pac.ndvi_max AS \"ndviMax\", pac.ndvi_stddev AS \"ndviStddev\","
-					+ " pac.ndre_mean AS \"ndreMean\", pac.ndre_min AS \"ndreMin\","
-					+ " pac.ndre_max AS \"ndreMax\", pac.ndre_stddev AS \"ndreStddev\","
-					+ " pac.gndvi_mean AS \"gndviMean\", pac.gndvi_min AS \"gndviMin\","
-					+ " pac.gndvi_max AS \"gndviMax\", pac.gndvi_stddev AS \"gndviStddev\","
-					+ " pac.ndvi_acquisition_date AS \"acquisitionDate\", pac.annee AS \"annee\""
-					+ " FROM park_area_computed pac"
-					+ " JOIN park_area pa ON pa.id = pac.id"
-					+ " WHERE pac.annee = :annee AND pac.ndvi_mean IS NOT NULL"
-					+ " ORDER BY pac.ndvi_mean DESC")
-	List<NdviSummaryProjection> findNdviSummariesByAnnee(@Param("annee") Integer annee);
-
-	/**
-	 * Mesures NDVI des parcs d'une année pour un EPCI, triées par NDVI moyen décroissant.
-	 * @param annee année de référence
-	 * @param com2coId identifiant de la communauté de communes
-	 * @return summaries
-	 */
-	@Query(nativeQuery = true,
-			value = "SELECT pac.id AS \"parkId\", pa.name AS \"name\", pac.surface AS \"surface\","
-					+ " pac.ndvi_mean AS \"ndviMean\", pac.ndvi_min AS \"ndviMin\","
-					+ " pac.ndvi_max AS \"ndviMax\", pac.ndvi_stddev AS \"ndviStddev\","
-					+ " pac.ndre_mean AS \"ndreMean\", pac.ndre_min AS \"ndreMin\","
-					+ " pac.ndre_max AS \"ndreMax\", pac.ndre_stddev AS \"ndreStddev\","
-					+ " pac.gndvi_mean AS \"gndviMean\", pac.gndvi_min AS \"gndviMin\","
-					+ " pac.gndvi_max AS \"gndviMax\", pac.gndvi_stddev AS \"gndviStddev\","
-					+ " pac.ndvi_acquisition_date AS \"acquisitionDate\", pac.annee AS \"annee\""
-					+ " FROM park_area_computed pac"
-					+ " JOIN park_area pa ON pa.id = pac.id"
-					+ " JOIN parc_jardin pj ON pj.identifiant = pa.id_parc_jardin"
-					+ " JOIN city ci ON ci.id = pj.id_city"
-					+ " WHERE pac.annee = :annee AND ci.id_comm2co = :com2coId AND pac.ndvi_mean IS NOT NULL"
-					+ " ORDER BY pac.ndvi_mean DESC")
-	List<NdviSummaryProjection> findNdviSummariesByAnneeAndCom2co(@Param("annee") Integer annee,
-			@Param("com2coId") Long com2coId);
-
 	long countByAnnee(Integer annee);
 
 	/**
@@ -101,30 +32,6 @@ public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComput
 					+ " JOIN city ci ON ci.id = pj.id_city"
 					+ " WHERE pac.annee = :annee AND ci.id_comm2co = :com2coId")
 	long countByAnneeAndCom2co(@Param("annee") Integer annee, @Param("com2coId") Long com2coId);
-
-	/**
-	 * Mesures NDVI des parcs d'une année pour une commune, triées par NDVI moyen décroissant.
-	 * @param annee année de référence
-	 * @param inseeCode code INSEE de la commune
-	 * @return summaries
-	 */
-	@Query(nativeQuery = true,
-			value = "SELECT pac.id AS \"parkId\", pa.name AS \"name\", pac.surface AS \"surface\","
-					+ " pac.ndvi_mean AS \"ndviMean\", pac.ndvi_min AS \"ndviMin\","
-					+ " pac.ndvi_max AS \"ndviMax\", pac.ndvi_stddev AS \"ndviStddev\","
-					+ " pac.ndre_mean AS \"ndreMean\", pac.ndre_min AS \"ndreMin\","
-					+ " pac.ndre_max AS \"ndreMax\", pac.ndre_stddev AS \"ndreStddev\","
-					+ " pac.gndvi_mean AS \"gndviMean\", pac.gndvi_min AS \"gndviMin\","
-					+ " pac.gndvi_max AS \"gndviMax\", pac.gndvi_stddev AS \"gndviStddev\","
-					+ " pac.ndvi_acquisition_date AS \"acquisitionDate\", pac.annee AS \"annee\""
-					+ " FROM park_area_computed pac"
-					+ " JOIN park_area pa ON pa.id = pac.id"
-					+ " JOIN parc_jardin pj ON pj.identifiant = pa.id_parc_jardin"
-					+ " JOIN city ci ON ci.id = pj.id_city"
-					+ " WHERE pac.annee = :annee AND ci.insee_code = :inseeCode AND pac.ndvi_mean IS NOT NULL"
-					+ " ORDER BY pac.ndvi_mean DESC")
-	List<NdviSummaryProjection> findNdviSummariesByAnneeAndCity(@Param("annee") Integer annee,
-			@Param("inseeCode") String inseeCode);
 
 	/**
 	 * Nombre de lignes calculées d'une année pour une commune.

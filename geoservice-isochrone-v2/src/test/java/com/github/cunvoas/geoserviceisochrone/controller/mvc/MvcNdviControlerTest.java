@@ -1,6 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -9,12 +10,16 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.ExtendedModelMap;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.NdviController;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.NdviController.NdviSummaries;
 import com.github.cunvoas.geoserviceisochrone.controller.mvc.MvcNdviControler.NdviZone;
+import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
@@ -75,19 +80,47 @@ class MvcNdviControlerTest {
 	}
 
 	@Test
-	void listsTheEpciOfTheSelectedRegion() {
-		tested.list(null, null, null, model);
-		assertEquals(1, zones().size());
-		assertEquals("https://public/ndvi?region=9&com2co=1", zones().get(0).publicUrl());
+	void preselectsUserLocationOnFirstVisit() {
+		Contributeur contributor = new Contributeur();
+		contributor.setIdRegion(REGION_ID);
+		contributor.setIdCommunauteCommune(COM2CO_ID);
+		contributor.setIdCommune(CITY_ID);
+		SecurityContextHolder.getContext().setAuthentication(
+				new UsernamePasswordAuthenticationToken(contributor, null));
+		try {
+			tested.list(null, null, null, new MockHttpServletRequest(), model);
 
-		tested.list(REGION_ID, null, null, model);
+			assertEquals(REGION_ID, model.get("selectedRegionId"));
+			assertEquals(COM2CO_ID, model.get("selectedCommunauteDeCommunesId"));
+			assertEquals(CITY_ID, model.get("selectedCommuneId"));
+			assertTrue(zones().get(0).city());
+		} finally {
+			SecurityContextHolder.clearContext();
+		}
+	}
+
+	@Test
+	void keepsAllRegionsWhenExplicitlySelected() {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setParameter("idRegion", "");
+
+		tested.list(null, null, null, request, model);
+
+		assertNull(model.get("selectedRegionId"));
+		assertNull(model.get("selectedCommunauteDeCommunesId"));
+	}
+
+	@Test
+	void listsTheEpciOfTheSelectedRegion() {
+		tested.list(REGION_ID, null, null, new MockHttpServletRequest(), model);
 		assertEquals(1, zones().size());
 		assertEquals("MEL", zones().get(0).name());
+		assertEquals("https://public/ndvi?region=9&com2co=1", zones().get(0).publicUrl());
 	}
 
 	@Test
 	void showsTheCityWhenACityIsSelected() {
-		tested.list(REGION_ID, COM2CO_ID, CITY_ID, model);
+		tested.list(REGION_ID, COM2CO_ID, CITY_ID, new MockHttpServletRequest(), model);
 
 		NdviZone zone = zones().get(0);
 		assertTrue(zone.city());

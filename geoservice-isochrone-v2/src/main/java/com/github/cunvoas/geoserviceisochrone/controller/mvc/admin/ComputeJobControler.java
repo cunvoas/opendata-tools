@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.form.FormComputeProgress;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.NdviBatchJobService;
 import com.github.cunvoas.geoserviceisochrone.model.admin.Association;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobProgressStat;
 import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
@@ -31,19 +32,23 @@ import lombok.extern.slf4j.Slf4j;
 public class ComputeJobControler {
 
 	private static final String VIEW_PROGRESS = "computeProgress";
+	private static final String VIEW_NDVI_PROGRESS = "ndviProgress";
 	private static final String FORM_KEY = "progressForm";
 
 	private String formName = "manageJobs";
 
 	private final BatchJobService batchJobService;
+	private final NdviBatchJobService ndviBatchJobService;
 	private final ServiceReadReferences serviceReadReferences;
 	private final ApplicationBusinessProperties applicationBusinessProperties;
 
 	@Autowired
 	public ComputeJobControler(BatchJobService batchJobService,
+	                           NdviBatchJobService ndviBatchJobService,
 	                           ServiceReadReferences serviceReadReferences,
 	                           ApplicationBusinessProperties applicationBusinessProperties) {
 		this.batchJobService = batchJobService;
+		this.ndviBatchJobService = ndviBatchJobService;
 		this.serviceReadReferences = serviceReadReferences;
 		this.applicationBusinessProperties = applicationBusinessProperties;
 	}
@@ -58,6 +63,20 @@ public class ComputeJobControler {
 		populate(form);
 		model.addAttribute(FORM_KEY, form);
 		return VIEW_PROGRESS;
+	}
+
+	/**
+	 * Synthèse de l'avancement des calculs NDVI.
+	 * @param form filtres région / EPCI / commune / année
+	 * @param model modèle de la vue
+	 * @return page de progression NDVI
+	 */
+	@GetMapping("/ndvi/progress")
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
+	public String getNdviProgress(@ModelAttribute(FORM_KEY) FormComputeProgress form, Model model) {
+		populateNdvi(form);
+		model.addAttribute(FORM_KEY, form);
+		return VIEW_NDVI_PROGRESS;
 	}
 
 	// -------------------------------------------------------------------------
@@ -108,6 +127,46 @@ public class ComputeJobControler {
 	// -------------------------------------------------------------------------
 
 	private void populate(FormComputeProgress form) {
+		populateLists(form);
+
+		// calcul des stats uniquement si un EPCI est sélectionné
+		List<ComputeJobProgressStat> stats;
+		if (form.getIdCommunauteDeCommunes() == null) {
+			// pas d'EPCI → aucun résultat affiché
+			stats = new ArrayList<>();
+		} else if (form.getIdCommune() != null) {
+			// ville sélectionnée → détail par ville
+			stats = batchJobService.getProgressStatsCityLevel(
+				form.getIdCommune(), null, null, form.getAnnee());
+		} else {
+			// EPCI sélectionné sans ville → agrégation EPCI (1 ligne par EPCI+année)
+			stats = batchJobService.getProgressStatsEpciLevel(
+				form.getIdCommunauteDeCommunes(), null, form.getAnnee());
+		}
+		form.setStats(stats);
+	}
+
+	/**
+	 * Synthèse NDVI : mêmes filtres territoriaux, statistiques issues de ndvi_job.
+	 * @param form formulaire à peupler
+	 */
+	private void populateNdvi(FormComputeProgress form) {
+		populateLists(form);
+
+		List<ComputeJobProgressStat> stats;
+		if (form.getIdCommunauteDeCommunes() == null) {
+			stats = new ArrayList<>();
+		} else if (form.getIdCommune() != null) {
+			stats = ndviBatchJobService.getProgressStatsCityLevel(
+				form.getIdCommune(), null, null, form.getType());
+		} else {
+			stats = ndviBatchJobService.getProgressStatsEpciLevel(
+				form.getIdCommunauteDeCommunes(), null, form.getType());
+		}
+		form.setStats(stats);
+	}
+
+	private void populateLists(FormComputeProgress form) {
 		// Auto-preset par contexte utilisateur si aucune région n'est encore sélectionnée
 		if (form.getIdRegion() == null) {
 			form.autoLocate();
@@ -135,22 +194,6 @@ public class ComputeJobControler {
 
 		// années disponibles
 		form.setAnnees(List.of(applicationBusinessProperties.getInseeAnnees()));
-
-		// calcul des stats uniquement si un EPCI est sélectionné
-		List<ComputeJobProgressStat> stats;
-		if (form.getIdCommunauteDeCommunes() == null) {
-			// pas d'EPCI → aucun résultat affiché
-			stats = new ArrayList<>();
-		} else if (form.getIdCommune() != null) {
-			// ville sélectionnée → détail par ville
-			stats = batchJobService.getProgressStatsCityLevel(
-				form.getIdCommune(), null, null, form.getAnnee());
-		} else {
-			// EPCI sélectionné sans ville → agrégation EPCI (1 ligne par EPCI+année)
-			stats = batchJobService.getProgressStatsEpciLevel(
-				form.getIdCommunauteDeCommunes(), null, form.getAnnee());
-		}
-		form.setStats(stats);
 	}
 
 	// -------------------------------------------------------------------------

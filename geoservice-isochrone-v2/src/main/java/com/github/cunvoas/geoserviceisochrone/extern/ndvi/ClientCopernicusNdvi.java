@@ -44,7 +44,7 @@ import tools.jackson.databind.ObjectMapper;
  * Sentinel-2 fournit les bandes B03 et B05 dont ces deux indices ont besoin.</p>
  *
  * <p>Le résultat porte aussi la période d'agrégation et le nombre de pixels valides :
- * ces métadonnées sont conservées dans l'historique {@code ndvi_observation}, car le
+ * ces métadonnées sont conservées dans la table {@code ndvi_result}, car le
  * satellite ne repasse pas tous les ans au même endroit.</p>
  *
  * <p>Une configuration absente ou une absence de donnée retourne {@link Optional#empty()}.

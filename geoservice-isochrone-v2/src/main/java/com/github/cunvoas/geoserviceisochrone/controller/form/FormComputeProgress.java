@@ -23,6 +23,9 @@ public class FormComputeProgress extends AbstractFormLocate {
     /** Année de filtre (null = toutes les années). */
     private Integer annee;
 
+    /** Type NDVI de la synthèse (null = tous les types). */
+    private String type;
+
     /** Liste des années disponibles (depuis ApplicationBusinessProperties). */
     private List<Integer> annees;
 

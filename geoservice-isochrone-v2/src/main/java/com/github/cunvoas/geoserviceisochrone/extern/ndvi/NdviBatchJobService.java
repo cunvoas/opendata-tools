@@ -1,5 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.extern.ndvi;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -11,16 +12,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobProgressStat;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.admin.NdviJob;
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviObservation;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviResult;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviResultObjectType;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputedId;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
+import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
+import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.NdviJobRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.admin.NdviObservationRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,16 +43,10 @@ import lombok.extern.slf4j.Slf4j;
  * <p>Reprise : les jobs restés {@code IN_PROCESS} après un crash sont recyclés
  * toutes les 4h, les jobs {@code IN_ERROR} sont rejoués quotidiennement.</p>
  *
- * <p>Un seul appel Copernicus est fait par parc et par année de référence ;
- * le NDVI étant lissé sur plusieurs années, le résultat est recopié sur toutes
- * les lignes {@code park_area_computed} du parc pour économiser le quota.
- * Si un NDVI est déjà présent, aucun appel n'est fait : la donnée existante est
- * réutilisée sur les lignes qui n'en ont pas.</p>
- *
- * <p>Chaque réponse contenant des statistiques est aussi conservée dans
- * {@code ndvi_observation} : période, date d'acquisition et valeurs. Cet
- * historique permet de reventiler les NDVI a posteriori et de reconstituer
- * l'histoire végétale du parc, indépendamment de la recopie annuelle.</p>
+ * <p>Un seul appel Copernicus est fait par parc et par année de référence.
+ * La réponse est stockée dans {@code ndvi_result} avec sa période de mesure et
+ * les identifiants de contexte (zone calculée, parc, IRIS, cadastre, carreau 200m).
+ * Si une mesure existe déjà, aucun appel n'est fait.</p>
  */
 @Service
 @Slf4j
@@ -54,7 +57,10 @@ public class NdviBatchJobService {
 	private final NdviJobRepository ndviJobRepository;
 	private final ParkAreaRepository parkAreaRepository;
 	private final ParkAreaComputedRepository parkAreaComputedRepository;
-	private final NdviObservationRepository ndviObservationRepository;
+	private final NdviResultRepository ndviResultRepository;
+	private final ParkJardinRepository parkJardinRepository;
+	private final IrisShapeRepository irisShapeRepository;
+	private final InseeCarre200mOnlyShapeRepository carre200mOnlyShapeRepository;
 	private final ClientCopernicusNdvi clientCopernicusNdvi;
 
 	private final AtomicBoolean running = new AtomicBoolean(false);
@@ -62,12 +68,18 @@ public class NdviBatchJobService {
 	public NdviBatchJobService(NdviJobRepository ndviJobRepository,
 			ParkAreaRepository parkAreaRepository,
 			ParkAreaComputedRepository parkAreaComputedRepository,
-			NdviObservationRepository ndviObservationRepository,
+			NdviResultRepository ndviResultRepository,
+			ParkJardinRepository parkJardinRepository,
+			IrisShapeRepository irisShapeRepository,
+			InseeCarre200mOnlyShapeRepository carre200mOnlyShapeRepository,
 			ClientCopernicusNdvi clientCopernicusNdvi) {
 		this.ndviJobRepository = ndviJobRepository;
 		this.parkAreaRepository = parkAreaRepository;
 		this.parkAreaComputedRepository = parkAreaComputedRepository;
-		this.ndviObservationRepository = ndviObservationRepository;
+		this.ndviResultRepository = ndviResultRepository;
+		this.parkJardinRepository = parkJardinRepository;
+		this.irisShapeRepository = irisShapeRepository;
+		this.carre200mOnlyShapeRepository = carre200mOnlyShapeRepository;
 		this.clientCopernicusNdvi = clientCopernicusNdvi;
 	}
 
@@ -76,6 +88,69 @@ public class NdviBatchJobService {
 	 */
 	public boolean isEnabled() {
 		return clientCopernicusNdvi.isEnabled();
+	}
+
+	/**
+	 * Indique si une mesure NDVI existe déjà pour une zone de parc.
+	 * @param parkId identifiant de la zone de parc
+	 * @return vrai si une mesure est stockée
+	 */
+	public boolean hasResult(Long parkId) {
+		return ndviResultRepository.existsByObjectTypeAndParkAreaComputedId(
+				NdviResultObjectType.PARK_AREA_COMPUTED, parkId);
+	}
+
+	/**
+	 * Dernière date de traitement NDVI connue pour un parc, toutes années confondues.
+	 * @param parkId identifiant de la zone de parc
+	 * @return date du dernier traitement, ou null
+	 */
+	public Date lastRequestDate(Long parkId) {
+		return ndviJobRepository.findFirstByIdAndProcessedIsNotNullOrderByProcessedDesc(parkId)
+				.map(NdviJob::getProcessed)
+				.orElse(null);
+	}
+
+	/**
+	 * Statistiques d'avancement NDVI au niveau ville.
+	 * @param idCommune filtre commune, facultatif
+	 * @param idEpci filtre EPCI, facultatif
+	 * @param idRegion filtre région, facultatif
+	 * @param type filtre type NDVI, facultatif
+	 * @return statistiques agrégées
+	 */
+	public List<ComputeJobProgressStat> getProgressStatsCityLevel(Long idCommune, Long idEpci,
+			Long idRegion, String type) {
+		return mapProgressStats(
+				ndviJobRepository.getProgressStatsCityLevel(idCommune, idEpci, idRegion, type), true);
+	}
+
+	/**
+	 * Statistiques d'avancement NDVI au niveau EPCI.
+	 * @param idEpci filtre EPCI, facultatif
+	 * @param idRegion filtre région, facultatif
+	 * @param type filtre type NDVI, facultatif
+	 * @return statistiques agrégées
+	 */
+	public List<ComputeJobProgressStat> getProgressStatsEpciLevel(Long idEpci, Long idRegion,
+			String type) {
+		return mapProgressStats(ndviJobRepository.getProgressStatsEpciLevel(idEpci, idRegion, type), false);
+	}
+
+	private List<ComputeJobProgressStat> mapProgressStats(List<Object[]> rawStats, boolean hasCityName) {
+		List<ComputeJobProgressStat> stats = new ArrayList<>();
+		for (Object[] row : rawStats) {
+			ComputeJobProgressStat stat = new ComputeJobProgressStat();
+			stat.setEpciName((String) row[0]);
+			stat.setCityName(hasCityName ? (String) row[1] : null);
+			stat.setType((String) row[2]);
+			stat.setToProcess(((Number) row[3]).longValue());
+			stat.setInProcess(((Number) row[4]).longValue());
+			stat.setProcessed(((Number) row[5]).longValue());
+			stat.setInError(((Number) row[6]).longValue());
+			stats.add(stat);
+		}
+		return stats;
 	}
 
 	/**
@@ -168,9 +243,7 @@ public class NdviBatchJobService {
 		if (park == null || park.getPolygon() == null) {
 			return false;
 		}
-		boolean hasNdvi = parkAreaComputedRepository.findAllByIdPark(park.getId()).stream()
-				.anyMatch(row -> row.getNdviMean() != null);
-		if (hasNdvi) {
+		if (hasResult(park.getId())) {
 			return false;
 		}
 		request(park.getId(), annee);
@@ -203,11 +276,9 @@ public class NdviBatchJobService {
 
 	/**
 	 * Traite un job : marque {@code IN_PROCESS} avant l'appel HTTP pour que la
-	 * reprise puisse le détecter, puis met à jour {@code park_area_computed}.
+	 * reprise puisse le détecter, puis enregistre la mesure dans {@code ndvi_result}.
 	 *
-	 * <p>La réponse est enregistrée dans {@code ndvi_observation} avant la recopie
-	 * annuelle : l'historique reste disponible même si la mise à jour des lignes
-	 * échoue et que le job est rejoué.</p>
+	 * <p>Aucune colonne NDVI de {@code park_area_computed} n'est alimentée.</p>
 	 */
 	void processOne(NdviJob job) {
 		job.setStatus(ComputeJobStatusEnum.IN_PROCESS);
@@ -224,10 +295,9 @@ public class NdviBatchJobService {
 				return;
 			}
 
-			// NDVI déjà disponible : ne pas rappeler le fournisseur, réutiliser la donnée.
+			// Mesure déjà disponible : ne pas rappeler le fournisseur.
 			// Une relance forcée par un administrateur ignore ce court-circuit.
-			if (!job.isForce() && rows.stream().anyMatch(row -> row.getNdviMean() != null)) {
-				reuseExistingNdvi(rows);
+			if (!job.isForce() && hasResult(park.getId())) {
 				job.setStatus(ComputeJobStatusEnum.PROCESSED);
 				return;
 			}
@@ -235,26 +305,11 @@ public class NdviBatchJobService {
 			Optional<NdviStatistics> stats = clientCopernicusNdvi
 					.fetchNdviForPark(park.getId(), park.getPolygon());
 			Date requestDate = new Date();
-			NdviStatistics observation = stats.orElse(null);
-			if (observation != null) {
-				// Une ligne d'historique par réponse contenant des statistiques, toutes années confondues.
-				ndviObservationRepository.save(toObservation(park.getId(), requestDate, observation));
+			if (stats.isPresent()) {
+				ndviResultRepository.save(toResult(park, requestDate, stats.get()));
 			}
-			// Copernicus lisse le NDVI sur plusieurs années : une seule réponse est
-			// recopiée sur toutes les lignes du parc pour économiser le quota mensuel.
-			// shortcut: recopie sur toutes les années en attendant la reventilation par
-			// période ; ndvi_observation conserve les dates nécessaires à ce post-traitement.
-			for (ParkAreaComputed row : rows) {
-				if (observation != null) {
-					copyIndices(row, observation);
-					row.setNdviAcquisitionDate(observation.acquisitionDate());
-				}
-				// Date posée aussi sans donnée (fenêtre vide) : évite de rejouer chaque année
-				row.setNdviRequestDate(requestDate);
-			}
-			// Un seul appel Copernicus alimente toutes les années du parc.
-			parkAreaComputedRepository.saveAll(rows);
-
+			// Une période sans donnée ne crée pas de mesure : le dernier job traité
+			// sert de référence pour la règle du un appel par an.
 			job.setStatus(ComputeJobStatusEnum.PROCESSED);
 		} catch (Exception e) {
 			log.warn("NDVI non récupéré pour le parc {}-{} : {}",
@@ -270,106 +325,55 @@ public class NdviBatchJobService {
 	}
 
 	/**
-	 * Convertit une réponse Copernicus en ligne d'historique.
+	 * Convertit une réponse Copernicus en mesure persistable.
 	 *
-	 * @param parkAreaId identifiant de la zone de parc
+	 * @param park zone de parc
 	 * @param requestedAt date de l'appel
 	 * @param stats statistiques retournées
-	 * @return observation prête à persister
+	 * @return mesure prête à persister
 	 */
-	private static NdviObservation toObservation(Long parkAreaId, Date requestedAt, NdviStatistics stats) {
-		NdviObservation observation = new NdviObservation();
-		observation.setParkAreaId(parkAreaId);
-		observation.setRequestedAt(requestedAt);
-		observation.setPeriodStart(stats.periodStart());
-		observation.setPeriodEnd(stats.acquisitionDate());
-		observation.setSampleCount(stats.sampleCount());
+	private NdviResult toResult(ParkArea park, Date requestedAt, NdviStatistics stats) {
+		NdviResult result = new NdviResult();
+		result.setObjectType(NdviResultObjectType.PARK_AREA_COMPUTED);
+		result.setParkAreaComputedId(park.getId());
+		result.setParcEtJardinId(park.getIdParcEtJardin());
+		result.setCadastreId(cadastreId(park));
+		String geometry = GeometryQueryHelper.toText(park.getPolygon());
+		result.setIrisId(irisShapeRepository.findBestIrisCode(geometry));
+		result.setCarre200mId(carre200mOnlyShapeRepository.findBestIdInspire(geometry));
+		result.setRequestedAt(requestedAt);
+		result.setPeriodStart(stats.periodStart());
+		result.setPeriodEnd(stats.acquisitionDate());
+		result.setSampleCount(stats.sampleCount());
 		if (stats.ndvi() != null) {
-			observation.setNdviMean(stats.ndvi().mean());
-			observation.setNdviMin(stats.ndvi().min());
-			observation.setNdviMax(stats.ndvi().max());
-			observation.setNdviStddev(stats.ndvi().stdDev());
+			result.setNdviMean(stats.ndvi().mean());
+			result.setNdviMin(stats.ndvi().min());
+			result.setNdviMax(stats.ndvi().max());
+			result.setNdviStddev(stats.ndvi().stdDev());
 		}
 		if (stats.ndre() != null) {
-			observation.setNdreMean(stats.ndre().mean());
-			observation.setNdreMin(stats.ndre().min());
-			observation.setNdreMax(stats.ndre().max());
-			observation.setNdreStddev(stats.ndre().stdDev());
+			result.setNdreMean(stats.ndre().mean());
+			result.setNdreMin(stats.ndre().min());
+			result.setNdreMax(stats.ndre().max());
+			result.setNdreStddev(stats.ndre().stdDev());
 		}
 		if (stats.gndvi() != null) {
-			observation.setGndviMean(stats.gndvi().mean());
-			observation.setGndviMin(stats.gndvi().min());
-			observation.setGndviMax(stats.gndvi().max());
-			observation.setGndviStddev(stats.gndvi().stdDev());
+			result.setGndviMean(stats.gndvi().mean());
+			result.setGndviMin(stats.gndvi().min());
+			result.setGndviMax(stats.gndvi().max());
+			result.setGndviStddev(stats.gndvi().stdDev());
 		}
-		return observation;
+		return result;
 	}
 
-	/**
-	 * Recopie les statistiques des trois indices sur une ligne {@code park_area_computed}.
-	 *
-	 * @param row ligne cible
-	 * @param stats statistiques retournées par Copernicus
-	 */
-	private static void copyIndices(ParkAreaComputed row, NdviStatistics stats) {
-		if (stats.ndvi() != null) {
-			row.setNdviMean(stats.ndvi().mean());
-			row.setNdviMin(stats.ndvi().min());
-			row.setNdviMax(stats.ndvi().max());
-			row.setNdviStddev(stats.ndvi().stdDev());
+	private String cadastreId(ParkArea park) {
+		if (park.getIdParcEtJardin() == null) {
+			return null;
 		}
-		if (stats.ndre() != null) {
-			row.setNdreMean(stats.ndre().mean());
-			row.setNdreMin(stats.ndre().min());
-			row.setNdreMax(stats.ndre().max());
-			row.setNdreStddev(stats.ndre().stdDev());
-		}
-		if (stats.gndvi() != null) {
-			row.setGndviMean(stats.gndvi().mean());
-			row.setGndviMin(stats.gndvi().min());
-			row.setGndviMax(stats.gndvi().max());
-			row.setGndviStddev(stats.gndvi().stdDev());
-		}
-	}
-
-	/**
-	 * Recopie un NDVI déjà stocké sur les lignes du parc qui n'en ont pas.
-	 * Aucun appel fournisseur : économise le quota et garde la donnée existante.
-	 *
-	 * @param rows lignes {@code park_area_computed} du parc
-	 */
-	private void reuseExistingNdvi(List<ParkAreaComputed> rows) {
-		ParkAreaComputed source = rows.stream()
-				.filter(row -> row.getNdviMean() != null)
-				.findFirst().orElse(null);
-		if (source == null) {
-			return;
-		}
-		boolean changed = false;
-		for (ParkAreaComputed row : rows) {
-			if (row.getNdviMean() == null) {
-				row.setNdviMean(source.getNdviMean());
-				row.setNdviMin(source.getNdviMin());
-				row.setNdviMax(source.getNdviMax());
-				row.setNdviStddev(source.getNdviStddev());
-				row.setNdreMean(source.getNdreMean());
-				row.setNdreMin(source.getNdreMin());
-				row.setNdreMax(source.getNdreMax());
-				row.setNdreStddev(source.getNdreStddev());
-				row.setGndviMean(source.getGndviMean());
-				row.setGndviMin(source.getGndviMin());
-				row.setGndviMax(source.getGndviMax());
-				row.setGndviStddev(source.getGndviStddev());
-				row.setNdviAcquisitionDate(source.getNdviAcquisitionDate());
-				if (source.getNdviRequestDate() != null) {
-					row.setNdviRequestDate(source.getNdviRequestDate());
-				}
-				changed = true;
-			}
-		}
-		if (changed) {
-			parkAreaComputedRepository.saveAll(rows);
-		}
+		return parkJardinRepository.findById(park.getIdParcEtJardin())
+				.map(ParcEtJardin::getCommune)
+				.map(City::getInseeCode)
+				.orElse(null);
 	}
 
 	/**

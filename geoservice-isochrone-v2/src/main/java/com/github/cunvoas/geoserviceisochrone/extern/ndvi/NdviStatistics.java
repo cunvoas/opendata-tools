@@ -11,7 +11,7 @@ import java.util.Date;
  * Les trois sont calculés dans le même appel Copernicus.</p>
  *
  * <p>La période est celle retournée par Copernicus. Elle est conservée dans
- * l'historique {@code ndvi_observation} : le satellite ne repasse pas tous les
+ * la table {@code ndvi_result} : le satellite ne repasse pas tous les
  * ans au même endroit, et une observation doit pouvoir être rattachée à la
  * bonne période lors d'une reventilation ultérieure.</p>
  *

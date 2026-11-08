@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.controller.form.FormParkNew;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.NdviController;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.NdviController.NdviSummaries;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
@@ -18,6 +19,8 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Liste des restitutions NDVI par territoire (région, EPCI ou commune).
@@ -54,6 +57,7 @@ public class MvcNdviControler {
 	 * @param idRegion région sélectionnée, facultative
 	 * @param idCommunauteDeCommunes EPCI sélectionné, facultatif
 	 * @param idCommune commune sélectionnée, facultative
+	 * @param request requête HTTP, pour distinguer premier affichage et choix explicite
 	 * @param model modèle de la vue
 	 * @return page des zones NDVI
 	 */
@@ -61,27 +65,42 @@ public class MvcNdviControler {
 	public String list(@RequestParam(name = "idRegion", required = false) Long idRegion,
 			@RequestParam(name = "idCommunauteDeCommunes", required = false) Long idCommunauteDeCommunes,
 			@RequestParam(name = "idCommune", required = false) Long idCommune,
+			HttpServletRequest request,
 			Model model) {
+		// Premier affichage : reprendre la localisation du contributeur comme newPark.
+		if (idRegion == null && idCommunauteDeCommunes == null && idCommune == null
+				&& !request.getParameterMap().containsKey("idRegion")
+				&& !request.getParameterMap().containsKey("idCommunauteDeCommunes")
+				&& !request.getParameterMap().containsKey("idCommune")) {
+			FormParkNew userLocation = new FormParkNew();
+			userLocation.autoLocate();
+			idRegion = userLocation.getIdRegion();
+			idCommunauteDeCommunes = userLocation.getIdCommunauteDeCommunes();
+			idCommune = userLocation.getIdCommune();
+		}
+		final Long regionId = idRegion;
+		final Long com2coId = idCommunauteDeCommunes;
+		final Long communeId = idCommune;
 		Integer annee = applicationBusinessProperties.getDerniereAnnee();
 		String publicBase = publicBase();
 
 		List<Region> regions = serviceReadReferences.getRegion();
-		List<CommunauteCommune> communautes = idRegion == null
+		List<CommunauteCommune> communautes = regionId == null
 				? List.of()
-				: serviceReadReferences.getCommunauteByRegionId(idRegion);
+				: serviceReadReferences.getCommunauteByRegionId(regionId);
 		// Un EPCI ou une commune d'une autre branche du sélecteur est ignoré.
-		Long selectedCom2co = idCommunauteDeCommunes != null && communautes.stream()
-				.anyMatch(com2co -> com2co.getId().equals(idCommunauteDeCommunes))
-						? idCommunauteDeCommunes
+		Long selectedCom2co = com2coId != null && communautes.stream()
+				.anyMatch(com2co -> com2co.getId().equals(com2coId))
+						? com2coId
 						: null;
 		List<City> communes;
 		if (selectedCom2co == null) {
-			communes = idRegion == null ? List.of() : serviceReadReferences.getCityByRegionId(idRegion);
+			communes = regionId == null ? List.of() : serviceReadReferences.getCityByRegionId(regionId);
 		} else {
 			communes = serviceReadReferences.getCityByCommunauteCommuneId(selectedCom2co);
 		}
-		Long selectedCity = idCommune != null && communes.stream()
-				.anyMatch(city -> city.getId().equals(idCommune)) ? idCommune : null;
+		Long selectedCity = communeId != null && communes.stream()
+				.anyMatch(city -> city.getId().equals(communeId)) ? communeId : null;
 
 		List<NdviZone> zones;
 		if (selectedCity != null) {
@@ -90,7 +109,7 @@ public class MvcNdviControler {
 			zones = List.of(toZone(serviceReadReferences.getCommunauteCommuneById(selectedCom2co),
 					annee, publicBase));
 		} else {
-			zones = zonesOfRegion(idRegion, annee, publicBase);
+			zones = zonesOfRegion(regionId, annee, publicBase);
 		}
 
 		City city = selectedCity == null ? null : serviceReadReferences.getCityById(selectedCity);
@@ -99,7 +118,7 @@ public class MvcNdviControler {
 		model.addAttribute("regions", regions);
 		model.addAttribute("communautesDeCommunes", communautes);
 		model.addAttribute("communes", communes);
-		model.addAttribute("selectedRegionId", idRegion);
+		model.addAttribute("selectedRegionId", regionId);
 		model.addAttribute("selectedCommunauteDeCommunesId", selectedCom2co);
 		model.addAttribute("selectedCommuneId", selectedCity);
 		model.addAttribute("selectedCommuneName", city == null ? "" : city.getName());

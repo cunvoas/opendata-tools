@@ -15,8 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository.NdviSummaryProjection;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository.NdviSummaryProjection;
 
 /**
  * Restitution des mesures NDVI par parc.
@@ -39,12 +40,15 @@ public class NdviController {
 	}
 
 	private final ParkAreaComputedRepository parkAreaComputedRepository;
+	private final NdviResultRepository ndviResultRepository;
 	private final ApplicationBusinessProperties applicationBusinessProperties;
 
 	@Autowired
 	public NdviController(ParkAreaComputedRepository parkAreaComputedRepository,
+			NdviResultRepository ndviResultRepository,
 			ApplicationBusinessProperties applicationBusinessProperties) {
 		this.parkAreaComputedRepository = parkAreaComputedRepository;
+		this.ndviResultRepository = ndviResultRepository;
 		this.applicationBusinessProperties = applicationBusinessProperties;
 	}
 
@@ -84,13 +88,13 @@ public class NdviController {
 		List<NdviSummaryProjection> projections;
 		long total;
 		if (city != null) {
-			projections = parkAreaComputedRepository.findNdviSummariesByAnneeAndCity(target, city);
+			projections = ndviResultRepository.findNdviSummariesByAnneeAndCity(target, city);
 			total = parkAreaComputedRepository.countByAnneeAndCity(target, city);
 		} else if (com2co != null) {
-			projections = parkAreaComputedRepository.findNdviSummariesByAnneeAndCom2co(target, com2co);
+			projections = ndviResultRepository.findNdviSummariesByAnneeAndCom2co(target, com2co);
 			total = parkAreaComputedRepository.countByAnneeAndCom2co(target, com2co);
 		} else {
-			projections = parkAreaComputedRepository.findNdviSummariesByAnnee(target);
+			projections = ndviResultRepository.findNdviSummariesByAnnee(target);
 			total = parkAreaComputedRepository.countByAnnee(target);
 		}
 		List<NdviSummary> parks = projections.stream()

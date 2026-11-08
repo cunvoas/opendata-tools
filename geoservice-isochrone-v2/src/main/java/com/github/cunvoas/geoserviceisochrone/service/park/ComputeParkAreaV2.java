@@ -202,16 +202,16 @@ public class ComputeParkAreaV2 {
 	 * pour ne pas bloquer le calcul OMS. La demande n'a lieu qu'à partir de
 	 * septembre, au plus une fois par an et par parc, et pour l'année de référence.</p>
 	 *
-	 * <p>Aucune demande n'est déposée si le NDVI est déjà présent sur la ligne :
+	 * <p>Aucune demande n'est déposée si une mesure NDVI existe déjà :
 	 * la donnée existante est conservée et aucun crédit fournisseur n'est consommé.</p>
 	 *
-	 * <p>La réponse du fournisseur sera historisée dans {@code ndvi_observation}
-	 * par le service de traitement, en plus de la recopie sur les lignes du parc.</p>
+	 * <p>La réponse du fournisseur sera historisée dans {@code ndvi_result}
+	 * par le service de traitement.</p>
 	 */
 	private void requestNdviRefresh(ParkAreaComputed parcCpu, ParkArea park) {
 		if (!ndviBatchJobService.isEnabled() || park == null || park.getPolygon() == null
-				|| parcCpu.getNdviMean() != null
-				|| !isNdviReferenceYear(parcCpu) || !isNdviRequestDue(parcCpu)) {
+				|| !isNdviReferenceYear(parcCpu) || ndviBatchJobService.hasResult(parcCpu.getId())
+				|| !isNdviRequestDue(parcCpu)) {
 			return;
 		}
 		ndviBatchJobService.request(parcCpu.getId(), parcCpu.getAnnee());
@@ -236,16 +236,18 @@ public class ComputeParkAreaV2 {
 
 	/**
 	 * Variante testable avec une date explicite.
+	 * @param parcCpu ligne de parc
 	 * @param today date de référence
 	 */
 	boolean isNdviRequestDue(ParkAreaComputed parcCpu, LocalDate today) {
 		if (today.getMonthValue() < Month.SEPTEMBER.getValue()) {
 			return false;
 		}
-		if (parcCpu.getNdviRequestDate() == null) {
+		Date lastRequestDate = ndviBatchJobService.lastRequestDate(parcCpu.getId());
+		if (lastRequestDate == null) {
 			return true;
 		}
-		LocalDate lastRequest = parcCpu.getNdviRequestDate().toInstant()
+		LocalDate lastRequest = lastRequestDate.toInstant()
 				.atZone(ZoneId.systemDefault()).toLocalDate();
 		return !today.isBefore(lastRequest.plusYears(1));
 	}

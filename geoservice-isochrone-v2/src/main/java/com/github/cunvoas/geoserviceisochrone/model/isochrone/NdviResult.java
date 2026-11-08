@@ -5,36 +5,65 @@ import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.Data;
 
 /**
- * Historique d'une observation NDVI retournée par Copernicus pour un parc.
+ * Mesure de végétation retournée par Copernicus.
  *
- * <p>Chaque réponse contenant des statistiques est conservée telle quelle :
- * période retournée, date d'acquisition satellite et valeurs. Cela permet de
- * reventiler les valeurs a posteriori sur les bonnes années, sans dépendre du
- * seul résultat recopié dans {@code park_area_computed}.</p>
+ * <p>Une mesure correspond à une période d'observation (mois/jour), pas à une
+ * année de calcul. Elle porte les identifiants des objets auxquels elle se
+ * rattache ainsi que le type d'objet : parc calculé, parc brut, IRIS, cadastre
+ * ou carreau 200 m.</p>
  *
- * <p>Le NDVI Copernicus est agrégé sur une fenêtre de quelques jours et le
- * satellite ne repasse pas tous les ans au même endroit : l'historique garde
- * donc la trace de chaque observation réellement disponible.</p>
+ * <p>Les identifiants sont stockés sans association Hibernate : les lectures
+ * NDVI sont fréquentes et ne doivent pas déclencher de jointures implicites.</p>
  */
 @Data
-@Entity(name = "ndvi_observation")
-public class NdviObservation {
+@Entity(name = "ndvi_result")
+@Table(indexes = {
+		@Index(name = "idx_ndvi_result_park_period",
+				columnList = "object_type, park_area_computed_id, period_end"),
+		@Index(name = "idx_ndvi_result_parc", columnList = "parc_et_jardin_id")
+})
+public class NdviResult {
 
-	/** Identifiant technique de l'observation. */
+	/** Identifiant technique de la mesure. */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Long id;
 
-	/** Identifiant de la zone de parc ({@code park_area.id}). */
-	@Column(name = "park_area_id", nullable = false)
-	private Long parkAreaId;
+	/** Type d'objet portant la mesure. */
+	@Enumerated(EnumType.STRING)
+	@Column(name = "object_type", nullable = false, length = 30)
+	private NdviResultObjectType objectType;
+
+	/** Identifiant de la ligne {@code park_area_computed.id}. */
+	@Column(name = "park_area_computed_id")
+	private Long parkAreaComputedId;
+
+	/** Identifiant du parc ou jardin d'origine ({@code parc_jardin.identifiant}). */
+	@Column(name = "parc_et_jardin_id")
+	private Long parcEtJardinId;
+
+	/** Code IRIS de contexte ({@code iris_shape.code_iris}). */
+	@Column(name = "iris_id", length = 9)
+	private String irisId;
+
+	/** Code INSEE du cadastre de contexte ({@code cadastre.id_insee}). */
+	@Column(name = "cadastre_id", length = 5)
+	private String cadastreId;
+
+	/** Identifiant Inspire du carreau 200m de contexte. */
+	@Column(name = "carre200m_id", length = 30)
+	private String carre200mId;
 
 	/** Date de l'appel Copernicus. */
 	@Column(name = "requested_at", nullable = false)

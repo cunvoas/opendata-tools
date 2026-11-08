@@ -16,11 +16,10 @@ import lombok.EqualsAndHashCode;
  *
  * <p>File d'attente persistante : {@code ComputeParkAreaV2} ne fait plus l'appel
  * fournisseur, il dépose une ligne {@code TO_PROCESS}. Un traitement planifié par
- * lots consomme la file et met à jour {@code park_area_computed}.</p>
+ * lots consomme la file et stocke la réponse dans {@code ndvi_result}.</p>
  *
- * <p>Le NDVI Copernicus est lissé sur plusieurs années : un appel par parc est
- * recopié sur toutes les années de ce parc. La réponse est aussi conservée dans
- * {@code ndvi_observation} pour permettre une reventilation ultérieure.</p>
+ * <p>Le NDVI Copernicus est lissé sur plusieurs années : un appel par parc suffit.
+ * La mesure est conservée avec sa période pour permettre une reventilation ultérieure.</p>
  */
 @Data
 @EqualsAndHashCode(of = {"annee", "id"})

@@ -9,5 +9,16 @@ le nouvel objet aura les données et des IDs de ParkAreaComputed, de ParcsEtJard
 
 seul les service  ParkAreaComputed, rest  ParkAreaComputed doivent évoluer. le reste sera réalisé ultérieurment
 
+## Réalisé
 
-
+- Objet `NdviResult` / table `ndvi_result` : `objectType`, `parkAreaComputedId`, `parcEtJardinId`, `irisId`, `cadastreId`, `carre200mId`, période et statistiques NDVI/NDRE/GNDVI.
+- `NdviResultObjectType` : `PARK_AREA_COMPUTED`, `PARC_ET_JARDIN`, `IRIS`, `CADASTRE`, `CARRE_200M`.
+- `NdviBatchJobService` écrit uniquement dans `ndvi_result`.
+- `ComputeParkAreaV2` utilise `ndvi_result` et le dernier job traité.
+- `NdviController` lit les résumés depuis `ndvi_result`.
+- Migration `v2.2.0_ndvi_result.sql` + script de drop manuel.
+- Présélection utilisateur sur `/mvc/ndvi`.
+- Synthèse NDVI `/mvc/management/jobs/ndvi/progress` + template `ndviProgress.html`, sans année.
+- Lien depuis la pastille NDVI du dashboard.
+- Distinction par type : filtre et colonne `Type` (PARC, IRIS, CADASTRE, CARRE) dans la synthèse, dérivée de `ndvi_result.object_type`.
+- Tests OK : `NdviBatchJobServiceTest` 11/11, `MvcNdviControlerTest` 4/4.
