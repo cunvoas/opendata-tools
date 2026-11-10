@@ -117,7 +117,7 @@
     <dependency>
       <groupId>org.hibernate.orm</groupId>
       <artifactId>hibernate-spatial</artifactId>
-      <version>7.4.14.Final</version>
+      <version>7.4.15.Final</version>
     </dependency>
     
     <dependency>
@@ -214,7 +214,7 @@
     <dependency>
       <groupId>org.eclipse.jgit</groupId>
       <artifactId>org.eclipse.jgit</artifactId>
-      <version>7.8.0.202609011348-r</version>
+      <version>7.8.1.202611041320-r</version>
       <scope>compile</scope>
     </dependency>
 
@@ -260,7 +260,7 @@
     <dependency>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-core</artifactId>
-        <version>13.12.0</version>
+        <version>13.12.1</version>
     </dependency>
 
     <!-- Testcontainers PostgreSQL/PostGIS : test E2E CUJ sanity (docs/cuj-sanity-consult-map.md) -->
@@ -323,7 +323,7 @@
       <plugin>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-maven-plugin</artifactId>
-        <version>13.12.0</version>
+        <version>13.12.1</version>
         <configuration>
           <url>${FLYWAY_URL}</url>
           <user>${FLYWAY_USER}</user>
