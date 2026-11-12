@@ -22,3 +22,10 @@ seul les service  ParkAreaComputed, rest  ParkAreaComputed doivent évoluer. le 
 - Lien depuis la pastille NDVI du dashboard.
 - Distinction par type : filtre et colonne `Type` (PARC, IRIS, CADASTRE, CARRE) dans la synthèse, dérivée de `ndvi_result.object_type`.
 - Tests OK : `NdviBatchJobServiceTest` 11/11, `MvcNdviControlerTest` 4/4.
+
+
+
+Indice  Nom complet Ce qu'il mesure spécifiquement  Utilité pour notre étude
+NDVI    Normalized Difference Vegetation Index  La densité globale de la végétation et la présence de chlorophylle active (via le spectre Rouge).   Détecter la fracture verte : Distinguer instantanément les zones purement minérales/bétonnées des zones végétalisées dans les quartiers.
+GNDVI   Green Normalized Difference Vegetation Index    La concentration en chlorophylle et le stress hydrique (via le spectre Vert). Plus sensible que le NDVI sur la végétation dense.    Évaluer la fraîcheur : Repérer si les arbres des parcs souffrent de la sécheresse ou s'ils sont assez vigoureux pour créer de vrais îlots de fraîcheur urbains.
+NDRE  Normalized Difference Red Edge Index    La structure de la canopée et l'azote foliaire (via la bande de transition Red Edge). Pénètre plus profondément le feuillage.   Mesurer la qualité de la strate arborée : Différencier une simple pelouse pelée (faible volume de fraîcheur) d'une forêt urbaine dense ou de grands arbres capables de filtrer l'air.
