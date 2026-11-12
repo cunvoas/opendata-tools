@@ -266,11 +266,11 @@ import {
   LPolygon,
   LControlScale,
 } from "@vue-leaflet/vue-leaflet";
-import L, { latLng } from "leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { hexToRgba } from "../utils/color.js";
 import { getNdviCategory, getNdviColor, NDVI_CONTOUR_DALTONIEN } from "../utils/ndvi.js";
 import { features, DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from "../utils/config.js";

@@ -707,7 +707,7 @@ return color;
 function getSurfacePerCapitaClass(densite, zoneDense, colorblindMode = false) {
   if (densite === null || densite === 'N/A' || densite === '') return '';
   const val = Number.parseFloat(("" + densite).replace(",", "."));
-  if (isNaN(val)) return '';
+  if (Number.isNaN(val)) return '';
 
   const suffix = colorblindMode ? '-cb' : '';
 
@@ -745,7 +745,7 @@ function applyDensityClasses() {
     'density-level-1-cb', 'density-level-2-cb', 'density-level-3-cb', 'density-level-4-cb', 'density-level-5-cb'
   ];
   document.querySelectorAll('[data-density]').forEach(function(td) {
-    const val = td.getAttribute('data-density');
+    const val = td.dataset.density;
     allClasses.forEach(c => td.classList.remove(c));
     const cls = getSurfacePerCapitaClass(val, zoneDenseResult, colorblindMode);
     if (cls) td.classList.add(cls);
@@ -804,7 +804,7 @@ function getMapLocation() {
   let locateWorkPlace;
 
   // Utiliser les coordonnées du formulaire si disponibles
-  if (mLat && mLng && mLat.trim() !== "" && mLng.trim() !== "" && !isNaN(Number.parseFloat(mLat)) && !isNaN(Number.parseFloat(mLng))) {
+  if (mLat && mLng && mLat.trim() !== "" && mLng.trim() !== "" && !Number.isNaN(Number.parseFloat(mLat)) && !Number.isNaN(Number.parseFloat(mLng))) {
     locateWorkPlace = locatePlace(mLat, mLng);
     console.log('[Simulateur] Position personnalisée:', locateWorkPlace);
   }
@@ -1274,7 +1274,7 @@ console.log('[Simulateur] Carte initialisée');
     
     for (const o of options){
       if (o.value === inputValue) {
-        const dataValue = o.getAttribute('data-value');
+        const dataValue = o.dataset.value;
         hiddenInput.value = dataValue;
         console.log('[Simulateur] Commune trouvée, id:', dataValue);
         document.getElementById('formSelectCity').submit();
@@ -1297,7 +1297,7 @@ console.log('[Simulateur] Carte initialisée');
     const floor = Number.parseFloat(floorEl.value);
     const avg = Number.parseFloat(avgEl.value);
     const density = Number.parseFloat(densityEl.value);
-    if (isNaN(floor) || isNaN(avg) || isNaN(density) || avg === 0) {
+    if (Number.isNaN(floor) || Number.isNaN(avg) || Number.isNaN(density) || avg === 0) {
       return;
     }
     const pop = (floor / avg) * density;

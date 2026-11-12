@@ -226,7 +226,7 @@ function getSelectedYear(){
     
     for (const o of options){
       if (o.value === inputValue) {
-        const dataValue = o.getAttribute('data-value');
+        const dataValue = o.dataset.value;
         hiddenInput.value = dataValue;
         console.log('[ConsultMap] Commune trouvée, id:', dataValue);
         document.getElementById('formSelectCity').submit();
@@ -470,7 +470,6 @@ function formatedSurface(feature) {
     let unit = '';
     if (feature.properties.surface) {
       unit = ' m²';
-      formattedSurface = feature.properties.surface;
       if (feature.properties.surface > 10000) {
         const surfaceInHa = feature.properties.surface / 10000;
         formattedSurface = new Intl.NumberFormat('fr-FR', { 
@@ -648,7 +647,7 @@ function createIndiceHtml(nom, mean, min, max, categories) {
  */
 function diagnostiquerCroisement(ndviMean, ndreMean, gndviMean) {
   const valeurs = [ndviMean, ndreMean, gndviMean]
-    .map(v => (v === null || v === undefined || v === '') ? NaN : Number(v));
+    .map(v => (v === null || v === undefined || v === '') ? Number.NaN : Number(v));
   if (!valeurs.every(Number.isFinite)) return '';
   const [ndvi, ndre, gndvi] = valeurs.map(v => Number(NDVI_ROUNDED_FORMAT.format(v)));
   if (ndvi > 0.75 && (ndre < 0.45 || gndvi < 0.45)) {
@@ -757,7 +756,7 @@ function createPopupContent(feat, layerName) {
     }
     if (feat.properties.surface) {
       const surface = Number.parseFloat(feat.properties.surface);
-      if (!isNaN(surface)) {
+      if (!Number.isNaN(surface)) {
         if (surface >= 10000) {
           popupContent += `<p>Surface: ${(surface / 10000).toFixed(2)} ha</p>`;
         } else {
@@ -774,7 +773,7 @@ function createPopupContent(feat, layerName) {
   if (layerName === 'Proposition de parcs') {
     if (feat.properties.radius) {
       const radius = Number.parseFloat(feat.properties.radius);
-      if (!isNaN(radius)) {
+      if (!Number.isNaN(radius)) {
         popupContent += `<p>Diamètre: ${Math.round(2*radius)} m</p>`;
         const surface = Number.parseFloat(feat.properties.surface);
         if (surface >= 10000) {

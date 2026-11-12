@@ -349,18 +349,18 @@
                 const table = document.getElementById('availableCitiesTable');
                 const rows = table.getElementsByClassName('city-row');
                 
-                for (let i = 0; i < rows.length; i++) {
-                    const nameCell = rows[i].getElementsByClassName('city-name')[0];
-                    const postalCell = rows[i].getElementsByClassName('city-postal')[0];
+                for (const row of rows) {
+                    const nameCell = row.getElementsByClassName('city-name')[0];
+                    const postalCell = row.getElementsByClassName('city-postal')[0];
                     
                     if (nameCell && postalCell) {
                         const nameText = nameCell.textContent || nameCell.innerText;
                         const postalText = postalCell.textContent || postalCell.innerText;
                         
-                        if (nameText.toLowerCase().indexOf(filter) > -1 || postalText.indexOf(filter) > -1) {
-                            rows[i].style.display = '';
+                        if (nameText.toLowerCase().includes(filter) || postalText.includes(filter)) {
+                            row.style.display = '';
                         } else {
-                            rows[i].style.display = 'none';
+                            row.style.display = 'none';
                         }
                     }
                 }
@@ -379,7 +379,7 @@
                 if (communauteSelect && regionSelect && communauteSelect.value !== "") {
                     // Get the region ID from the selected communauté option
                     const selectedOption = communauteSelect.options[communauteSelect.selectedIndex];
-                    const regionId = selectedOption.getAttribute('data-region-id');
+                    const regionId = selectedOption.dataset.regionId;
                     
                     if (regionId) {
                         regionSelect.value = regionId;

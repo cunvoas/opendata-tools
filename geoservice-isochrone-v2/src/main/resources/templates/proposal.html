@@ -520,7 +520,7 @@ function getMapLocation() {
   let locateWorkPlace;
 
   // Utiliser les coordonnées du formulaire si disponibles
-  if (mLat && mLng && mLat.trim() !== "" && mLng.trim() !== "" && !isNaN(Number.parseFloat(mLat)) && !isNaN(Number.parseFloat(mLng))) {
+  if (mLat && mLng && mLat.trim() !== "" && mLng.trim() !== "" && !Number.isNaN(Number.parseFloat(mLat)) && !Number.isNaN(Number.parseFloat(mLng))) {
     locateWorkPlace = locatePlace(mLat, mLng);
     console.log('[Simulateur] Position personnalisée:', locateWorkPlace);
   }
@@ -764,8 +764,8 @@ console.log('[Simulateur] Carte initialisée');
     
     for (const o of options){
       if (o.value === inputValue) {
-        const dataValue = o.getAttribute('data-value');
-        const dataInsee = o.getAttribute('data-insee');
+        const dataValue = o.dataset.value;
+        const dataInsee = o.dataset.insee;
         hiddenInput.value = dataValue;
         if (inseeInput) {
           inseeInput.value = dataInsee || '';
@@ -873,8 +873,8 @@ function sortPropositionsTable(column) {
       return propositionsSortAscending ? valueA - valueB : valueB - valueA;
     } else if (column === 'typeAlgo') {
       // Colonne texte
-      valueA = (a.getAttribute('data-type-algo') || '').toLowerCase();
-      valueB = (b.getAttribute('data-type-algo') || '').toLowerCase();
+      valueA = (a.dataset.typeAlgo || '').toLowerCase();
+      valueB = (b.dataset.typeAlgo || '').toLowerCase();
       return propositionsSortAscending ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
     }
   });
@@ -925,10 +925,10 @@ if (clearProposalsBtn) {
 
 // ----------- VISUALISER UNE PROPOSITION -----------
 function viewProposition(button) {
-  const propositionId = button.getAttribute('data-id');
-  const propositionInsee = button.getAttribute('data-insee');
-  const propositionAnnee = button.getAttribute('data-annee');
-  const propositionType = button.getAttribute('data-type-display-name');
+  const propositionId = button.dataset.id;
+  const propositionInsee = button.dataset.insee;
+  const propositionAnnee = button.dataset.annee;
+  const propositionType = button.dataset.typeDisplayName;
   
   // Mettre à jour le titre de la carte avec l'année et l'algorithme
   const cardHeader = document.querySelector('.map-block .card-header');
@@ -1013,7 +1013,7 @@ function viewProposition(button) {
             pointToLayer: function(feature, latlng) {
               if (feature.properties && feature.properties.radius) {
                 const radius = Number.parseFloat(feature.properties.radius);
-                if (!isNaN(radius)) {
+                if (!Number.isNaN(radius)) {
                   return L.circle(latlng, {
                     radius: radius,
                     color: '#20B2AA',
@@ -1036,7 +1036,7 @@ function viewProposition(button) {
               if (feature.properties) {
                 if (feature.properties.radius) {
                   const radius = Number.parseFloat(feature.properties.radius);
-                  if (!isNaN(radius)) {
+                  if (!Number.isNaN(radius)) {
                     popupContent += `<p>Diamètre: ${Math.round(2*radius)} m</p>`;
                     const surface = Number.parseFloat(feature.properties.surface);
                     if (surface >= 10000) {
@@ -1069,7 +1069,7 @@ function viewProposition(button) {
 
 function deleteProposition(button) {
   const deleteUrl = /*[[@{/mvc/proposal/delete}]]*/ '/mvc/proposal/delete';
-  const propositionId = button.getAttribute('data-id');
+  const propositionId = button.dataset.id;
   if (!propositionId) {
     console.error('[Simulateur] ID de proposition manquant pour la suppression');
     return;

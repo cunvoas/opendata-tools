@@ -186,9 +186,9 @@
             var list  = document.getElementById('communesList');
             if (!list) return;
             var options = list.options;
-            for (var i = 0; i < options.length; i++) {
-                if (options[i].value === input.value) {
-                    document.getElementById('idCommune').value = options[i].getAttribute('data-value');
+            for (var option of options) {
+                if (option.value === input.value) {
+                    document.getElementById('idCommune').value = option.dataset.value;
                     input.closest('form').submit();
                     return;
                 }
