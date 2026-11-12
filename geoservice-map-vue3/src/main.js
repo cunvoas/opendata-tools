@@ -65,13 +65,14 @@ initVersionCheck();
 
 app.mount('#app');
 
+
 // Wait for SW to be active before loading matomo.js —
 // otherwise the script tag hits the server directly → 404
 const MATOMO_CONFIG = {
     host: 'https://asso.autmel.ovh/audience',
     siteId: '1',
-    trackerScriptUrl: '/parcs-et-jardins/matomo.js',
-    trackerUrl: '/parcs-et-jardins/matomo.php'
+    trackerScriptUrl: 'https://asso.autmel.ovh/audience/matomo.js',
+    trackerUrl: 'https://asso.autmel.ovh/audience/matomo.php'
 };
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then(() => {

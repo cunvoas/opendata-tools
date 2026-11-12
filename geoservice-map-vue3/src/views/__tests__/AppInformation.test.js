@@ -55,6 +55,9 @@ describe('AppInformation.vue', () => {
 
 describe('AppInformation.vue - encart NDVI du thésaurus', () => {
   const encart = (wrapper) => wrapper.find('section[aria-labelledby="thesaurus-ndvi"]')
+  const tableSeuils = (wrapper) => encart(wrapper)
+    .findAll('table')
+    .find((t) => t.find('caption').exists() && t.find('caption').text().includes('Seuils NDVI par type de surface'))
   const cssColor = (hex) => {
     const probe = document.createElement('span')
     probe.style.backgroundColor = hex
@@ -70,9 +73,10 @@ describe('AppInformation.vue - encart NDVI du thésaurus', () => {
     const section = encart(wrapper)
 
     expect(section.exists()).toBe(true)
-    expect(section.find('h3').text()).toBe('NDVI : indice de végétation')
-    expect(section.find('caption').exists()).toBe(true)
-    const rows = section.findAll('tbody tr')
+    expect(section.find('h3').text()).toBe('Indices de végétation')
+    const table = tableSeuils(wrapper)
+    expect(table).toBeTruthy()
+    const rows = table.findAll('tbody tr')
     expect(rows).toHaveLength(NDVI_CATEGORIES.length)
     rows.forEach((row, index) => {
       expect(row.find('th').text()).toBe(NDVI_CATEGORIES[index].range)
@@ -89,7 +93,7 @@ describe('AppInformation.vue - encart NDVI du thésaurus', () => {
 
   it('montre les deux palettes en pastilles décoratives à 50 %, comme la carte : le texte reste l’information', () => {
     const wrapper = mount(AppInformation)
-    const rows = encart(wrapper).findAll('tbody tr')
+    const rows = tableSeuils(wrapper).findAll('tbody tr')
 
     expect(rows).toHaveLength(NDVI_CATEGORIES.length)
     rows.forEach((row, index) => {
@@ -98,5 +102,33 @@ describe('AppInformation.vue - encart NDVI du thésaurus', () => {
       expect(pastilles[0].element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[index].color, 0.5)))
       expect(pastilles[1].element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[index].colorDaltonien, 0.5)))
     })
+  })
+
+  it('détaille les trois indices NDVI, GNDVI et NDRE (nom complet, mesure, utilité) et lie « red edge »', () => {
+    const wrapper = mount(AppInformation)
+    const section = encart(wrapper)
+    const table = section.find('table[aria-label="NDVI, GNDVI et NDRE : ce que chacun mesure"]')
+    expect(table.exists()).toBe(true)
+    expect(table.findAll('thead th').map((th) => th.text())).toEqual([
+      'Indice', 'Nom complet', "Ce qu'il mesure spécifiquement", 'Utilité pour notre étude'
+    ])
+
+    const codes = table.findAll('tbody tr').map((row) => row.find('th').text())
+    expect(codes).toEqual(['NDVI', 'GNDVI', 'NDRE'])
+    const noms = table.findAll('tbody tr').map((row) => row.findAll('td')[0].text())
+    expect(noms).toEqual([
+      'Normalized Difference Vegetation Index',
+      'Green Normalized Difference Vegetation Index',
+      'Normalized Difference Red Edge Index'
+    ])
+    table.findAll('tbody tr').forEach((row) => {
+      const cells = row.findAll('td')
+      expect(cells[1].text()).not.toBe('')
+      expect(cells[2].text()).not.toBe('')
+    })
+
+    const lienRedEdge = section.find('a[href="https://fr.wikipedia.org/wiki/Red-edge"]')
+    expect(lienRedEdge.exists()).toBe(true)
+    expect(lienRedEdge.attributes('target')).toBe('_blank')
   })
 })
