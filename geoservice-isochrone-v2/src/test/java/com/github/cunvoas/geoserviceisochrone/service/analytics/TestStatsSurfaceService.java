@@ -201,4 +201,108 @@ class TestStatsSurfaceService {
 		stats.add(stat2);
 		
 	}
+
+	private static StatsSurface row(int min, int max, int inc, int exc, StatsSeuilOmsEnum seuil) {
+		StatsSurface r = new StatsSurface();
+		r.setAnnee(2019);
+		r.setSurfaceMin(min);
+		r.setSurfaceMax(max);
+		r.setPopulationInclue(BigDecimal.valueOf(inc));
+		r.setPopulationExclue(BigDecimal.valueOf(exc));
+		r.setSeuil(seuil);
+		return r;
+	}
+
+	/** Lille 2019 : habitants publiés par tranche, sans habitant hors isochrone supplémentaire. */
+	private static List<StatsSurface> lille2019() {
+		return new ArrayList<>(List.of(
+				row(0, 3, 93150, 0, StatsSeuilOmsEnum.INSUFFISANT),
+				row(3, 7, 53543, 0, StatsSeuilOmsEnum.INSUFFISANT),
+				row(7, 10, 13751, 0, StatsSeuilOmsEnum.INSUFFISANT),
+				row(10, 12, 5319, 0, StatsSeuilOmsEnum.MINIMUM),
+				row(12, 10000, 45100, 0, StatsSeuilOmsEnum.PRECONISE)));
+	}
+
+	@Test
+	void testPopulateSurface_orderOfRowsDoesNotMatter() {
+		List<StatsSurface> sorted = lille2019();
+		List<StatsSurface> reversed = new ArrayList<>(sorted);
+		java.util.Collections.reverse(reversed);
+
+		StatsSurfaceJson expected = new StatsSurfaceJson();
+		tested.populateSurface(expected, sorted, iSeuils);
+		StatsSurfaceJson actual = new StatsSurfaceJson();
+		tested.populateSurface(actual, reversed, iSeuils);
+
+		for (int i = 0; i < 5; i++) {
+			assertEquals(expected.getStats().get(i).getHabitants(), actual.getStats().get(i).getHabitants(), "tranche " + i);
+		}
+		assertEquals(93150, actual.getStats().get(0).getHabitants());
+		assertEquals(45100, actual.getStats().get(4).getHabitants());
+	}
+
+	@Test
+	void testPopulateSurface_labelsExpressHalfOpenIntervals() {
+		StatsSurfaceJson json = new StatsSurfaceJson();
+		tested.populateSurface(json, lille2019(), iSeuils);
+
+		assertEquals("0 à <3", json.getStats().get(0).getSurface());
+		assertEquals("10 à <12", json.getStats().get(3).getSurface());
+		assertEquals("12 et +", json.getStats().get(4).getSurface());
+		assertEquals("0 <=  surface/habitant < 3 m²/hab.", json.getSeuils().get(0).getSurface());
+		assertEquals(" >= 12 m²/hab.", json.getSeuils().get(4).getSurface());
+	}
+
+	@Test
+	void testPopulateSurface_ratioIsRoundedAndSumsToHundred() {
+		StatsSurfaceJson json = new StatsSurfaceJson();
+		tested.populateSurface(json, lille2019(), iSeuils);
+
+		assertEquals("44.2", json.getSeuils().get(0).getRatio());
+		assertEquals("25.4", json.getSeuils().get(1).getRatio());
+		assertEquals("6.5", json.getSeuils().get(2).getRatio());
+		assertEquals("2.5", json.getSeuils().get(3).getRatio());
+		assertEquals("21.4", json.getSeuils().get(4).getRatio());
+	}
+
+	@Test
+	void testPopulateSurface_populationWithoutParkJoinsFirstBucket() {
+		List<StatsSurface> rows = List.of(
+				row(0, 3, 100, 10, StatsSeuilOmsEnum.INSUFFISANT),
+				row(12, 10000, 300, 40, StatsSeuilOmsEnum.PRECONISE));
+
+		StatsSurfaceJson json = new StatsSurfaceJson();
+		tested.populateSurface(json, rows, iSeuils);
+
+		assertEquals(150, json.getStats().get(0).getHabitants());
+		assertEquals(300, json.getStats().get(4).getHabitants());
+		assertEquals("33.3", json.getSeuils().get(0).getRatio());
+	}
+
+	@Test
+	void testPopulateSurface_emptyRowsDoNotFail() {
+		StatsSurfaceJson json = new StatsSurfaceJson();
+		tested.populateSurface(json, new ArrayList<>(), iSeuils);
+
+		assertEquals(5, json.getStats().size());
+		assertEquals("0.0", json.getSeuils().get(0).getRatio());
+	}
+
+	@Test
+	void testPopulateSurface_unexpectedBoundIsIgnored() {
+		List<StatsSurface> rows = lille2019();
+		rows.add(row(99, 100, 5000, 5000, StatsSeuilOmsEnum.PRECONISE));
+
+		StatsSurfaceJson json = new StatsSurfaceJson();
+		tested.populateSurface(json, rows, iSeuils);
+
+		assertEquals(93150, json.getStats().get(0).getHabitants());
+		assertEquals("44.2", json.getSeuils().get(0).getRatio());
+	}
+
+	@Test
+	void testPourcent() {
+		assertEquals("44.4", StatsSurfaceService.pourcent(91445, 205789));
+		assertEquals("0.0", StatsSurfaceService.pourcent(5, 0));
+	}
 }

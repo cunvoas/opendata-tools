@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,8 +78,6 @@ public class StatsSurfaceService {
 			"Non respect des minima OMS",
 			"Minimim conseillé par l'OMS",
 			"Préconisé par l'OMS" };
-	
-	private static String[] txtSeuil= {"","","","",""};
 	
 	public void writeStatsSurfaceByCom2CoIdAndAnnee(Long com2coId, Integer annee) throws IOException {
 		CommunauteCommune com2co = communauteCommuneRepository.getReferenceById(com2coId);
@@ -261,32 +262,6 @@ public class StatsSurfaceService {
 		return ret;
 	}
 
-	@Deprecated
-	public StatsSurfaceJson getStatsSurfaceByCom2CoAndAnneeAll(Integer annee, Long com2CoId) throws StreamWriteException, DatabindException, IOException {
-		StatsSurfaceJson ret = new StatsSurfaceJson();
-		ret.setAnnee(String.valueOf(annee));
-		ret.setInsee("C2C_all_"+String.valueOf(annee)+"_"+String.valueOf(com2CoId));
-		Optional<CommunauteCommune> opt=communauteCommuneRepository.findById(com2CoId);
-		if (opt.isEmpty()) {
-			log.warn("Communauté de commune with id {} not found", com2CoId);
-			return null;
-		} else {
-			ret.setNom(opt.get().getName() + " - Dense et Périurbain");
-			
-			List<StatsSurface> stats = statsSurfaceRepository.getStatsForCom2Co(annee, com2CoId);
-			this.populateAll(ret, stats, txtSeuilOMS);
-			
-			
-			String sPath = applicationBusinessProperties.getJsonFileFolder()+"/data/stats/com2co/"+String.valueOf(com2CoId);
-			File file = new File(sPath);
-			file.mkdirs();
-			
-			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_all_"+String.valueOf(annee)+".json");
-			objectMapper.writeValue(file, ret);
-		}
-		return ret;
-	}
-	
 	public StatsSurfaceJson getStatsSurfaceByInseeAndAnnee(String insee, Integer annee) {
 		StatsSurfaceJson ret = new StatsSurfaceJson();
 		ret.setAnnee(String.valueOf(annee));
@@ -301,10 +276,10 @@ public class StatsSurfaceService {
 		List<StatsSurface> stats =null;
 		int[] seuils= {};
 		if (dense) {
-			 stats = statsSurfaceRepository.getStatsForCity(annee, "%"+insee+"%");
+			 stats = statsSurfaceRepository.getStatsForCity(annee, insee);
 			 seuils=  seuilDense;
 		} else {
-			 stats = statsSurfaceRepository.getStatsForSuburbs(annee, "%"+insee+"%");
+			 stats = statsSurfaceRepository.getStatsForSuburbs(annee, insee);
 			 seuils=  seuilSuburbs;
 		}
 		if (stats.isEmpty()) {
@@ -350,87 +325,86 @@ public class StatsSurfaceService {
 			seuil.setSeuilId(index);
 			seuil.setBarColor(colors[index+2]);
 			seuil.setHabitants(stat.getHabitants());
-			seuil.setRatio(String.valueOf(100*stat.getHabitants().intValue()/populationTotale)+"");
+			seuil.setRatio(pourcent(stat.getHabitants(), populationTotale));
 			index++;
 		}
 		
 	}
 	
 	/**
-	 * @param json
-	 * @param stats
-	 * @param seuils
+	 * Remplit le JSON à partir des lignes de statistiques, une par tranche non vide.
+	 * <p>
+	 * Les tranches sont [seuil, seuil suivant[ : minimum inclus, maximum exclu. Les lignes sont retrouvées par
+	 * leur borne minimum, pas par leur position. Les habitants sans accès à un parc OMS ({@code pop_exc}, toutes
+	 * tranches confondues) sont comptés dans la première tranche, avec ceux qui disposent de très peu de m².
+	 * </p>
+	 * @param json JSON à remplir
+	 * @param stats lignes de statistiques
+	 * @param seuils bornes minimum des cinq tranches
 	 */
 	void populateSurface(StatsSurfaceJson json, List<StatsSurface> stats, int[] seuils) {
-		Iterator<StatsSurface> iter = stats.iterator();
-		StatsSurface statsSurface = iter.next(); // premier élément de liste (0 à 5 éléments)
+		Map<Integer, StatsSurface> parBorne = new HashMap<>();
+		for (StatsSurface row : stats) {
+			parBorne.put(row.getSurfaceMin(), row);
+		}
+		String[] txtSeuil = new String[colors.length];
 		int populationTotalExclue = 0;
 		int populationTotale = 0;
-		int fin=0;
-		
+
 		for (int i = 0; i < colors.length; i++) {
-			
-			
-			
 			int deb = seuils[i];
-			boolean match=false;
-			if (statsSurface!=null && statsSurface.getSurfaceMin()==deb) {
-				match=true;
-				log.warn("Seuils incohérents entre code et BDD pour la surface min : attendu {} / trouvé {}", deb, statsSurface.getSurfaceMin());
-			}
-			
-			
-			StringBuilder sb=new StringBuilder();
-			sb.append("> ").append(deb);
-			if (i==colors.length-1) {
-				sb.append(" +");
-				txtSeuil[i]= String.format(" >= %s m²/hab.", fin);
-			} else {
-				fin = seuils[i+1];
-				sb.append("<=").append(fin);
-				
-				txtSeuil[i]= String.format("%s <=  surface/habitant < %s m²/hab.", deb, fin);
-			}
-			
+			boolean derniere = i == colors.length - 1;
+			int fin = derniere ? deb : seuils[i + 1];
+
 			Stat stat = new Stat();
 			json.getStats().add(stat);
-			
-			stat.setSurface(sb.toString());
+			stat.setSurface(derniere ? deb + " et +" : deb + " à <" + fin);
 			stat.setBarColor(colors[i]);
-			
-			if(match) {
-				stat.setHabitants(statsSurface.getPopulationInclue().intValue());
-				populationTotalExclue += statsSurface.getPopulationExclue().intValue();
-				
-				populationTotale+=statsSurface.getPopulationInclue().intValue()+statsSurface.getPopulationExclue().intValue();
-			} else {
+			txtSeuil[i] = derniere
+					? String.format(" >= %s m²/hab.", deb)
+					: String.format("%s <=  surface/habitant < %s m²/hab.", deb, fin);
+
+			StatsSurface row = parBorne.remove(deb);
+			if (row == null) {
 				stat.setHabitants(0);
-			}
-			
-			if (match && iter.hasNext()) {
-				statsSurface = iter.next();
+			} else {
+				stat.setHabitants(row.getPopulationInclue().intValue());
+				populationTotalExclue += row.getPopulationExclue().intValue();
+				populationTotale += row.getPopulationInclue().intValue() + row.getPopulationExclue().intValue();
 			}
 		}
-		
-		// ajout dans le premier lot >0 <seuil 1
-		if (populationTotalExclue>0) {
+		if (!parBorne.isEmpty()) {
+			log.warn("Tranches ignorées, bornes absentes des seuils attendus {} : {}", Arrays.toString(seuils), parBorne.keySet());
+		}
+
+		// ajout dans la première tranche : habitants sans accès à un parc
+		if (populationTotalExclue > 0) {
 			Stat stat0 = json.getStats().get(0);
-			Integer cur = stat0.getHabitants();
-			stat0.setHabitants(cur+populationTotalExclue);
+			stat0.setHabitants(stat0.getHabitants() + populationTotalExclue);
 		}
-		
-		int index=0;
+
+		int index = 0;
 		for (Stat stat : json.getStats()) {
 			Seuil seuil = new Seuil();
 			json.getSeuils().add(seuil);
 			seuil.setSurface(txtSeuil[index]);
 			seuil.setBarColor(colors[index]);
 			seuil.setHabitants(stat.getHabitants());
-			seuil.setRatio(String.valueOf(100*stat.getHabitants().intValue()/populationTotale)+"");
+			seuil.setRatio(pourcent(stat.getHabitants(), populationTotale));
 			index++;
 		}
 	}
-	
+
+	/**
+	 * Part en pourcentage, à une décimale.
+	 * @param habitants effectif de la tranche
+	 * @param total effectif total
+	 * @return par exemple "44.4", "0.0" si le total est nul
+	 */
+	static String pourcent(int habitants, int total) {
+		return total == 0 ? "0.0" : String.format(Locale.ROOT, "%.1f", 100.0 * habitants / total);
+	}
+
 	public String getStringStatsSurfaceByInseeAndAnnee(String insee, Integer annee) {
 		StatsSurfaceJson obj = this.getStatsSurfaceByInseeAndAnnee(insee, annee);
 		return objectMapper.writeValueAsString(obj);

@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -338,6 +339,108 @@ public class ComputeCarreServiceV4Test {
         when(parkJardinRepository.findById(1L)).thenReturn(Optional.of(pj));
 
         assertFalse(service.isActive(pa, 2020));
+    }
+
+    // --- population avec accès à un parc d'au moins 5 000 m² ---
+
+    private InseeCarre200mComputedV2 computeAndCaptureSaved(boolean withSufficient) {
+        InseeCarre200mOnlyShape carre = new InseeCarre200mOnlyShape();
+        carre.setIdInspire("carre1");
+        carre.setGeoShape(mockPolygon);
+
+        ComputeDto dto = new ComputeDto();
+        dto.annee = 2020;
+        dto.isDense = true;
+        dto.popAll = BigDecimal.valueOf(1000);
+        dto.polygonParkAreas = mockGeometry;
+        dto.polygonParkAreasOms = mockGeometry;
+        dto.withSufficient = withSufficient;
+        dto.polygonParkAreasSustainableOms = withSufficient ? mockGeometry2 : null;
+
+        when(inseeCarre200mOnlyShapeRepository.findCarreInMapArea(anyString())).thenReturn(Collections.emptyList());
+        when(inseeCarre200mOnlyShapeRepository.getSurface(any())).thenReturn(20_000L);
+        when(inseeCarre200mComputedV2Repository.findByAnneeAndIdInspire(2020, "carre1")).thenReturn(Optional.empty());
+
+        service.compute(dto, carre);
+
+        ArgumentCaptor<InseeCarre200mComputedV2> saved = ArgumentCaptor.forClass(InseeCarre200mComputedV2.class);
+        verify(inseeCarre200mComputedV2Repository).save(saved.capture());
+        return saved.getValue();
+    }
+
+    @Test
+    public void testCompute_persistsPopulationWithSustainablePark() {
+        InseeCarre200mComputedV2 saved = computeAndCaptureSaved(true);
+
+        assertTrue(saved.getIsSustainablePark());
+        // 1000 habitants x 20 000 m² de parc durable sur 40 000 m² de carreau
+        assertEquals(0, BigDecimal.valueOf(500).compareTo(saved.getPopulationWithSustainablePark()));
+    }
+
+    @Test
+    public void testCompute_noSustainablePark_persistsZero() {
+        InseeCarre200mComputedV2 saved = computeAndCaptureSaved(false);
+
+        assertFalse(saved.getIsSustainablePark());
+        assertEquals(0, BigDecimal.ZERO.compareTo(saved.getPopulationWithSustainablePark()));
+    }
+
+    // --- valeurs déjà calculées : OMS et surface relues ---
+
+    private ParkArea parkOfType(boolean oms, boolean strict, Boolean omsCustom) {
+        ParkType type = new ParkType();
+        type.setOms(oms);
+        type.setStrict(strict);
+        ParkArea park = new ParkArea();
+        park.setIdParcEtJardin(1L);
+        park.setType(type);
+        park.setOmsCustom(omsCustom);
+        return park;
+    }
+
+    private ParkAreaComputed computedWith(boolean oms, int surface) {
+        ParkAreaComputed pac = new ParkAreaComputed();
+        pac.setOms(oms);
+        pac.setSurface(BigDecimal.valueOf(surface));
+        return pac;
+    }
+
+    private void parcSurface(double surface) {
+        ParcEtJardin pj = new ParcEtJardin();
+        pj.setSurface(surface);
+        when(parkJardinRepository.findById(1L)).thenReturn(Optional.of(pj));
+        when(parkAreaComputedRepository.save(any(ParkAreaComputed.class))).thenAnswer(inv -> inv.getArgument(0));
+    }
+
+    @Test
+    public void testRefreshParkState_reclassifiedPark_updatesOmsAndSurface() {
+        parcSurface(6000d);
+        ParkAreaComputed old = computedWith(true, 5000);
+
+        ParkAreaComputed result = service.refreshParkState(parkOfType(false, true, null), old);
+
+        assertFalse(result.getOms());
+        assertEquals(0, BigDecimal.valueOf(6000).compareTo(result.getSurface()));
+        verify(parkAreaComputedRepository).save(old);
+    }
+
+    @Test
+    public void testRefreshParkState_unchanged_doesNotSave() {
+        parcSurface(5000d);
+
+        ParkAreaComputed result = service.refreshParkState(parkOfType(true, true, null), computedWith(true, 5000));
+
+        assertTrue(result.getOms());
+        verify(parkAreaComputedRepository, never()).save(any(ParkAreaComputed.class));
+    }
+
+    @Test
+    public void testRefreshParkState_customOmsOverridesNonStrictType() {
+        parcSurface(5000d);
+
+        ParkAreaComputed result = service.refreshParkState(parkOfType(false, false, true), computedWith(false, 5000));
+
+        assertTrue(result.getOms());
     }
 
 }

@@ -256,7 +256,8 @@ individuellement (N+1). V4 charge tout en une fois.
 Pour chaque parc actif (vérifié via `isActive` sur les dates de début/fin) :
 
 1. **Récupération ou calcul** de `ParkAreaComputed`
-   - Si déjà calculé avec surface → réutilisé
+   - Si déjà calculé avec surface → réutilisé, après relecture du caractère OMS et de la surface
+     (`refreshParkState`) : un parc reclassé ou redessiné ne garde pas ses anciennes valeurs
    - Sinon → `computeParkAreaOptim(park, annee, filosofilMap)`
 
 2. **Accumulation** dans `ComputeDto`
@@ -304,11 +305,12 @@ Deux cas :
 Construction de `InseeCarre200mComputedV2` avec l'ensemble des métriques calculées,
 incluant :
 
-- **`computeMissingSurface`** pour les normes mini (ex: 10 m²/hab urbain, 5 m²/hab périurbain)
-  et conseillées (ex: 20 m²/hab urbain, 10 m²/hab périurbain)
+- **`computeMissingSurface`** pour les normes mini (10 m²/hab urbain, 25 m²/hab périurbain)
+  et conseillées (12 m²/hab urbain, 45 m²/hab périurbain), valeurs de `application.business.oms.*`
   - Formule : `MAX(0, standard × populationInIsochroneOms - surfaceTotalParkOms)`
 - **`isSustainablePark`** et `populationWithSustainablePark` — indicateur de parc durable
-  (seuil configurable via `recoAtLeastParkSurface`)
+  (seuil configurable via `recoAtLeastParkSurface`). `populationWithSustainablePark` reçoit la
+  population du carreau ayant accès à un parc OMS durable (`dto.popWithSufficient`)
 
 ---
 

@@ -236,14 +236,8 @@ public class ComputeIrisServiceIris extends AbstractComputeService implements IC
 		irisComputed.setPopIncludedOms(dto.resultOms.popInc);
 		irisComputed.setPopExcludedOms(dto.resultOms.popExc);
 		
-		if (Boolean.TRUE.equals(dto.withSufficient)) {
-			irisComputed.setIsSustainablePark(Boolean.TRUE);
-			//TODO faire le calcul
-			irisComputed.setPopulationWithSustainablePark(null);
-		} else {
-			irisComputed.setIsSustainablePark(Boolean.FALSE);
-			irisComputed.setPopulationWithSustainablePark(BigDecimal.ZERO);
-		}
+		irisComputed.setIsSustainablePark(Boolean.TRUE.equals(dto.withSufficient));
+		irisComputed.setPopulationWithSustainablePark(dto.popWithSufficient);
 		
 		irisComputed.setComments(dto.parcName);
 
