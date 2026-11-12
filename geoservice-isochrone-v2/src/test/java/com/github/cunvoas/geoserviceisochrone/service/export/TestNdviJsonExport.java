@@ -21,7 +21,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRe
 /**
  * Classe de test « détournée » pour produire les JSON statiques NDVI consommés par le front public :
  * data/ndvi/&lt;com2coId&gt;/ndvi_&lt;annee&gt;_&lt;com2coId&gt;.json (EPCI) et
- * data/ndvi/&lt;com2coId&gt;/&lt;cityId&gt;/ndvi_&lt;annee&gt;_&lt;cityId&gt;.json (communes ayant des mesures).
+ * data/ndvi/&lt;com2coId&gt;/&lt;inseeCode&gt;/ndvi_&lt;annee&gt;_&lt;inseeCode&gt;.json (communes ayant des mesures).
  *
  * <p>Export manuel : retirer {@link Disabled} puis lancer
  * {@code mvn -Dtest=TestNdviJsonExport#exportNdviJson test}.
@@ -51,11 +51,11 @@ class TestNdviJsonExport {
 					.findAllById(parkAreaComputedRepository.findCom2coIdsWithComputedParks())) {
 				Map<String, String> cityLabels = new HashMap<>();
 				for (City city : com2co.getCities()) {
-					cityLabels.put(String.valueOf(city.getId()), city.getName() + " (" + city.getInseeCode() + ")");
+					cityLabels.put(city.getInseeCode(), city.getName() + " (" + city.getInseeCode() + ")");
 				}
 				for (Integer annee : applicationBusinessProperties.getInseeAnnees()) {
 					for (File file : servicePublicationExporter.writeNdviJson(com2co, annee)) {
-						// un fichier de commune est dans <com2coId>/<cityId>/, celui de l'EPCI dans <com2coId>/
+						// un fichier de commune est dans <com2coId>/<inseeCode>/, celui de l'EPCI dans <com2coId>/
 						boolean isCity = file.getParentFile().getParentFile().getName().equals(String.valueOf(com2co.getId()));
 						String where = isCity
 								? "ville " + cityLabels.get(file.getParentFile().getName())

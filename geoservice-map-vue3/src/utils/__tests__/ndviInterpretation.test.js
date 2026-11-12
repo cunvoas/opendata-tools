@@ -15,11 +15,11 @@ describe('interpreterStatistiquesNdvi', () => {
   });
 
   it('donne la vigueur selon la moyenne, bornes basses incluses', () => {
-    expect(vigueurOf({ moyenne: 0.05 })).toBe('Diagnostic : Absence de végétation (Surfaces minérales, eau, sols nus).');
-    expect(vigueurOf({ moyenne: 0.1 })).toBe("Diagnostic : Végétation très éparse ou en grand stress (zones arides, début d'émergence).");
-    expect(vigueurOf({ moyenne: 0.3 })).toBe('Diagnostic : Végétation modérée (pelouses, arbustes).');
-    expect(vigueurOf({ moyenne: 0.5 })).toBe('Diagnostic : Végétation dense et active (arbres, massifs et pelouses bien développés, bois).');
-    expect(vigueurOf({ moyenne: 0.7 })).toBe('Diagnostic : Végétation exceptionnellement dense (canopée forestière, biomasse maximale).');
+    expect(vigueurOf({ moyenne: 0.05 })).toBe('Diagnostic : Absence de végétation (surfaces minérales, eau, sols nus).');
+    expect(vigueurOf({ moyenne: 0.1 })).toBe('Diagnostic : Sol nu ou végétation morte/sèche.');
+    expect(vigueurOf({ moyenne: 0.2 })).toBe('Diagnostic : Végétation très clairsemée ou en stress (pelouse tondue, début de levée).');
+    expect(vigueurOf({ moyenne: 0.4 })).toBe('Diagnostic : Végétation en croissance active, couverture du sol modérée.');
+    expect(vigueurOf({ moyenne: 0.7 })).toBe('Diagnostic : Zone de saturation : canopée dense, forêt ou végétation à son maximum ; une plante malade peut encore afficher 0,85.');
   });
 
   it('donne la structure selon l’écart-type, bornes basses incluses', () => {
@@ -44,7 +44,7 @@ describe('interpreterStatistiquesNdvi', () => {
   });
 
   it('classe sur la valeur affichée à 3 décimales', () => {
-    expect(vigueurOf({ moyenne: 0.4996 })).toBe('Diagnostic : Végétation dense et active (arbres, massifs et pelouses bien développés, bois).');
+    expect(vigueurOf({ moyenne: 0.4996 })).toBe('Diagnostic : Végétation en croissance active, couverture du sol modérée.');
     expect(structureOf({ ecartType: 0.0799 })).toMatch(/^Structure spatiale : Zone relativement uniforme/);
   });
 

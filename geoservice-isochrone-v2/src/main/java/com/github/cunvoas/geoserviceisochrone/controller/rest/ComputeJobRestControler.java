@@ -76,8 +76,8 @@ public class ComputeJobRestControler {
 			pj.setId(parkId);
 			resp.setParkId(req.getParkId());
 			resp.setNbCarre(batchJobService.requestProcessParc(pj));
-			// Le bouton « Calculer le parc » demande aussi le NDVI de l'année de référence.
-			ndviBatchJobService.requestForParc(pj.getId(), applicationBusinessProperties.getDerniereAnnee());
+			// Le bouton « Calculer le parc » demande aussi le NDVI du parc.
+			ndviBatchJobService.requestForParc(pj.getId());
 			code = HttpStatus.ACCEPTED;
 		} else if (req.getParkOverpass() != null) {
 			// TODO OVERPASS
@@ -114,5 +114,50 @@ public class ComputeJobRestControler {
 		}
 
 		return new ResponseEntity<ComputeJobResponse>(resp, code);
+	}
+
+	/**
+	 * Relance forcée de l'appel Copernicus pour tous les parcs d'un EPCI.
+	 * Réservé aux administrateurs : contourne la règle d'un appel par an.
+	 * @param req demande (token, com2coId, requestedYear facultatif)
+	 * @return nombre de parcs relancés
+	 */
+	@PostMapping("/ndvi/request")
+	public ResponseEntity<ComputeJobResponse> requestNdvi(@RequestBody ComputeJobRequest req) {
+		if (!tokenManagement.isTokenValid(req.getToken())) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		Contributeur contrib = (Contributeur) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (!ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+		Long com2coId = NumberHelper.toLong(req.getCom2coId());
+		if (com2coId == null) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		Integer annee = req.getRequestedYear() != null
+				? req.getRequestedYear()
+				: applicationBusinessProperties.getDerniereAnnee();
+		ComputeJobResponse resp = new ComputeJobResponse(req);
+		resp.setNbCarre(ndviBatchJobService.requestForcedForCom2Co(com2coId, annee));
+		return new ResponseEntity<>(resp, HttpStatus.ACCEPTED);
+	}
+
+	/**
+	 * Demande un calcul NDVI (sans force) pour un parc.
+	 */
+	@PostMapping("/ndvi/request/park")
+	public ResponseEntity<ComputeJobResponse> requestNdviForPark(@RequestBody ComputeJobRequest req) {
+		if (!tokenManagement.isTokenValid(req.getToken())) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		Long parkId = NumberHelper.toLong(req.getParkId());
+		if (parkId == null) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		ComputeJobResponse resp = new ComputeJobResponse(req);
+		resp.setParkId(req.getParkId());
+		resp.setNbCarre(ndviBatchJobService.requestForParc(parkId) ? 1 : 0);
+		return new ResponseEntity<>(resp, HttpStatus.ACCEPTED);
 	}
 }

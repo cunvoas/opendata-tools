@@ -19,8 +19,8 @@
             </select>
         </div>
 
-        <p v-if="cityId" class="mb-4">
-            Commune : <strong>{{ cityName || cityId }}</strong>
+        <p v-if="cityInsee" class="mb-4">
+            Commune : <strong>{{ cityName || cityInsee }}</strong>
             <button type="button" class="ml-2 underline cursor-pointer" @click="showWholeEpci">Voir toute l'intercommunalité</button>
         </p>
 
@@ -117,10 +117,7 @@
 import SearchLocation from '../components/SearchLocation.vue';
 import { NDVI_CATEGORIES, couleurCategorie, getNdviCategory } from '../utils/ndvi.js';
 import { hexToRgba } from '../utils/color.js';
-
-const MODE = import.meta.env.DEV ? 'dynamic' : 'static';
-const STATIC_ON_GIT = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
-const DYNAMIC_ON_LOCAL = 'http://localhost:8980/isochrone';
+import { DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from '../utils/config.js';
 
 function savedLocation() {
     try {
@@ -134,6 +131,10 @@ function currentEpciId() {
     const params = new URLSearchParams(window.location.search);
     const saved = savedLocation();
     return String(params.get('com2co') || params.get('c2c') || saved.com2coId || '1');
+}
+
+function currentCityInsee() {
+    return new URLSearchParams(window.location.search).get('city');
 }
 
 const COLUMNS = [
@@ -177,7 +178,7 @@ export default {
             data: null,
             requestId: 0,
             epciId: '1',
-            cityId: null,
+            cityInsee: null,
             cityName: '',
             columns: COLUMNS,
             sortKey: 'ndviMean',
@@ -251,10 +252,14 @@ export default {
     },
     mounted() {
         this.epciId = currentEpciId();
-        // La commune préremplie par le sélecteur doit aussi cadrer les données, si elle appartient à cet EPCI.
+        // La commune peut venir du lien (écran MVC) ou du sélecteur mémorisé, si elle appartient à cet EPCI.
         const saved = savedLocation();
-        if (saved.cityId && String(saved.com2coId) === this.epciId) {
-            this.cityId = String(saved.cityId);
+        const cityParam = currentCityInsee();
+        if (cityParam) {
+            this.cityInsee = String(cityParam);
+            this.cityName = String(saved.cityInsee) === this.cityInsee ? (saved.cityName || '') : '';
+        } else if (saved.cityInsee && String(saved.com2coId) === this.epciId) {
+            this.cityInsee = String(saved.cityInsee);
             this.cityName = saved.cityName || '';
         }
         this.load();
@@ -276,24 +281,24 @@ export default {
             this.changeScope(String(location.com2coId), null, '');
         },
         selectCity(location) {
-            if (!location?.com2coId || !location?.cityId) return;
-            this.changeScope(String(location.com2coId), String(location.cityId), location.cityName || '');
+            if (!location?.com2coId || !location?.cityInsee) return;
+            this.changeScope(String(location.com2coId), String(location.cityInsee), location.cityName || '');
         },
         showWholeEpci() {
             this.changeScope(this.epciId, null, '');
         },
-        changeScope(epciId, cityId, cityName) {
-            if (epciId === this.epciId && cityId === this.cityId) return;
+        changeScope(epciId, cityInsee, cityName) {
+            if (epciId === this.epciId && cityInsee === this.cityInsee) return;
             this.epciId = epciId;
-            this.cityId = cityId;
+            this.cityInsee = cityInsee;
             this.cityName = cityName;
             this.filterText = '';
             this.load();
         },
         getUrl() {
             const epci = encodeURIComponent(this.epciId);
-            const city = this.cityId === null ? null : encodeURIComponent(this.cityId);
-            if (MODE === 'dynamic') {
+            const city = this.cityInsee === null ? null : encodeURIComponent(this.cityInsee);
+            if (DATA_MODE === 'dynamic') {
                 return `${DYNAMIC_ON_LOCAL}/map/ndvi/summaries?annee=${this.annee}&com2co=${epci}${city ? `&city=${city}` : ''}`;
             }
             if (city) {

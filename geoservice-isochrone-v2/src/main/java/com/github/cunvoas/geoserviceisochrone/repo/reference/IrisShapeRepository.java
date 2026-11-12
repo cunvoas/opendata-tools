@@ -71,4 +71,14 @@ public interface IrisShapeRepository extends JpaRepository< IrisShape,String> {
 	 */
 	@Query(nativeQuery = true,  value = "SELECT ST_Area(?1, true)")
 	Long getSurface(Geometry polygon);
+
+	/**
+	 * Code IRIS couvrant le mieux une géométrie.
+	 * @param geometry géométrie du parc
+	 * @return code IRIS, ou null
+	 */
+	@Query(nativeQuery = true,
+			value = "SELECT code_iris FROM iris_shape WHERE ST_Intersects(contour, ?1)"
+					+ " ORDER BY ST_Area(ST_Intersection(contour, ?1)) DESC LIMIT 1")
+	String findBestIrisCode(String geometry);
 }

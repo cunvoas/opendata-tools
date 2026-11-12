@@ -15,8 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository.NdviSummaryProjection;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository.NdviSummaryProjection;
 
 /**
  * Restitution des mesures NDVI par parc.
@@ -28,6 +29,8 @@ public class NdviController {
 	/** Une mesure NDVI de parc. */
 	public record NdviSummary(String parkId, String name, BigDecimal surface,
 			BigDecimal ndviMean, BigDecimal ndviMin, BigDecimal ndviMax, BigDecimal ndviStddev,
+			BigDecimal ndreMean, BigDecimal ndreMin, BigDecimal ndreMax, BigDecimal ndreStddev,
+			BigDecimal gndviMean, BigDecimal gndviMin, BigDecimal gndviMax, BigDecimal gndviStddev,
 			String acquisitionDate, Integer annee) {
 	}
 
@@ -37,12 +40,15 @@ public class NdviController {
 	}
 
 	private final ParkAreaComputedRepository parkAreaComputedRepository;
+	private final NdviResultRepository ndviResultRepository;
 	private final ApplicationBusinessProperties applicationBusinessProperties;
 
 	@Autowired
 	public NdviController(ParkAreaComputedRepository parkAreaComputedRepository,
+			NdviResultRepository ndviResultRepository,
 			ApplicationBusinessProperties applicationBusinessProperties) {
 		this.parkAreaComputedRepository = parkAreaComputedRepository;
+		this.ndviResultRepository = ndviResultRepository;
 		this.applicationBusinessProperties = applicationBusinessProperties;
 	}
 
@@ -70,25 +76,25 @@ public class NdviController {
 	 * (la commune prime sur l'EPCI).
 	 * @param annee année demandée, facultative
 	 * @param com2co identifiant de la communauté de communes, facultatif
-	 * @param city identifiant de la commune, facultatif
+	 * @param city code INSEE de la commune, facultatif
 	 * @return summaries
 	 */
 	@CrossOrigin(origins = "${web.cors.allowed-origins}")
 	@GetMapping("/summaries")
 	public NdviSummaries summaries(@RequestParam(required = false) Integer annee,
 			@RequestParam(required = false) Long com2co,
-			@RequestParam(required = false) Long city) {
+			@RequestParam(required = false) String city) {
 		Integer target = annee != null ? annee : applicationBusinessProperties.getDerniereAnnee();
 		List<NdviSummaryProjection> projections;
 		long total;
 		if (city != null) {
-			projections = parkAreaComputedRepository.findNdviSummariesByAnneeAndCity(target, city);
+			projections = ndviResultRepository.findNdviSummariesByAnneeAndCity(target, city);
 			total = parkAreaComputedRepository.countByAnneeAndCity(target, city);
 		} else if (com2co != null) {
-			projections = parkAreaComputedRepository.findNdviSummariesByAnneeAndCom2co(target, com2co);
+			projections = ndviResultRepository.findNdviSummariesByAnneeAndCom2co(target, com2co);
 			total = parkAreaComputedRepository.countByAnneeAndCom2co(target, com2co);
 		} else {
-			projections = parkAreaComputedRepository.findNdviSummariesByAnnee(target);
+			projections = ndviResultRepository.findNdviSummariesByAnnee(target);
 			total = parkAreaComputedRepository.countByAnnee(target);
 		}
 		List<NdviSummary> parks = projections.stream()
@@ -111,6 +117,14 @@ public class NdviController {
 				projection.getNdviMin(),
 				projection.getNdviMax(),
 				projection.getNdviStddev(),
+				projection.getNdreMean(),
+				projection.getNdreMin(),
+				projection.getNdreMax(),
+				projection.getNdreStddev(),
+				projection.getGndviMean(),
+				projection.getGndviMin(),
+				projection.getGndviMax(),
+				projection.getGndviStddev(),
 				formatDate(projection.getAcquisitionDate()),
 				projection.getAnnee());
 	}

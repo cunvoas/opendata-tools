@@ -86,7 +86,7 @@ public class MassGeoJsonIntegratorParser {
             if (!shapes.isEmpty()) {
                 inseeCarre200mOnlyShapeRepository.saveAll(shapes);
             }
-            System.out.println(System.currentTimeMillis() - start);
+            log.debug(""+(System.currentTimeMillis() - start));
         } catch (IOException e) {
             log.error("Erreur lors de la lecture : {}", theLine);
         }

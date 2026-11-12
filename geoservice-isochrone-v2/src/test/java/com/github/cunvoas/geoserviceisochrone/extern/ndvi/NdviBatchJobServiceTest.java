@@ -28,26 +28,40 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobProgressStat;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.admin.NdviJob;
-import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviObservation;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviResult;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviResultObjectType;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
+import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.NdviJobRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.admin.NdviObservationRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
 @DisplayName("NdviBatchJobService")
 class NdviBatchJobServiceTest extends BaseUnitTest {
 
     private static final long PARK_ID = 7L;
+    private static final long PARC_ID = 12L;
+    private static final long CITY_ID = 2878L;
+    private static final long COM2CO_ID = 1L;
+    private static final long REGION_ID = 9L;
     private static final int ANNEE = 2019;
 
     @Mock private NdviJobRepository ndviJobRepository;
     @Mock private ParkAreaRepository parkAreaRepository;
     @Mock private ParkAreaComputedRepository parkAreaComputedRepository;
-    @Mock private NdviObservationRepository ndviObservationRepository;
+    @Mock private NdviResultRepository ndviResultRepository;
+    @Mock private ParkJardinRepository parkJardinRepository;
+    @Mock private IrisShapeRepository irisShapeRepository;
+    @Mock private InseeCarre200mOnlyShapeRepository carre200mOnlyShapeRepository;
     @Mock private ClientCopernicusNdvi clientCopernicusNdvi;
 
     @InjectMocks private NdviBatchJobService service;
@@ -55,7 +69,6 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
     private NdviJob job;
     private ParkArea park;
     private ParkAreaComputed row;
-    private ParkAreaComputed olderRow;
 
     @BeforeEach
     void setUp() {
@@ -66,117 +79,128 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
 
         park = new ParkArea();
         park.setId(PARK_ID);
+        park.setIdParcEtJardin(PARC_ID);
         park.setPolygon(polygon);
 
         row = new ParkAreaComputed();
         row.setId(PARK_ID);
         row.setAnnee(ANNEE);
 
-        olderRow = new ParkAreaComputed();
-        olderRow.setId(PARK_ID);
-        olderRow.setAnnee(2015);
-
         job = new NdviJob();
         job.setId(PARK_ID);
-        job.setAnnee(ANNEE);
+        job.setObjectType(NdviResultObjectType.PARK_AREA_COMPUTED);
+
+        City city = new City();
+        city.setInseeCode("59350");
+        ParcEtJardin parc = new ParcEtJardin();
+        parc.setId(PARC_ID);
+        parc.setCommune(city);
 
         when(clientCopernicusNdvi.isEnabled()).thenReturn(true);
-        when(ndviJobRepository.findByStatusOrderByDemandAsc(eq(ComputeJobStatusEnum.TO_PROCESS), any()))
+        when(ndviJobRepository.findByStatusAndObjectTypeOrderByDemandAsc(eq(ComputeJobStatusEnum.TO_PROCESS),
+                eq(NdviResultObjectType.PARK_AREA_COMPUTED), any()))
                 .thenReturn(List.of(job));
         when(parkAreaRepository.findById(PARK_ID)).thenReturn(Optional.of(park));
-        when(parkAreaComputedRepository.findAllByIdPark(PARK_ID)).thenReturn(List.of(row, olderRow));
+        when(parkAreaComputedRepository.findAllByIdPark(PARK_ID)).thenReturn(List.of(row));
+        when(parkJardinRepository.findById(PARC_ID)).thenReturn(Optional.of(parc));
+        when(irisShapeRepository.findBestIrisCode(any())).thenReturn("593500101");
+        when(carre200mOnlyShapeRepository.findBestIdInspire(any())).thenReturn("INSPIRE-200");
+    }
+
+    private static NdviStatistics.IndexStatistics index(String mean, String min, String max, String stdDev) {
+        return new NdviStatistics.IndexStatistics(
+                new BigDecimal(mean), new BigDecimal(min), new BigDecimal(max), new BigDecimal(stdDev));
+    }
+
+    private static NdviStatistics stats() {
+        return new NdviStatistics(
+                index("0.42", "0.10", "0.80", "0.05"),
+                index("0.31", "0.08", "0.60", "0.04"),
+                index("0.55", "0.20", "0.90", "0.06"),
+                new Date(3000L), new Date(2000L), 150);
     }
 
     @Test
-    @DisplayName("un job traité remplit le NDVI de toutes les années du parc")
-    void processJobRemplitNdviToutesAnnees() {
-        NdviStatistics stats = new NdviStatistics(
-                new BigDecimal("0.42"), new BigDecimal("0.10"),
-                new BigDecimal("0.80"), new BigDecimal("0.05"), new Date(3000L),
-                new Date(2000L), 150);
-        when(clientCopernicusNdvi.fetchNdviForPark(eq(PARK_ID), any())).thenReturn(Optional.of(stats));
+    @DisplayName("un job traité enregistre une mesure NDVI avec ses identifiants")
+    void processJobEnregistreNdviResult() {
+        when(clientCopernicusNdvi.fetchNdviForPark(eq(PARK_ID), any())).thenReturn(Optional.of(stats()));
 
         service.processJobs();
 
         assertEquals(ComputeJobStatusEnum.PROCESSED, job.getStatus());
-        assertEquals(new BigDecimal("0.42"), row.getNdviMean());
-        assertEquals(new BigDecimal("0.42"), olderRow.getNdviMean());
-        assertEquals(3000L, olderRow.getNdviAcquisitionDate().getTime());
-        assertNotNull(row.getNdviRequestDate());
-        assertNotNull(olderRow.getNdviRequestDate());
-        verify(parkAreaComputedRepository).saveAll(List.of(row, olderRow));
+        verify(parkAreaComputedRepository, never()).saveAll(any());
 
-        ArgumentCaptor<NdviObservation> observationCaptor = ArgumentCaptor.forClass(NdviObservation.class);
-        verify(ndviObservationRepository).save(observationCaptor.capture());
-        NdviObservation observation = observationCaptor.getValue();
-        assertEquals(PARK_ID, observation.getParkAreaId());
-        assertEquals(2000L, observation.getPeriodStart().getTime());
-        assertEquals(3000L, observation.getPeriodEnd().getTime());
-        assertEquals(150, observation.getSampleCount());
-        assertEquals(new BigDecimal("0.42"), observation.getNdviMean());
+        ArgumentCaptor<NdviResult> captor = ArgumentCaptor.forClass(NdviResult.class);
+        verify(ndviResultRepository).save(captor.capture());
+        NdviResult result = captor.getValue();
+        assertEquals(NdviResultObjectType.PARK_AREA_COMPUTED, result.getObjectType());
+        assertEquals(PARK_ID, result.getParkAreaComputedId());
+        assertEquals(PARC_ID, result.getParcEtJardinId());
+        assertEquals("593500101", result.getIrisId());
+        assertEquals("59350", result.getCadastreId());
+        assertEquals("INSPIRE-200", result.getCarre200mId());
+        assertNotNull(result.getRequestedAt());
+        assertEquals(2000L, result.getPeriodStart().getTime());
+        assertEquals(3000L, result.getPeriodEnd().getTime());
+        assertEquals(150, result.getSampleCount());
+        assertEquals(new BigDecimal("0.42"), result.getNdviMean());
+        assertEquals(new BigDecimal("0.31"), result.getNdreMean());
+        assertEquals(new BigDecimal("0.55"), result.getGndviMean());
     }
 
     @Test
-    @DisplayName("NDVI déjà présent sur une autre année : aucun appel fournisseur, donnée recopiée")
+    @DisplayName("NDVI déjà présent : aucun appel fournisseur")
     void ndviDejaPresentSansAppel() {
-        olderRow.setNdviMean(new BigDecimal("0.33"));
-        olderRow.setNdviMin(new BigDecimal("0.20"));
-        olderRow.setNdviMax(new BigDecimal("0.50"));
-        olderRow.setNdviStddev(new BigDecimal("0.04"));
-        olderRow.setNdviAcquisitionDate(new Date(4000L));
-        olderRow.setNdviRequestDate(new Date(5000L));
+        when(ndviResultRepository.existsByObjectTypeAndParkAreaComputedId(
+                NdviResultObjectType.PARK_AREA_COMPUTED, PARK_ID)).thenReturn(true);
 
         service.processJobs();
 
         assertEquals(ComputeJobStatusEnum.PROCESSED, job.getStatus());
         verify(clientCopernicusNdvi, never()).fetchNdviForPark(any(), any());
-        assertEquals(new BigDecimal("0.33"), row.getNdviMean());
-        assertEquals(4000L, row.getNdviAcquisitionDate().getTime());
-        assertEquals(5000L, row.getNdviRequestDate().getTime());
-        verify(parkAreaComputedRepository).saveAll(List.of(row, olderRow));
-        verify(ndviObservationRepository, never()).save(any());
+        verify(ndviResultRepository, never()).save(any());
+        verify(parkAreaComputedRepository, never()).saveAll(any());
     }
 
     @Test
-    @DisplayName("demande NDVI pour un parc : utilise park_area.id et l'année de référence")
+    @DisplayName("demande NDVI pour un parc : utilise park_area.id et le type PARK_AREA_COMPUTED")
     void requestForParcEnqueue() {
-        when(parkAreaRepository.findByIdParcEtJardin(PARK_ID)).thenReturn(park);
+        when(parkAreaRepository.findByIdParcEtJardin(PARC_ID)).thenReturn(park);
 
-        assertTrue(service.requestForParc(PARK_ID, ANNEE));
+        assertTrue(service.requestForParc(PARC_ID));
 
         ArgumentCaptor<NdviJob> captor = ArgumentCaptor.forClass(NdviJob.class);
         verify(ndviJobRepository).save(captor.capture());
         assertEquals(PARK_ID, captor.getValue().getId());
-        assertEquals(ANNEE, captor.getValue().getAnnee());
+        assertEquals(NdviResultObjectType.PARK_AREA_COMPUTED, captor.getValue().getObjectType());
     }
 
     @Test
     @DisplayName("demande NDVI pour un parc : aucun job si le NDVI existe déjà")
     void requestForParcDejaNdvi() {
-        when(parkAreaRepository.findByIdParcEtJardin(PARK_ID)).thenReturn(park);
-        row.setNdviMean(BigDecimal.ONE);
+        when(parkAreaRepository.findByIdParcEtJardin(PARC_ID)).thenReturn(park);
+        when(ndviResultRepository.existsByObjectTypeAndParkAreaComputedId(
+                NdviResultObjectType.PARK_AREA_COMPUTED, PARK_ID)).thenReturn(true);
 
-        assertFalse(service.requestForParc(PARK_ID, ANNEE));
+        assertFalse(service.requestForParc(PARC_ID));
 
         verify(ndviJobRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("fenêtre vide : aucun historique, mais la date de demande est posée")
-    void fenetreVideSansHistorique() {
+    @DisplayName("fenêtre vide : aucune mesure, mais le job est traité")
+    void fenetreVideSansResultat() {
         when(clientCopernicusNdvi.fetchNdviForPark(eq(PARK_ID), any())).thenReturn(Optional.empty());
 
         service.processJobs();
 
         assertEquals(ComputeJobStatusEnum.PROCESSED, job.getStatus());
-        assertNotNull(row.getNdviRequestDate());
-        assertNotNull(olderRow.getNdviRequestDate());
-        assertNull(row.getNdviMean());
-        verify(ndviObservationRepository, never()).save(any());
+        verify(ndviResultRepository, never()).save(any());
+        verify(parkAreaComputedRepository, never()).saveAll(any());
     }
 
     @Test
-    @DisplayName("une erreur fournisseur laisse le job IN_ERROR et les lignes NDVI intactes")
+    @DisplayName("une erreur fournisseur laisse le job IN_ERROR et aucune mesure")
     void erreurFournisseurLaisseJobEnErreur() {
         when(clientCopernicusNdvi.fetchNdviForPark(eq(PARK_ID), any()))
                 .thenThrow(new NdviQuotaExceededException(10_000));
@@ -184,11 +208,71 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
         service.processJobs();
 
         assertEquals(ComputeJobStatusEnum.IN_ERROR, job.getStatus());
-        assertNull(row.getNdviRequestDate());
-        assertNull(olderRow.getNdviRequestDate());
-        assertNull(row.getNdviMean());
         verify(parkAreaComputedRepository, never()).saveAll(any());
-        verify(ndviObservationRepository, never()).save(any());
+        verify(ndviResultRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("relance forcée : appelle Copernicus même si un NDVI existe déjà")
+    void relanceForceeIgnoreNdviExistant() {
+        when(ndviResultRepository.existsByObjectTypeAndParkAreaComputedId(
+                NdviResultObjectType.PARK_AREA_COMPUTED, PARK_ID)).thenReturn(true);
+        job.setForce(true);
+        when(clientCopernicusNdvi.fetchNdviForPark(eq(PARK_ID), any())).thenReturn(Optional.of(stats()));
+
+        service.processJobs();
+
+        assertEquals(ComputeJobStatusEnum.PROCESSED, job.getStatus());
+        assertFalse(job.isForce());
+        verify(clientCopernicusNdvi).fetchNdviForPark(eq(PARK_ID), any());
+        verify(ndviResultRepository).save(any(NdviResult.class));
+    }
+
+    @Test
+    @DisplayName("relance forcée d'un EPCI : un job forcé par parc calculé")
+    void relanceForceeEpci() {
+        when(parkAreaComputedRepository.findParkIdsByAnneeAndCom2co(ANNEE, 1L))
+                .thenReturn(List.of(PARK_ID));
+
+        int count = service.requestForcedForCom2Co(1L, ANNEE);
+
+        assertEquals(1, count);
+        ArgumentCaptor<NdviJob> captor = ArgumentCaptor.forClass(NdviJob.class);
+        verify(ndviJobRepository).save(captor.capture());
+        assertTrue(captor.getValue().isForce());
+    }
+
+    @Test
+    @DisplayName("dernière date de traitement NDVI d'un parc")
+    void derniereDateTraitement() {
+        job.setProcessed(new Date(6000L));
+        when(ndviJobRepository.findFirstByIdAndObjectTypeAndProcessedIsNotNullOrderByProcessedDesc(
+                PARK_ID, NdviResultObjectType.PARK_AREA_COMPUTED)).thenReturn(Optional.of(job));
+
+        assertEquals(6000L, service.lastRequestDate(PARK_ID).getTime());
+    }
+
+    @Test
+    @DisplayName("synthèse NDVI par ville et par EPCI")
+    void syntheseNdviParTerritoire() {
+        when(ndviJobRepository.getProgressStatsCityLevel(CITY_ID, COM2CO_ID, REGION_ID, "PARC"))
+                .thenReturn(List.<Object[]>of(new Object[] {"MEL", "Lille", "PARC", 1L, 2L, 3L, 4L}));
+        when(ndviJobRepository.getProgressStatsEpciLevel(COM2CO_ID, REGION_ID, "PARC"))
+                .thenReturn(List.<Object[]>of(new Object[] {"MEL", null, "PARC", 5L, 6L, 7L, 8L}));
+
+        ComputeJobProgressStat city = service
+                .getProgressStatsCityLevel(CITY_ID, COM2CO_ID, REGION_ID, "PARC").get(0);
+        ComputeJobProgressStat epci = service
+                .getProgressStatsEpciLevel(COM2CO_ID, REGION_ID, "PARC").get(0);
+
+        assertEquals("MEL", city.getEpciName());
+        assertEquals("Lille", city.getCityName());
+        assertEquals("PARC", city.getType());
+        assertNull(city.getAnnee());
+        assertEquals(1L, city.getToProcess());
+        assertEquals(4L, city.getInError());
+        assertNull(epci.getCityName());
+        assertEquals(7L, epci.getProcessed());
     }
 
     @Test

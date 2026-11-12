@@ -62,9 +62,10 @@ class TestClientCopernicusNdviLive  {
 
         System.out.println(stats);
         assertTrue(stats.isPresent(), "NDVI attendu pour le parc de la Citadelle");
-        assertNotNull(stats.get().mean());
-        assertTrue(stats.get().mean().doubleValue() >= -1.0 && stats.get().mean().doubleValue() <= 1.0,
-                "NDVI hors bornes : " + stats.get().mean());
+        assertNotNull(stats.get().ndvi());
+        assertNotNull(stats.get().ndvi().mean());
+        assertTrue(stats.get().ndvi().mean().doubleValue() >= -1.0 && stats.get().ndvi().mean().doubleValue() <= 1.0,
+                "NDVI hors bornes : " + stats.get().ndvi().mean());
         assertNotNull(stats.get().acquisitionDate());
     }
     
@@ -142,10 +143,12 @@ class TestClientCopernicusNdviLive  {
 			if (stats.isPresent()) {
 				NdviStatistics stat = stats.get();
 				
-				 parcCpu.setNdviMean(stat.mean());
-				 parcCpu.setNdviMax(stat.max());
-				 parcCpu.setNdviMin(stat.min());
-				 parcCpu.setNdviStddev(stat.stdDev());
+				 if (stat.ndvi() != null) {
+					 parcCpu.setNdviMean(stat.ndvi().mean());
+					 parcCpu.setNdviMax(stat.ndvi().max());
+					 parcCpu.setNdviMin(stat.ndvi().min());
+					 parcCpu.setNdviStddev(stat.ndvi().stdDev());
+				 }
 				 parcCpu.setNdviAcquisitionDate(stat.acquisitionDate());
 				
 			}

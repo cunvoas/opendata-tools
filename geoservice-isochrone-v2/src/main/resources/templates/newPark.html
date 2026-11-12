@@ -29,6 +29,7 @@
 
     <sec:authorize access="hasRole('ADMINISTRATOR')">
       <button id="btnCompute" onclick="requestCompute()" type="button" class="btn btn-outline-secondary" th:text="#{park.new.requestCompute}">requestCompute</button>
+      <button id="btnNdviPark" onclick="requestNdviPark()" type="button" class="btn btn-outline-secondary">Copernicus</button>
     </sec:authorize>
 
   <a th:text="#{park.new.help}" class="btn btn-danger" style="position:absolute;right:10px" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
@@ -1049,6 +1050,33 @@
         }
     }
     
+    async function requestNdviPark() {
+        const parkId = document.getElementById("idPark").value;
+        if (!parkId) return;
+        const btn = document.getElementById("btnNdviPark");
+        if (btn) btn.disabled = true;
+        try {
+            const response = await fetch([[@{/mvc/ajax/jobs/api/ndvi/request/park}]], {
+                method: "POST",
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: [[${token}]],
+                    parkId: parkId
+                })
+            });
+            if (response.status === 202 || response.status === 200) {
+                const content = await response.json();
+                alert(content.nbCarre > 0
+                    ? "Demande Copernicus enregistrée."
+                    : "Aucune demande Copernicus (déjà présent ou parc sans zone).");
+            } else {
+                alert("Erreur " + response.status);
+            }
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+
     function savePark() {
     	let hasError=false;
     	console.log("savePark");

@@ -142,7 +142,7 @@
 
 <script>
 import { buildShareableUrl } from '../utils/urlParams.js';
-import { features } from '../utils/features.js';
+import { features } from '../utils/config.js';
 
 export default {
   name: 'HeaderAsso',

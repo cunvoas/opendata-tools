@@ -1,7 +1,7 @@
 # Framing — NDVI par parc — colonne ParkAreaComputed
 
 **Epic :** NDVI par parc — colonne ParkAreaComputed (slug : `ndvi-par-parc-park-area-computed`)
-**Product Owner :** cunvoas · **Trimestre cible :** T4 2026 · **Statut :** implémenté — révision v1.2
+**Product Owner :** cunvoas · **Trimestre cible :** T4 2026 · **Statut :** implémenté — révision v1.3
 
 > **Révision v1.2 (2026-10-31)** — Le NDVI n'est plus appelé dans le pipeline OMS.
 > `ComputeParkAreaV2` dépose une demande dans la table `ndvi_job` ; un service planifié
@@ -12,6 +12,11 @@
 > (période, date d'acquisition, nombre de pixels, valeurs) pour permettre une reventilation
 > ultérieure et reconstituer l'histoire végétale du parc. Les sections ci-dessous intègrent
 > cette architecture.
+>
+> **Révision v1.3 (2026-11-08)** — La file `ndvi_job` n'a plus de clé année : un job par parc.
+> Clé métier `(id, id_inspire, object_type)`, clé technique `job_id`, sans NULL (`id = -1` ou
+> `id_inspire = ''` selon le type). Seul `PARK_AREA_COMPUTED` est consommé. Migrations
+> `v2.1.9` (force) et `v2.2.1` (clé par objet). Voir D04 et D07.
 
 ## SCOPE
 
@@ -19,7 +24,7 @@
 
 - S01 — Colonnes NDVI ajoutées à `ParkAreaComputed` (`park_area_computed`, clé `(id, annee)`) : moyenne, min, max, écart-type (BigDecimal nullable) + date d'acquisition (Date nullable).
 - S02 — Acquisition : NDVI agrégé sur le polygone du parc (`ParkArea.polygon`) via l'API statistique du fournisseur satellite (fournisseur issu de l'epic 1 — Sentinel Hub).
-- S03 — Intégration au pipeline existant : `ComputeParkAreaV2.computeGenericParkAreaV2()` ne fait plus l'appel NDVI ; il dépose une demande idempotente dans la table `ndvi_job` (clé parc + année de référence). La ligne OMS est sauvegardée avant la mise en file.
+- S03 — Intégration au pipeline existant : `ComputeParkAreaV2.computeGenericParkAreaV2()` ne fait plus l'appel NDVI ; il dépose une demande idempotente dans la table `ndvi_job` (un job par parc, sans clé année). La ligne OMS est sauvegardée avant la mise en file.
 - S04 — Résilience : en cas d'échec NDVI, les colonnes restent nulles et la ligne OMS reste intacte ; le job passe `IN_ERROR` et est rejoué quotidiennement. Un job resté `IN_PROCESS` après crash/redémarrage est recyclé par une tâche exécutée toutes les 4h, avec un seuil de 8h15.
 - S05 — Exposition : aucune UI ni endpoint public ; lecture standard via les repositories (`ParkAreaComputedRepository`, `NdviObservationRepository`).
 - S06 — Mutualisation : un seul appel Copernicus par parc et par année de référence ; le NDVI lissé est recopié sur toutes les années du parc pour économiser le quota mensuel. Si un NDVI est déjà présent, aucun appel n'est relancé : la donnée existante est réutilisée.
@@ -36,11 +41,12 @@
 | OOS5 | API satellite payante | Contrainte du PO : gratuité en priorité |
 | OOS6 | Appel NDVI synchrone dans le pipeline OMS | Remplacé par une file persistante pour ne pas bloquer le calcul OMS |
 | OOS7 | Calcul NDVI distinct par année | L'indicateur Copernicus est lissé sur plusieurs années : un appel par parc est recopié sur toutes les années |
+| OOS8 | Consommation des autres types d'objet (`CARRE_200M`, `IRIS`, `CADASTRE`, `PARC_ET_JARDIN`) | Seul `PARK_AREA_COMPUTED` est implémenté ; le schéma accepte le type, la file ne le consomme pas (shortcut dans `NdviBatchJobService`) |
 
 ### Ancrage réel (vérifié)
 
 - Entité : `geoservice-isochrone-v2/src/main/java/com/github/cunvoas/geoserviceisochrone/model/isochrone/ParkAreaComputed.java` (colonnes OMS + NDVI, clé `(id, annee)`).
-- File d'attente : `model/admin/NdviJob.java`, `repo/admin/NdviJobRepository.java`, migration `db/migration/v2.1.6_ndvi_job_queue.sql`.
+- File d'attente : `model/admin/NdviJob.java`, `repo/admin/NdviJobRepository.java`, migrations `db/migration/v2.1.6_ndvi_job_queue.sql`, `v2.1.9_ndvi_job_force.sql`, `v2.2.1_ndvi_job_object_key.sql`.
 - Historique : `model/isochrone/NdviObservation.java`, `repo/admin/NdviObservationRepository.java`, migration `db/migration/v2.1.7_ndvi_observation.sql`.
 - Calcul OMS : `service/park/ComputeParkAreaV2.java` — `requestNdviRefresh()` dépose la demande après le `save` OMS.
 - Traitement NDVI : `extern/ndvi/NdviBatchJobService.java` — lots de 10 toutes les 5 min, reprise `IN_PROCESS`/`IN_ERROR`, recopie sur toutes les années du parc et historisation de chaque réponse.
@@ -85,12 +91,14 @@
 - **D03 — Stratégie d'échec en file** : timeout configurable ; erreur technique (réseau, HTTP, quota) → job `IN_ERROR`, ligne OMS intacte, reprise quotidienne ; job bloqué `IN_PROCESS` recyclé par une tâche toutes les 4h (seuil 8h15). Aucune exception ne remonte au calcul OMS.
   - *addresses* : IS03 · *requires* : CA02, CA03, CA04, CA05
   - **D03.1 — Valeur du timeout** : `application.ndvi.timeout-ms` (10 s par défaut).
-- **D04 — Migrations prod par Flyway** : scripts append-only versionnés : colonnes NDVI (`v2.1.3`, `v2.1.5`), table `ndvi_job` (`v2.1.6`) et table `ndvi_observation` (`v2.1.7`). Dev auto via `ddl-auto: update`.
+- **D04 — Migrations prod par Flyway** : scripts append-only versionnés : colonnes NDVI (`v2.1.3`, `v2.1.5`), table `ndvi_job` (`v2.1.6`, colonne `force` en `v2.1.9`, clé par objet en `v2.2.1`) et table `ndvi_observation` (`v2.1.7`). `v2.2.1` ramène la file à un job par parc : la ligne la plus récente est conservée, la dernière date traitée toutes années confondues est reportée dessus. Flyway s'exécute au démarrage sur tous les profils (`flyway.enabled: true` global) ; `ddl-auto: update` complète le reste en dev.
   - *addresses* : IS04 · *requires* : CA01, CA05, CA07
 - **D05 — Un seul appel par parc, toutes années alimentées** : le NDVI Copernicus étant lissé sur plusieurs années, la réponse est recopiée sur toutes les lignes `park_area_computed` du parc (même `ndvi_request_date`). Aucune demande ni aucun appel n'est fait si un NDVI est déjà présent sur le parc ; la valeur existante est recopiée sur les lignes qui n'en ont pas. Le fallback de fenêtre reste possible et peut doubler l'appel lors du premier remplissage.
   - *addresses* : IS05 · *requires* : CA06
 - **D06 — Historiser chaque observation NDVI** : chaque réponse contenant des statistiques est enregistrée dans `ndvi_observation` avec le parc, la date d'appel, la période retournée, la date d'acquisition, le nombre de pixels et les valeurs NDVI. La copie sur toutes les années de `park_area_computed` reste inchangée ; l'historique sert de source pour une reventilation ultérieure et l'histoire végétale. Chaque appel retournant des statistiques crée une observation, sans dédoublonnage.
   - *addresses* : IS06 · *requires* : CA07
+- **D07 — File NDVI par objet, sans NULL** : la clé de `ndvi_job` est `(id, id_inspire, object_type)`, avec une clé technique `job_id` (surrogate, `IDENTITY` côté entité). Aucune colonne de clé n'est NULL : `id = -1` si la ligne porte un `id_inspire`, `id_inspire = ''` si elle porte un `id`. Motif : Hibernate ne retrouve pas une ligne dont un composant de clé est NULL (`find` vide, donc demande dupliquée et insert en violation d'unicité). Seul `PARK_AREA_COMPUTED` est consommé ; les autres types restent en file (OOS8).
+  - *addresses* : IS04 · *requires* : CA05
 
 ## CAPABILITIES
 
@@ -102,8 +110,8 @@
   - *implements* : IM03, D02
 - **CA04 — Résilience d'appel** : timeout configuré, erreur → job `IN_ERROR` + log WARN, exception jamais propagée au calcul OMS, reprise quotidienne.
   - *implements* : D03
-- **CA05 — File persistante et reprise** : table `ndvi_job` (statuts `TO_PROCESS`/`IN_PROCESS`/`PROCESSED`/`IN_ERROR`), traitement par lots, recyclage des jobs bloqués et des erreurs.
-  - *implements* : IM03, D02, D03, D04
+- **CA05 — File persistante et reprise** : table `ndvi_job` (statuts `TO_PROCESS`/`IN_PROCESS`/`PROCESSED`/`IN_ERROR`), clé `(id, id_inspire, object_type)` sans NULL, clé technique `job_id`, traitement par lots de `PARK_AREA_COMPUTED`, recyclage des jobs bloqués et des erreurs.
+  - *implements* : IM03, D02, D03, D04, D07
 - **CA06 — Propagation toutes années** : un seul appel Copernicus par parc, réponse recopiée sur toutes les lignes `park_area_computed` du parc ; si un NDVI existe déjà, aucun appel n'est fait et la donnée est réutilisée.
   - *implements* : IM05, D05
 - **CA07 — Historique des observations NDVI** : entité `NdviObservation`, repository `NdviObservationRepository`, migration `v2.1.7` ; `NdviBatchJobService` enregistre une ligne par réponse contenant des statistiques avant la recopie annuelle. Lecture par parc triée par période, sans exposition front.
@@ -111,7 +119,7 @@
 
 ### Reverse links
 - IM01 *requires* CA01 · IM02 *requires* CA02, CA04 · IM03 *requires* CA03, CA05 · IM04 — sans capability (impact de lecture) · IM05 *requires* CA06 · IM06 *requires* CA07
-- D01 *requires* CA02 · D02 *requires* CA01, CA03, CA05 · D03 *requires* CA02, CA03, CA04, CA05 · D04 *requires* CA01, CA05, CA07 · D05 *requires* CA06 · D06 *requires* CA07
+- D01 *requires* CA02 · D02 *requires* CA01, CA03, CA05 · D03 *requires* CA02, CA03, CA04, CA05 · D04 *requires* CA01, CA05, CA07 · D05 *requires* CA06 · D06 *requires* CA07 · D07 *requires* CA05
 - CA01 *is realized by* AV02 · CA02 *is realized by* AV01, AV03 · CA03 *is realized by* AV01, AV04 · CA04 *is realized by* AV04 · CA05 *is realized by* AV02, AV04 · CA06 *is realized by* AV02, AV03 · CA07 *is realized by* AV05
 
 ## ADDED VALUES
@@ -226,7 +234,7 @@ Scenario 03.1 : activation des colonnes en production
   Given les scripts Flyway d'ajout des colonnes NDVI et des tables ndvi_job et ndvi_observation sont présents
   When le déploiement en production démarre
   Then les colonnes NDVI sont ajoutées avec des valeurs nulles par défaut
-  And la table ndvi_job est créée avec sa clé (id, annee) et son index (status, demand)
+  And la table ndvi_job est créée avec sa clé technique job_id, son unicité (id, id_inspire, object_type) et son index (status, demand)
   And la table ndvi_observation est créée avec son index (park_area_id, period_start)
   And aucune donnée OMS existante n'est modifiée ou supprimée
 
@@ -239,8 +247,8 @@ Scenario 03.2 : cohérence des colonnes en développement
 #### US04 : file d'attente et reprise
 ```gherkin
 Scenario 04.1 : demande idempotente
-  Given un job (parc, annee) déjà TO_PROCESS ou IN_PROCESS
-  When une nouvelle demande NDVI est déposée pour la même clé
+  Given un job du parc déjà TO_PROCESS ou IN_PROCESS
+  When une nouvelle demande NDVI est déposée pour le même parc
   Then aucun doublon n'est créé
 
 Scenario 04.2 : reprise après crash
@@ -257,7 +265,7 @@ Scenario 04.3 : reprise après erreur fournisseur
 Scenario 04.4 : demande manuelle depuis le bouton « Calculer le parc »
   Given un parc sans NDVI
   When l'utilisateur déclenche le bouton « Calculer le parc »
-  Then un job NDVI est déposé pour l'année de référence
+  Then un job NDVI est déposé pour le parc
   And aucun job NDVI n'est déposé si un NDVI existe déjà sur le parc
 ```
 
@@ -308,7 +316,7 @@ Scenario 05.2 : reventilation post-traitement
 - `extern/ndvi/NdviBatchJobService.java` — file `ndvi_job`, lots de 10 toutes les 5 min, reprise `IN_PROCESS` (seuil 8h15) et `IN_ERROR` (quotidienne), recopie sur toutes les années du parc, historisation dans `ndvi_observation`.
 - `extern/ndvi/NdviStatistics.java` — statistiques + période d'agrégation + `sampleCount`.
 - `extern/ndvi/ClientCopernicusNdvi.java` — client CDSE, quota mensuel, fenêtre principale + fallback.
-- `model/admin/NdviJob.java` · `repo/admin/NdviJobRepository.java` · `db/migration/v2.1.6_ndvi_job_queue.sql` — file persistante.
+- `model/admin/NdviJob.java` · `repo/admin/NdviJobRepository.java` · `db/migration/v2.1.6_ndvi_job_queue.sql`, `v2.1.9_ndvi_job_force.sql`, `v2.2.1_ndvi_job_object_key.sql` — file persistante (clé par objet, sentinelles `-1` / `''`).
 - `model/isochrone/NdviObservation.java` · `repo/admin/NdviObservationRepository.java` · `db/migration/v2.1.7_ndvi_observation.sql` — historique des observations.
 - `repo/ParkAreaComputedRepository.java` — repository standard + `findAllByIdPark(id)` pour la propagation multi-années.
 - `application-dev.yml` (ddl-auto update) · `application.yml` (`application.ndvi.*`, flyway, prod ddl none).
@@ -321,9 +329,9 @@ Scenario 05.2 : reventilation post-traitement
 | Slug | `ndvi-par-parc-park-area-computed` |
 | Product Owner | cunvoas |
 | Trimestre cible | T4 2026 |
-| Statut | Framing v1.2 — architecture asynchrone, file persistante et historique des observations (2026-10-31) |
-| Date | 2026-10-31 |
+| Statut | Framing v1.3 — file `ndvi_job` par objet sans NULL, un job par parc (2026-11-08) |
+| Date | 2026-11-08 |
 | Base code | repo `cunvoas/opendata-tools`, branche `feat/ndvi-front` @ `36fd155` · backend `geoservice-isochrone-v2` concerné |
-| Décisions ouvertes | Aucune (D01.1–D06 renseignées) |
+| Décisions ouvertes | Aucune (D01.1–D07 renseignées) |
 | Epic lié (valeur générée) | `recuperation-ndvi-parc-framing.md` (fournisseur Sentinel Hub, front overlay) |
-| Version | 1.2 |
+| Version | 1.3 |

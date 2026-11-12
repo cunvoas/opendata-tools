@@ -33,6 +33,7 @@ import {
 import { Bar, Pie } from 'vue-chartjs';
 import { toRaw } from 'vue'
 import StatsTableAccessibility from './StatsTableAccessibility.vue';
+import { DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from '../utils/config.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
@@ -246,8 +247,6 @@ export default {
 
 
 
-      const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
-      
       // Debug: log the received location
       console.log("processLocation received:", JSON.stringify(newLocation));
 
@@ -274,7 +273,9 @@ export default {
         // If graphType is specified, use the new URL format for specific graph types
         if (graphType) {
           // Format: https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/stats/com2co/1/stats_c2c_1_urbans_2019.json
-          callUrl = `${staticOnGit}/data/stats/com2co/${com2coId}/stats_c2c_${com2coId}_${graphType}_${annee}.json`;
+          callUrl = DATA_MODE === 'dynamic'
+            ? `${DYNAMIC_ON_LOCAL}/map/stats/com2co/${com2coId}/${graphType}?annee=${annee}`
+            : `${STATIC_ON_GIT}/data/stats/com2co/${com2coId}/stats_c2c_${com2coId}_${graphType}_${annee}.json`;
         } else {
           console.error("graphType is required for com2co location type");
           this.loaded = false;
@@ -285,7 +286,9 @@ export default {
         const cityInsee = newLocation.cityInsee;
         console.log("processLocation (city):", regionId, com2coId, cityInsee);
         const dept = cityInsee.substring(0,2);
-        callUrl = `${staticOnGit}/data/stats/${dept}/${cityInsee}/stats_${cityInsee}_${annee}.json`;
+        callUrl = DATA_MODE === 'dynamic'
+          ? `${DYNAMIC_ON_LOCAL}/map/stats/city/${cityInsee}?annee=${annee}`
+          : `${STATIC_ON_GIT}/data/stats/${dept}/${cityInsee}/stats_${cityInsee}_${annee}.json`;
       }
 
       

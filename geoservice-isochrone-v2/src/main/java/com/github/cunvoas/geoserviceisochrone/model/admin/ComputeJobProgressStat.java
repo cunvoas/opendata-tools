@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 public class ComputeJobProgressStat {
     private String epciName;
     private String cityName;
+    /** Type NDVI : PARC, IRIS, CADASTRE ou CARRE. */
+    private String type;
     private Integer annee;
     private Long toProcess;
     private Long inProcess;

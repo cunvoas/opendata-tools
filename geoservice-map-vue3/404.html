@@ -3,14 +3,17 @@
   <head>
     <meta charset="utf-8">
     <title>Redirection...</title>
+
     <script>
       const segment = 1;
-      const repo = "parcs-et-jardins";
+      //const repo = "parcs-et-jardins/";
+      const repo = "";
       
       sessionStorage.redirect = location.href;
       location.href = location.protocol + '//' + location.hostname +
         (location.port ? ':' + location.port : '') +
-        '/' + repo + '/?p=' + location.pathname.slice(1);
+        '/' + repo + '?p=' + location.pathname.slice(1);
     </script>
+
   </head>
 </html>

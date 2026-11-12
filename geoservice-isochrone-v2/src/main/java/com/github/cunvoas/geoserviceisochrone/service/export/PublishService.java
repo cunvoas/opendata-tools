@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.extern.helper.GitHelper;
@@ -61,7 +60,6 @@ public class PublishService {
      * @param requestedYear L'année de référence pour le calcul
      */
     @Async
-    @Transactional(readOnly = true)
     public void publishAsync(Long c2cId, Integer requestedYear) {
         log.info("Starting async publication for com2co {} and year {}", c2cId, requestedYear);
         PublicationStatus status = new PublicationStatus();
@@ -81,6 +79,17 @@ public class PublishService {
             // 1a. référentiels : régions, EPCI par région, villes par EPCI
             produce(status, () -> servicePublicationExporter.writeRegions(),
                     "referentiels", referentialPaths(com2co));
+
+            // stats
+            produce(status, () -> statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(c2cId, requestedYear),
+                    "stats-cities", statsCityPaths(com2co, requestedYear));
+            produce(status, () -> statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(requestedYear, c2cId),
+                    "stats-urbans", statsPath(c2cId, requestedYear, "urbans"));
+            produce(status, () -> statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(requestedYear, c2cId),
+                    "stats-suburbs", statsPath(c2cId, requestedYear, "suburbs"));
+            produce(status, () -> statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(requestedYear, c2cId),
+                    "stats-all", statsPath(c2cId, requestedYear, "all"));
+            
             // 1b. données géographiques et statistiques de l'EPCI
             produce(status, () -> servicePublicationExporter.writeGeoJsonParkOutline(com2co, requestedYear),
                     "parkOutline", parkOutlinePath(c2cId, requestedYear));
@@ -90,14 +99,6 @@ public class PublishService {
                     "carres", carrePath(c2cId, requestedYear));
             produce(status, () -> servicePublicationExporter.writeGeoJsonIris(com2co, requestedYear),
                     "iris", irisPath(c2cId, requestedYear));
-            produce(status, () -> statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(c2cId, requestedYear),
-                    "stats-cities", statsCityPaths(com2co, requestedYear));
-            produce(status, () -> statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(requestedYear, c2cId),
-                    "stats-urbans", statsPath(c2cId, requestedYear, "urbans"));
-            produce(status, () -> statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(requestedYear, c2cId),
-                    "stats-suburbs", statsPath(c2cId, requestedYear, "suburbs"));
-            produce(status, () -> statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(requestedYear, c2cId),
-                    "stats-all", statsPath(c2cId, requestedYear, "all"));
             produce(status, () -> servicePublicationExporter.writeNdviJson(com2co, requestedYear),
                     "ndvi", ndviPath(c2cId, requestedYear));
 
@@ -179,6 +180,13 @@ public class PublishService {
         if (!gitHelper.isConfigured()) {
             status.setPhase(PublicationStatus.Phase.PUSH_NOT_CONFIGURED);
             status.setMessage("Fichiers produits ; publication Git non configurée (username/token absents).");
+            status.setUpdatedAt(LocalDateTime.now());
+            return;
+        }
+        
+        if (!gitHelper.isAutorisedToPublish()) {
+            status.setPhase(PublicationStatus.Phase.PUSH_NOT_CONFIGURED);
+            status.setMessage("Toggle Feature: publication Git déasctivée).");
             status.setUpdatedAt(LocalDateTime.now());
             return;
         }

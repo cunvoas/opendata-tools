@@ -82,5 +82,15 @@ public interface InseeCarre200mOnlyShapeRepository extends JpaRepository<InseeCa
 	 */
 	@Query(nativeQuery = true,  value = "SELECT ST_Area(?1, true)")
 	Long getSurface(Geometry polygon);
+
+	/**
+	 * Carreau 200m couvrant le mieux une géométrie.
+	 * @param geometry géométrie du parc
+	 * @return identifiant Inspire, ou null
+	 */
+	@Query(nativeQuery = true,
+			value = "SELECT id_inspire FROM carre200onlyshape WHERE ST_Intersects(geo_shape, ?1)"
+					+ " ORDER BY ST_Area(ST_Intersection(geo_shape, ?1)) DESC LIMIT 1")
+	String findBestIdInspire(String geometry);
 	
 }

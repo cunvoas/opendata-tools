@@ -95,7 +95,7 @@ public class GeoJsonParkController {
     	if (annee==null) {
     		annee=applicationBusinessProperties.getDerniereAnnee();
     	}
-        return geoMapService.findAllParkByArea(annee, swLat, swLng, neLat, neLng);
+        return geoMapService.findAllParkOutlineByArea(annee, swLat, swLng, neLat, neLng);
     }
     
 

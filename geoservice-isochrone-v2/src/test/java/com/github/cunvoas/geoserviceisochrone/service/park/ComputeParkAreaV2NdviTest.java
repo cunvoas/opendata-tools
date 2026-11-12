@@ -109,19 +109,19 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
         assertNull(result.getNdviMean());
         assertEquals(omsUpdated, result.getUpdated());
         assertNull(result.getPopulation());
-        verify(ndviBatchJobService).request(PARK_ID, ANNEE);
+        verify(ndviBatchJobService).request(PARK_ID);
         verify(parkAreaComputedRepository, never()).save(row);
     }
 
     @Test
     @DisplayName("NDVI déjà présent : aucune demande en file")
     void ndviDejaPresentSansDemande() {
-        row.setNdviMean(new BigDecimal("0.33"));
+        when(ndviBatchJobService.hasResult(PARK_ID)).thenReturn(true);
 
         ParkAreaComputed result = service.computeGenericParkAreaV2(park, ANNEE);
 
         assertSame(row, result);
-        verify(ndviBatchJobService, never()).request(any(), any());
+        verify(ndviBatchJobService, never()).request(any());
     }
 
     @Test
@@ -132,7 +132,7 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
         ParkAreaComputed result = service.computeGenericParkAreaV2(park, ANNEE);
 
         assertSame(row, result);
-        verify(ndviBatchJobService, never()).request(any(), any());
+        verify(ndviBatchJobService, never()).request(any());
     }
 
     @Test
@@ -154,7 +154,7 @@ class ComputeParkAreaV2NdviTest extends BaseUnitTest {
     @Test
     @DisplayName("pas de nouvelle demande NDVI avant un an")
     void ndviLimiteAUnAn() {
-        row.setNdviRequestDate(Date.from(
+        when(ndviBatchJobService.lastRequestDate(PARK_ID)).thenReturn(Date.from(
                 LocalDate.of(2026, 9, 15).atStartOfDay(ZoneId.systemDefault()).toInstant()));
 
         assertFalse(service.isNdviRequestDue(row, LocalDate.of(2027, 9, 14)));

@@ -7,6 +7,7 @@ export default defineConfig({
     environment: 'happy-dom',
     pool: 'vmForks',
     globals: true,
+    env: { VITE_DATA_MODE: 'dynamic' },
     reporters: ['default', 'junit'],
     outputFile: {
       junit: './coverage/test-report.xml'

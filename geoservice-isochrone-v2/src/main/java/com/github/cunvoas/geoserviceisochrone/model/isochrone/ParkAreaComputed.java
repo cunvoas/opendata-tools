@@ -72,6 +72,30 @@ public class ParkAreaComputed {
     /** Écart-type du NDVI sur le polygone du parc. */
     @Column(name = "ndvi_stddev", precision = 6, scale = 4)
     private BigDecimal ndviStddev;
+    /** NDRE moyen (B08/B05) : chlorophylle des couverts denses, moins saturé que le NDVI. */
+    @Column(name = "ndre_mean", precision = 6, scale = 4)
+    private BigDecimal ndreMean;
+    /** NDRE minimal sur le polygone du parc. */
+    @Column(name = "ndre_min", precision = 6, scale = 4)
+    private BigDecimal ndreMin;
+    /** NDRE maximal sur le polygone du parc. */
+    @Column(name = "ndre_max", precision = 6, scale = 4)
+    private BigDecimal ndreMax;
+    /** Écart-type du NDRE sur le polygone du parc. */
+    @Column(name = "ndre_stddev", precision = 6, scale = 4)
+    private BigDecimal ndreStddev;
+    /** GNDVI moyen (B08/B03) : concentration en chlorophylle. */
+    @Column(name = "gndvi_mean", precision = 6, scale = 4)
+    private BigDecimal gndviMean;
+    /** GNDVI minimal sur le polygone du parc. */
+    @Column(name = "gndvi_min", precision = 6, scale = 4)
+    private BigDecimal gndviMin;
+    /** GNDVI maximal sur le polygone du parc. */
+    @Column(name = "gndvi_max", precision = 6, scale = 4)
+    private BigDecimal gndviMax;
+    /** Écart-type du GNDVI sur le polygone du parc. */
+    @Column(name = "gndvi_stddev", precision = 6, scale = 4)
+    private BigDecimal gndviStddev;
     /** Fin de la fenêtre d'observation NDVI fournie par le fournisseur. */
     @DateTimeFormat
     @Column(name = "ndvi_acquisition_date")

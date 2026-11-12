@@ -5,16 +5,16 @@
  * À tenir alignée avec NDVI_CATEGORIES de geoservice-isochrone-v2/src/main/resources/templates/consultMap.html.
  */
 export const NDVI_CATEGORIES = [
-  { min: -Infinity, range: 'moins de 0', label: 'Eau, neige ou nuages',
-    description: 'Eau (mers, lacs, rivières), neige ou nuages.', color: '#d9f0a3', colorDaltonien: '#fee838' },
-  { min: 0, range: '0 à 0,1', label: 'Sols nus et zones artificielles',
-    description: 'Sols nus, roches, sable ou zones urbaines artificielles.', color: '#addd8e', colorDaltonien: '#008afc' },
-  { min: 0.1, range: '0,1 à 0,2', label: 'Végétation très éparse',
-    description: 'Végétation très éparse, prairies sèches ou début de sénescence.', color: '#78c679', colorDaltonien: '#7d7c78' },
-  { min: 0.2, range: '0,2 à 0,5', label: 'Végétation modérée',
-    description: 'Végétation modérée, cultures en croissance, prairies vertes ou arbustes.', color: '#31a354', colorDaltonien: '#434e6c' },
-  { min: 0.5, range: '0,5 à 1,0', label: 'Végétation dense et saine',
-    description: 'Végétation dense et saine, forêts tempérées/tropicales ou cultures en pleine maturité.', color: '#006837', colorDaltonien: '#00224e' }
+  { min: -Infinity, range: '-1,0 à 0,1', label: 'Eau, neige, roche, bâti',
+    description: 'Eau, neige, roche, routes et bâtiments.', color: '#d9f0a3', colorDaltonien: '#fee838' },
+  { min: 0.1, range: '0,1 à 0,2', label: 'Sol nu ou végétation morte',
+    description: 'Sol nu, sable ou végétation morte/sèche.', color: '#addd8e', colorDaltonien: '#008afc' },
+  { min: 0.2, range: '0,2 à 0,4', label: 'Végétation très clairsemée',
+    description: 'Végétation très clairsemée, début de levée, ou pelouse tondue/brûlée.', color: '#78c679', colorDaltonien: '#7d7c78' },
+  { min: 0.4, range: '0,4 à 0,7', label: 'Végétation en croissance',
+    description: 'Végétation en croissance active, couverture du sol modérée.', color: '#31a354', colorDaltonien: '#434e6c' },
+  { min: 0.7, range: '0,7 à 1,0', label: 'Zone de saturation',
+    description: 'Zone de saturation. Canopée dense, forêt, culture en pleine maturité. Attention : une plante malade peut encore afficher 0,85.', color: '#006837', colorDaltonien: '#00224e' }
 ];
 
 /** Couleur des parcs dont le NDVI moyen est absent ou non numérique. */

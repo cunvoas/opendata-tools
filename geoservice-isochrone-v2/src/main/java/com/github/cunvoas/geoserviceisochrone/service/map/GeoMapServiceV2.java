@@ -558,6 +558,18 @@ public class GeoMapServiceV2 {
 						pv.setOms(park.getOmsCustom());
 					}
 					pv.setActif(getActif(park));
+					ParkArea pa = parkAreaRepository.findByIdParcEtJardin(park.getId());
+					pv.setNdviEnabled(clientCopernicusNdvi.isEnabled());
+					if (pa != null) {
+						parkAreaComputedRepository.findByIdAndAnnee(pa.getId(), annee)
+								.ifPresent(pac -> {
+									pv.setNdviMean(pac.getNdviMean());
+									pv.setNdviMin(pac.getNdviMin());
+									pv.setNdviMax(pac.getNdviMax());
+									pv.setNdviStddev(pac.getNdviStddev());
+									pv.setNdviAcquisitionDate(pac.getNdviAcquisitionDate());
+								});
+					}
 					
 					
     			}
@@ -618,6 +630,14 @@ public class GeoMapServiceV2 {
 									pv.setNdviMin(pac.getNdviMin());
 									pv.setNdviMax(pac.getNdviMax());
 									pv.setNdviStddev(pac.getNdviStddev());
+									pv.setNdreMean(pac.getNdreMean());
+									pv.setNdreMin(pac.getNdreMin());
+									pv.setNdreMax(pac.getNdreMax());
+									pv.setNdreStddev(pac.getNdreStddev());
+									pv.setGndviMean(pac.getGndviMean());
+									pv.setGndviMin(pac.getGndviMin());
+									pv.setGndviMax(pac.getGndviMax());
+									pv.setGndviStddev(pac.getGndviStddev());
 									pv.setNdviAcquisitionDate(pac.getNdviAcquisitionDate());
 								});
 					}
@@ -1105,6 +1125,14 @@ public class GeoMapServiceV2 {
 			pv.setNdviMin(pac.getNdviMin());
 			pv.setNdviMax(pac.getNdviMax());
 			pv.setNdviStddev(pac.getNdviStddev());
+			pv.setNdreMean(pac.getNdreMean());
+			pv.setNdreMin(pac.getNdreMin());
+			pv.setNdreMax(pac.getNdreMax());
+			pv.setNdreStddev(pac.getNdreStddev());
+			pv.setGndviMean(pac.getGndviMean());
+			pv.setGndviMin(pac.getGndviMin());
+			pv.setGndviMax(pac.getGndviMax());
+			pv.setGndviStddev(pac.getGndviStddev());
 			pv.setNdviAcquisitionDate(pac.getNdviAcquisitionDate());
 			
 			//pv.setFillColor(this.getFillColorPark(pv, pac));

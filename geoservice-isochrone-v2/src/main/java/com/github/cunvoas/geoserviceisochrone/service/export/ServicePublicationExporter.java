@@ -188,13 +188,13 @@ public class ServicePublicationExporter {
 		written.add(file);
 
 		for (City city : com2co.getCities()) {
-			NdviSummaries citySummaries = ndviController.summaries(annee, null, city.getId());
+			NdviSummaries citySummaries = ndviController.summaries(annee, null, city.getInseeCode());
 			if (citySummaries.withNdvi() == 0) {
 				continue;
 			}
-			File cityFolder = new File(folder, String.valueOf(city.getId()));
+			File cityFolder = new File(folder, city.getInseeCode());
 			cityFolder.mkdirs();
-			File cityFile = new File(cityFolder, "ndvi_"+String.valueOf(annee)+"_"+String.valueOf(city.getId())+".json");
+			File cityFile = new File(cityFolder, "ndvi_"+String.valueOf(annee)+"_"+city.getInseeCode()+".json");
 			objectMapper.writeValue(cityFile, citySummaries);
 			written.add(cityFile);
 		}

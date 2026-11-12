@@ -273,14 +273,10 @@ import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
 import { ref, onMounted } from 'vue';
 import { hexToRgba } from "../utils/color.js";
 import { getNdviCategory, getNdviColor, NDVI_CONTOUR_DALTONIEN } from "../utils/ndvi.js";
-import { interpreterStatistiquesNdvi } from "../utils/ndviInterpretation.js";
-import { features } from "../utils/features.js";
+import { features, DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from "../utils/config.js";
 import axios from 'axios';
 import { buildShareableUrl, isActive } from '../utils/urlParams.js';
 import debounce from 'lodash/debounce';
-
-
-const MODE='static';
 
 // needs to be here for map coloring
 // Fonction pour obtenir les couleurs des parcs selon le mode (normal ou daltonien)
@@ -717,18 +713,16 @@ export default {
       }
     },
     getRootUrl() {
-      const staticOnGit = 'https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main';
-      const dynamicOnLocal = 'http://localhost:8980/isochrone/geolocation/';
-      console.log("mode: "+MODE);
+      console.log("mode: "+DATA_MODE);
 
-      if (MODE==='dynamic') {
-        return  dynamicOnLocal;
+      if (DATA_MODE==='dynamic') {
+        return  DYNAMIC_ON_LOCAL;
       } else {
-        return staticOnGit;
+        return STATIC_ON_GIT;
       }
     },
     isDynamic() {
-      return MODE === 'dynamic';
+      return DATA_MODE === 'dynamic';
     },
     addTemporaryMarker(lat, lng) {
       /*
@@ -813,7 +807,7 @@ export default {
 
 
         // Get density data
-        const respDensite = await axios.get("https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/cities/densite.json", { timeout: 5000 });
+        const respDensite = await axios.get(`${STATIC_ON_GIT}/data/cities/densite.json`, { timeout: 5000 });
         const dataDensite = respDensite.data;
 
         // Find the density data for the given codeInsee
@@ -915,7 +909,12 @@ export default {
     const rootUrl = this.getRootUrl();
     let callUrl='';
     if (this.isDynamic()) {
-      callUrl = `${rootUrl}/map/park/area${qryPrms}`;
+      if (!qryPrms && this.bounds) {
+        const sw = this.bounds._southWest;
+        const ne = this.bounds._northEast;
+        qryPrms = "?swLat=" + sw.lat + "&swLng=" + sw.lng + "&neLat=" + ne.lat + "&neLng=" + ne.lng + "&annee=" + this.annee;
+      }
+      callUrl = `${rootUrl}/map/park/outline${qryPrms || ''}`;
     } else {
       callUrl = `${rootUrl}/geojson/parkOutline/${this.com2co}/parkOutline_${this.annee}_${this.com2co}.json`;
     }
@@ -997,11 +996,6 @@ export default {
       });
     },
 
-    formatNdviDate(value) {
-      if (!value) return '';
-      const date = new Date(value);
-      return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('fr-FR');
-    },
     formatNdviValue(value) {
       if (value === null || value === undefined || value === '') return 'N/A';
       const numeric = Number.parseFloat(String(value).replace(',', '.'));
@@ -1010,24 +1004,19 @@ export default {
     },
     buildNdviHtml(properties) {
       if (!this.ndviEnabled || !properties?.ndviEnabled) return '';
-      if (properties.ndviMean === null || properties.ndviMean === undefined || properties.ndviMean === '') {
-        return "<div>NDVI pas encore calculé</div>";
+      const mean = Number(properties.ndviMean);
+      if (properties.ndviMean === null || properties.ndviMean === undefined || !Number.isFinite(mean)) {
+        return '<span style="display:block">NDVI : pas encore calculé</span>';
       }
       const category = getNdviCategory(properties.ndviMean);
-      const diagnostic = interpreterStatistiquesNdvi({
-        moyenne: properties.ndviMean,
-        minimum: properties.ndviMin,
-        maximum: properties.ndviMax,
-        ecartType: properties.ndviStddev
-      });
-      const date = this.formatNdviDate(properties.ndviAcquisitionDate);
-      return "<div>NDVI moyen: " + this.formatNdviValue(properties.ndviMean) +
-        " (min " + this.formatNdviValue(properties.ndviMin) +
-        ", max " + this.formatNdviValue(properties.ndviMax) +
-        ", écart-type " + this.formatNdviValue(properties.ndviStddev) + ")" +
-        (category ? "</div><div>Catégorie NDVI: " + category.label : '') +
-        (diagnostic ? "</div><div>" + diagnostic.replaceAll('\n', "</div><div>") : '') +
-        (date ? "</div><div>Acquisition: " + date : '') + "</div>";
+      const color = getNdviColor(properties.ndviMean, this.colorblindMode);
+      let html = `<span style="display:block;margin-top:.3em"><b>NDVI moyen : ${this.formatNdviValue(mean)}</b>`;
+      if (properties.ndviMin != null && properties.ndviMax != null) {
+        html += ` (min ${this.formatNdviValue(properties.ndviMin)}, max ${this.formatNdviValue(properties.ndviMax)})`;
+      }
+      html += '</span>';
+      html += `<span style="display:block"><span style="display:inline-block;width:.8em;height:.8em;margin-right:.3em;border:1px solid #555;background:${color}"></span><i>${category.range} :</i> ${category.description}</span>`;
+      return html;
     },
     buildParkDetailHtml(properties) {
       const name = properties?.name || 'Parc sans nom';

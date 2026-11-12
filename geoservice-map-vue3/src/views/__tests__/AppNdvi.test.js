@@ -139,17 +139,17 @@ describe('AppNdvi', () => {
   });
 
   it('reprend la commune mémorisée quand elle appartient à l’EPCI affiché', async () => {
-    localStorage.setItem('location-selected', JSON.stringify({ com2coId: 1, cityId: '2878', cityName: 'LILLE (59350)' }));
+    localStorage.setItem('location-selected', JSON.stringify({ com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' }));
     mockFetch({ ok: true, json: () => Promise.resolve(payload) });
     const wrapper = mount(AppNdvi);
     await flushPromises();
 
-    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/map/ndvi/summaries?annee=2021&com2co=1&city=2878'));
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/map/ndvi/summaries?annee=2021&com2co=1&city=59350'));
     expect(wrapper.text()).toContain('Commune : LILLE (59350)');
   });
 
   it('ignore la commune mémorisée quand l’URL demande un autre EPCI', async () => {
-    localStorage.setItem('location-selected', JSON.stringify({ com2coId: 1, cityId: '2878', cityName: 'LILLE (59350)' }));
+    localStorage.setItem('location-selected', JSON.stringify({ com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' }));
     window.history.replaceState({}, '', '/?com2co=2');
     mockFetch({ ok: true, json: () => Promise.resolve(payload) });
     const wrapper = mount(AppNdvi);
@@ -194,28 +194,28 @@ describe('AppNdvi', () => {
     it('rappelle le service avec la commune choisie et l’indique au-dessus de la liste', async () => {
       const wrapper = await mountWith();
 
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       expect(fetch).toHaveBeenCalledTimes(2);
-      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('/map/ndvi/summaries?annee=2021&com2co=1&city=2878'));
+      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('/map/ndvi/summaries?annee=2021&com2co=1&city=59350'));
       expect(wrapper.text()).toContain('Commune : LILLE (59350)');
     });
 
     it('suit une commune d’un autre EPCI', async () => {
       const wrapper = await mountWith();
 
-      emitFrom(wrapper, 'city-selected', { com2coId: 809, cityId: 5, cityName: 'BETHUNE (62119)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 809, cityInsee: '62119', cityName: 'BETHUNE (62119)' });
       await flushPromises();
 
-      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('com2co=809&city=5'));
+      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('com2co=809&city=62119'));
     });
 
     it('ne rappelle pas le service quand la même commune est signalée deux fois (nombre ou texte)', async () => {
       const wrapper = await mountWith();
 
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
-      emitFrom(wrapper, 'city-selected', { com2coId: '1', cityId: '2878', cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: '1', cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       expect(fetch).toHaveBeenCalledTimes(2);
@@ -224,28 +224,28 @@ describe('AppNdvi', () => {
     it('change de commune sans repasser par l’EPCI', async () => {
       const wrapper = await mountWith();
 
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 100, cityName: 'ROUBAIX (59512)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59512', cityName: 'ROUBAIX (59512)' });
       await flushPromises();
 
-      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('com2co=1&city=100'));
+      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('com2co=1&city=59512'));
       expect(wrapper.text()).toContain('Commune : ROUBAIX (59512)');
     });
 
     it('conserve la commune quand on change d’année', async () => {
       const wrapper = await mountWith();
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       await wrapper.find('#ndviAnnee').setValue('2019');
       await flushPromises();
 
-      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('annee=2019&com2co=1&city=2878'));
+      expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('annee=2019&com2co=1&city=59350'));
     });
 
     it('un nouvel EPCI efface la commune', async () => {
       const wrapper = await mountWith();
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       emitFrom(wrapper, 'com2co-selected', { com2coId: 809 });
@@ -257,7 +257,7 @@ describe('AppNdvi', () => {
 
     it('revient à toute l’intercommunalité depuis la commune', async () => {
       const wrapper = await mountWith();
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       await wrapper.findAll('button').find((button) => button.text() === 'Voir toute l\'intercommunalité').trigger('click');
@@ -273,7 +273,7 @@ describe('AppNdvi', () => {
       emitFrom(wrapper, 'com2co-selected', { regionId: 9 });
       emitFrom(wrapper, 'com2co-selected', null);
       emitFrom(wrapper, 'city-selected', { com2coId: 1 });
-      emitFrom(wrapper, 'city-selected', { cityId: 2878 });
+      emitFrom(wrapper, 'city-selected', { cityInsee: '59350' });
       emitFrom(wrapper, 'city-selected', null);
       await flushPromises();
 
@@ -294,7 +294,7 @@ describe('AppNdvi', () => {
       await filterBy(wrapper, 'citadelle');
       expect(parkNames(wrapper)).toEqual(['Citadelle']);
 
-      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      emitFrom(wrapper, 'city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
       expect(wrapper.find('#ndviFiltreParc').element.value).toBe('');
@@ -312,7 +312,7 @@ describe('AppNdvi', () => {
     });
 
     it('lit le fichier de l’EPCI, puis celui de la commune choisie', async () => {
-      vi.stubEnv('DEV', false);
+      vi.stubEnv('VITE_DATA_MODE', 'static');
       vi.resetModules();
       const { default: StaticAppNdvi } = await import('../AppNdvi.vue');
       mockFetch({ ok: true, json: () => Promise.resolve(payload) });
@@ -321,10 +321,10 @@ describe('AppNdvi', () => {
 
       expect(fetch).toHaveBeenLastCalledWith(`${RAW}/1/ndvi_2021_1.json`);
 
-      wrapper.findComponent({ name: 'SearchLocation' }).vm.$emit('city-selected', { com2coId: 1, cityId: 2878, cityName: 'LILLE (59350)' });
+      wrapper.findComponent({ name: 'SearchLocation' }).vm.$emit('city-selected', { com2coId: 1, cityInsee: '59350', cityName: 'LILLE (59350)' });
       await flushPromises();
 
-      expect(fetch).toHaveBeenLastCalledWith(`${RAW}/1/2878/ndvi_2021_2878.json`);
+      expect(fetch).toHaveBeenLastCalledWith(`${RAW}/1/59350/ndvi_2021_59350.json`);
     });
   });
 
@@ -400,11 +400,11 @@ describe('AppNdvi', () => {
       const wrapper = await mountWith();
 
       expect(chartRows(wrapper).map((row) => row.label)).toEqual([
-        'moins de 0 : Eau, neige ou nuages',
-        '0 à 0,1 : Sols nus et zones artificielles',
-        '0,1 à 0,2 : Végétation très éparse',
-        '0,2 à 0,5 : Végétation modérée',
-        '0,5 à 1,0 : Végétation dense et saine'
+        '-1,0 à 0,1 : Eau, neige, roche, bâti',
+        '0,1 à 0,2 : Sol nu ou végétation morte',
+        '0,2 à 0,4 : Végétation très clairsemée',
+        '0,4 à 0,7 : Végétation en croissance',
+        '0,7 à 1,0 : Zone de saturation'
       ]);
     });
 
@@ -412,8 +412,8 @@ describe('AppNdvi', () => {
       const wrapper = await mountWith();
 
       const rows = chartRows(wrapper);
-      expect(rows.map((row) => row.countText)).toEqual(['0 parc', '0 parc', '1 parc', '2 parcs', '1 parc']);
-      expect(rows.map((row) => row.bar.element.style.width)).toEqual(['0%', '0%', '50%', '100%', '50%']);
+      expect(rows.map((row) => row.countText)).toEqual(['0 parc', '1 parc', '2 parcs', '1 parc', '0 parc']);
+      expect(rows.map((row) => row.bar.element.style.width)).toEqual(['0%', '50%', '100%', '50%', '0%']);
     });
 
     it('colore chaque barre avec la couleur de sa catégorie', async () => {
@@ -455,16 +455,18 @@ describe('AppNdvi', () => {
   describe('catégorie NDVI', () => {
     it('classe chaque parc selon les seuils universels, bornes comprises', async () => {
       const cases = [
-        [-0.05, 'Eau, neige ou nuages'],
-        [-0.001, 'Eau, neige ou nuages'],
-        [0, 'Sols nus et zones artificielles'],
-        [0.099, 'Sols nus et zones artificielles'],
-        [0.1, 'Végétation très éparse'],
-        [0.199, 'Végétation très éparse'],
-        [0.2, 'Végétation modérée'],
-        [0.499, 'Végétation modérée'],
-        [0.5, 'Végétation dense et saine'],
-        [1, 'Végétation dense et saine']
+        [-0.05, 'Eau, neige, roche, bâti'],
+        [-0.001, 'Eau, neige, roche, bâti'],
+        [0, 'Eau, neige, roche, bâti'],
+        [0.099, 'Eau, neige, roche, bâti'],
+        [0.1, 'Sol nu ou végétation morte'],
+        [0.199, 'Sol nu ou végétation morte'],
+        [0.2, 'Végétation très clairsemée'],
+        [0.399, 'Végétation très clairsemée'],
+        [0.4, 'Végétation en croissance'],
+        [0.699, 'Végétation en croissance'],
+        [0.7, 'Zone de saturation'],
+        [1, 'Zone de saturation']
       ];
       const wrapper = await mountWith(cases.map(([ndviMean], i) => (
         { ...payload.parks[0], parkId: String(i), name: `Parc ${ndviMean}`, ndviMean }
@@ -475,16 +477,16 @@ describe('AppNdvi', () => {
       });
     });
 
-    it('classe sur la valeur affichée : 0,500 n’est jamais rangé sous le seuil 0,5', async () => {
+    it('classe sur la valeur affichée : 0,700 n’est jamais rangé sous le seuil 0,7', async () => {
       const wrapper = await mountWith([
-        { ...payload.parks[0], parkId: '1', name: 'Limite haute', ndviMean: 0.4996 },
+        { ...payload.parks[0], parkId: '1', name: 'Limite haute', ndviMean: 0.6996 },
         { ...payload.parks[1], parkId: '2', name: 'Limite basse', ndviMean: 0.1996 }
       ]);
 
-      expect(rowOf(wrapper, 'Limite haute').text()).toContain('0,500');
-      expect(categoryOf(wrapper, 'Limite haute')).toBe('Végétation dense et saine');
+      expect(rowOf(wrapper, 'Limite haute').text()).toContain('0,700');
+      expect(categoryOf(wrapper, 'Limite haute')).toBe('Zone de saturation');
       expect(rowOf(wrapper, 'Limite basse').text()).toContain('0,200');
-      expect(categoryOf(wrapper, 'Limite basse')).toBe('Végétation modérée');
+      expect(categoryOf(wrapper, 'Limite basse')).toBe('Végétation très clairsemée');
     });
 
     it('suit le mode daltonien mémorisé : pastilles et barres de la palette daltonienne', async () => {
@@ -492,8 +494,8 @@ describe('AppNdvi', () => {
       const wrapper = await mountWith([{ ...payload.parks[0], parkId: '1', name: 'Dense', ndviMean: 0.6 }]);
 
       const swatch = rowOf(wrapper, 'Dense').find('td span[aria-hidden="true"]');
-      expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[4].colorDaltonien, 0.5)));
-      expect(chartRows(wrapper)[4].bar.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[4].colorDaltonien, 0.5)));
+      expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].colorDaltonien, 0.5)));
+      expect(chartRows(wrapper)[3].bar.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].colorDaltonien, 0.5)));
     });
 
     it('affiche la couleur de la catégorie dans une pastille, sans pastille quand le NDVI est absent', async () => {
@@ -503,7 +505,7 @@ describe('AppNdvi', () => {
       ]);
 
       const swatch = rowOf(wrapper, 'Dense').find('td span[aria-hidden="true"]');
-      expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[4].color, 0.5)));
+      expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].color, 0.5)));
       expect(rowOf(wrapper, 'Sans mesure').find('td span[aria-hidden="true"]').exists()).toBe(false);
     });
 

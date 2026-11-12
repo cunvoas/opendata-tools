@@ -197,13 +197,37 @@
             </div>
 
             <section v-if="ndviEnabled" aria-labelledby="thesaurus-ndvi" class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
-                <h3 id="thesaurus-ndvi" class="text-lg font-semibold">NDVI : indice de végétation</h3>
+                <h3 id="thesaurus-ndvi" class="text-lg font-semibold">Indices de végétation</h3>
                 <p class="mt-2 text-sm leading-relaxed">
-                    Le NDVI mesure la vigueur de la végétation d'un parc à partir d'images satellite Sentinel-2. Plus la valeur est élevée, plus la végétation est dense et active. C'est une lecture écologique du parc : il ne remplace ni la surface OMS ni l'accessibilité. Il est visible sur la carte (bouton NDVI) et dans l'écran NDVI.
+                    Depuis l'espace, une image satellite Sentinel-2 permet d'évaluer la végétation d'un parc sans aucun relevé sur place. Trois indices en sont extraits, qui se complètent : le NDVI donne la densité de végétation, le GNDVI l'état chlorophyllien et le stress hydrique, le NDRE la structure de la canopée. Plus une valeur est élevée, plus la végétation est dense et active. Ce sont des lectures écologiques du parc : elles ne remplacent ni la surface OMS ni l'accessibilité. Le seul indice affiché aujourd'hui est le NDVI, sur la carte (bouton NDVI) et dans l'écran NDVI ; le GNDVI et le NDRE sont conservés pour l'analyse.
                 </p>
+                <h4 class="mt-4 font-semibold">Ce que mesure chaque indice</h4>
+                <div class="mt-2 overflow-x-auto">
+                    <table class="w-full text-sm border-collapse" aria-label="NDVI, GNDVI et NDRE : ce que chacun mesure">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="text-left pr-3 pb-1">Indice</th>
+                                <th scope="col" class="text-left pr-3 pb-1">Nom complet</th>
+                                <th scope="col" class="text-left pr-3 pb-1">Ce qu'il mesure spécifiquement</th>
+                                <th scope="col" class="text-left pb-1">Utilité pour notre étude</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="indice in indicesVegetation" :key="indice.code">
+                                <th scope="row" class="text-left pr-3 py-1 font-medium whitespace-nowrap">{{ indice.code }}</th>
+                                <td class="pr-3 py-1">{{ indice.nom }}</td>
+                                <td class="pr-3 py-1">{{ indice.mesure }}</td>
+                                <td class="py-1">{{ indice.utilite }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
                 <h4 class="mt-4 font-semibold">Calcul</h4>
                 <p class="mt-1 text-sm leading-relaxed">
-                    NDVI = (proche infrarouge − rouge) / (proche infrarouge + rouge). La valeur est comprise entre −1 et 1. Pour chaque parc, l'application affiche la moyenne, le minimum, le maximum et l'écart-type des pixels, ainsi que la date de l'image utilisée.
+                    NDVI = (proche infrarouge − rouge) / (proche infrarouge + rouge). <br />
+                    GNDVI = (proche infrarouge − vert) / (proche infrarouge + vert).<br />
+                    NDRE = (proche infrarouge − <a href="https://fr.wikipedia.org/wiki/Red-edge" target="_blank" rel="noopener noreferrer" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">red edge</a>) / (proche infrarouge + red edge).<br />
+                    Chaque valeur est comprise entre −1 et 1. Pour chaque parc, l'application affiche la moyenne, le minimum, le maximum et l'écart-type des pixels, ainsi que la date de l'image utilisée.
                 </p>
                 <h4 class="mt-4 font-semibold">Lire les valeurs</h4>
                 <div class="mt-2 overflow-x-auto">
@@ -227,14 +251,6 @@
                         </tbody>
                     </table>
                 </div>
-                <h4 class="mt-4 font-semibold">Limites</h4>
-                <ul class="mt-1 text-sm leading-relaxed list-disc list-inside space-y-1">
-                    <li>La colonne « Acquisition » donne la date de l'image réellement utilisée. Une même valeur peut être recopiée sur plusieurs années : cette date peut donc être plus récente que l'année affichée.</li>
-                    <li>Les nuages, les ombres et l'eau sont exclus des mesures. Le masque peut retirer une partie du parc et fausser la moyenne.</li>
-                    <li>Pour une année sans donnée exploitable, l'écran NDVI indique « NDVI non disponible ».</li>
-                    <li>Un parc sans mesure est affiché « NDVI pas encore calculé » sur la carte et « N/A » dans le tableau de l'écran NDVI.</li>
-                    <li>En mode daltonien, la carte et l'écran NDVI utilisent une autre palette (du jaune au bleu nuit) : les libellés restent identiques.</li>
-                </ul>
                 <p class="mt-3 text-sm leading-relaxed">
                     Source : images Sentinel-2 L2A. Les statistiques sont calculées par le fournisseur Copernicus Data Space Ecosystem, sans téléchargement d'image.
                 </p>
@@ -318,7 +334,7 @@
 </template>
 
 <script>
-import { features } from '../utils/features.js';
+import { features } from '../utils/config.js';
 import { NDVI_CATEGORIES } from '../utils/ndvi.js';
 import { hexToRgba } from '../utils/color.js';
 
@@ -336,7 +352,27 @@ export default {
             showZoneDetail: false,
             inseeCarreauUrl: 'https://www.insee.fr/fr/statistiques/8272002',
             ndviEnabled: features.ndvi,
-            ndviScale: NDVI_CATEGORIES
+            ndviScale: NDVI_CATEGORIES,
+            indicesVegetation: [
+                {
+                    code: 'NDVI',
+                    nom: 'Normalized Difference Vegetation Index',
+                    mesure: "La densité globale de la végétation et la présence de chlorophylle active (via le spectre Rouge).",
+                    utilite: "Détecter la fracture verte : distinguer instantanément les zones purement minérales/bétonnées des zones végétalisées dans les quartiers."
+                },
+                {
+                    code: 'GNDVI',
+                    nom: 'Green Normalized Difference Vegetation Index',
+                    mesure: "La concentration en chlorophylle et le stress hydrique (via le spectre Vert). Plus sensible que le NDVI sur la végétation dense.",
+                    utilite: "Évaluer la fraîcheur : repérer si les arbres des parcs souffrent de la sécheresse ou s'ils sont assez vigoureux pour créer de vrais îlots de fraîcheur urbains."
+                },
+                {
+                    code: 'NDRE',
+                    nom: 'Normalized Difference Red Edge Index',
+                    mesure: "La structure de la canopée et l'azote foliaire (via la bande de transition red edge). Pénètre plus profondément le feuillage.",
+                    utilite: "Mesurer la qualité de la strate arborée : différencier une simple pelouse pelée (faible volume de fraîcheur) d'une forêt urbaine dense ou de grands arbres capables de filtrer l'air."
+                }
+            ]
         }
     },
     methods: {

@@ -7,7 +7,7 @@ import AppCarte from "../views/AppCarte.vue";
 import AppStatistics from "../views/AppStatistics.vue";
 import AppInformation from "../views/AppInformation.vue";
 import AppVideoAdmin from "../views/AppVideoAdmin.vue";
-import { features } from "../utils/features.js";
+import { features } from "../utils/config.js";
 
 //Vue.use(Router);
 

@@ -1,0 +1,20 @@
+-- Enrichissement NDVI : NDRE (B08/B05) et GNDVI (B08/B03), calculés dans le même appel CDSE.
+ALTER TABLE public.park_area_computed
+    ADD COLUMN IF NOT EXISTS ndre_mean NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS ndre_min NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS ndre_max NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS ndre_stddev NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS gndvi_mean NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS gndvi_min NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS gndvi_max NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS gndvi_stddev NUMERIC(6,4);
+
+ALTER TABLE public.ndvi_observation
+    ADD COLUMN IF NOT EXISTS ndre_mean NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS ndre_min NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS ndre_max NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS ndre_stddev NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS gndvi_mean NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS gndvi_min NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS gndvi_max NUMERIC(6,4),
+    ADD COLUMN IF NOT EXISTS gndvi_stddev NUMERIC(6,4);
