@@ -324,39 +324,42 @@ public class ComputeParkAreaV2 {
 			return parcCpu;
 		} else {
 			
-			for (Integer annee : allAnnees) {
-				
-				Optional<ParkAreaComputed> parcCpuOpt = parkAreaComputedRepository.findByIdAndAnnee(park.getId(), annee);
+//FIXME; comparer à V1			
+//			for (Integer annee : allAnnees) {
+				this.requestNdviRefresh(parcCpu, park);
+			
+				Optional<ParkAreaComputed> parcCpuOpt = parkAreaComputedRepository.findByIdAndAnnee(park.getId(), wAnnee);
 				if (parcCpuOpt.isPresent()) {
 					parcCpu = parcCpuOpt.get();
 				} else {
 					parcCpu = new ParkAreaComputed();
 					parcCpu.setId(park.getId());
-					parcCpu.setAnnee(annee);
+					parcCpu.setAnnee(wAnnee);
 					parcCpu.setUpdated(defaultData);
 				}
 
 				Boolean alreadyProcessed = this.computeGenericHead(parcCpu, park, wAnnee);
 				if (alreadyProcessed) {
 					// Ligne OMS déjà à jour : seule la demande NDVI est déposée.
-					this.requestNdviRefresh(parcCpu, park);
-					continue;
-				}
+					
+//					continue;
+				} else {
 				
-				if (carreAnnees.indexOf(wAnnee)!=-1) {
-					this.computeGenericCarre(parcCpu, park, wAnnee);
+					if (carreAnnees.indexOf(wAnnee)!=-1) {
+						this.computeGenericCarre(parcCpu, park, wAnnee);
+					}
+	
+					if (irisAnnees.indexOf(wAnnee)!=-1) {
+						this.computeGenericIris(parcCpu, park, wAnnee);
+					}
+					 
+					parcCpu.setUpdated(new Date());
+					parcCpu = parkAreaComputedRepository.save(parcCpu);
+					// Enqueue après le save pour éviter qu'un traitement NDVI rapide soit écrasé.
+					this.requestNdviRefresh(parcCpu, park);
 				}
-
-				if (irisAnnees.indexOf(wAnnee)!=-1) {
-					this.computeGenericIris(parcCpu, park, wAnnee);
-				}
-				 
-				parcCpu.setUpdated(new Date());
-				parcCpu = parkAreaComputedRepository.save(parcCpu);
-				// Enqueue après le save pour éviter qu'un traitement NDVI rapide soit écrasé.
-				this.requestNdviRefresh(parcCpu, park);
 			}
-		}
+//		}
 
 		return null;
 	}

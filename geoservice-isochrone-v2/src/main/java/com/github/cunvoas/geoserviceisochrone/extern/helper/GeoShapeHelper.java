@@ -23,10 +23,13 @@ import org.locationtech.jts.util.GeometricShapeFactory;
 import com.github.cunvoas.geoserviceisochrone.exception.ExceptionGeo;
 import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Classe utilitaire pour la manipulation de géométries (JTS).
  * Permet de créer et parser des points, polygones, etc. à partir de différentes représentations.
  */
+@Slf4j
 public class GeoShapeHelper {
 
 	private static GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -471,7 +474,7 @@ public class GeoShapeHelper {
 		String[] base = geoshape.split("POLYGON \\(\\(");
 		String[] base2 = base[1].split("\\)\\)");
 		
-		System.out.println(base2.length);
+		log.info(""+base2.length);
 		String data = base2[0];
 		
 		ret.append(performPoints(data));

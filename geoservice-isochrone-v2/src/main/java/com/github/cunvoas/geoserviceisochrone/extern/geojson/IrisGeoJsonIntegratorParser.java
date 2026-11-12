@@ -59,7 +59,6 @@ public class IrisGeoJsonIntegratorParser {
 			br = new BufferedReader(rGeojson);
 
 			long start = System.currentTimeMillis();
-			System.out.println();
 			int i = 0;
 			while ((theLine = br.readLine()) != null) {
 
@@ -83,7 +82,7 @@ public class IrisGeoJsonIntegratorParser {
 				irisShapeRepository.saveAll(shapes);
 			}
 
-			System.out.println(System.currentTimeMillis() - start);
+			log.debug(""+(System.currentTimeMillis() - start));
 
 		} catch (IOException e) {
 			log.error("err:{}", theLine);

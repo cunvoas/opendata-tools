@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 
 import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvParkUpdateParser.ParkUpdateCsvHeaders;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Parseur CSV pour la mise à jour de la géométrie des parcs.
  * Permet de lire un fichier CSV et de générer des requêtes de mise à jour des contours des parcs.
@@ -25,6 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.extern.csv.CsvParkUpdateParser.Par
  * @see https://commons.apache.org/proper/commons-csv/user-guide.html
  */
 @Component
+@Slf4j
 public class CsvParkGeomUpdateParser {
     /**
      * Enumération des entêtes du CSV pour la géométrie des parcs.
@@ -83,7 +86,7 @@ public class CsvParkGeomUpdateParser {
 			writer.write(row.getNom().replaceAll("'", "''"));
 			writer.write("';\n");
 			writer.flush();
-			System.out.println(row.getNom());
+			log.info(row.getNom());
 		}
 
 		writer.close();
