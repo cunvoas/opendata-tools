@@ -398,7 +398,7 @@ export default {
                 : base + ' bg-slate-100 text-slate-600 hover:bg-slate-200';
         },
         toPlain(cypher) {
-            return cypher.map(code => String.fromCharCode(code)).join('');
+            return cypher.map(code => String.fromCodePoint(code)).join('');
         },
         sendRequest() {
             const prefixAsc = [77, 65, 73, 76, 84, 79];

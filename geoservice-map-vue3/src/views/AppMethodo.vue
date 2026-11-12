@@ -11,7 +11,6 @@
 <script>
 import HeaderAsso from "../components/HeaderAsso.vue";
 import BarGraph from "../components/BarGraph.vue";
-import PieGraph from "../components/PieGraph.vue";
 
 export default {
     name: "AppMethodo",

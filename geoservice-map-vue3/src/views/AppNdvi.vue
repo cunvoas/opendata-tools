@@ -338,7 +338,7 @@ export default {
             const total = Number(payload.total);
             const withNdvi = Number(payload.withNdvi);
             if (!Number.isFinite(total) || !Number.isFinite(withNdvi)) {
-                throw new Error('Réponse NDVI incomplète');
+                throw new TypeError('Réponse NDVI incomplète');
             }
         },
         sortBy(key) {
