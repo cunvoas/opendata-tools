@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Backup/Restore PostgreSQL database - one gzipped SQL file per table
 # Usage:
 #   ./backup_restore_db.sh backup   -d DB -h HOST -p PORT -U USER [-s SCHEMA] [-o OUTDIR]
@@ -7,7 +7,10 @@
 #
 # Env vars: PGPASSWORD (optional)
 
+# pipefail : un échec dans un pipe (ex. gunzip -> psql) fait échouer le script,
+# au lieu de renvoyer uniquement le code de la dernière commande.
 set -e
+set -o pipefail
 
 # ─── Defaults ───────────────────────────────────────────────────────────────
 SCHEMA="public"
@@ -25,7 +28,14 @@ TABLES_OPENDATA="
   cadastre
   laposte
   insee_densite_city
-  filosofi_200m
+  filosofi_200m_2015
+  filosofi_200m_2017
+  filosofi_200m_2019
+  filosofi_200m_2021
+  iris_data_2020
+  iris_data
+  iris_shape
+  lille_parcs_jardins
   park_overpass
   carre200onlyshape
   ign_topo_vegetal
@@ -52,6 +62,10 @@ TABLES_L0="
   project_simul_isochrone
   project_simul_work
   park_proposal_work
+  manual_park_proposal_meta
+  manual_park_proposal
+  manual_eval_work
+  ndvi_api_quota
 "
 # Level 1: FK to Level 0
 TABLES_L1="
@@ -63,16 +77,20 @@ TABLES_L1="
 # Level 2: FK to Level 0-1
 TABLES_L2="
   city
+  auth_refresh_token
 "
 # Level 3: FK to Level 0-2
 TABLES_L3="
   parc_jardin
   park_entrance
   park_proposal
+  ndvi_job
+  ndvi_observation
 "
 # Level 4: FK to Level 0-3
 TABLES_L4="
   parc_prefecture
+  ndvi_result
 "
 
 ALL_TABLES="${TABLES_L0} ${TABLES_L1} ${TABLES_L2} ${TABLES_L3} ${TABLES_L4}"
@@ -102,8 +120,8 @@ PG_OPTS="-h $HOST -p $PORT -U $USER -d $DB"
 
 # Include OPENDATA tables when flag is set
 if [ "$OPENDATA" = true ]; then
-  ALL_TABLES="${TABLES_OPENDATA}" ${TABLES_L0} ${TABLES_L1} ${TABLES_L2} ${TABLES_L3} ${TABLES_L4} 
-  RESTORE_ORDER="${TABLES_OPENDATA}" ${TABLES_L0} ${TABLES_L1} ${TABLES_L2} ${TABLES_L3} ${TABLES_L4} 
+  ALL_TABLES="$TABLES_OPENDATA $TABLES_L0 $TABLES_L1 $TABLES_L2 $TABLES_L3 $TABLES_L4"
+  RESTORE_ORDER="$TABLES_OPENDATA $TABLES_L0 $TABLES_L1 $TABLES_L2 $TABLES_L3 $TABLES_L4"
 fi
 
 # ─── List tables in topological order ──────────────────────────────────────
@@ -161,7 +179,15 @@ do_restore() {
   schema_file="$OUTDIR/00_schema.sql.gz"
   if [ -f "$schema_file" ]; then
     echo "  Restoring schema ..."
-    gunzip -c "$schema_file" | psql $PG_OPTS -v ON_ERROR_STOP=1
+    # PostGIS est nécessaire pour les colonnes geometry/geography.
+    if [ "$(psql $PG_OPTS -tA -c "SELECT count(*) FROM pg_extension WHERE extname='postgis'")" = "0" ]; then
+      echo "  Creating extension postgis ..."
+      psql $PG_OPTS -v ON_ERROR_STOP=1 -q -c "CREATE EXTENSION postgis;"
+    fi
+    # Le dump contient "CREATE SCHEMA public;" alors que le schéma existe déjà.
+    gunzip -c "$schema_file" \
+      | grep -v "^CREATE SCHEMA ${SCHEMA};$" \
+      | psql $PG_OPTS -v ON_ERROR_STOP=1
   else
     echo "  WARNING: $schema_file not found, skipping schema restore"
   fi
