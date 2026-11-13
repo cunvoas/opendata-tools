@@ -58,14 +58,21 @@ public interface StatsSurfaceRepository extends ReadOnlyRepository<StatsSurface,
 			+ "LEFT JOIN public.carre200onlyshape s ON position('_' IN cand.lcog_geo) > 0 AND s.id_inspire = cand.id_inspire "
 			+ "LEFT JOIN public.cadastre k ON position('_' IN cand.lcog_geo) > 0 AND k.id_insee = u.insee) w)";
 
+	/**
+	 * m²/habitant OMS d'un carreau, recalculé depuis les données brutes (surface des parcs OMS / population dans
+	 * l'isochrone) plutôt que lu dans {@code surface_park_pcapita_oms}, qui n'a que deux décimales. Repli sur la
+	 * valeur stockée si la population est nulle ou absente.
+	 */
+	final String RATIO_OMS = "COALESCE(cc.surface_access_park_oms / NULLIF(cc.pop_park_share_oms, 0), "
+			+ "cc.surface_park_pcapita_oms, 0)";
+
 	/** Agrégation finale. Attend les CTE {@code ranges}, {@code communes} et {@code part}. */
 	final String SELECT_STATS = "SELECT p.annee, r.surface_min, r.surface_max, r.seuil, "
 			+ "COALESCE(ROUND(SUM(cc.pop_inc * p.part), 0), 0) AS pop_inc, "
 			+ "COALESCE(ROUND(SUM(cc.pop_exc * p.part), 0), 0) AS pop_exc "
 			+ "FROM part p JOIN communes c ON c.insee_code = p.insee "
 			+ "JOIN public.carre200_computed_v2 cc ON cc.annee = p.annee AND cc.id_inspire = p.id_inspire "
-			+ "JOIN ranges r ON r.surface_min <= COALESCE(ROUND(cc.surface_park_pcapita_oms, 2), 0) "
-			+ "AND COALESCE(ROUND(cc.surface_park_pcapita_oms, 2), 0) < r.surface_max "
+			+ "JOIN ranges r ON r.surface_min <= " + RATIO_OMS + " AND " + RATIO_OMS + " < r.surface_max "
 			+ "GROUP BY p.annee, r.surface_min, r.surface_max, r.seuil "
 			+ "ORDER BY r.surface_min";
 
@@ -88,6 +95,51 @@ public interface StatsSurfaceRepository extends ReadOnlyRepository<StatsSurface,
 			+ "communes AS (SELECT CAST(insee_code AS text) AS insee_code FROM densite_ville "
 			+ "WHERE id_comm2co = :com2coId AND is_dense IS FALSE), "
 			+ CTE_PART + " " + SELECT_STATS;
+
+	/**
+	 * Résumé d'un territoire. Attend les CTE {@code communes} et {@code part}.
+	 * <ul>
+	 *   <li>{@code population} : somme des habitants des carreaux (pop_inc + pop_exc), au prorata du cadastre ;</li>
+	 *   <li>{@code ponderes} : somme(population carreau x m²/habitant OMS du carreau), à diviser par {@code population} ;</li>
+	 *   <li>{@code surface} : somme des surfaces brutes ({@code parc_jardin.surface}) des parcs OMS actifs dont la
+	 *       commune est dans le territoire, chaque parc compté une seule fois (et non une fois par carreau
+	 *       qu'il dessert). Le caractère OMS est celui de l'année ({@code park_area_computed.oms}).</li>
+	 * </ul>
+	 */
+	final String SELECT_DESCRIPTEUR = ", agg AS (SELECT "
+			+ "COALESCE(SUM((COALESCE(cc.pop_inc, 0) + COALESCE(cc.pop_exc, 0)) * p.part), 0) AS population, "
+			+ "COALESCE(SUM((COALESCE(cc.pop_inc, 0) + COALESCE(cc.pop_exc, 0)) * p.part "
+			+ "* " + RATIO_OMS + "), 0) AS ponderes "
+			+ "FROM part p JOIN communes c ON c.insee_code = p.insee "
+			+ "JOIN public.carre200_computed_v2 cc ON cc.annee = p.annee AND cc.id_inspire = p.id_inspire), "
+			+ "parcs AS (SELECT COALESCE(SUM(pj.surface), 0) AS surface "
+			+ "FROM public.park_area_computed pac "
+			+ "JOIN public.park_area pa ON pa.id = pac.id "
+			+ "JOIN public.parc_jardin pj ON pj.identifiant = pa.id_parc_jardin "
+			+ "JOIN public.city ci ON ci.id = pj.id_city "
+			+ "WHERE pac.annee = :annee AND pac.oms IS TRUE "
+			+ "AND COALESCE(EXTRACT(YEAR FROM pj.date_debut), 1900) <= :annee "
+			+ "AND :annee <= COALESCE(EXTRACT(YEAR FROM pj.date_fin), 2100) "
+			+ "AND CAST(ci.insee_code AS text) IN (SELECT insee_code FROM communes)) "
+			+ "SELECT agg.population, agg.ponderes, parcs.surface FROM agg, parcs";
+
+	final String QRY_DESC_CITY = "WITH communes AS (SELECT CAST(:insee AS text) AS insee_code), "
+			+ CTE_PART + " " + SELECT_DESCRIPTEUR;
+
+	final String QRY_DESC_COM2CO_DENSE = "WITH " + CTE_DENSITE + ", "
+			+ "communes AS (SELECT CAST(insee_code AS text) AS insee_code FROM densite_ville "
+			+ "WHERE id_comm2co = :com2coId AND is_dense IS TRUE), "
+			+ CTE_PART + " " + SELECT_DESCRIPTEUR;
+
+	final String QRY_DESC_COM2CO_SUBURBS = "WITH " + CTE_DENSITE + ", "
+			+ "communes AS (SELECT CAST(insee_code AS text) AS insee_code FROM densite_ville "
+			+ "WHERE id_comm2co = :com2coId AND is_dense IS FALSE), "
+			+ CTE_PART + " " + SELECT_DESCRIPTEUR;
+
+	final String QRY_DESC_COM2CO_ALL = "WITH " + CTE_DENSITE + ", "
+			+ "communes AS (SELECT CAST(insee_code AS text) AS insee_code FROM densite_ville "
+			+ "WHERE id_comm2co = :com2coId), "
+			+ CTE_PART + " " + SELECT_DESCRIPTEUR;
 
 	/**
 	 * Statistiques d'une commune dense.
@@ -124,5 +176,41 @@ public interface StatsSurfaceRepository extends ReadOnlyRepository<StatsSurface,
 	 */
 	@Query(value = QRY_COM2CO_SUBURBS, nativeQuery = true)
 	public List<StatsSurface> getStatsForCom2CoSubUrbs(@Param("annee")Integer annee, @Param("com2coId") Long com2coId);
+
+	/**
+	 * Résumé d'une commune.
+	 * @param annee année Filosofi
+	 * @param insee code INSEE de la commune
+	 * @return une ligne : population, somme(population x m²/hab.), surface des parcs OMS
+	 */
+	@Query(value = QRY_DESC_CITY, nativeQuery = true)
+	public List<Object[]> getDescripteurForCity(@Param("annee")Integer annee, @Param("insee") String insee);
+
+	/**
+	 * Résumé des communes denses d'un EPCI.
+	 * @param annee année Filosofi
+	 * @param com2coId identifiant de l'EPCI
+	 * @return une ligne : population, somme(population x m²/hab.), surface des parcs OMS
+	 */
+	@Query(value = QRY_DESC_COM2CO_DENSE, nativeQuery = true)
+	public List<Object[]> getDescripteurForCom2CoDense(@Param("annee")Integer annee, @Param("com2coId") Long com2coId);
+
+	/**
+	 * Résumé des communes périurbaines d'un EPCI.
+	 * @param annee année Filosofi
+	 * @param com2coId identifiant de l'EPCI
+	 * @return une ligne : population, somme(population x m²/hab.), surface des parcs OMS
+	 */
+	@Query(value = QRY_DESC_COM2CO_SUBURBS, nativeQuery = true)
+	public List<Object[]> getDescripteurForCom2CoSubUrbs(@Param("annee")Integer annee, @Param("com2coId") Long com2coId);
+
+	/**
+	 * Résumé de toutes les communes d'un EPCI, densités confondues.
+	 * @param annee année Filosofi
+	 * @param com2coId identifiant de l'EPCI
+	 * @return une ligne : population, somme(population x m²/hab.), surface des parcs OMS
+	 */
+	@Query(value = QRY_DESC_COM2CO_ALL, nativeQuery = true)
+	public List<Object[]> getDescripteurForCom2CoAll(@Param("annee")Integer annee, @Param("com2coId") Long com2coId);
 
 }

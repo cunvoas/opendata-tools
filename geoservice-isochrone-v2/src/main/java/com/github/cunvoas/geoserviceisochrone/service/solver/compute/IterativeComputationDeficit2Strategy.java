@@ -181,13 +181,13 @@ public class IterativeComputationDeficit2Strategy extends AbstractComputationtra
 					}
 				}
 
-				log.error("Proposition pour le carre {} : ajout de parc (surface proposee: {}).", 
+				log.info("Proposition pour le carre {} : ajout de parc (surface proposee: {}).", 
 						toProcess.getIdInspire(), proposedParkSurface);
 				
 			} else {
 				// Surface insuffisante : le deficit existe mais est trop faible
 				// pour justifier la creation d'un nouveau parc
-				log.warn("Proposition pour le carre {} : pas d'ajout de parc (surface proposee: {}).", 
+				log.info("Proposition pour le carre {} : pas d'ajout de parc (surface proposee: {}).", 
 						toProcess.getIdInspire(), AbstractComputationtrategy.MIN_PARK_SURFACE);
 				//toProcess.setNewSurface(null);
 			}

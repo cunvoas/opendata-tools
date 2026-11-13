@@ -86,6 +86,7 @@ public class ManualProposalEvaluationService {
         Integer urbanDistance = NumberHelper.parseIntOrThrow(dense
                 ? applicationBusinessProperties.getOmsUrbanDistance()
                 : applicationBusinessProperties.getOmsSubUrbanDistance());
+        // @Ref seuils-12-45 : l'objectif utilisé est la valeur « recommandée » (12 / 45 m²/hab.), sans source identifiée (docs/stats-surface.md)
         Double recoSquareMeterPerCapita = dense
                 ? applicationBusinessProperties.getRecoUrbSquareMeterPerCapita()
                 : applicationBusinessProperties.getRecoSubUrbSquareMeterPerCapita();

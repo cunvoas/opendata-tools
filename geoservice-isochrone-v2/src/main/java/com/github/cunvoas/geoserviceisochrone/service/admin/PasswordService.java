@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class PasswordService {
 	
 	@Autowired
-	private final PasswordEncoder passwordEncoder=null;
+	private PasswordEncoder passwordEncoder=null;
 	
 	/**
 	 * Encode the password.

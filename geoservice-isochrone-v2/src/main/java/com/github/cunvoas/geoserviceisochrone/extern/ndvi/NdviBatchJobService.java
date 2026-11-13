@@ -223,7 +223,7 @@ public class NdviBatchJobService {
 	/**
 	 * Demande le NDVI pour un parc métier, si la donnée n'existe pas déjà.
 	 *
-	 * <p>Utilisé par le bouton « Calculer le parc » : le parc est identifié par
+	 * <p>Utilisé par le bouton « Copernicus » de la page parc : le parc est identifié par
 	 * {@code ParcEtJardin.id}, alors que la file NDVI utilise {@code ParkArea.id}.</p>
 	 *
 	 * @param parcEtJardinId identifiant du parc

@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
  * 
  * Contraintes :
  * - Un parc doit faire minimum 1000 m²
- * - Densité recommandée : 12 m²/habitant
+ * - Densité recommandée : 12 m²/habitant (@Ref seuils-12-45 : source non identifiée, voir docs/stats-surface.md)
  */
 @Service
 @Slf4j

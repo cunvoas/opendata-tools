@@ -1034,6 +1034,8 @@
        if ( rawResponse.status == 202 || rawResponse.status == 200 )  {
          const content = await rawResponse.json();
          alert("Calcul demandé pour "+content.nbCarre+" carrés.");
+       } else {
+         alert("Calcul impossible (HTTP " + rawResponse.status + "). Vérifiez que le parc a bien un contour.");
        }
      }
     

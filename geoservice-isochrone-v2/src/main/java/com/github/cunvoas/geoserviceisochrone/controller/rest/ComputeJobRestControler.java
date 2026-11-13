@@ -76,8 +76,6 @@ public class ComputeJobRestControler {
 			pj.setId(parkId);
 			resp.setParkId(req.getParkId());
 			resp.setNbCarre(batchJobService.requestProcessParc(pj));
-			// Le bouton « Calculer le parc » demande aussi le NDVI du parc.
-			ndviBatchJobService.requestForParc(pj.getId());
 			code = HttpStatus.ACCEPTED;
 		} else if (req.getParkOverpass() != null) {
 			// TODO OVERPASS

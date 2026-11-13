@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.service.analytics;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.controller.rest.analytics.Seuil;
+import com.github.cunvoas.geoserviceisochrone.controller.rest.analytics.StatsDescripteur;
 import com.github.cunvoas.geoserviceisochrone.controller.rest.analytics.Stat;
 import com.github.cunvoas.geoserviceisochrone.controller.rest.analytics.StatsSurfaceJson;
 import com.github.cunvoas.geoserviceisochrone.model.analytics.StatsSeuilOmsEnum;
@@ -70,6 +72,7 @@ public class StatsSurfaceService {
 	private CommunauteCommuneRepository communauteCommuneRepository;
 	
 	
+	// @Ref seuils-12-45 : les bornes 12 et 45 m²/hab. et les libellés « conseillé / préconisé par l'OMS » n'ont pas de source identifiée (docs/stats-surface.md).
 	private static int[] seuilDense= {0,3,7,10,12};
 	private static int[] seuilSuburbs= {0,8,17,25,45};
 	private static String[] colors= {"#0000e8","#6060e8","#b0b0e8","#578817","#57ee17"};
@@ -140,6 +143,7 @@ public class StatsSurfaceService {
 			throw new NoStatsException("EPCI " + com2CoId + " (urbain) " + annee);
 		}
 		this.populateSurface(ret, stats, seuilDense);
+		ret.setDescripteur(descripteur(statsSurfaceRepository.getDescripteurForCom2CoDense(annee, com2CoId)));
 		return ret;
 	}
 
@@ -177,6 +181,7 @@ public class StatsSurfaceService {
 			throw new NoStatsException("EPCI " + com2CoId + " (périurbain) " + annee);
 		}
 		this.populateSurface(ret, stats, seuilSuburbs);
+		ret.setDescripteur(descripteur(statsSurfaceRepository.getDescripteurForCom2CoSubUrbs(annee, com2CoId)));
 		return ret;
 	}
 
@@ -259,6 +264,7 @@ public class StatsSurfaceService {
 		}
 
 		this.populateAll(ret, stats, txtSeuilOMS);
+		ret.setDescripteur(descripteur(statsSurfaceRepository.getDescripteurForCom2CoAll(annee, com2CoId)));
 		return ret;
 	}
 
@@ -286,6 +292,7 @@ public class StatsSurfaceService {
 			throw new NoStatsException(insee);
 		}
 		this.populateSurface(ret, stats, seuils);
+		ret.setDescripteur(descripteur(statsSurfaceRepository.getDescripteurForCity(annee, insee)));
 		return ret;
 	}
 	
@@ -393,6 +400,43 @@ public class StatsSurfaceService {
 			seuil.setRatio(pourcent(stat.getHabitants(), populationTotale));
 			index++;
 		}
+	}
+
+	/**
+	 * Résume un territoire à partir des sommes calculées en base, sans passer par les tranches.
+	 * <ul>
+	 *   <li>{@code m2ParHabitantMoyen} = somme(population carreau x m²/habitant du carreau) / somme(population carreau) ;</li>
+	 *   <li>{@code m2ParHabitantGlobal} = somme(surface des parcs OMS) / population totale.</li>
+	 * </ul>
+	 * Les divisions portent sur les sommes exactes ; l'arrondi à deux décimales n'est fait qu'à la fin.
+	 * @param lignes résultat de la requête : population, somme(population x m²/hab.), surface des parcs OMS
+	 * @return le résumé, null si le territoire n'a pas de population
+	 */
+	static StatsDescripteur descripteur(List<Object[]> lignes) {
+		if (lignes == null || lignes.isEmpty() || lignes.get(0) == null) {
+			return null;
+		}
+		Object[] ligne = lignes.get(0);
+		BigDecimal population = enDecimal(ligne[0]);
+		if (population.signum() <= 0) {
+			return null;
+		}
+		BigDecimal ponderes = enDecimal(ligne[1]);
+		BigDecimal surface = enDecimal(ligne[2]);
+
+		StatsDescripteur descripteur = new StatsDescripteur();
+		descripteur.setHabitants(population.setScale(0, RoundingMode.HALF_UP).longValue());
+		descripteur.setM2ParHabitantMoyen(ponderes.divide(population, 2, RoundingMode.HALF_UP).doubleValue());
+		descripteur.setSurfaceParcsOmsM2(surface.setScale(0, RoundingMode.HALF_UP).longValue());
+		descripteur.setM2ParHabitantGlobal(surface.divide(population, 2, RoundingMode.HALF_UP).doubleValue());
+		return descripteur;
+	}
+
+	private static BigDecimal enDecimal(Object valeur) {
+		if (valeur instanceof BigDecimal decimal) {
+			return decimal;
+		}
+		return valeur instanceof Number nombre ? BigDecimal.valueOf(nombre.doubleValue()) : BigDecimal.ZERO;
 	}
 
 	/**
