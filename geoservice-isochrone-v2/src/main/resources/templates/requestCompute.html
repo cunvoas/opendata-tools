@@ -72,7 +72,7 @@
                                                     <option value="" th:text="#{compute.request.choose.city}">Ville...</option>
                                                     <option th:each="v : ${cities}"
                                                             th:value="${v.id}"
-                                                            th:text="${v.name}"
+                                                            th:text="${v.displayName}"
                                                             th:selected="${form != null and v.id == form.idCommune}"></option>
                                                 </select>
                                                 <label for="idCity"><i class="fas fa-city me-2"></i>
@@ -123,6 +123,18 @@
                                 <button id="btnComputeParkOverpass" onclick="launchParkOverpass()" type="button" class="btn btn-success">
                                     <i class="fas fa-layer-group me-1"></i><span th:text="#{compute.request.launch.park_overpass}">Park Overpass</span>
                                 </button>
+                                <button id="btnNdviEpci" onclick="requestNdviEpci()" type="button" class="btn btn-outline-danger">
+                                    <i class="fas fa-satellite me-1"></i><span th:text="#{compute.request.ndvi.epci}">Lancer Copernicus sur l'EPCI</span>
+                                </button>
+                                <button id="btnNdviCity" onclick="requestNdviCity()" type="button" class="btn btn-outline-danger">
+                                    <i class="fas fa-satellite me-1"></i><span th:text="#{compute.request.ndvi.city}">Lancer Copernicus sur la ville</span>
+                                </button>
+                                <button id="btnNdviIrisEpci" onclick="requestNdviIrisEpci()" type="button" class="btn btn-outline-warning">
+                                    <i class="fas fa-satellite me-1"></i><span th:text="#{compute.request.ndvi.iris.epci}">Lancer Copernicus sur les IRIS de l'EPCI</span>
+                                </button>
+                                <button id="btnNdviIrisCity" onclick="requestNdviIrisCity()" type="button" class="btn btn-outline-warning">
+                                    <i class="fas fa-satellite me-1"></i><span th:text="#{compute.request.ndvi.iris.city}">Lancer Copernicus sur les IRIS de la ville</span>
+                                </button>
                                 <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
@@ -143,6 +155,7 @@
     <script th:inline="javascript">
     /*<![CDATA[*/
     const endpointCompute = /*[[@{/mvc/ajax/jobs/api/request}]]*/ '/mvc/ajax/jobs/api/request';
+    const endpointNdvi = /*[[@{/mvc/ajax/jobs/api/ndvi/request}]]*/ '/mvc/ajax/jobs/api/ndvi/request';
     const spinner = document.getElementById("computeSpinner");
 
     function showSpinner() { if (spinner) spinner.style.display = "inline-block"; }
@@ -198,6 +211,80 @@
         });
         alert("Traitement des parcs Overpass démarré avec succès");
         location.reload();
+    }
+
+    async function doPostNdvi(payload, btn, field = "nbCarre", label = "parc(s)") {
+        showSpinner();
+        btn.disabled = true;
+        try {
+            let response = await fetch(endpointNdvi, {
+                method: "POST",
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (response.status == 202 || response.status == 200) {
+                const content = await response.json();
+                const count = content[field] || 0;
+                alert(count > 0
+                    ? "Relance Copernicus demand\u00e9e pour " + count + " " + label + "."
+                    : "Aucun " + label + " NDVI trouv\u00e9.");
+            } else if (response.status == 403) {
+                alert("Action r\u00e9serv\u00e9e aux administrateurs.");
+            } else {
+                alert("Relance Copernicus impossible.");
+            }
+        } catch (error) {
+            console.error("Error requesting NDVI refresh:", error);
+            alert("Relance Copernicus impossible.");
+        } finally {
+            hideSpinner();
+            btn.disabled = false;
+        }
+    }
+
+    function requestedYearValue() {
+        const yearSel = document.getElementById("requestedYear");
+        return yearSel ? (yearSel.value || null) : null;
+    }
+
+    function requestNdviEpci() {
+        const sel = document.getElementById("idCommunauteDeCommunes");
+        if (!sel || !sel.value) { alert("Veuillez s\u00e9lectionner un EPCI."); return; }
+        doPostNdvi({
+            token: [[${token}]],
+            com2coId: sel.value,
+            requestedYear: requestedYearValue()
+        }, document.getElementById("btnNdviEpci"));
+    }
+
+    function requestNdviCity() {
+        const sel = document.getElementById("idCity");
+        if (!sel || !sel.value) { alert("Veuillez s\u00e9lectionner une ville."); return; }
+        doPostNdvi({
+            token: [[${token}]],
+            cityId: sel.value,
+            requestedYear: requestedYearValue()
+        }, document.getElementById("btnNdviCity"));
+    }
+
+    function requestNdviIrisEpci() {
+        const sel = document.getElementById("idCommunauteDeCommunes");
+        if (!sel || !sel.value) { alert("Veuillez s\u00e9lectionner un EPCI."); return; }
+        doPostNdvi({
+            token: [[${token}]],
+            com2coId: sel.value,
+            iris: true
+        }, document.getElementById("btnNdviIrisEpci"), "nbIris", "IRIS");
+    }
+
+    function requestNdviIrisCity() {
+        const sel = document.getElementById("idCity");
+        if (!sel || !sel.value) { alert("Veuillez s\u00e9lectionner une ville."); return; }
+        doPostNdvi({
+            token: [[${token}]],
+            cityId: sel.value,
+            iris: true
+        }, document.getElementById("btnNdviIrisCity"), "nbIris", "IRIS");
     }
     /*]]>*/
     </script>

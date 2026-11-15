@@ -62,10 +62,10 @@
                         <fieldset id="fsCity" th:disabled="${territoire == null || territoire.idCommunauteDeCommunes == null}">
                           <div class="form-floating">
                             <input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" placeholder="Commune..." 
-                                   th:value="${territoire != null && territoire.nameCommune != null ? territoire.nameCommune : ''}" />
+                                   th:value="${territoire != null && territoire.nameCommuneDisplay != null ? territoire.nameCommuneDisplay : ''}" />
                             <label for="idCommune-filter"><i class="fas fa-city me-2"></i>Commune</label>
-                            <datalist id="communes">
-                              <option th:each="v : ${communes}" th:value="${v.name}" th:attr="data-value=${v.id}"></option>
+                            <datalist id="communes" >
+                              <option th:each="v : ${communes}" th:value="${v.displayName}" th:attr="data-value=${v.id}"></option>
                             </datalist>
                             <input type="hidden" id="idCommune" name="idCommune" th:value="${territoire != null && territoire.idCommune != null ? territoire.idCommune : ''}" />
                             <input type="hidden" id="idRegionCity" name="idRegion" th:value="${territoire != null && territoire.idRegion != null ? territoire.idRegion : ''}" />

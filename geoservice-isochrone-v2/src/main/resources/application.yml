@@ -178,6 +178,7 @@ application:
     cpu-temp-threshold: 75
     cpu-metrics-url: http://192.168.1.30:1081/metrics
     cpu-metrics-timeout-ms: 2000
+    dashboard-cache-compute-job-pending: false
     sample.zipkin.enable: false
     
   admin:

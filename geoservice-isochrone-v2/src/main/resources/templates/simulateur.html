@@ -68,11 +68,11 @@
                         <fieldset id="fsCity" th:disabled="${formSimulateur.idCommunauteDeCommunes == null}">
                           <div class="form-floating">
                             <input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" 
-                                   th:value="${formSimulateur.nameCommune}" placeholder="Commune..." />
+                                   th:value="${formSimulateur.nameCommuneDisplay}" placeholder="Commune..." />
                             <label for="idCommune-filter"><i class="fas fa-city me-2"></i>Commune</label>
-                            <datalist id="communes">
+                            <datalist id="communes" >
                               <option th:each="commune : ${communes}" 
-                                th:value="${commune.name}" 
+                                th:value="${commune.displayName}" 
                                 th:attr="data-value=${commune.id}"></option>
                             </datalist>
                             <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />

@@ -75,6 +75,20 @@ public interface ParkAreaComputedRepository extends JpaRepository<ParkAreaComput
 			@Param("com2coId") Long com2coId);
 
 	/**
+	 * Identifiants des parcs calculés d'une ville pour une année.
+	 * @param annee année de référence
+	 * @param cityId identifiant de la ville
+	 * @return identifiants {@code park_area.id}
+	 */
+	@Query(nativeQuery = true,
+			value = "SELECT DISTINCT pac.id FROM park_area_computed pac"
+					+ " JOIN park_area pa ON pa.id = pac.id"
+					+ " JOIN parc_jardin pj ON pj.identifiant = pa.id_parc_jardin"
+					+ " WHERE pac.annee = :annee AND pj.id_city = :cityId")
+	List<Long> findParkIdsByAnneeAndCity(@Param("annee") Integer annee,
+			@Param("cityId") Long cityId);
+
+	/**
 	 * findByIdAndAnnee.
 	 * @param id ParkAreaComputed
 	 * @param annee yeay

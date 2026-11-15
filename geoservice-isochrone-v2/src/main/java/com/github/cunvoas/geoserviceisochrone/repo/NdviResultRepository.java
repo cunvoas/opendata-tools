@@ -51,6 +51,14 @@ public interface NdviResultRepository extends JpaRepository<NdviResult, Long> {
 			Long parkAreaComputedId);
 
 	/**
+	 * Indique si une mesure existe déjà pour un IRIS.
+	 * @param objectType type d'objet
+	 * @param irisId code IRIS
+	 * @return vrai si au moins une mesure est présente
+	 */
+	boolean existsByObjectTypeAndIrisId(NdviResultObjectType objectType, String irisId);
+
+	/**
 	 * Dernière mesure d'un parc, pour l'historique ou les contrôles.
 	 * @param objectType type d'objet
 	 * @param parkAreaComputedId identifiant de la zone

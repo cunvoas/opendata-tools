@@ -20,12 +20,14 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviResultObjectTy
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisShape;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.NdviJobRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
@@ -60,6 +62,7 @@ public class NdviBatchJobService {
 	private final ParkJardinRepository parkJardinRepository;
 	private final IrisShapeRepository irisShapeRepository;
 	private final InseeCarre200mOnlyShapeRepository carre200mOnlyShapeRepository;
+	private final CityRepository cityRepository;
 	private final ClientCopernicusNdvi clientCopernicusNdvi;
 
 	private final AtomicBoolean running = new AtomicBoolean(false);
@@ -71,6 +74,7 @@ public class NdviBatchJobService {
 			ParkJardinRepository parkJardinRepository,
 			IrisShapeRepository irisShapeRepository,
 			InseeCarre200mOnlyShapeRepository carre200mOnlyShapeRepository,
+			CityRepository cityRepository,
 			ClientCopernicusNdvi clientCopernicusNdvi) {
 		this.ndviJobRepository = ndviJobRepository;
 		this.parkAreaRepository = parkAreaRepository;
@@ -79,6 +83,7 @@ public class NdviBatchJobService {
 		this.parkJardinRepository = parkJardinRepository;
 		this.irisShapeRepository = irisShapeRepository;
 		this.carre200mOnlyShapeRepository = carre200mOnlyShapeRepository;
+		this.cityRepository = cityRepository;
 		this.clientCopernicusNdvi = clientCopernicusNdvi;
 	}
 
@@ -187,10 +192,94 @@ public class NdviBatchJobService {
 			return 0;
 		}
 		List<Long> parkIds = parkAreaComputedRepository.findParkIdsByAnneeAndCom2co(annee, com2coId);
+		return requestForcedAll(parkIds);
+	}
+
+	/**
+	 * Dépose les relances forcées de tous les parcs calculés d'une ville.
+	 *
+	 * @param cityId identifiant de la ville
+	 * @param annee année de référence (sélection des parcs calculés)
+	 * @return nombre de parcs relancés
+	 */
+	public int requestForcedForCity(Long cityId, Integer annee) {
+		if (!isEnabled() || cityId == null || annee == null) {
+			return 0;
+		}
+		List<Long> parkIds = parkAreaComputedRepository.findParkIdsByAnneeAndCity(annee, cityId);
+		return requestForcedAll(parkIds);
+	}
+
+	private int requestForcedAll(List<Long> parkIds) {
 		for (Long parkId : parkIds) {
 			requestForced(parkId);
 		}
 		return parkIds.size();
+	}
+
+	/**
+	 * Dépose les demandes Copernicus de tous les IRIS des villes d'un EPCI.
+	 *
+	 * @param com2coId identifiant de la communauté de communes
+	 * @return nombre d'IRIS mis en file
+	 */
+	public int requestIrisForCom2Co(Long com2coId) {
+		if (!isEnabled() || com2coId == null) {
+			return 0;
+		}
+		return requestIris(cityRepository.findByCommunauteCommuneId(com2coId));
+	}
+
+	/**
+	 * Dépose les demandes Copernicus de tous les IRIS d'une ville.
+	 *
+	 * @param cityId identifiant de la ville
+	 * @return nombre d'IRIS mis en file
+	 */
+	public int requestIrisForCity(Long cityId) {
+		if (!isEnabled() || cityId == null) {
+			return 0;
+		}
+		return cityRepository.findById(cityId).map(city -> requestIris(List.of(city))).orElse(0);
+	}
+
+	private int requestIris(List<City> cities) {
+		int count = 0;
+		for (City city : cities) {
+			if (city.getInseeCode() == null) {
+				continue;
+			}
+			for (IrisShape iris : irisShapeRepository.findByCodeInsee(city.getInseeCode())) {
+				if (requestIris(iris.getIris())) {
+					count++;
+				}
+			}
+		}
+		return count;
+	}
+
+	private boolean requestIris(String irisCode) {
+		Optional<NdviJob> existing = ndviJobRepository.findByIdAndIdInspireAndObjectType(
+				NdviJob.NO_ID, irisCode, NdviResultObjectType.IRIS);
+		NdviJob job;
+		if (existing.isPresent()) {
+			job = existing.get();
+			if (ComputeJobStatusEnum.IN_PROCESS.equals(job.getStatus())) {
+				return false;
+			}
+			job.setStatus(ComputeJobStatusEnum.TO_PROCESS);
+			job.setDemand(new Date());
+			job.setProcessed(null);
+		} else {
+			job = new NdviJob();
+			job.setId(NdviJob.NO_ID);
+			job.setIdInspire(irisCode);
+			job.setObjectType(NdviResultObjectType.IRIS);
+		}
+		// Lancement explicite depuis l'administration : force l'appel Copernicus.
+		job.setForce(true);
+		ndviJobRepository.save(job);
+		return true;
 	}
 
 	private void request(Long parkId, boolean force) {
@@ -258,13 +347,16 @@ public class NdviBatchJobService {
 		try {
 			// shortcut: un seul lot par cycle car le scheduler est mono-thread,
 			// augmenter si un TaskScheduler dédié est ajouté.
-			// shortcut: seul PARK_AREA_COMPUTED est consommé, les autres types restent TO_PROCESS,
-			// à activer quand leur fournisseur NDVI sera branché.
-			List<NdviJob> jobs = ndviJobRepository
-					.findByStatusAndObjectTypeOrderByDemandAsc(ComputeJobStatusEnum.TO_PROCESS,
-							NdviResultObjectType.PARK_AREA_COMPUTED, Pageable.ofSize(PAGE_SIZE));
-			for (NdviJob job : jobs) {
-				processOne(job);
+			// shortcut: seuls PARK_AREA_COMPUTED et IRIS sont consommés, les autres types
+			// restent TO_PROCESS, à activer quand leur fournisseur NDVI sera branché.
+			for (NdviResultObjectType type : List.of(NdviResultObjectType.PARK_AREA_COMPUTED,
+					NdviResultObjectType.IRIS)) {
+				List<NdviJob> jobs = ndviJobRepository
+						.findByStatusAndObjectTypeOrderByDemandAsc(ComputeJobStatusEnum.TO_PROCESS,
+								type, Pageable.ofSize(PAGE_SIZE));
+				for (NdviJob job : jobs) {
+					processOne(job);
+				}
 			}
 		} finally {
 			running.set(false);
@@ -278,6 +370,10 @@ public class NdviBatchJobService {
 	 * <p>Aucune colonne NDVI de {@code park_area_computed} n'est alimentée.</p>
 	 */
 	void processOne(NdviJob job) {
+		if (NdviResultObjectType.IRIS.equals(job.getObjectType())) {
+			processIris(job);
+			return;
+		}
 		job.setStatus(ComputeJobStatusEnum.IN_PROCESS);
 		job.setProcessed(new Date());
 		ndviJobRepository.save(job);
@@ -322,6 +418,48 @@ public class NdviBatchJobService {
 	}
 
 	/**
+	 * Traite un job IRIS : la géométrie vient de {@code iris_shape.contour},
+	 * identifiée par {@code ndvi_job.id_inspire} = code IRIS.
+	 */
+	private void processIris(NdviJob job) {
+		job.setStatus(ComputeJobStatusEnum.IN_PROCESS);
+		job.setProcessed(new Date());
+		ndviJobRepository.save(job);
+
+		try {
+			IrisShape iris = irisShapeRepository.findById(job.getIdInspire()).orElse(null);
+			if (iris == null || iris.getContour() == null) {
+				log.warn("NDVI impossible pour l'IRIS {} : contour absent", job.getIdInspire());
+				job.setStatus(ComputeJobStatusEnum.IN_ERROR);
+				return;
+			}
+
+			// Mesure déjà disponible : ne pas rappeler le fournisseur.
+			// Une relance forcée par un administrateur ignore ce court-circuit.
+			if (!job.isForce()
+					&& ndviResultRepository.existsByObjectTypeAndIrisId(NdviResultObjectType.IRIS, iris.getIris())) {
+				job.setStatus(ComputeJobStatusEnum.PROCESSED);
+				return;
+			}
+
+			Optional<NdviStatistics> stats = clientCopernicusNdvi
+					.fetchNdviForPark(job.getJobId(), iris.getContour());
+			Date requestDate = new Date();
+			if (stats.isPresent()) {
+				ndviResultRepository.save(toIrisResult(iris, requestDate, stats.get()));
+			}
+			job.setStatus(ComputeJobStatusEnum.PROCESSED);
+		} catch (Exception e) {
+			log.warn("NDVI non récupéré pour l'IRIS {} : {}", job.getIdInspire(), e.getMessage());
+			job.setStatus(ComputeJobStatusEnum.IN_ERROR);
+		} finally {
+			job.setProcessed(new Date());
+			job.setForce(false);
+			ndviJobRepository.save(job);
+		}
+	}
+
+	/**
 	 * Convertit une réponse Copernicus en mesure persistable.
 	 *
 	 * @param park zone de parc
@@ -339,6 +477,27 @@ public class NdviBatchJobService {
 		result.setIrisId(irisShapeRepository.findBestIrisCode(geometry));
 		result.setCarre200mId(carre200mOnlyShapeRepository.findBestIdInspire(geometry));
 		result.setRequestedAt(requestedAt);
+		applyStats(result, stats);
+		return result;
+	}
+
+	/**
+	 * Convertit une réponse Copernicus pour un IRIS : la mesure porte le code IRIS
+	 * et le code INSEE de sa commune de rattachement.
+	 */
+	private NdviResult toIrisResult(IrisShape iris, Date requestedAt, NdviStatistics stats) {
+		NdviResult result = new NdviResult();
+		result.setObjectType(NdviResultObjectType.IRIS);
+		result.setIrisId(iris.getIris());
+		result.setCadastreId(iris.getCodeInsee());
+		result.setCarre200mId(
+				carre200mOnlyShapeRepository.findBestIdInspire(GeometryQueryHelper.toText(iris.getContour())));
+		result.setRequestedAt(requestedAt);
+		applyStats(result, stats);
+		return result;
+	}
+
+	private void applyStats(NdviResult result, NdviStatistics stats) {
 		result.setPeriodStart(stats.periodStart());
 		result.setPeriodEnd(stats.acquisitionDate());
 		result.setSampleCount(stats.sampleCount());
@@ -360,7 +519,6 @@ public class NdviBatchJobService {
 			result.setGndviMax(stats.gndvi().max());
 			result.setGndviStddev(stats.gndvi().stdDev());
 		}
-		return result;
 	}
 
 	private String cadastreId(ParkArea park) {

@@ -75,13 +75,13 @@
                                                 <input class="form-select" list="communesList"
                                                        id="idCommune-filter" name="idCommune-filter"
                                                        placeholder="Commune..."
-                                                       th:value="${progressForm.nameCommune}" />
+                                                       th:value="${progressForm.nameCommuneDisplay}" />
                                                 <label for="idCommune-filter"><i class="fas fa-city me-2"></i>
                                                     <span th:text="#{compute.progress.filter.city}">Commune</span>
                                                 </label>
-                                                <datalist id="communesList">
+                                                <datalist id="communesList" >
                                                     <option th:each="v : ${progressForm.communes}"
-                                                            th:value="${v.name}"
+                                                            th:value="${v.displayName}"
                                                             th:attr="data-value=${v.id}"></option>
                                                 </datalist>
                                                 <input type="hidden" id="idCommune" name="idCommune"

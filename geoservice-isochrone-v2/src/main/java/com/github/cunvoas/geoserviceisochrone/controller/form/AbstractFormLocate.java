@@ -35,6 +35,13 @@ public abstract class AbstractFormLocate {
 	private String nameCommunauteDeCommunes;
 	private String nameCommune;
 
+	/**
+	 * @return nom de la commune en casse mixte pour l'affichage
+	 */
+	public String getNameCommuneDisplay() {
+		return City.toTitleCase(nameCommune);
+	}
+
 	// locate on map
 	protected String mapLat;
 	protected String mapLng;

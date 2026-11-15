@@ -430,10 +430,11 @@
 <!-- NDVI                                                                  -->
 <!-- ===================================================================== -->
 <div th:fragment="ndvi">
-	<h1 class="mt-2 mb-3" th:text="#{methodology.ndvi.title}">NDVI</h1>
+	<h1 class="mt-2 mb-3" th:text="#{methodology.ndvi.title}">Végétalisation</h1>
 	<p class="lead">
 		Le NDVI (Normalized Difference Vegetation Index) mesure la vigueur de la végétation à partir d'images satellite.
 		Il ne remplace pas la surface OMS : il apporte une lecture de la végétation réelle à l'intérieur du parc.
+		Deux indices complémentaires, le NDRE et le GNDVI, sont calculés dans le même appel pour préciser l'état du couvert.
 	</p>
 
 	<div class="row g-4 mb-4">
@@ -470,6 +471,51 @@
 						<li>mosaïque : l'image la moins nuageuse ;</li>
 						<li>masque de qualité : nuages, ombres, eau et pixels saturés exclus ;</li>
 						<li>calcul statistique côté fournisseur : aucune image n'est téléchargée.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row g-4 mb-4">
+		<div class="col-lg-6">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-success text-white">
+					<h5 class="mb-0"><i class="fas fa-seedling me-2"></i>NDRE — red-edge</h5>
+				</div>
+				<div class="card-body">
+					<pre class="bg-light border rounded p-3"><code>NDRE = (proche infrarouge − red-edge) / (proche infrarouge + red-edge)
+     = (B08 − B05) / (B08 + B05)</code></pre>
+					<p>
+						Le NDRE (Normalized Difference Red Edge) utilise la bande red-edge (B05, ≈ 705 nm).
+						Cette longueur d'onde pénètre mieux le feuillage : l'indice reste sensible à la teneur
+						en chlorophylle même quand le couvert est dense, là où le NDVI sature.
+					</p>
+					<ul class="mb-0">
+						<li>valeurs élevées : feuillage actif, couvert dense et en bonne santé ;</li>
+						<li>valeurs faibles : végétation stressée, carence, sénescence ou sol nu ;</li>
+						<li>utile pour distinguer deux parcs très végétalisés que le NDVI place au même niveau.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6">
+			<div class="card shadow-sm h-100">
+				<div class="card-header bg-success text-white">
+					<h5 class="mb-0"><i class="fas fa-leaf me-2"></i>GNDVI — green</h5>
+				</div>
+				<div class="card-body">
+					<pre class="bg-light border rounded p-3"><code>GNDVI = (proche infrarouge − vert) / (proche infrarouge + vert)
+      = (B08 − B03) / (B08 + B03)</code></pre>
+					<p>
+						Le GNDVI (Green Normalized Difference Vegetation Index) remplace la bande rouge par la bande
+						verte (B03, ≈ 560 nm). Il suit la concentration en chlorophylle et discrimine mieux les stades
+						de croissance que le NDVI.
+					</p>
+					<ul class="mb-0">
+						<li>valeurs élevées : forte teneur en chlorophylle, végétation en croissance ;</li>
+						<li>valeurs faibles : végétation peu active, stress hydrique ou azoté ;</li>
+						<li>moins sensible que le NDVI à la structure du couvert et aux effets d'ombre.</li>
 					</ul>
 				</div>
 			</div>

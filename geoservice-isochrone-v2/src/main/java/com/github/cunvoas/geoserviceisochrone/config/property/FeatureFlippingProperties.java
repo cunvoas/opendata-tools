@@ -41,6 +41,12 @@ public class FeatureFlippingProperties {
 	private boolean sendEmail = false;
 
 	/**
+	 * cache the pending compute jobs count in the dashboard table.
+	 * When false, the count is queried directly and the cached row is removed.
+	 */
+	private boolean dashboardCacheComputeJobPending = false;
+
+	/**
 	 * CPU temperature threshold (°C) for batch inhibition.
 	 * When the metrics endpoint reports cpu_temperature above this value,
 	 * processShapes and processCarres are skipped.
