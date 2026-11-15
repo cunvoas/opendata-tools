@@ -52,7 +52,7 @@ const ROOT_PATH = '/'
 // const ROOT_PATH = '/parcs-et-jardins/'
 
 // Routes pré-rendues en HTML réel (GitHub Pages sert dist/<route>/index.html en 200 au lieu du 404)
-const prerenderRoutes = ['/carte', '/stats', '/information', '/aideoVideo']
+const prerenderRoutes = ['/', '/carte', '/stats', '/information', '/etude-insee', '/aideVideo']
 if (process.env.VITE_FEATURE_NDVI === 'true') prerenderRoutes.push('/ndvi')
 
 
@@ -76,7 +76,7 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         scope: ROOT_PATH,
-        start_url: ROOT_PATH,
+        start_url: `${ROOT_PATH}carte`,
         icons: [
           {
             src: `${ROOT_PATH}icons/icon-192x192.png`,

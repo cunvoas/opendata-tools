@@ -40,7 +40,7 @@ describe('Com2coQuickAccess.vue', () => {
       const wrapper = mount(Com2coQuickAccess, {
         props: { currentLocation: { com2coId: '1' } }
       })
-      expect(wrapper.find('h2').text()).toContain('Communauté de commune')
+      expect(wrapper.find('h2').text()).toContain('Communauté de communes')
     })
   })
 

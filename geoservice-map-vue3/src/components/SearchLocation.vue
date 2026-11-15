@@ -1,44 +1,51 @@
 <template>
     <div class="grid grid-cols-1 md:grid-cols-4 gap-2 p-2 bg-gray-50 rounded-md">
-        <label class="sr-only" for="selRegion">Région</label>
-        <label class="sr-only" for="selCom2co">Intercommunalité</label>
-        <label class="sr-only" for="selCity">Commune</label>
-        <select 
+        <label class="sr-only" for="selRegion">Région (saisir pour rechercher, puis choisir dans la liste)</label>
+        <label class="sr-only" for="selCom2co">Intercommunalité (saisir pour rechercher, puis choisir dans la liste)</label>
+        <label class="sr-only" for="selCity">Commune (saisir pour rechercher, puis choisir dans la liste)</label>
+        <input
             id="selRegion"
-            v-model="selectedRegion"
-            @change="fetchCom2cos"
-            class="select-field">
-            <option v-for="region in regions" :key="region.id" :value="region.id">
-                {{ region.name }}
-            </option>
-        </select>
+            list="regionsList"
+            v-model="regionSearch"
+            @change="handleRegionSearchChange"
+            placeholder="Rechercher une région..."
+            title="Région : saisir pour rechercher, puis choisir dans la liste"
+            class="select-field" />
+        <datalist id="regionsList">
+            <option v-for="region in sortedRegions" :key="region.id" :value="region.name"></option>
+        </datalist>
         
-        <select 
+        <input
             id="selCom2co"
-            v-model="selectedCom2co"
-            @change="fetchCities"
+            list="com2cosList"
+            v-model="com2coSearch"
+            @change="handleCom2coSearchChange"
             :disabled="!selectedRegion"
-            class="select-field disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
-            <option v-for="com2co in com2cos" :key="com2co.id" :value="com2co.id">
-                {{ com2co.name }}
-            </option>
-        </select>
+            placeholder="Rechercher une intercommunalité..."
+            title="Intercommunalité : saisir pour rechercher, puis choisir dans la liste"
+            class="select-field disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60" />
+        <datalist id="com2cosList">
+            <option v-for="com2co in sortedCom2cos" :key="com2co.id" :value="com2co.name"></option>
+        </datalist>
         
-        <select 
+        <input
             id="selCity"
-            v-model="selectedCity"
-            @change="handleCityChange"
+            list="citiesList"
+            v-model="citySearch"
+            @change="handleCitySearchChange"
             :disabled="!selectedCom2co"
-            class="select-field disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
-            <option v-for="city in cities" :key="city.id" :value="city.id" :data-insee-code="city.inseeCode" :data-longitude-x="city.lonX" :data-latitude-y="city.latY">
-                {{ city.name }} ({{ city.inseeCode }})
-            </option>
-        </select>
+            placeholder="Rechercher une commune..."
+            title="Commune : saisir pour rechercher, puis choisir dans la liste"
+            class="select-field disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60" />
+        <datalist id="citiesList">
+            <option v-for="city in sortedCities" :key="city.id" :value="cityLabel(city)"></option>
+        </datalist>
         
         <Autocomplete 
             v-model="selectedAddress" 
             :fetch-items="fetchAddresses" 
             placeholder="Aller à une adresse"
+            hint="Saisir une adresse pour positionner la carte: Base Adresse Nationale (api-adresse.data.gouv.fr)"
             :displaySearchAddress="displaySearchAddress" 
             :disabled="!selectedCity"
             @location-selected="handleLocationSelected" 
@@ -67,11 +74,15 @@ export default {
             cities: [],
             addresses: [],
             selectedRegion: null,
+            selectedRegionName: null,
             selectedCom2co: null,
             selectedCom2coName: null,
+            regionSearch: '',
+            com2coSearch: '',
             selectedCity: null,
             selectedCityName: null,
             selectedCityInseeCode: null,
+            citySearch: '',
             locX: null,
             locY: null,
             selectedAddress: null
@@ -116,6 +127,21 @@ export default {
 
     },
     computed: {
+        sortedRegions() {
+            return [...this.regions].sort((a, b) =>
+                a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' })
+            );
+        },
+        sortedCom2cos() {
+            return [...this.com2cos].sort((a, b) =>
+                a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' })
+            );
+        },
+        sortedCities() {
+            return [...this.cities].sort((a, b) =>
+                a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' })
+            );
+        },
         selectedCityInsee() {
             return this.cities.find(city => city.id === this.selectedCityId) || {};
         },
@@ -137,27 +163,23 @@ export default {
                     
                     const regionOption = this.regions.find(region => region.id === this.selectedRegion);
                     if (regionOption) {
-                        // Simulate change event for fetchCom2cos
-                        const event = {
-                            target: {
-                                options: [{
-                                    text: regionOption.name
-                                }],
-                                selectedIndex: 0
-                            }
-                        };
-                        await this.fetchCom2cos(event);
+                        this.selectedRegionName = regionOption.name;
+                        this.regionSearch = regionOption.name;
+                        await this.fetchCom2cos();
                     }
                 } else {
                     // Reset dependent fields if no region is selected
                     this.com2cos = [];
                     this.selectedCom2co = null;
+                    this.selectedCom2coName = null;
+                    this.com2coSearch = '';
                     this.cities = [];
                     this.selectedCity = null;
                 }
             } catch (error) {
                 this.regions = [];
                 this.selectedRegion = null;
+                this.regionSearch = '';
                 console.error('Error fetching regions:', error);
             }
         },
@@ -176,54 +198,30 @@ export default {
                     if (com2coOption) {
                         // Assign the com2co name directly
                         this.selectedCom2coName = com2coOption.name;
+                        this.com2coSearch = com2coOption.name;
                     }
                     // Chain the call to fetchCities regardless of whether we found the com2co
-                    await this.fetchCities(null);
+                    await this.fetchCities();
                 } else {
                     // Reset dependent fields if no com2co is selected
                     this.cities = [];
                     this.selectedCity = null;
+                    this.selectedCityName = null;
+                    this.selectedCityInseeCode = null;
+                    this.citySearch = '';
                 }
             } catch (error) {
                 this.com2cos = [];
                 this.selectedCom2co = null;
+                this.selectedCom2coName = null;
+                this.com2coSearch = '';
                 console.error('Error fetching com2cos:', error);
             }
         },
         
-        async fetchCities(event) { // call by com2co
+        async fetchCities() { // call by com2co
             if (!this.selectedCom2co) return;
             try {
-                // Only process event if it's a real event (not during initial load)
-                if (event && event.target && event.target.options) {
-                    const selectedOption = event.target.options[event.target.selectedIndex];
-                    this.selectedCom2coName = selectedOption.text;
-                    // Les écrans par EPCI (ex. NDVI) n'ont pas à attendre le choix d'une commune.
-                    this.$emit('com2co-selected', {
-                        regionId: this.selectedRegion,
-                        com2coId: this.selectedCom2co,
-                        com2coName: this.selectedCom2coName
-                    });
-                    // Sans commune choisie, l'EPCI doit quand même être retrouvé au rechargement.
-                    localStorage.setItem('location-selected', JSON.stringify({
-                        locType: 'com2co',
-                        regionId: this.selectedRegion,
-                        com2coId: this.selectedCom2co,
-                        com2coName: this.selectedCom2coName,
-                        cityId: null,
-                        cityName: null,
-                        cityInsee: null,
-                        lonX: null,
-                        latY: null
-                    }));
-                } else if (!this.selectedCom2coName) {
-                    // If no name is set yet, find it from the loaded com2cos
-                    const com2coOption = this.com2cos.find(c => c.id === this.selectedCom2co);
-                    if (com2coOption) {
-                        this.selectedCom2coName = com2coOption.name;
-                    }
-                }
-                
                 const response = await axios.get(`https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/cities/com2co/cities_${this.selectedCom2co}.json`);
                 this.cities = response.data;
                 
@@ -241,10 +239,11 @@ export default {
                     
                     if (cityOption) {
                         // Assign city data directly
-                        this.selectedCityName = `${cityOption.name} (${cityOption.inseeCode})`;
+                        this.selectedCityName = this.cityLabel(cityOption);
                         this.selectedCityInseeCode = cityOption.inseeCode;
                         this.locX = cityOption.lonX;
                         this.locY = cityOption.latY;
+                        this.citySearch = this.selectedCityName;
                         
                         console.log('City loaded:', {
                             selectedCityInseeCode: this.selectedCityInseeCode,
@@ -275,12 +274,20 @@ export default {
                             await this.fetchAddresses('');
                             this.fromLocalStorage = false;
                         }
+                    } else {
+                        // Commune mémorisée absente du nouvel EPCI : on repart sans commune.
+                        this.selectedCity = null;
+                        this.selectedCityName = null;
+                        this.selectedCityInseeCode = null;
+                        this.citySearch = '';
                     }
                 }
             } catch (error) {
                 this.cities = [];
                 this.selectedCity = null;
+                this.selectedCityName = null;
                 this.selectedCityInseeCode = null;
+                this.citySearch = '';
                 console.error('Error fetching cities:', error);
             }
         },
@@ -304,12 +311,91 @@ export default {
                 return [];
             }
         }, 350),
-        handleCityChange(event) {  // call by city - direct user selection
-            const selectedOption = event.target.options[event.target.selectedIndex];
-            this.selectedCityName = selectedOption.text;
-            this.selectedCityInseeCode = selectedOption.getAttribute('data-insee-code');
-            this.locX = selectedOption.getAttribute('data-longitude-x');
-            this.locY = selectedOption.getAttribute('data-latitude-y');
+        handleRegionSearchChange(event) {
+            const target = this.normalize(event.target.value);
+            const region = this.sortedRegions.find(r => this.normalize(r.name) === target);
+            if (!region) {
+                // Saisie libre : on restaure la région réellement sélectionnée.
+                this.regionSearch = this.selectedRegionName || '';
+                return;
+            }
+            this.selectedRegion = region.id;
+            this.selectedRegionName = region.name;
+            this.regionSearch = region.name;
+            // Changement de région : EPCI et commune précédents ne sont plus valides.
+            this.com2cos = [];
+            this.selectedCom2co = null;
+            this.selectedCom2coName = null;
+            this.com2coSearch = '';
+            this.cities = [];
+            this.selectedCity = null;
+            this.selectedCityName = null;
+            this.selectedCityInseeCode = null;
+            this.citySearch = '';
+            this.fetchCom2cos();
+        },
+        handleCom2coSearchChange(event) {
+            const target = this.normalize(event.target.value);
+            const com2co = this.sortedCom2cos.find(c => this.normalize(c.name) === target);
+            if (!com2co) {
+                // Saisie libre : on restaure l'EPCI réellement sélectionné.
+                this.com2coSearch = this.selectedCom2coName || '';
+                return;
+            }
+            this.selectCom2co(com2co);
+        },
+        selectCom2co(com2co) {  // call by com2co - direct user selection
+            this.selectedCom2co = com2co.id;
+            this.selectedCom2coName = com2co.name;
+            this.com2coSearch = com2co.name;
+            // Changement d'EPCI : la commune précédente n'est plus valide.
+            this.selectedCity = null;
+            this.selectedCityName = null;
+            this.selectedCityInseeCode = null;
+            this.citySearch = '';
+            // Les écrans par EPCI (ex. NDVI) n'ont pas à attendre le choix d'une commune.
+            this.$emit('com2co-selected', {
+                regionId: this.selectedRegion,
+                com2coId: this.selectedCom2co,
+                com2coName: this.selectedCom2coName
+            });
+            // Sans commune choisie, l'EPCI doit quand même être retrouvé au rechargement.
+            localStorage.setItem('location-selected', JSON.stringify({
+                locType: 'com2co',
+                regionId: this.selectedRegion,
+                com2coId: this.selectedCom2co,
+                com2coName: this.selectedCom2coName,
+                cityId: null,
+                cityName: null,
+                cityInsee: null,
+                lonX: null,
+                latY: null
+            }));
+            this.fetchCities();
+        },
+        cityLabel(city) {
+            return `${this.formatCityName(city.name)} (${city.inseeCode})`;
+        },
+        // CSS capitalize ne met que la 1re lettre en majuscule sans toucher au reste ("LILLE" -> "LILLE").
+        formatCityName(name) {
+            return String(name || '')
+                .toLocaleLowerCase('fr')
+                .replace(/(^|[\s\-'])(\p{L})/gu, (m, sep, letter) => sep + letter.toLocaleUpperCase('fr'));
+        },
+        normalize(str) {
+            return String(str || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+        },
+        selectCity(city) {  // call by city - direct user selection
+            this.selectedCity = city.id;
+            this.selectedCityName = this.cityLabel(city);
+            this.selectedCityInseeCode = city.inseeCode;
+            this.locX = city.lonX;
+            this.locY = city.latY;
+            this.citySearch = this.selectedCityName;
             const loc = {
                 "locType": "city",
                 "regionId": this.selectedRegion,
@@ -325,10 +411,20 @@ export default {
             // Save to localStorage instead of cookies
             localStorage.setItem('location-selected', JSON.stringify(loc));
 
-            //console.log("handleCityChange.emit"+JSON.stringify(loc));
             this.$emit('update-location', loc);
             // Choix explicite d'une commune : les écrans qui filtrent par commune (ex. NDVI) rappellent leurs données.
             this.$emit('city-selected', loc);
+        },
+        handleCitySearchChange(event) {
+            const target = this.normalize(event.target.value);
+            const city = this.sortedCities.find(c => this.normalize(this.cityLabel(c)) === target)
+                || this.sortedCities.find(c => this.normalize(c.name) === target);
+            if (city) {
+                this.selectCity(city);
+            } else {
+                // Saisie libre : on restaure la commune réellement sélectionnée.
+                this.citySearch = this.selectedCityName || '';
+            }
         },
         handleLocationSelected(loc) {
            //console.log("handleLocationSelected.emit"+JSON.stringify(loc));

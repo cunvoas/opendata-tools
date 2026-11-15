@@ -29,7 +29,7 @@
       for="cbCarre"
       title="Affiche les données carroyées (grille de 200 m) pour visualiser la surface de parcs accessible par habitant."
     >
-      | Carrés INSEE
+      | Carreaux INSEE
     </label>
     <input id="cbCarre" v-model="showCarre" type="checkbox" />
 

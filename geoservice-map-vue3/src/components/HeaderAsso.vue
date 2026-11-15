@@ -2,6 +2,7 @@
     <div class="container mx-auto px-4 py-6 relative">
         <a class="skip-link" href="#contenu">Aller au contenu principal</a>
         <div
+            v-if="appVersion"
             class="absolute left-4 top-2 text-xs text-gray-600 select-none"
             :title="'Version: ' + appVersion">
             v{{ appVersion }}
@@ -13,16 +14,17 @@
         </div>
         
         <!-- Logos Row -->
-        <div class="flex justify-center items-center gap-10 mb-4">
+        <div class="flex flex-wrap justify-center items-center gap-x-10 gap-y-4 mb-4">
             <a
                 href="https://www.helloasso.com/associations/aut-mel"
                 target="_blank" 
                 rel="noopener noreferrer"
                 class="hover:opacity-80 transition-opacity">
                 <img
-                    alt="Aut'MEL'"
+                    alt="Aut'MEL"
                     src="../assets/logo-autmel.png"
-                    class="h-20 border-2 border-transparent"
+                    width="101" height="80"
+                    class="h-20 w-auto shrink-0 border-2 border-transparent"
                 />
             </a>
             <a
@@ -33,7 +35,8 @@
                 <img
                     alt="Deûl'Air"
                     src="../assets/logo-deulair.png"
-                    class="h-20 border-2 border-transparent"
+                    width="80" height="80"
+                    class="h-20 w-auto shrink-0 border-2 border-transparent"
                 />
             </a>
             <a
@@ -44,7 +47,8 @@
                 <img
                     alt="Entrelianes"
                     src="../assets/logo-entrelianes.png"
-                    class="w-24 border-2 border-transparent"
+                    width="96" height="96"
+                    class="w-24 h-auto shrink-0 border-2 border-transparent"
                 />
             </a>
             <a
@@ -55,13 +59,20 @@
                 <img
                     alt="LM Oxygène"
                     src="../assets/logo-lmo.png"
-                    class="h-20 border-2 border-transparent"
+                    width="69" height="80"
+                    class="h-20 w-auto shrink-0 border-2 border-transparent"
                 />
             </a>
         </div>
         
         <!-- Navigation Links -->
         <nav class="flex flex-wrap gap-2 items-center justify-center mb-6" aria-label="Navigation principale">
+            <router-link 
+                to="/" 
+                class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors font-medium no-underline"
+                active-class="bg-yellow-50 text-black font-bold">
+                Accueil
+            </router-link>
             <router-link 
                 to="/carte" 
                 class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors font-medium no-underline"
@@ -88,7 +99,7 @@
                 Information
             </router-link>
             <router-link 
-                to="/aideoVideo" 
+                to="/aideVideo" 
                 class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors font-medium no-underline"
                 active-class="bg-yellow-50 text-black font-bold">
                 Aide en vidéo
@@ -104,6 +115,12 @@
 
         <footer class="mt-6 pt-4 border-t border-gray-200">
             <nav aria-label="Plan du site" class="flex flex-wrap gap-2 items-center justify-center text-sm">
+                <router-link
+                    to="/"
+                    class="px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 transition-colors font-medium no-underline underline-hover"
+                    active-class="bg-yellow-50 text-black font-bold">
+                    Accueil
+                </router-link>
                 <router-link
                     to="/carte"
                     class="px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 transition-colors font-medium no-underline underline-hover"
@@ -130,7 +147,7 @@
                     Information
                 </router-link>
                 <router-link
-                    to="/aideoVideo"
+                    to="/aideVideo"
                     class="px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 transition-colors font-medium no-underline underline-hover"
                     active-class="bg-yellow-50 text-black font-bold">
                     Aide en vidéo
@@ -148,7 +165,7 @@ export default {
   name: 'HeaderAsso',
   data() {
     return {
-      appVersion: '#not-set',
+      appVersion: '',
       ndviEnabled: features.ndvi
     };
   },
