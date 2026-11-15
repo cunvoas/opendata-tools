@@ -1,4 +1,7 @@
-export VITE_FEATURE_NDVI=true
+# FEAT FLAG NDVI
+#export VITE_FEATURE_NDVI=true
+export VITE_FEATURE_NDVI=false
+
 
 # Source des données (build) : static = JSON publiés sur GitHub, dynamic = API locale (port 8980)
 # VITE_DATA_MODE static ou dynamic

@@ -110,7 +110,10 @@ export default defineConfig({
       routes: prerenderRoutes,
       renderer: new PuppeteerRenderer({
         headless: true,
-        renderAfterTime: 3000,
+        renderAfterTime: 10000,
+        // Le Chromium de puppeteer 1.20 (Chrome 78) ne parse pas le JS es2021 : on préfère un Chrome système s'il existe.
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH
+          || (fs.existsSync('/snap/bin/chromium') ? '/snap/bin/chromium' : undefined),
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
       }),
       postProcess(renderedRoute) {
