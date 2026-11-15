@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,12 +207,12 @@ public class ClientCopernicusNdvi {
     /**
      * Calcule les statistiques NDVI du polygone d'un parc.
      *
-     * @param parkId identifiant du parc (traçabilité des logs)
-     * @param parkGeometry polygone JTS du parc (EPSG:4326)
+     * @param parkId identifiant de l'objet (traçabilité des logs)
+     * @param parkGeometry géométrie JTS du parc ou de l'IRIS (EPSG:4326)
      * @return les statistiques NDVI, ou vide si le fournisseur n'a aucune donnée
      * @throws RuntimeException en cas d'erreur technique (réseau, quota, HTTP)
      */
-    public Optional<NdviStatistics> fetchNdviForPark(Long parkId, Polygon parkGeometry) {
+    public Optional<NdviStatistics> fetchNdviForPark(Long parkId, Geometry parkGeometry) {
         if (!isEnabled()) {
             log.warn("NDVI non récupéré pour le parc {} : configuration CDSE absente ou désactivée", parkId);
             return Optional.empty();
@@ -228,7 +228,7 @@ public class ClientCopernicusNdvi {
         return stats;
     }
 
-    private Optional<NdviStatistics> fetchWindow(Long parkId, Polygon parkGeometry, String from, String to) {
+    private Optional<NdviStatistics> fetchWindow(Long parkId, Geometry parkGeometry, String from, String to) {
         JsonNode response = restClient.post()
                 .uri(statisticsUrl)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
@@ -245,7 +245,7 @@ public class ClientCopernicusNdvi {
         return stats;
     }
 
-    private Map<String, Object> buildRequest(Polygon parkGeometry, String from, String to) {
+    private Map<String, Object> buildRequest(Geometry parkGeometry, String from, String to) {
         JsonNode geometry = OBJECT_MAPPER.readTree(new GeoJsonWriter().write(parkGeometry));
 
         // Fenêtre configurée (année précédente pour disposer de l'archive L2A complète)
@@ -286,7 +286,7 @@ public class ClientCopernicusNdvi {
      * @param parkGeometry emprise du parc en WGS84
      * @return largeur et hauteur en pixels, chacune entre 1 et 512
      */
-    static int[] requestSize(Polygon parkGeometry) {
+    static int[] requestSize(Geometry parkGeometry) {
         Envelope env = parkGeometry.getEnvelopeInternal();
         double midLat = Math.toRadians((env.getMinY() + env.getMaxY()) / 2.0);
         int width = (int) Math.ceil(env.getWidth() * 111_320.0 * Math.cos(midLat) / 10.0);

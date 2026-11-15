@@ -56,24 +56,27 @@ afterEach(() => {
 
 describe('SearchLocation.vue', () => {
   describe('rendu initial', () => {
-    it('affiche 3 selects', async () => {
+    it('affiche 3 champs de sélection avec datalist', async () => {
       mockAxiosForAllCalls()
       const wrapper = mount(SearchLocation)
-      expect(wrapper.findAll('select')).toHaveLength(3)
+      expect(wrapper.findAll('select')).toHaveLength(0)
+      expect(wrapper.find('#selRegion').attributes('list')).toBe('regionsList')
+      expect(wrapper.find('#selCom2co').attributes('list')).toBe('com2cosList')
+      expect(wrapper.find('#selCity').attributes('list')).toBe('citiesList')
     })
 
-    it('le select région est toujours activé', async () => {
+    it('le champ région est toujours activé', async () => {
       mockAxiosForAllCalls()
       const wrapper = mount(SearchLocation)
-      expect(wrapper.findAll('select')[0].attributes('disabled')).toBeUndefined()
+      expect(wrapper.find('#selRegion').attributes('disabled')).toBeUndefined()
     })
 
-    it('le select com2co est désactivé sans région', async () => {
+    it('le champ com2co est désactivé sans région', async () => {
       mockAxiosForAllCalls()
       // Pas de valeur par défaut : on force selectedRegion à null
       const wrapper = mount(SearchLocation)
       await wrapper.setData({ selectedRegion: null })
-      expect(wrapper.findAll('select')[1].attributes('disabled')).toBeDefined()
+      expect(wrapper.find('#selCom2co').attributes('disabled')).toBeDefined()
     })
   })
 
@@ -97,6 +100,15 @@ describe('SearchLocation.vue', () => {
       mount(SearchLocation)
       await flushPromises()
       expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('cities_'))
+    })
+
+    it('préremplit les champs avec Hauts-de-France, MEL et Lille par défaut', async () => {
+      mockAxiosForAllCalls()
+      const wrapper = mount(SearchLocation)
+      await flushPromises()
+      expect(wrapper.find('#selRegion').element.value).toBe('Hauts-de-France')
+      expect(wrapper.find('#selCom2co').element.value).toBe('Métropole Européenne de Lille')
+      expect(wrapper.find('#selCity').element.value).toBe('Lille (59350)')
     })
 
     it('émet update-location avec les données de Lille par défaut', async () => {
@@ -124,7 +136,7 @@ describe('SearchLocation.vue', () => {
     it('restore la sélection depuis localStorage et émet update-location', async () => {
       const savedLoc = {
         locType: 'city', regionId: '9', com2coId: '1',
-        com2coName: 'MEL', cityId: '2878', cityName: 'LILLE (59350)',
+        com2coName: 'MEL', cityId: '2878', cityName: 'Lille (59350)',
         cityInsee: '59350', lonX: '3.046986424', latY: '50.631855028'
       }
       localStorage.setItem('location-selected', JSON.stringify(savedLoc))
@@ -193,13 +205,47 @@ describe('SearchLocation.vue', () => {
       await flushPromises()
       expect(wrapper.emitted('city-selected')).toBeUndefined()
 
-      await wrapper.find('#selCity').setValue('100')
+      await wrapper.find('#selCity').setValue('ROUBAIX (59512)')
 
       expect(wrapper.emitted('city-selected')).toHaveLength(1)
       const location = wrapper.emitted('city-selected')[0][0]
       expect(location).toMatchObject({ regionId: '9', com2coId: '1', cityId: '100', cityInsee: '59512' })
-      // jsdom garde une espace finale dans option.text, contrairement aux navigateurs.
-      expect(location.cityName.trim()).toBe('ROUBAIX (59512)')
+      expect(location.cityName.trim()).toBe('Roubaix (59512)')
+    })
+
+    it('trie les villes alphabétiquement sans modifier l’ordre source', async () => {
+      axios.get.mockImplementation((url) => {
+        if (url.includes('regions.json')) return Promise.resolve({ data: mockRegions })
+        if (url.includes('com2cos_')) return Promise.resolve({ data: mockCom2cos })
+        if (url.includes('cities_')) return Promise.resolve({ data: [...mockCities].reverse() })
+        return Promise.resolve({ data: { features: [] } })
+      })
+      const wrapper = mount(SearchLocation)
+      await flushPromises()
+
+      expect(wrapper.vm.sortedCities.map(c => c.name)).toEqual(['LILLE', 'ROUBAIX'])
+      expect(wrapper.vm.cities.map(c => c.name)).toEqual(['ROUBAIX', 'LILLE'])
+    })
+
+    it('retrouve une commune malgré casse et accents', async () => {
+      mockAxiosForAllCalls()
+      const wrapper = mount(SearchLocation)
+      await flushPromises()
+
+      await wrapper.find('#selCity').setValue('roubaix (59512)')
+
+      expect(wrapper.emitted('city-selected')[0][0].cityId).toBe('100')
+    })
+
+    it('ignore une saisie inconnue et restaure la commune sélectionnée', async () => {
+      mockAxiosForAllCalls()
+      const wrapper = mount(SearchLocation)
+      await flushPromises()
+
+      await wrapper.find('#selCity').setValue('VILLE INCONNUE')
+
+      expect(wrapper.emitted('city-selected')).toBeUndefined()
+      expect(wrapper.vm.citySearch).toBe('Lille (59350)')
     })
   })
 
@@ -210,7 +256,7 @@ describe('SearchLocation.vue', () => {
       await flushPromises()
       expect(wrapper.emitted('com2co-selected')).toBeUndefined()
 
-      await wrapper.find('#selCom2co').setValue('2')
+      await wrapper.find('#selCom2co').setValue('Communauté Urbaine Dunkerque')
       await flushPromises()
 
       expect(wrapper.emitted('com2co-selected')).toEqual([
@@ -228,11 +274,44 @@ describe('SearchLocation.vue', () => {
       const wrapper = mount(SearchLocation)
       await flushPromises()
 
-      await wrapper.find('#selCom2co').setValue('2')
+      await wrapper.find('#selCom2co').setValue('Communauté Urbaine Dunkerque')
       await flushPromises()
 
       const saved = JSON.parse(localStorage.getItem('location-selected'))
       expect(saved).toMatchObject({ regionId: '9', com2coId: '2', cityId: null })
+      expect(wrapper.vm.citySearch).toBe('')
+      expect(wrapper.find('#selCity').element.value).toBe('')
+    })
+
+    it('résout une région saisie et recharge les EPCI', async () => {
+      mockAxiosForAllCalls()
+      const wrapper = mount(SearchLocation)
+      await flushPromises()
+      axios.get.mockClear()
+
+      await wrapper.find('#selRegion').setValue('Île-de-France')
+      await flushPromises()
+
+      expect(wrapper.vm.selectedRegion).toBe('11')
+      expect(wrapper.vm.selectedCom2co).toBeNull()
+      expect(wrapper.vm.com2coSearch).toBe('')
+      expect(wrapper.vm.citySearch).toBe('')
+      expect(wrapper.find('#selCom2co').element.value).toBe('')
+      expect(wrapper.find('#selCity').element.value).toBe('')
+      expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('com2cos_11'))
+    })
+
+    it('trie régions et EPCI alphabétiquement sans modifier l’ordre source', async () => {
+      mockAxiosForAllCalls()
+      const wrapper = mount(SearchLocation)
+      await flushPromises()
+
+      expect(wrapper.vm.sortedRegions.map(r => r.name)).toEqual(['Hauts-de-France', 'Île-de-France'])
+      expect(wrapper.vm.sortedCom2cos.map(c => c.name)).toEqual([
+        'Communauté Urbaine Dunkerque',
+        'Métropole Européenne de Lille'
+      ])
+      expect(wrapper.vm.com2cos[0].name).toBe('Métropole Européenne de Lille')
     })
   })
 

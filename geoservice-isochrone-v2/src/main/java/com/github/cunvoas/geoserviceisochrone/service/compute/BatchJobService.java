@@ -166,6 +166,10 @@ public class BatchJobService implements DisposableBean{
 		log.info("requestProcessParc");
 		int nbShapes=0;
 		ParkArea pa = parkAreaRepository.findByIdParcEtJardin(pj.getId());
+		if (pa == null || pa.getPolygon() == null) {
+			log.warn("Aucune géométrie (park_area) pour le parc {}, calcul ignoré", pj.getId());
+			return 0;
+		}
 		Geometry geo = pa.getPolygon();
 
 		Date upd= pa.getUpdated();
@@ -557,7 +561,7 @@ public class BatchJobService implements DisposableBean{
 		}
 
 		List<ComputeIrisJob> irisJobs = computeJobIrisRepository.findOnStartUnfinishedProcessed(oldDate);
-		if (!jobs.isEmpty()) {
+		if (!irisJobs.isEmpty()) {
 			log.warn("{} jobs runs incorrecly , new demande time is {}", jobs.size(), newDate);
 
 			for (ComputeIrisJob computeJob : irisJobs) {

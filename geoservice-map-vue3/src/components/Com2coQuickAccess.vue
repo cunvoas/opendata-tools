@@ -1,7 +1,7 @@
 <template>
     <div class="p-2 bg-gray-50 rounded-md mb-2" v-if="currentLocation && currentLocation.com2coId">
         <h2 class="m-0 mb-2 text-base text-gray-800 font-semibold">
-            Accès rapide aux statistiques : {{ currentLocation.com2coName || 'Communauté de commune' }}
+            Accès rapide aux statistiques : {{ currentLocation.com2coName || 'Communauté de communes' }}
         </h2>
         <div class="flex gap-2 flex-wrap justify-start">
             <button 

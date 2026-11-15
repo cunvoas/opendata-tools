@@ -132,6 +132,33 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 	}
 	
 	/**
+	 * Relit le caractère OMS et la surface du parc : les valeurs déjà calculées sont périmées si le parc a été
+	 * reclassé ou redessiné depuis. La population, coûteuse, n'est pas recalculée.
+	 * @param park parc avec son type renseigné
+	 * @param pac valeurs déjà calculées
+	 * @return valeurs à jour
+	 */
+	protected ParkAreaComputed refreshParkState(ParkArea park, ParkAreaComputed pac) {
+		ParkType type = park.getType();
+		Boolean oms = type.getOms();
+		if (!type.getStrict() && park.getOmsCustom() != null) {
+			oms = park.getOmsCustom();
+		}
+		BigDecimal surface = pac.getSurface();
+		Optional<ParcEtJardin> pj = parkJardinRepository.findById(park.getIdParcEtJardin());
+		if (pj.isPresent()) {
+			surface = new BigDecimal(Math.round(pj.get().getSurface()));
+		}
+		if (java.util.Objects.equals(oms, pac.getOms()) && surface.compareTo(pac.getSurface()) == 0) {
+			return pac;
+		}
+		pac.setOms(oms);
+		pac.setSurface(surface);
+		pac.setUpdated(new Date());
+		return parkAreaComputedRepository.save(pac);
+	}
+
+	/**
 	 * Compute the surface of parks availlable per capita in the square.
 	 * @param carreShape shape
 	 * @param isDense witch density
@@ -178,6 +205,8 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 
 					// rebuid
 					pac = this.computeParkArea(parkArea, annee);
+				} else {
+					pac = this.refreshParkState(parkArea, pac);
 				}
 			} else {
 				// rebuid
@@ -296,14 +325,8 @@ public class ComputeCarreServiceV3 implements IComputeCarreService {
 		computed.setMissingSurfaceAdvised(computeMissingSurface(dto, carreShape, applicationBusinessProperties.getRecoUrbSquareMeterPerCapita(), applicationBusinessProperties.getRecoSubUrbSquareMeterPerCapita()));
 		
 		
-		if (Boolean.TRUE.equals(dto.withSufficient)) {
-			computed.setIsSustainablePark(Boolean.TRUE);
-			//TODO 
-			computed.setPopulationWithSustainablePark(null);
-		} else {
-			computed.setIsSustainablePark(Boolean.FALSE);
-			computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
-		}
+		computed.setIsSustainablePark(Boolean.TRUE.equals(dto.withSufficient));
+		computed.setPopulationWithSustainablePark(dto.popWithSufficient);
 		
 		computed.setPopAll(dto.popAll);
 		computed.setComments(dto.parcName);

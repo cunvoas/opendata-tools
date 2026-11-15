@@ -3,19 +3,25 @@
 //import Vue from 'vue';
 //import Router from 'vue-router';
 import { createWebHistory, createRouter } from "vue-router";
-import AppCarte from "../views/AppCarte.vue";
-import AppStatistics from "../views/AppStatistics.vue";
-import AppInformation from "../views/AppInformation.vue";
-import AppVideoAdmin from "../views/AppVideoAdmin.vue";
+import AppLanding from "../views/AppLanding.vue";
 import { features } from "../utils/config.js";
 
 //Vue.use(Router);
 
 const routes = [
   {
+    path: '/',
+    name: 'appLanding',
+    component: AppLanding,
+    meta: {
+      title: 'Espaces verts par habitant : Lille et MEL, étude selon l\'OMS',
+      description: 'Combien de m² d\'espaces verts par habitant à Lille et dans la Métropole Européenne de Lille (MEL) ? Étude citoyenne : carte, chiffres, méthode, INSEE.',
+    },
+  },
+  {
     path: '/carte',
     name: 'appCarte',
-    component: AppCarte,
+    component: () => import("../views/AppCarte.vue"),
     meta: {
       title: 'Carte des parcs et jardins – MEL | Parcs & Jardins',
       description: 'Explorez la carte interactive des parcs, jardins et espaces verts de la Métropole Européenne de Lille. Analyse de l\'accessibilité selon les critères OMS.',
@@ -24,7 +30,7 @@ const routes = [
   {
     path: '/stats',
     name: 'stats',
-    component: AppStatistics,
+    component: () => import("../views/AppStatistics.vue"),
     meta: {
       title: 'Statistiques des espaces verts – MEL | Parcs & Jardins',
       description: 'Statistiques détaillées sur la superficie et la répartition des espaces verts par habitant dans la MEL. Comparaison avec les standards OMS (10 m² par habitant).',
@@ -43,24 +49,31 @@ const routes = [
   {
     path: '/information',
     name: 'appInformation',
-    component: AppInformation,
+    component: () => import("../views/AppInformation.vue"),
     meta: {
       title: 'Informations – Méthodologie et sources | Parcs & Jardins',
-      description: 'Méthodologie, sources de données et informations sur l\'étude géographique des parcs et jardins de la MEL réalisée par Autmel, Deûl\'Air, Entrelianne et LM Oxygène.',
+      description: 'Méthodologie, sources de données et informations sur l\'étude géographique des parcs et jardins de la MEL réalisée par Aut\'MEL, Deûl\'Air, Entrelianes et LM Oxygène.',
     },
   },
   {
-    path: '/aideoVideo',
+    path: '/etude-insee',
+    name: 'appEtudeInsee',
+    component: () => import("../views/AppEtudeInsee.vue"),
+    meta: {
+      title: 'Étude de l\'INSEE sur l\'accès aux espaces verts | Parcs & Jardins',
+      description: 'Liens vers l\'étude de l\'INSEE sur l\'accès aux espaces verts dans les grands centres urbains et vers sa méthode.',
+      // Page sans contenu propre pour l'instant : à indexer une fois la comparaison rédigée.
+      robots: 'noindex, follow',
+    },
+  },
+  {
+    path: '/aideVideo',
     name: 'appVideoAdmin',
-    component: AppVideoAdmin,
+    component: () => import("../views/AppVideoAdmin.vue"),
     meta: {
       title: 'Aide vidéo | Parcs & Jardins',
       description: 'Tutoriels vidéo pour utiliser l\'application cartographique des parcs et jardins de la MEL.',
     },
-  },
-  {
-    path: '/',
-    redirect: { name: 'appCarte' },
   },
   {
     path: '/:pathMatch(.*)*',

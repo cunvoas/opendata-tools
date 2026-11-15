@@ -69,11 +69,11 @@
                                     <fieldset id="fsCity" th:disabled="${formManualProposal.idCommunauteDeCommunes == null}">
                                         <div class="form-floating">
                                             <input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter"
-                                                   th:value="${formManualProposal.nameCommune}" placeholder="Commune..."
+                                                   th:value="${formManualProposal.nameCommuneDisplay}" placeholder="Commune..."
                                                    onchange="onCitySelect(this)" />
                                             <label for="idCommune-filter"><i class="fas fa-city me-2"></i>Commune</label>
-                                            <datalist id="communes">
-                                                <option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id},data-insee=${commune.inseeCode}"></option>
+                                            <datalist id="communes" >
+                                                <option th:each="commune : ${communes}" th:value="${commune.displayName}" th:attr="data-value=${commune.id},data-insee=${commune.inseeCode}"></option>
                                             </datalist>
                                             <input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
                                             <input type="hidden" id="idRegionCity" name="idRegion" th:field="*{idRegion}" />
@@ -298,7 +298,7 @@ function locatePlace(lat, lon) { return L.latLng(Number.parseFloat(lat), Number.
 function getMapLocation() {
     const mLat = document.getElementById('mapLat').value;
     const mLng = document.getElementById('mapLng').value;
-    if (mLat && mLng && mLat.trim() !== '' && mLng.trim() !== '' && !isNaN(Number.parseFloat(mLat)) && !isNaN(Number.parseFloat(mLng))) {
+    if (mLat && mLng && mLat.trim() !== '' && mLng.trim() !== '' && !Number.isNaN(Number.parseFloat(mLat)) && !Number.isNaN(Number.parseFloat(mLng))) {
         return locatePlace(mLat, mLng);
     }
     return L.latLng(latInit, lonInit);
@@ -557,7 +557,6 @@ function saveProposal() {
 }
 
 function refreshProposalList() {
-    const insee = document.getElementById('codeInsee').value;
     fetch(window.location.href)
         .then(function(r) { return r.text(); })
         .then(function(html) {

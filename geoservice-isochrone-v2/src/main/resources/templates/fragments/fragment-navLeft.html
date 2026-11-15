@@ -93,8 +93,19 @@
                                     <a class="nav-link" th:href="@{/mvc/simulation}" th:text="#{menu.maps.simulation}">g2-1 t2</a>
                                     <a class="nav-link" th:href="@{/mvc/proposal}" th:text="#{menu.maps.proposal}">g2-1 t2</a>
                                     <a class="nav-link" th:href="@{/mvc/proposal/manual}" th:text="#{menu.maps.proposal.manual}">g2-1 t2</a>
+                                </nav>
+                            </div>
+
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayout5" aria-expanded="false" aria-controls="collapseLayout5">
+                                <div class="sb-nav-link-icon"><i class="fas fa-server"></i></div>
+                                <div th:text="#{menu.compute.batch}">Calculs Batchs</div>
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayout5" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
                                     <a class="nav-link" th:href="@{/mvc/management/compute/request}" th:text="#{menu.compute.request}">Lancement</a>
                                     <a class="nav-link" th:href="@{/mvc/management/jobs/progress}" th:text="#{menu.compute.progress}">Suivi des calculs</a>
+                                    <a class="nav-link" th:href="@{/mvc/management/jobs/ndvi/progress}" th:text="#{menu.compute.ndvi.progress}">Suivi des calculs NDVI</a>
                                 </nav>
                             </div>
 

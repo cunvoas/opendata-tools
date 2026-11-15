@@ -1,6 +1,16 @@
 # Changelog
 
  
+## V2.0.14 - 2026-11-15
+
+ - Relance Copernicus NDVI par EPCI, par ville et par IRIS depuis la page de lancement des batchs
+ - Menu de gestion revu : calculs en batchs, lancement des batchs, suivi des carreaux et suivi des NDVI
+ - Méthodologie NDVI renommée « Végétalisation » et complétée sur les calculs et les propositions
+ - Indicateur « Parcs à calculer » du tableau de bord lu en direct, sans passer par le cache
+ - Ajout d'indicateurs statistiques de surface et de scripts SQL d'administration (doublons de parcs, sauvegarde/restauration)
+ - Corrections sur les frontières de communes et la stabilité des calculs
+ - Traitement de nouvelles alertes de vulnérabilités (dépendances front)
+
 ## V2.0.13 - 2026-11-04
 
  - Traitement des alertes liées à la vague de vulnérabilités découvertes par l'IA

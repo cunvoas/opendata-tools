@@ -36,11 +36,13 @@ import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviResultObjectTy
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
+import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisShape;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.NdviJobRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
@@ -62,6 +64,7 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
     @Mock private ParkJardinRepository parkJardinRepository;
     @Mock private IrisShapeRepository irisShapeRepository;
     @Mock private InseeCarre200mOnlyShapeRepository carre200mOnlyShapeRepository;
+    @Mock private CityRepository cityRepository;
     @Mock private ClientCopernicusNdvi clientCopernicusNdvi;
 
     @InjectMocks private NdviBatchJobService service;
@@ -235,6 +238,42 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
                 .thenReturn(List.of(PARK_ID));
 
         int count = service.requestForcedForCom2Co(1L, ANNEE);
+
+        assertEquals(1, count);
+        ArgumentCaptor<NdviJob> captor = ArgumentCaptor.forClass(NdviJob.class);
+        verify(ndviJobRepository).save(captor.capture());
+        assertTrue(captor.getValue().isForce());
+    }
+
+    @Test
+    @DisplayName("lancement IRIS d'un EPCI : villes de l'EPCI puis codes IRIS mis en file")
+    void requestIrisEpciEnqueue() {
+        City city = new City();
+        city.setInseeCode("59350");
+        IrisShape iris = new IrisShape();
+        iris.setIris("593500101");
+        when(cityRepository.findByCommunauteCommuneId(COM2CO_ID)).thenReturn(List.of(city));
+        when(irisShapeRepository.findByCodeInsee("59350")).thenReturn(List.of(iris));
+
+        int count = service.requestIrisForCom2Co(COM2CO_ID);
+
+        assertEquals(1, count);
+        ArgumentCaptor<NdviJob> captor = ArgumentCaptor.forClass(NdviJob.class);
+        verify(ndviJobRepository).save(captor.capture());
+        NdviJob irisJob = captor.getValue();
+        assertEquals(NdviJob.NO_ID, irisJob.getId());
+        assertEquals("593500101", irisJob.getIdInspire());
+        assertEquals(NdviResultObjectType.IRIS, irisJob.getObjectType());
+        assertTrue(irisJob.isForce());
+    }
+
+    @Test
+    @DisplayName("relance forcée d'une ville : un job forcé par parc calculé")
+    void relanceForceeVille() {
+        when(parkAreaComputedRepository.findParkIdsByAnneeAndCity(ANNEE, 1L))
+                .thenReturn(List.of(PARK_ID));
+
+        int count = service.requestForcedForCity(1L, ANNEE);
 
         assertEquals(1, count);
         ArgumentCaptor<NdviJob> captor = ArgumentCaptor.forClass(NdviJob.class);

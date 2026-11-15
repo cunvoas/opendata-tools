@@ -190,6 +190,8 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
                         pac = opac.get();
                         if (pac.getSurface() == null) {
                             pac = computeParkAreaOptim(parkArea, annee, filosofilMap);
+                        } else {
+                            pac = refreshParkState(parkArea, pac);
                         }
                     } else {
                         pac = computeParkAreaOptim(parkArea, annee, filosofilMap);
@@ -297,13 +299,8 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
                     properties.getRecoUrbSquareMeterPerCapita(),
                     properties.getRecoSubUrbSquareMeterPerCapita()));
 
-                if (Boolean.TRUE.equals(dto.withSufficient)) {
-                    computed.setIsSustainablePark(Boolean.TRUE);
-                    computed.setPopulationWithSustainablePark(null);
-                } else {
-                    computed.setIsSustainablePark(Boolean.FALSE);
-                    computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
-                }
+                computed.setIsSustainablePark(Boolean.TRUE.equals(dto.withSufficient));
+                computed.setPopulationWithSustainablePark(dto.popWithSufficient);
                 computed.setPopAll(dto.popAll);
                 computed.setComments(dto.parcName);
 
@@ -362,6 +359,33 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
             parkService.mergeParkAreaEntrance(pa);
         }
         log.warn("<< refreshParkEntrances v4");
+    }
+
+    /**
+     * Relit le caractère OMS et la surface du parc : les valeurs déjà calculées sont périmées si le parc a été
+     * reclassé ou redessiné depuis. La population, coûteuse, n'est pas recalculée.
+     * @param park parc avec son type renseigné
+     * @param pac valeurs déjà calculées
+     * @return valeurs à jour
+     */
+    protected ParkAreaComputed refreshParkState(ParkArea park, ParkAreaComputed pac) {
+        ParkType type = park.getType();
+        Boolean oms = type.getOms();
+        if (!type.getStrict() && park.getOmsCustom() != null) {
+            oms = park.getOmsCustom();
+        }
+        BigDecimal surface = pac.getSurface();
+        Optional<ParcEtJardin> pj = parkJardinRepository.findById(park.getIdParcEtJardin());
+        if (pj.isPresent()) {
+            surface = new BigDecimal(Math.round(pj.get().getSurface()));
+        }
+        if (java.util.Objects.equals(oms, pac.getOms()) && surface.compareTo(pac.getSurface()) == 0) {
+            return pac;
+        }
+        pac.setOms(oms);
+        pac.setSurface(surface);
+        pac.setUpdated(new Date());
+        return parkAreaComputedRepository.save(pac);
     }
 
     /**
@@ -637,17 +661,9 @@ public class ComputeCarreServiceV4 implements IComputeCarreService {
             properties.getRecoUrbSquareMeterPerCapita(),
             properties.getRecoSubUrbSquareMeterPerCapita()));
 
-        if (Boolean.TRUE.equals(computeDto.withSufficient)) {
-            computed.setIsSustainablePark(Boolean.TRUE);
-            computed.setPopulationWithSustainablePark(null);
-        } else {
-            computed.setIsSustainablePark(Boolean.FALSE);
-            computed.setPopulationWithSustainablePark(BigDecimal.ZERO);
-        }
+        computed.setIsSustainablePark(Boolean.TRUE.equals(computeDto.withSufficient));
+        computed.setPopulationWithSustainablePark(computeDto.popWithSufficient);
 
-        Filosofil200m filo = filosofilMap.get(computed.getIdInspire());
-        computed.setPopAll(filo.getNbIndividus());
-        
         computed.setPopAll(computeDto.popAll);
         computed.setComments(computeDto.parcName);
         inseeCarre200mComputedV2Repository.save(computed);

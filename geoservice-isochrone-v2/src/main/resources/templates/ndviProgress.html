@@ -74,13 +74,13 @@
                                                 <input class="form-select" list="communesList"
                                                        id="idCommune-filter" name="idCommune-filter"
                                                        placeholder="Commune..."
-                                                       th:value="${progressForm.nameCommune}" />
+                                                       th:value="${progressForm.nameCommuneDisplay}" />
                                                 <label for="idCommune-filter"><i class="fas fa-city me-2"></i>
                                                     <span th:text="#{compute.progress.filter.city}">Commune</span>
                                                 </label>
-                                                <datalist id="communesList">
+                                                <datalist id="communesList" >
                                                     <option th:each="v : ${progressForm.communes}"
-                                                            th:value="${v.name}"
+                                                            th:value="${v.displayName}"
                                                             th:attr="data-value=${v.id}"></option>
                                                 </datalist>
                                                 <input type="hidden" id="idCommune" name="idCommune"
@@ -188,9 +188,9 @@
             var list  = document.getElementById('communesList');
             if (!list) return;
             var options = list.options;
-            for (var i = 0; i < options.length; i++) {
-                if (options[i].value === input.value) {
-                    document.getElementById('idCommune').value = options[i].getAttribute('data-value');
+            for (var option of options) {
+                if (option.value === input.value) {
+                    document.getElementById('idCommune').value = option.dataset.value;
                     input.closest('form').submit();
                     return;
                 }

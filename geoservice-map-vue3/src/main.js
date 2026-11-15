@@ -8,6 +8,7 @@ import './assets/tailwind.css'
 import router from './router';
 import { getUrlParams, hasGeographicalParams } from './utils/urlParams.js'
 import { initVersionCheck } from './utils/versionCheck.js'
+import { applyRouteMeta } from './utils/seoMeta.js'
 
 const app = createApp(HeaderAsso);
 
@@ -85,16 +86,8 @@ if ('serviceWorker' in navigator) {
 }
 
 router.afterEach((to) => {
-  // Update page title and description for SEO
-  if (to.meta?.title) {
-    document.title = to.meta.title;
-  }
-  if (to.meta?.description) {
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', to.meta.description);
-    }
-  }
+  // Titre, description et balises de partage de la route (capturés par le pré-rendu)
+  applyRouteMeta(document, to);
   // Log the page view to Matomo
   window._paq = window._paq || [];
   window._paq.push(['setCustomUrl', to.fullPath]);

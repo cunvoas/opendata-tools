@@ -54,15 +54,19 @@ Les propositions manuelles et leurs évaluations s'appuient sur 3 tables princip
 
 ### A. Paramètres de l'OMS selon la Densité Urbaine
 L'algorithme adapte ses seuils en fonction du caractère dense ou périurbain de la commune (`ServiceOpenData.isDistanceDense(insee)`) :
-- **Zone Dense** : Rayon de marche OMS = `300m`, Cible = `10 m²/habitant` (Seuil minimal = `3 m²/hab`).
-- **Zone Périurbaine / Rurale** : Rayon de marche OMS = `500m`, Cible = `25 m²/habitant` (Seuil minimal = `8 m²/hab`).
+- **Zone Dense** : rayon de marche = `application.business.oms.urban.duration` (`300m`), objectif de surface = `area_reco` (`12 m²/habitant`).
+- **Zone Périurbaine / Rurale** : rayon de marche = `application.business.oms.suburban.duration` (`1200m`), objectif de surface = `area_reco` (`45 m²/habitant`).
+
+> `@Ref seuils-12-45` : l'objectif utilisé est la valeur « recommandée » (12 et 45), dont la source n'est pas identifiée, et non le minimum (10 et 25). Le seuil minimal n'intervient pas dans ce calcul. Voir `docs/stats-surface.md`.
 
 ### B. Formule de Proximité Géographique
 Pour déterminer si un parc manuel bénéficie à un carreau $C$ :
 1. Calcul de la distance à vol d'oiseau ($d$) entre le centroïde du carreau $C$ et le centre de la proposition manuelle $P$.
 2. Le parc est considéré accessible depuis le carreau si :
 $$\text{Distance}(C, P) < \text{Rayon\_OMS} + \text{SQUARE\_DISTANCE}$$
-*(où $\text{SQUARE\_DISTANCE} \approx 283\text{m}$ correspond à la moitié de la diagonale d'un carreau de 200m pour inclure les bordures).*
+*(où $\text{SQUARE\_DISTANCE} = 120\text{m}$ est la marge entre le demi-côté et la demi-diagonale d'un carreau de 200m, pour inclure les bordures ; voir `AbstractComputationtrategy.SQUARE_DISTANCE`).*
+
+*Cette évaluation est volontairement simplifiée : distance à vol d'oiseau entre deux centres, sans isochrone depuis les entrées de parc comme dans le calcul principal.*
 
 ### C. Indicateurs Avant / Après
 Pour chaque carreau $C$ :

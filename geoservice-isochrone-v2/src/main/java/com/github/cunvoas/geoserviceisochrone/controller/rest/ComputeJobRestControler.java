@@ -76,8 +76,6 @@ public class ComputeJobRestControler {
 			pj.setId(parkId);
 			resp.setParkId(req.getParkId());
 			resp.setNbCarre(batchJobService.requestProcessParc(pj));
-			// Le bouton « Calculer le parc » demande aussi le NDVI du parc.
-			ndviBatchJobService.requestForParc(pj.getId());
 			code = HttpStatus.ACCEPTED;
 		} else if (req.getParkOverpass() != null) {
 			// TODO OVERPASS
@@ -117,9 +115,9 @@ public class ComputeJobRestControler {
 	}
 
 	/**
-	 * Relance forcée de l'appel Copernicus pour tous les parcs d'un EPCI.
+	 * Relance forcée de l'appel Copernicus pour tous les parcs d'un EPCI ou d'une ville.
 	 * Réservé aux administrateurs : contourne la règle d'un appel par an.
-	 * @param req demande (token, com2coId, requestedYear facultatif)
+	 * @param req demande (token, com2coId ou cityId, requestedYear facultatif)
 	 * @return nombre de parcs relancés
 	 */
 	@PostMapping("/ndvi/request")
@@ -131,15 +129,24 @@ public class ComputeJobRestControler {
 		if (!ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
+		Long cityId = NumberHelper.toLong(req.getCityId());
 		Long com2coId = NumberHelper.toLong(req.getCom2coId());
-		if (com2coId == null) {
+		if (cityId == null && com2coId == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		Integer annee = req.getRequestedYear() != null
 				? req.getRequestedYear()
 				: applicationBusinessProperties.getDerniereAnnee();
 		ComputeJobResponse resp = new ComputeJobResponse(req);
-		resp.setNbCarre(ndviBatchJobService.requestForcedForCom2Co(com2coId, annee));
+		if (req.isIris()) {
+			resp.setNbIris(cityId != null
+					? ndviBatchJobService.requestIrisForCity(cityId)
+					: ndviBatchJobService.requestIrisForCom2Co(com2coId));
+			return new ResponseEntity<>(resp, HttpStatus.ACCEPTED);
+		}
+		resp.setNbCarre(cityId != null
+				? ndviBatchJobService.requestForcedForCity(cityId, annee)
+				: ndviBatchJobService.requestForcedForCom2Co(com2coId, annee));
 		return new ResponseEntity<>(resp, HttpStatus.ACCEPTED);
 	}
 

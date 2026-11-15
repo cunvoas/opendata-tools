@@ -72,8 +72,8 @@
 												<label for="idCommune-filter"><i class="fas fa-city me-2"></i><span
 														th:text="#{entrance.commune}">Ville</span></label>
 												<datalist id="communes" class="form-label">
-													<option th:each="commune : ${communes}" th:value="${commune.name}"
-														th:attr="data-value=${commune.id}" th:label="${commune.name}"></option>
+													<option th:each="commune : ${communes}" th:value="${commune.displayName}"
+														th:attr="data-value=${commune.id}" th:label="${commune.displayName}"></option>
 												</datalist>
 												<input type="hidden" id="idCommune" name="idCommune"
 													th:value="${selectedCommuneId}" />

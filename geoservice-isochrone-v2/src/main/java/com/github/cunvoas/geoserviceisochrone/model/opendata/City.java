@@ -2,6 +2,8 @@ package com.github.cunvoas.geoserviceisochrone.model.opendata;
 
 
 import java.util.Comparator;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.locationtech.jts.geom.Point;
 
@@ -26,6 +28,9 @@ import lombok.ToString;
 @EqualsAndHashCode(of = {"id"})
 @Entity(name = "city")
 public class City implements Comparator<City> {
+
+	private static final Pattern FRENCH_PARTICLES =
+			Pattern.compile("(?<=[\\s-])(De|Des|Du|Le|La|Les|En|Et|Aux|Sur|Sous)(?=[\\s-])");
 
 	@Id
 	@ToString.Include
@@ -90,6 +95,38 @@ public class City implements Comparator<City> {
 	 */
 	public String getDisplay() {
 		return postalCode+" - "+name;
+	}
+
+	/**
+	 * Nom de la ville en casse mixte pour l'affichage (les données sont en majuscules).
+	 * @return nom formaté ("LILLE" -> "Lille", "SAINT-DENIS" -> "Saint-Denis")
+	 */
+	public String getDisplayName() {
+		return toTitleCase(name);
+	}
+
+	/**
+	 * Met en majuscule la première lettre de chaque mot.
+	 * @param value texte à formater
+	 * @return texte en casse mixte, null si value null
+	 */
+	public static String toTitleCase(String value) {
+		if (value == null || value.isBlank()) {
+			return value;
+		}
+		String lower = value.toLowerCase(Locale.FRENCH);
+		StringBuilder sb = new StringBuilder(lower.length());
+		boolean capitalizeNext = true;
+		for (char c : lower.toCharArray()) {
+			if (capitalizeNext && Character.isLetter(c)) {
+				sb.append(Character.toUpperCase(c));
+			} else {
+				sb.append(c);
+			}
+			capitalizeNext = !Character.isLetter(c);
+		}
+		// Particules françaises en minuscules ("Aix-En-Provence" -> "Aix-en-Provence").
+		return FRENCH_PARTICLES.matcher(sb).replaceAll(m -> m.group(1).toLowerCase(Locale.FRENCH));
 	}
 
 	/**

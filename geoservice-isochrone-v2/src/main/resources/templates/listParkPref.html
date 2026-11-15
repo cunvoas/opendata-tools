@@ -61,7 +61,7 @@
 	
 						<input class="form-select" list="communes" id="idCommune-filter" name="idCommune-filter" /> <label for="idCommune-filter" th:text="#{entrance.commune}">ville</label>
 						<datalist id="communes" class="form-label">
-							<option th:each="commune : ${communes}" th:value="${commune.name}" th:attr="data-value=${commune.id}" th:label="${commune.name}">
+							<option th:each="commune : ${communes}" th:value="${commune.displayName}" th:attr="data-value=${commune.id}" th:label="${commune.displayName}">
 						</datalist>
 						<input type="hidden" id="idCommune" name="idCommune" th:field="*{idCommune}" />
 						<input type="hidden" id="idRegion" name="idRegion" th:field="*{idRegion}" />
@@ -161,7 +161,7 @@
 	
 	/* manage correct ID for COMMUNNE SELECTION */
 	// th-field broke the datalist work
-	document.querySelector('#idCommune-filter').value=[[${formParkList.nameCommune}]];
+	document.querySelector('#idCommune-filter').value=[[${formParkList.nameCommuneDisplay}]];
 	document.querySelector('#idCommune-filter').addEventListener('input', function(e) {
 		const input = e.target,
 	        list = input.getAttribute('list'),

@@ -40,6 +40,20 @@ describe('Autocomplete.vue', () => {
       })
       expect(wrapper.find('input').attributes('disabled')).toBeDefined()
     })
+
+    it('ajoute le texte d\'aide dans le label accessible et le title', () => {
+      const wrapper = mount(Autocomplete, {
+        props: {
+          fetchItems: makeFetchItems(),
+          placeholder: 'Aller à une adresse',
+          hint: 'Données gouvernementales',
+          displaySearchAddress: true
+        }
+      })
+      const input = wrapper.find('input')
+      expect(input.attributes('title')).toBe('Données gouvernementales')
+      expect(input.attributes('aria-label')).toBe('Aller à une adresse — Données gouvernementales')
+    })
   })
 
   describe('dropdown', () => {

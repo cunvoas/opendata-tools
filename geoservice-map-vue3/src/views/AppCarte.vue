@@ -36,15 +36,15 @@
                     </tr>
 
                     <tr id="legend-parks-1" v-show="showParcsLegend">
-                        <th scope="row" class="pr-2 text-left font-normal">Parcs comptabilisé :</th>
+                        <th scope="row" class="pr-2 text-left font-normal">Parcs comptabilisés :</th>
                         <td class="px-1" colspan="3"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getParcComptabiliseColor, 0.5)}`" /></td>
                    </tr>
                     <tr id="legend-parks-2" v-show="showParcsLegend">
-                        <th scope="row" class="pr-2 text-left font-normal">Parcs non comptabilisé :</th>
+                        <th scope="row" class="pr-2 text-left font-normal">Parcs non comptabilisés :</th>
                         <td class="px-1" colspan="3"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getParcNonComptabiliseColor, 0.5)}`" /></td>
                     </tr>
                     <tr id="legend-parks-3" v-show="showParcsLegend">
-                        <th scope="row" class="pr-2 text-left font-normal">Parcs futur ou détruit :</th>
+                        <th scope="row" class="pr-2 text-left font-normal">Parcs futurs ou détruits :</th>
                         <td class="px-1" colspan="3"><div class="w-5 aspect-square border border-gray-600" :style="`background-color: ${swatchColor(getParcFuturOuDetruitColor, 0.5)}`" /></td>
                     </tr>
                     <tr v-for="(category, index) in ndviLegend" :id="`legend-ndvi-${index}`" :key="category.range" v-show="showNdviLegend">

@@ -1,38 +1,60 @@
-# Parcs & Jardins – Analyse géographique MEL
+# Parcs & Jardins : combien de m² d'espaces verts par habitant dans la MEL ?
 
-Cette application cartographique interactive analyse l'accès aux parcs, jardins et espaces verts dans la Métropole Européenne de Lille (MEL), selon les standards de l'Organisation mondiale de la santé (OMS).
+> Étude et carte open source de l'accès à pied aux parcs et jardins publics de Lille et de la Métropole Européenne de Lille (MEL). Pour chaque habitant, elle mesure la surface de parcs accessibles à pied depuis leurs entrées réelles et la compare aux seuils de référence repris par l'OMS. Portée par les associations Aut'MEL, Deûl'Air, Entrelianes et LM Oxygène, à partir de données ouvertes. Site : https://parcs-et-jardins.autmel.ovh/
 
-## Objectifs
-L'objectif est de permettre aux habitants de visualiser sur une carte les parcs et jardins accessibles à pied. L'application identifie les territoires respectant les préconisations de l'OMS :
-- **Surface minimale** : 10 m²/habitant en zone urbaine, 25 m²/habitant en zone périurbaine.
-- **Accessibilité** : 5 minutes à pied (300m) en ville, 20 minutes (1200m) à la campagne.
+Les chiffres (part des habitants sous le minimum, m² par habitant, habitants par tranche) sont calculés à partir des données publiées et affichés sur la page d'accueil et dans les statistiques. Ils ne sont volontairement pas recopiés ici, pour ne jamais être périmés.
 
-## Parcs et Jardins inclus
-L'application se concentre sur les espaces verts publics de proximité (détente, promenade, jeux). Elle exclut explicitement des calculs de surface :
-- Les cimetières
-- Les bosquets isolés
-- Les places minéralisées
-*Note : Ces lieux apparaissent sur la carte avec une croix et leur nom, mais leur surface n'est pas comptabilisée pour rester cohérent avec les critères de santé de l'OMS.*
+## Pages
 
-## Fonctionnement de l'algorithme
-L'application utilise une méthodologie rigoureuse pour évaluer la couverture :
-1. **Source des données** : OpenData (villes et MEL) enrichi par un recensement collaboratif des entrées de parcs.
-2. **Calcul d'isochrone** : Utilisation du service de l'IGN pour déterminer les zones atteignables à pied depuis chaque entrée.
-3. **Analyse démographique** : Croisement avec les données carroyées de l'INSEE (carreaux de 200m x 200m) pour estimer la population couverte au prorata de la surface d'intersection.
-4. **Indicateur de densité** : Calcul du ratio m²/habitant basé sur la surface totale des parcs accessibles à une population donnée.
+- [Accueil : l'étude en chiffres](https://parcs-et-jardins.autmel.ovh/): chiffres clés Lille et MEL, genèse de l'outil, méthode, comparaison avec l'étude de l'INSEE
+- [Carte interactive](https://parcs-et-jardins.autmel.ovh/carte): saisir une adresse et lire, par carreau de 200 m, les m² de parc accessibles à pied par habitant
+- [Statistiques par commune](https://parcs-et-jardins.autmel.ovh/stats): nombre d'habitants par tranche de m² de parc accessible, commune par commune
+- [Informations et méthode](https://parcs-et-jardins.autmel.ovh/information): sources, définitions, limites
 
-## Lexique Technique (Thésaurus)
-- **Isochrone** : Zone atteignable à pied en un temps donné depuis un point d'entrée. 
-- **Carreau INSEE** : Maille de 200m × 200m utilisée pour agréger les données de population.
-- **m² / habitant** : Ratio entre la surface totale des parcs accessibles et la population couverte par les isochrones.
-- *NDVI** : Indice de Végétation par Différence Normalisée est un indicateur clé en télédétection et en agriculture de précision qui permet de mesurer la densité, la santé et la vigueur de la végétation verte.
+## Données et code
 
-## Technologies et Sources
-- **Cartographie** : Leaflet, Vue 3, Tailwind CSS.
-- **Données** : IGN (isochrones), INSEE (population et densité), Gouvernement (cadastre), OpenData MEL, Copernicus.
-- **Licence** : Opensource sous licence ****.
+- [Données publiées (JSON)](https://github.com/autmel/geoservice-data): statistiques par commune et intercommunalité, carreaux, isochrones
+- [Code source, licence AGPLv3](https://github.com/cunvoas/opendata-tools): application Vue 3 et service de calcul
 
-## Liens Utiles
-- **Site web** : https://autmel.github.io/parcs-et-jardins/
-- **Code source** : https://github.com/cunvoas/opendata-tools
+## Méthode
 
+- **Accès réel à pied** : isochrone piéton de l'IGN calculé depuis chaque entrée de parc, en suivant le réseau de rues. 5 minutes (300 m) en zone dense, 20 minutes (1 200 m) ailleurs.
+- **Parcs de proximité** : parcs et jardins publics où l'on se détend, se promène et joue. Les cimetières, bosquets isolés et places minéralisées figurent sur la carte mais ne comptent pas dans les surfaces.
+- **Population** : carreaux de 200 m sur 200 m de l'INSEE (Filosofi, population des ménages fiscaux, millésimes 2015, 2017, 2019 et 2021), répartis au prorata de la surface couverte par la zone d'accès. Un carreau à cheval sur plusieurs communes est réparti au prorata de la surface cadastrale.
+- **Indicateur** : m² de parc accessible à pied par habitant, par carreau ; les habitants sont ensuite comptés par tranche. Ceux qui n'ont aucun parc accessible sont dans la première tranche.
+- **Seuils** : 10 m² par habitant en zone dense, 25 m² en zone périurbaine. Ce sont les objectifs de la circulaire ministérielle du 8 février 1973, repris comme norme par l'OMS selon le Réseau français des Villes-Santé. Le seuil de 25 m² tient compte des forêts urbaines et des espaces boisés périurbains.
+- **Entrées de parc** : recensées par des bénévoles puis vérifiées avant publication. Les résultats n'existent que là où des associations ont décrit les parcs.
+
+## Genèse de l'outil
+
+L'outil est né d'un chiffre qui ne collait pas : LM Oxygène et Deûl'Air ont calculé à la main les surfaces de parcs de leur quartier, et le compte n'y était pas avec les 17 m² par habitant annoncés par la ville. Une mini-application a été créée pour une méthode précise et factuelle, puis étendue de Lille, Hellemmes et Lomme à toutes les communes de la MEL. Le travail a été présenté le 15 janvier 2026 à Sciences Po Lille, lors de la conférence-débat « De la friche Saint-Sauveur aux Rives de la Haute-Deûle : quelles alternatives à la densification urbaine ? », qui a marqué le démarrage des débats publics pour les municipales de 2026 à Lille.
+
+Depuis 2026, l'outil sait aussi simuler l'ajout de parcs (recherche opérationnelle : programmation par contraintes, algorithme génétique, algorithme glouton) et propose un mode manuel où l'on dessine un futur parc. Ces fonctions sont en version bêta, réservées au système de gestion de l'étude. L'évaluation manuelle est simplifiée : distance à vol d'oiseau et non itinéraire depuis les entrées.
+
+## Étude de l'INSEE et étude Aut'MEL : pourquoi les chiffres diffèrent
+
+L'INSEE a publié en avril 2025 « Un accès inégal aux espaces verts dans les grands centres urbains » (Insee Première n° 2049). Les deux travaux ne mesurent pas la même chose :
+
+- INSEE : 72 grands centres urbains ; parcs issus d'OpenStreetMap et de la BD TOPO ; accès mesuré par zones tampons autour des parcs (300, 600 ou 900 m selon la taille) ; part de la population à moins de 5 minutes d'un espace vert.
+- Aut'MEL : communes et intercommunalités de la carte ; données ouvertes des villes et de la MEL, entrées de parc recensées ; isochrone piéton depuis chaque entrée ; habitants par tranche de m² accessibles à pied.
+
+Les résultats ne sont donc pas directement comparables. Par exemple, les 51,9 % de la population de Lille à moins de 300 m d'un espace vert publiés par l'INSEE (données 2019) concernent le grand centre urbain de Lille, pas la seule commune.
+
+## Étendre l'étude à un autre territoire
+
+L'étude peut être réalisée pour toute intercommunalité de France, à condition que des associations du territoire décrivent leurs parcs. Contact et contribution : depuis la page d'accueil, bouton « Décrire les parcs de mon territoire ».
+
+## Sources
+
+- [OMS Europe (2016), Urban green spaces and health](https://www.who.int/europe/publications/i/item/WHO-EURO-2016-3352-43111-60341)
+- [OMS Europe (2017), Urban green spaces: a brief for action](https://www.who.int/europe/publications/i/item/9789289052498)
+- [Réseau français des Villes-Santé de l'OMS (2020), Espaces verts urbains : promouvoir l'équité et la santé](https://villes-sante.com/wp-content/uploads/2023/02/Espaces-verts-urbains.pdf)
+- [INSEE (avril 2025), Un accès inégal aux espaces verts dans les grands centres urbains](https://www.insee.fr/fr/statistiques/8558420)
+
+## Lexique
+
+- **Isochrone** : zone atteignable à pied en un temps donné depuis l'entrée d'un parc.
+- **Carreau** : maille de 200 m × 200 m de données de population carroyées de l'INSEE.
+- **m² par habitant** : surface des parcs accessibles divisée par la population dans l'isochrone, par carreau.
+- **MEL** : Métropole Européenne de Lille.
+- **NDVI** : indice de végétation par différence normalisée, mesuré par télédétection (Copernicus), indicateur de densité et de vigueur de la végétation.

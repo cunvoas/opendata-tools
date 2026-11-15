@@ -7,6 +7,7 @@
       @keydown="onKeydown"
       :placeholder="placeholder"
       :aria-label="inputLabel"
+      :title="hint"
       :disabled="disabled"
       role="combobox"
       aria-autocomplete="list"
@@ -48,6 +49,7 @@ export default {
     modelValue: [String, Number],
     fetchItems: Function,
     placeholder: String,
+    hint: String,
     disabled: Boolean,
     displaySearchAddress: {
       type: Boolean,
@@ -69,7 +71,8 @@ export default {
       );
     },
     inputLabel() {
-      return this.placeholder || 'Rechercher une adresse';
+      const label = this.placeholder || 'Rechercher une adresse';
+      return this.hint ? `${label} — ${this.hint}` : label;
     },
     activeDescId() {
       if (this.activeIndex < 0 || this.activeIndex >= this.filteredItems.length) return undefined;

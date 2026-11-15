@@ -52,7 +52,7 @@ const ROOT_PATH = '/'
 // const ROOT_PATH = '/parcs-et-jardins/'
 
 // Routes pré-rendues en HTML réel (GitHub Pages sert dist/<route>/index.html en 200 au lieu du 404)
-const prerenderRoutes = ['/carte', '/stats', '/information', '/aideoVideo']
+const prerenderRoutes = ['/', '/carte', '/stats', '/information', '/etude-insee', '/aideVideo']
 if (process.env.VITE_FEATURE_NDVI === 'true') prerenderRoutes.push('/ndvi')
 
 
@@ -76,7 +76,7 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         scope: ROOT_PATH,
-        start_url: ROOT_PATH,
+        start_url: `${ROOT_PATH}carte`,
         icons: [
           {
             src: `${ROOT_PATH}icons/icon-192x192.png`,
@@ -110,7 +110,10 @@ export default defineConfig({
       routes: prerenderRoutes,
       renderer: new PuppeteerRenderer({
         headless: true,
-        renderAfterTime: 3000,
+        renderAfterTime: 10000,
+        // Le Chromium de puppeteer 1.20 (Chrome 78) ne parse pas le JS es2021 : on préfère un Chrome système s'il existe.
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH
+          || (fs.existsSync('/snap/bin/chromium') ? '/snap/bin/chromium' : undefined),
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
       }),
       postProcess(renderedRoute) {

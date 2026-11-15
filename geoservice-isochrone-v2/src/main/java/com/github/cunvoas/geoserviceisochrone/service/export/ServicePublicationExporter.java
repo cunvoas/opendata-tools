@@ -11,6 +11,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -284,6 +285,15 @@ public class ServicePublicationExporter {
     	}
     }
     
+    /**
+     * Un parc est publiable s'il a une surface, c'est-à-dire un contour surfacique.
+     * @param geometry géométrie du parc (polygone, point ou null)
+     * @return true si la géométrie est un polygone non vide
+     */
+    static boolean hasSurface(Geometry geometry) {
+    	return geometry instanceof Polygonal && !geometry.isEmpty();
+    }
+
     public void writeGeoJsonParkOutline(CommunauteCommune com2co, Integer annee) throws StreamWriteException, DatabindException, IOException {
     	String path = applicationBusinessProperties.getJsonFileFolder()+"/geojson/parkOutline/"+String.valueOf(com2co.getId());
 		File file = new File(path);
@@ -292,6 +302,8 @@ public class ServicePublicationExporter {
 		Polygon polygon = getCom2CoSquareShape(com2co);
     	
 		GeoJsonRoot geojson = geoMapServiceV2.findAllParkOutlineByArea(polygon, annee);
+		// publication : un parc sans contour (point seul ou géométrie absente) n'a pas de surface à publier
+		geojson.getFeatures().removeIf(f -> !hasSurface(f.getGeometry()));
 		
 		if (!geojson.getFeatures().isEmpty()) {
 			file = new File(path+"/parkOutline_"+String.valueOf(annee)+"_"+String.valueOf(com2co.getId())+".json");

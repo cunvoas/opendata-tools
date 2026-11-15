@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "nom",
     "insee",
     "annee",
+    "descripteur",
     "stats",
     "seuils"
 })
@@ -23,6 +24,8 @@ public class StatsSurfaceJson {
     private String insee;
     @JsonProperty("annee")
     private String annee;
+    @JsonProperty("descripteur")
+    private StatsDescripteur descripteur;
     @JsonProperty("stats")
     private List<Stat> stats=new java.util.ArrayList<>();
     @JsonProperty("seuils")
@@ -56,6 +59,16 @@ public class StatsSurfaceJson {
     @JsonProperty("annee")
     public void setAnnee(String annee) {
         this.annee = annee;
+    }
+
+    @JsonProperty("descripteur")
+    public StatsDescripteur getDescripteur() {
+        return descripteur;
+    }
+
+    @JsonProperty("descripteur")
+    public void setDescripteur(StatsDescripteur descripteur) {
+        this.descripteur = descripteur;
     }
 
     @JsonProperty("stats")

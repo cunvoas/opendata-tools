@@ -7,27 +7,28 @@
             <p>
                 L'objectif de cette application est de permettre aux habitants des villes et des regroupements de communes de visualiser sur une carte les parcs et jardins qui sont accessibles à pied.
                 <br />
-                Elle permet aussi de connaître les territoires qui respectent le nombre de m²/habitant d'espaces verts publics de proximité préconisés par l'Organisation mondiale de la santé (OMS).
+                Elle permet aussi de connaître les territoires qui respectent le nombre de m²/habitant d'espaces verts publics de proximité préconisé par l'Organisation mondiale de la santé (OMS).
             </p>
 
             <h2 class="font-bold underline my-4">Parcs et Jardins</h2>
             <p>
                Les parcs et jardins publics sont des espaces verts accessibles qui permettent de se détendre, de se promener, de jouer, de se reposer, de pique-niquer, de lire, de se rencontrer, de s’aérer...
                <br />
-                Certaines villes comptabilisent les cimetières, les bosquets, des places minéralisées comme des parcs et jardins. Ici, l'application les exclut des surfaces pour être en cohérence avec les critères retenus par l'OMS, mais les noms sont disponibles dans les détails avec une croix.
+                Certaines villes comptabilisent les cimetières, les bosquets et les places minéralisées comme des parcs et jardins. Ici, l'application les exclut des surfaces pour être en cohérence avec les critères retenus par l'OMS, mais les noms sont disponibles dans les détails avec une croix.
             </p>
             <p>
                 Ils sont intégrés et géolocalisés sur une carte interactive qui permet d'évaluer les populations qui
                 peuvent en bénéficier.
                 <br />
-                Nous avons intégré les recommandations de l'OMS qui préconisent au minimum 10m²/habitant d'espaces verts publics de proximité en zone urbaine et 25 m²/habitant en zone périurbaine (les surfaces conseillées sont respectivement de 12 et 45 m²/habitant). De plus, la distance pour accéder aux parcs est de 5 minutes à pied (soit 300m) en ville et 20 minutes à la campagne (soit 1200m).
+                <!-- @Ref seuils-12-45 : « surfaces conseillées de 12 et 45 m²/habitant » sans source identifiée (geoservice-isochrone-v2/docs/stats-surface.md) -->
+                Nous avons intégré les recommandations de l'OMS qui préconisent au minimum 10 m²/habitant d'espaces verts publics de proximité en zone urbaine et 25 m²/habitant en zone périurbaine (les surfaces conseillées sont respectivement de 12 et 45 m²/habitant). De plus, la distance pour accéder aux parcs est de 5 minutes à pied (soit 300 m) en ville et 20 minutes à la campagne (soit 1 200 m).
                 <br />
 
 
                 <br />
                 La zone d'accessibilité isochrone est établie par l'intermédiaire du service de calcul d'isochrone de
-                l'IGN. Les données de densité des communes, des populations, des données carroyées sont fournies par
-                l'INSEE. Le cadastre provient du site opendata du gouvernement.
+                l'IGN. Les données de densité des communes, de population et les données carroyées sont fournies par
+                l'INSEE (carreaux). Le cadastre provient du site opendata du gouvernement.
                 <br />
                 Certaines villes proposent également les données de parc via opendata et elles ont été intégrées.
                 <br />
@@ -38,7 +39,7 @@
                 collaboratif de plusieurs associations qui a permis de recenser les entrées de chaque parc.<br />
                 Pour chaque entrée, nous déterminons la zone d'accessibilité "isochrone" grâce au service de calcul
                 d'isochrone de l'IGN.<br />
-                Les données de densité des communes, des populations, des données carroyées sont fournies par l'INSEE.
+                Les données de densité des communes, de population et les données carroyées (carreaux INSEE) sont fournies par l'INSEE.
             </p>
             <p class="font-semibold">
                 L'algorithme de calcul de la zone d'accessibilité est le suivant :
@@ -127,24 +128,16 @@
                 est
                 possible de contribuer à l'amélioration des données, des algorithmes et des fonctionnalités.
                 <br />
-                Pour cela, il suffit de se rendre sur le <a target="_blank" rel="noopener noreferrer"
-                    href="https://github.com/cunvoas/opendata-tools/issues" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">site github du projet</a> et de proposer des
+                Pour cela, il suffit de se rendre sur le site github du projet <a target="_blank" rel="noopener noreferrer"
+                    href="https://github.com/cunvoas/opendata-tools" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">https://github.com/cunvoas/opendata-tools</a> et de proposer des
                 améliorations.
                 <br />
                 Le programme peut aussi être copié en respectant la <a target="_blank" rel="noopener noreferrer"
                     href="https://www.gnu.org/licenses/agpl-3.0.html" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">licence AGPLv3</a>.
                 <br />
-                Pour plus d'information, vous pouvez consulter la documentation sur le site du projet.
+                Pour plus d'informations, vous pouvez consulter la documentation sur le site du projet.
             </p>
-            <div class="mt-4 flex flex-wrap gap-4">
-                <a 
-                    href="https://github.com/cunvoas/opendata-tools"
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    class="px-4 py-1.5 text-sm rounded transition-colors bg-blue-900 text-white no-underline">
-                    Code Source (AGPLv3)
-                </a>
-            </div>
+
 
             <h2 class="font-bold underline my-4">Contribution à la saisie</h2>
             <p>
@@ -184,7 +177,7 @@
                 </div>
                 <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
                     <h3 class="text-lg font-semibold"><button type="button" class="text-left hover:underline cursor-pointer" @click="showCarreauDetail = true">Carreau INSEE</button></h3>
-                    <p class="mt-2 text-sm leading-relaxed">Maille de référence de 200m × 200m utilisée pour agréger les données socio-démographiques locales et évaluer la population couverte.</p>
+                    <p class="mt-2 text-sm leading-relaxed">Maille de référence de 200 m × 200 m utilisée pour agréger les données socio-démographiques locales, dites carroyées et évaluer la population couverte.</p>
                 </div>
                 <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
                     <h3 class="text-lg font-semibold"><button type="button" class="text-left hover:underline cursor-pointer" @click="showEspacesVertsDetail = true">Espaces verts publics de proximité</button></h3>
@@ -279,10 +272,10 @@
                         <button @click="showCarreauDetail = false" class="ml-4 text-slate-600 hover:text-slate-800" aria-label="Fermer la fenêtre" title="Fermer la fenêtre"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <p class="mt-4 text-sm leading-relaxed text-slate-700">
-                        Les carreaux INSEE sont des mailles statistiques de 200m × 200m utilisées par l'Institut national de la statistique et des études économiques pour diffuser des données socio-démographiques à un niveau géographique fin tout en garantissant l'anonymat des personnes. Chaque carreau contient des informations estimées sur la population résidente, les revenus, l'âge ou encore la catégorie socio-professionnelle, sans correspondre à une adresse ou une rue spécifique. Cette approche carroyée permet d'analyser des territoires de manière homogène, indépendamment des limites administratives (communes, iris), et de croiser ces données avec d'autres couches géographiques comme les isochrones d'accès aux parcs.
+                        Les carreaux INSEE sont des mailles statistiques de 200 m × 200 m utilisées par l'Institut national de la statistique et des études économiques pour diffuser des données socio-démographiques à un niveau géographique fin tout en garantissant l'anonymat des personnes. Chaque carreau contient des informations estimées sur la population résidente, les revenus, l'âge ou encore la catégorie socio-professionnelle, sans correspondre à une adresse ou une rue spécifique. Cette approche carroyée permet d'analyser des territoires de manière homogène, indépendamment des limites administratives (communes, iris), et de croiser ces données avec d'autres couches géographiques comme les isochrones d'accès aux parcs.
                     </p>
                     <p class="mt-2 text-sm leading-relaxed text-slate-700">
-                        Pour plus d'information : <a :href="inseeCarreauUrl" target="_blank" rel="noopener noreferrer" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">Documentation INSEE sur les carreaux</a>
+                        Pour plus d'informations : <a :href="inseeCarreauUrl" target="_blank" rel="noopener noreferrer" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">Documentation INSEE sur les carreaux</a>
                     </p>
                     <button @click="showCarreauDetail = false" class="mt-4 rounded bg-slate-800 px-4 py-2 text-sm text-white hover:bg-slate-700">Fermer</button>
                 </div>
@@ -294,6 +287,7 @@
                         <h3 class="text-lg font-semibold">Espaces verts publics de proximité</h3>
                         <button @click="showEspacesVertsDetail = false" class="ml-4 text-slate-600 hover:text-slate-800" aria-label="Fermer la fenêtre" title="Fermer la fenêtre"><span aria-hidden="true">&times;</span></button>
                     </div>
+                    <!-- @Ref seuils-12-45 : « surfaces conseillées de 12 et 45 m²/habitant » sans source identifiée (geoservice-isochrone-v2/docs/stats-surface.md) -->
                     <p class="mt-4 text-sm leading-relaxed text-slate-700">
                         L'Organisation mondiale de la santé (OMS / WHO) recommande un minimum de 10 m² d'espaces verts publics de proximité par habitant en zone urbaine, et 25 m²/habitant en zone périurbaine. Les surfaces conseillées sont respectivement de 12 et 45 m²/habitant. Un espace vert public de proximité est un parc, un jardin ou un square accessible librement à distance piétonne (5 minutes en ville, 20 minutes à la campagne). Ces espaces jouent un rôle essentiel pour la santé physique et mentale des citadins : ils favorisent l'activité physique, réduisent le stress, améliorent la qualité de l'air et contribuent à la régulation thermique en ville. Les cimetières, les bosquets non accessibles et les places minéralisées ne sont pas comptabilisés dans cette surface.
                     </p>
@@ -337,6 +331,7 @@
 import { features } from '../utils/config.js';
 import { NDVI_CATEGORIES } from '../utils/ndvi.js';
 import { hexToRgba } from '../utils/color.js';
+import { ecrireAuProjet } from '../utils/contact.js';
 
 export default {
     name: "AppInformation",
@@ -397,20 +392,8 @@ export default {
                 ? base + ' bg-blue-900 text-white'
                 : base + ' bg-slate-100 text-slate-600 hover:bg-slate-200';
         },
-        toPlain(cypher) {
-            return cypher.map(code => String.fromCharCode(code)).join('');
-        },
         sendRequest() {
-            const prefixAsc = [77, 65, 73, 76, 84, 79];
-            const recipientAsc = [111, 120, 121, 103, 101, 110, 101, 46, 108, 109];
-            const domainAsc = [64, 103, 109, 97, 105, 108, 46, 99, 111, 109];
-
-            const prefix = this.toPlain(prefixAsc);
-            const recipient = this.toPlain(recipientAsc)+this.toPlain(domainAsc);
-            const subject= "Isochrone: Demande d'accès pour contribution"
-
-            
-            window.location.href = `${prefix}:${recipient}?subject=${subject}`;
+            ecrireAuProjet("Isochrone: Demande d'accès pour contribution");
         }
     }
 };

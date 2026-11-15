@@ -6,11 +6,20 @@ const baseUrl = 'https://parcs-et-jardins.autmel.ovh';
 const today = new Date().toISOString().split('T')[0];
 
 // Les pages HTML sont pré-rendues par vite-plugin-prerender (vite.config.js)
+
+// La landing lit ses chiffres dans les JSON publiés : sans eux, la page pré-rendue serait vide. On refuse le build.
+const home = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8');
+if (!home.includes('data-landing-ready="true"')) {
+  console.error("[SEO] La landing a été pré-rendue sans ses chiffres (JSON de statistiques injoignables ?). Build refusé.");
+  process.exit(1);
+}
+
 const routes = [
+  { path: '', changefreq: 'monthly', priority: '1.0' },
   { path: 'carte', changefreq: 'monthly', priority: '1.0' },
   { path: 'stats', changefreq: 'monthly', priority: '0.9' },
   { path: 'information', changefreq: 'yearly', priority: '0.8' },
-  { path: 'aideoVideo', changefreq: 'yearly', priority: '0.5' },
+  { path: 'aideVideo', changefreq: 'yearly', priority: '0.5' },
 ];
 
 if (process.env.VITE_FEATURE_NDVI === 'true') {

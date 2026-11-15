@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.config.property.FeatureFlippingProperties;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.dashboard.DashboardCache;
 import com.github.cunvoas.geoserviceisochrone.model.dashboard.DashboardSummary;
@@ -54,8 +55,10 @@ public class DashboadService {
 	private DashboardCacheRepository dashboardCacheRepository;
 	@Autowired
 	private ApplicationBusinessProperties applicationBusinessProperties;
-		@Autowired
-		private ComputeJobRepository computeJobRepository;
+	@Autowired
+	private FeatureFlippingProperties featureFlippingProperties;
+	@Autowired
+	private ComputeJobRepository computeJobRepository;
 	@Autowired
 	private NdviJobRepository ndviJobRepository;
 	
@@ -76,8 +79,13 @@ public class DashboadService {
 		cache.add(new DashboardCache(DashboardCache.PARC_CHCK, parkAreaRepository.count()));
 		cache.add(new DashboardCache(DashboardCache.PARC_ENTREE, parkEntranceRepository.count()));
 		cache.add(new DashboardCache(DashboardCache.PARC_REF, parkJardinRepository.count()));
-				cache.add(new DashboardCache(DashboardCache.COMPUTE_JOB_PENDING, computeJobRepository.countByStatus(ComputeJobStatusEnum.TO_PROCESS)));
 		cache.add(new DashboardCache(DashboardCache.NDVI_JOB_PENDING, ndviJobRepository.countByStatus(ComputeJobStatusEnum.TO_PROCESS)));
+
+		if (featureFlippingProperties.isDashboardCacheComputeJobPending()) {
+			cache.add(new DashboardCache(DashboardCache.COMPUTE_JOB_PENDING, computeJobRepository.countByStatus(ComputeJobStatusEnum.TO_PROCESS)));
+		} else {
+			dashboardCacheRepository.deleteById(DashboardCache.COMPUTE_JOB_PENDING);
+		}
 		
 		dashboardCacheRepository.saveAll(cache);
 	}
@@ -97,7 +105,8 @@ public class DashboadService {
 	 */
 	public DashboardSummary getDashboard() {
 		
-		if (13!=dashboardCacheRepository.count()) {
+		int cachedIndicators = 12 + (featureFlippingProperties.isDashboardCacheComputeJobPending() ? 1 : 0);
+		if (cachedIndicators != dashboardCacheRepository.count()) {
 			refresh();
 		}
 		
@@ -117,7 +126,11 @@ public class DashboadService {
 		ret.setNbParc(dashboardCacheRepository.findById(DashboardCache.PARC_CHCK).get().getIndicator());
 		ret.setNbParcIsochrone(dashboardCacheRepository.findById(DashboardCache.PARC_CALC).get().getIndicator());
 		ret.setNbParcEntance(dashboardCacheRepository.findById(DashboardCache.PARC_ENTREE).get().getIndicator());
-				ret.setNbComputeJobPending(dashboardCacheRepository.findById(DashboardCache.COMPUTE_JOB_PENDING).get().getIndicator());
+		if (featureFlippingProperties.isDashboardCacheComputeJobPending()) {
+			ret.setNbComputeJobPending(dashboardCacheRepository.findById(DashboardCache.COMPUTE_JOB_PENDING).get().getIndicator());
+		} else {
+			ret.setNbComputeJobPending(computeJobRepository.countByStatus(ComputeJobStatusEnum.TO_PROCESS));
+		}
 		ret.setNbNdviJobPending(dashboardCacheRepository.findById(DashboardCache.NDVI_JOB_PENDING).get().getIndicator());
 		
 		return ret;

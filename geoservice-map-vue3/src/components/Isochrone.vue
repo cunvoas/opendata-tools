@@ -29,7 +29,7 @@
       for="cbCarre"
       title="Affiche les données carroyées (grille de 200 m) pour visualiser la surface de parcs accessible par habitant."
     >
-      | Carrés INSEE
+      | Carreaux INSEE
     </label>
     <input id="cbCarre" v-model="showCarre" type="checkbox" />
 
@@ -49,6 +49,7 @@
       :max-zoom="maxZoom"
       style="height: 700px; width: 95%"
       @update:bounds="boundsUpdated"
+      @click="clearParkDetail"
     >
       <l-tile-layer
         v-for="tileProvider in tileProviders"
@@ -266,13 +267,14 @@ import {
   LPolygon,
   LControlScale,
 } from "@vue-leaflet/vue-leaflet";
-import L, { latLng } from "leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { hexToRgba } from "../utils/color.js";
 import { getNdviCategory, getNdviColor, NDVI_CONTOUR_DALTONIEN } from "../utils/ndvi.js";
+import { interpreterStatistiquesNdvi } from "../utils/ndviInterpretation.js";
 import { features, DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from "../utils/config.js";
 import axios from 'axios';
 import { buildShareableUrl, isActive } from '../utils/urlParams.js';
@@ -1020,14 +1022,51 @@ export default {
     },
     buildParkDetailHtml(properties) {
       const name = properties?.name || 'Parc sans nom';
-      return "<div><b>" + name + "</b></div>" + this.buildNdviHtml(properties);
+      if (!this.ndviEnabled || !properties?.ndviEnabled) {
+        return '<div style="text-align:left"><b>' + name + '</b></div>';
+      }
+      let html = '<div style="text-align:left"><div><b>' + name + '</b></div>';
+       const mean = Number(properties?.ndviMean);
+       if (Number.isFinite(mean)) {
+         let paren = '';
+         if (properties?.ndviMin != null && properties?.ndviMax != null) {
+           paren = ` (min ${this.formatNdviValue(properties.ndviMin)}, max ${this.formatNdviValue(properties.ndviMax)}`;
+           const std = Number(properties?.ndviStddev);
+           if (Number.isFinite(std)) paren += `, écart-type ${this.formatNdviValue(std)}`;
+           paren += ')';
+         }
+         html += `<span style="display:block;margin-top:.3em"><b>NDVI moyen : ${this.formatNdviValue(mean)}</b>${paren}</span>`;
+       } else {
+         html += '<span style="display:block;margin-top:.3em">NDVI : pas encore calculé</span>';
+       }
+       const diagnostic = interpreterStatistiquesNdvi({
+         moyenne: properties?.ndviMean,
+         minimum: properties?.ndviMin,
+         maximum: properties?.ndviMax,
+         ecartType: properties?.ndviStddev,
+       });
+       if (diagnostic) {
+         html += `<span style="display:block;margin-top:.3em">${diagnostic.replace(/\n/g, '<br>').replace('Diagnostic :', '<b>Diagnostic :</b>').replace('Structure spatiale :', '<b>Structure spatiale :</b>')}</span>`;
+       }
+       html += '</div>';
+       return html;
     },
     showParkDetail(properties) {
+      this._parkClicked = true;
       const detail = document.getElementById('dataDetail');
       if (detail) {
         detail.innerHTML = this.buildParkDetailHtml(properties);
       }
     },
+     clearParkDetail() {
+       setTimeout(() => {
+         const detail = document.getElementById('dataDetail');
+         if (detail && !this._parkClicked) {
+           detail.innerHTML = '<p class="data-detail-title">&nbsp;Détail des données&nbsp;</p>&nbsp;<br />&nbsp;';
+         }
+         this._parkClicked = false;
+       }, 50);
+     },
     onDetailPark(feature, layer) {
       try {
         // Dépendance explicite au mode daltonien pour forcer le recalcul
@@ -1089,7 +1128,7 @@ export default {
           "<div>Nom: " + valid +" "+ parkName +
           "</div><div>Surface: " + formattedSurface + unit + 
           "</div><div>Ville: " + parkCity +"</div>" +
-          this.buildNdviHtml(feature.properties),
+          this.buildNdviHtml(feature.properties) + "<div><i>Cliquez pour le détail</i></div>",
           { permanent: false, sticky: true }
         );
 

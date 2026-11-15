@@ -125,6 +125,9 @@ matomo:
 application:
   business:
     # https://geoservices.ign.fr/documentation/services/api-et-services-ogc/isochrones/documentation-du-service-de-calcul-disochrones#2500
+    # @Ref seuils-12-45 : area_reco (12 en zone dense, 45 en périurbain) n'a pas de source identifiée.
+    # Absent d'OMS Europe 2016, d'OMS Europe 2017 et de Villes-Santé 2020. Seuls area_min (10 et 25) sont sourcés :
+    # voir docs/stats-surface.md.
     oms:
       min_size: 5000
       urban:
@@ -175,6 +178,7 @@ application:
     cpu-temp-threshold: 75
     cpu-metrics-url: http://192.168.1.30:1081/metrics
     cpu-metrics-timeout-ms: 2000
+    dashboard-cache-compute-job-pending: false
     sample.zipkin.enable: false
     
   admin:
