@@ -54,5 +54,5 @@ Racine parente englobant les sous-projets et outillages pour la construction et 
 
 ## Versions
 
-Le projet est en **V2.0.5** — voir [CHANGELOG](./CHANGELOG.md) et [RELEASE](./RELEASE.md).
+Le projet est en **V2.0.14** — voir [CHANGELOG](./CHANGELOG.md) et [RELEASE](./RELEASE.md).
 
