@@ -24,6 +24,7 @@ public class CommunauteCommuneDto {
 		super();
 		this.id=model.getId();
 		this.name=model.getName();
+		this.siren=model.getSiren();
 		if (model.getGeoShapeLow()!=null) {
 			Point p = model.getGeoShapeLow().getCentroid();
 			this.lonX=p.getX();
@@ -75,6 +76,8 @@ public class CommunauteCommuneDto {
 	private Long id;
 	/** Nom de la communauté de communes */
 	private String name;
+	/** Numéro Siren */
+	private String siren;
 	/** Longitude (X) du centroïde ou calculée */
 	private Double lonX;
 	/** Latitude (Y) du centroïde ou calculée */

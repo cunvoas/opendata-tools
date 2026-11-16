@@ -82,18 +82,22 @@ class TestPublishService {
 		Files.createDirectories(tempDir.resolve("geojson/carres/1"));
 		Files.createDirectories(tempDir.resolve("data/stats/com2co/1"));
 		Files.createDirectories(tempDir.resolve("data/ndvi/1/59350"));
+		Files.createDirectories(tempDir.resolve("data"));
+		Files.writeString(tempDir.resolve("data/territoires.json"), "{}");
 
 		String[] folders = publishedFolders(tempDir);
 
 		PublicationStatus status = tested.getStatus(1L, 2025);
 		assertEquals(PublicationStatus.Phase.PUBLISHED, status.getPhase());
 		assertEquals("abc123", status.getGitSha());
-		assertEquals(11, status.getFiles().size());
+		assertEquals(12, status.getFiles().size());
 		assertEquals("referentiels", status.getFiles().get(0).getType());
 		assertEquals("ndvi", status.getFiles().get(10).getType());
+		assertEquals("territoires", status.getFiles().get(11).getType());
 		assertEquals(tempDir + "/data/ndvi/1/ndvi_2025_1.json", status.getFiles().get(10).getPath());
+		assertEquals(tempDir + "/data/territoires.json", status.getFiles().get(11).getPath());
 		// le dossier de l'EPCI contient aussi les sous-dossiers des villes (data/ndvi/1/59350)
-		assertArrayEquals(new String[] { "geojson/carres/1", "data/stats/com2co/1", "data/ndvi/1" }, folders);
+		assertArrayEquals(new String[] { "data/territoires.json", "geojson/carres/1", "data/stats/com2co/1", "data/ndvi/1" }, folders);
 	}
 
 	@Test
@@ -106,9 +110,33 @@ class TestPublishService {
 		assertArrayEquals(new String[] { "geojson/carres/1", "data/stats/com2co/1" }, folders);
 	}
 
+	@Test
+	void testReferentialPublishedWithExistingFiles(@TempDir Path tempDir) throws Exception {
+		Files.createDirectories(tempDir.resolve("data/com2cos"));
+		Files.createDirectories(tempDir.resolve("data/cities"));
+		Files.writeString(tempDir.resolve("data/regions.json"), "[]");
+		Files.writeString(tempDir.resolve("data/territoires.json"), "{}");
+
+		when(properties.getJsonFileFolder()).thenReturn(tempDir.toString());
+		when(gitHelper.isConfigured()).thenReturn(true);
+		when(gitHelper.isAutorisedToPublish()).thenReturn(true);
+		when(gitHelper.getLocalPath()).thenReturn(tempDir.toString());
+		when(gitHelper.addCommitPush(eq(tempDir.toString()), any(String[].class))).thenReturn("ref123");
+
+		tested.publishReferentialAsync();
+
+		verify(exporter).writeRegions();
+		verify(exporter).writeTerritoires();
+		org.mockito.ArgumentCaptor<String[]> folders = org.mockito.ArgumentCaptor.forClass(String[].class);
+		verify(gitHelper).addCommitPush(eq(tempDir.toString()), folders.capture());
+		assertArrayEquals(new String[] { "data/regions.json", "data/com2cos", "data/cities", "data/territoires.json" },
+				folders.getValue());
+	}
+
 	private String[] publishedFolders(Path tempDir) throws Exception {
 		when(properties.getJsonFileFolder()).thenReturn(tempDir.toString());
 		when(gitHelper.isConfigured()).thenReturn(true);
+		when(gitHelper.isAutorisedToPublish()).thenReturn(true);
 		when(gitHelper.getLocalPath()).thenReturn(tempDir.toString());
 		when(gitHelper.addCommitPush(eq(tempDir.toString()), any(String[].class))).thenReturn("abc123");
 

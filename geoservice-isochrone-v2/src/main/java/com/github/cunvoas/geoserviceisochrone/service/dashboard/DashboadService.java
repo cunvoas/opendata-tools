@@ -16,6 +16,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.AssociationRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.admin.ComputeJobIrisRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ComputeJobRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.NdviJobRepository;
@@ -60,6 +61,8 @@ public class DashboadService {
 	@Autowired
 	private ComputeJobRepository computeJobRepository;
 	@Autowired
+	private ComputeJobIrisRepository computeJobIrisRepository;
+	@Autowired
 	private NdviJobRepository ndviJobRepository;
 	
 	/**
@@ -80,6 +83,7 @@ public class DashboadService {
 		cache.add(new DashboardCache(DashboardCache.PARC_ENTREE, parkEntranceRepository.count()));
 		cache.add(new DashboardCache(DashboardCache.PARC_REF, parkJardinRepository.count()));
 		cache.add(new DashboardCache(DashboardCache.NDVI_JOB_PENDING, ndviJobRepository.countByStatus(ComputeJobStatusEnum.TO_PROCESS)));
+		cache.add(new DashboardCache(DashboardCache.IRIS_JOB_PENDING, computeJobIrisRepository.countByStatus(ComputeJobStatusEnum.TO_PROCESS)));
 
 		if (featureFlippingProperties.isDashboardCacheComputeJobPending()) {
 			cache.add(new DashboardCache(DashboardCache.COMPUTE_JOB_PENDING, computeJobRepository.countByStatus(ComputeJobStatusEnum.TO_PROCESS)));
@@ -105,7 +109,7 @@ public class DashboadService {
 	 */
 	public DashboardSummary getDashboard() {
 		
-		int cachedIndicators = 12 + (featureFlippingProperties.isDashboardCacheComputeJobPending() ? 1 : 0);
+		int cachedIndicators = 13 + (featureFlippingProperties.isDashboardCacheComputeJobPending() ? 1 : 0);
 		if (cachedIndicators != dashboardCacheRepository.count()) {
 			refresh();
 		}
@@ -132,6 +136,7 @@ public class DashboadService {
 			ret.setNbComputeJobPending(computeJobRepository.countByStatus(ComputeJobStatusEnum.TO_PROCESS));
 		}
 		ret.setNbNdviJobPending(dashboardCacheRepository.findById(DashboardCache.NDVI_JOB_PENDING).get().getIndicator());
+		ret.setNbIrisJobPending(dashboardCacheRepository.findById(DashboardCache.IRIS_JOB_PENDING).get().getIndicator());
 		
 		return ret;
 	}

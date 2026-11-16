@@ -102,6 +102,10 @@ public class PublishService {
             produce(status, () -> servicePublicationExporter.writeNdviJson(com2co, requestedYear),
                     "ndvi", ndviPath(c2cId, requestedYear));
 
+            // 1c. index des territoires publiés, consommé par le front (routes, sitemap, pré-rendu)
+            produce(status, () -> servicePublicationExporter.writeTerritoires(),
+                    "territoires", territoiresPath());
+
             if (status.getPhase() == PublicationStatus.Phase.PRODUCTION_FAILED) {
                 log.error("Publication {} stopped: production failed ({})", key(c2cId, requestedYear), status.getMessage());
                 return;
@@ -217,14 +221,14 @@ public class PublishService {
     }
 
     private List<String> foldersToPublish(String repoRoot, CommunauteCommune com2co) {
-        Path root = Paths.get(repoRoot).toAbsolutePath().normalize();
         Path dataRoot = Paths.get(applicationBusinessProperties.getJsonFileFolder()).toAbsolutePath().normalize();
         Set<Path> folders = new LinkedHashSet<>();
         String c2cId = String.valueOf(com2co.getId());
-        // référentiels : régions, EPCI, villes
+        // référentiels : régions, EPCI, villes, index des territoires
         folders.add(dataRoot.resolve("data/regions.json"));
         folders.add(dataRoot.resolve("data/com2cos"));
         folders.add(dataRoot.resolve("data/cities"));
+        folders.add(dataRoot.resolve("data/territoires.json"));
         // données géographiques de l'EPCI
         folders.add(dataRoot.resolve("geojson/parkOutline").resolve(c2cId));
         folders.add(dataRoot.resolve("geojson/isochrones").resolve(c2cId));
@@ -237,7 +241,49 @@ public class PublishService {
             String insee = city.getInseeCode();
             folders.add(dataRoot.resolve("data/stats").resolve(insee.substring(0, 2)).resolve(insee));
         }
+        return toRelative(repoRoot, folders);
+    }
 
+    /**
+     * Publie le seul référentiel (régions, EPCI, villes, index des territoires), sans passer par un EPCI.
+     */
+    @Async
+    public void publishReferentialAsync() {
+        try {
+            servicePublicationExporter.writeRegions();
+            servicePublicationExporter.writeTerritoires();
+        } catch (Exception e) {
+            log.error("Référentiel : production en échec", e);
+            return;
+        }
+        if (!gitHelper.isConfigured() || !gitHelper.isAutorisedToPublish()) {
+            log.info("Référentiel écrit ; publication Git non configurée ou désactivée");
+            return;
+        }
+        String repoRoot = gitHelper.getLocalPath();
+        if (repoRoot == null || repoRoot.isBlank()) {
+            repoRoot = applicationBusinessProperties.getJsonFileFolder();
+        }
+        try {
+            Path dataRoot = Paths.get(applicationBusinessProperties.getJsonFileFolder()).toAbsolutePath().normalize();
+            Set<Path> folders = new LinkedHashSet<>();
+            folders.add(dataRoot.resolve("data/regions.json"));
+            folders.add(dataRoot.resolve("data/com2cos"));
+            folders.add(dataRoot.resolve("data/cities"));
+            folders.add(dataRoot.resolve("data/territoires.json"));
+            List<String> relative = toRelative(repoRoot, folders);
+            if (relative.isEmpty()) {
+                throw new IllegalStateException("Aucun fichier de référentiel à publier");
+            }
+            String sha = gitHelper.addCommitPush(repoRoot, relative.toArray(new String[0]));
+            log.info("Référentiel publié : {}", sha);
+        } catch (Exception e) {
+            log.error("Référentiel : push en échec", e);
+        }
+    }
+
+    private List<String> toRelative(String repoRoot, Set<Path> folders) {
+        Path root = Paths.get(repoRoot).toAbsolutePath().normalize();
         Set<String> relative = new LinkedHashSet<>();
         for (Path folder : folders) {
             if (!Files.exists(folder)) {
@@ -307,6 +353,10 @@ public class PublishService {
     private String ndviPath(Long c2cId, Integer year) {
         return applicationBusinessProperties.getJsonFileFolder()
                 + "/data/ndvi/" + c2cId + "/ndvi_" + year + "_" + c2cId + ".json";
+    }
+
+    private String territoiresPath() {
+        return applicationBusinessProperties.getJsonFileFolder() + "/data/territoires.json";
     }
 
     private String key(Long c2cId, Integer year) {

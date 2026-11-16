@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,8 @@ import com.github.cunvoas.geoserviceisochrone.controller.mvc.validator.TokenMana
 import com.github.cunvoas.geoserviceisochrone.controller.rest.bo.ComputeJobRequest;
 import com.github.cunvoas.geoserviceisochrone.controller.rest.bo.ComputeJobResponse;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobProgressStat;
+import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
+import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceService;
 import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
@@ -111,6 +114,26 @@ public class PublishRestControler {
 		}
 		
 		return new ResponseEntity<ComputeJobResponse>(resp, code);
+	}
+
+	/**
+	 * Publie le référentiel (régions, EPCI, villes, index des territoires), sans passage par un EPCI.
+	 * Réservé aux administrateurs. Traitement asynchrone.
+	 *
+	 * @param req requête contenant le token
+	 * @return 202 si la publication est lancée, 401 ou 403 sinon
+	 */
+	@PostMapping("/referential")
+	public ResponseEntity<ComputeJobResponse> referential(@RequestBody ComputeJobRequest req) {
+		if (!tokenManagement.isTokenValid(req.getToken())) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		Contributeur contrib = (Contributeur) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (!ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+		publishService.publishReferentialAsync();
+		return new ResponseEntity<>(new ComputeJobResponse(req), HttpStatus.ACCEPTED);
 	}
 
 	/**

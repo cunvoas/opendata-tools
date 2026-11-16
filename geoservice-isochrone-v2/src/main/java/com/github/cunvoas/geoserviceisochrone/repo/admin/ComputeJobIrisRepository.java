@@ -20,6 +20,13 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.IrisId;
 public interface ComputeJobIrisRepository extends JpaRepository<ComputeIrisJob, IrisId>{
 
     /**
+     * Compte les jobs IRIS dans un statut donné.
+     * @param status statut
+     * @return nombre de jobs
+     */
+    Long countByStatus(ComputeJobStatusEnum status);
+
+    /**
      * findByStatusOrderByDemandAsc.
      * @param status enum
      * @param page page

@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.service.export;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,8 @@ import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusines
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.GeoJsonCadastreController;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.NdviController;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.NdviController.NdviSummaries;
+import com.github.cunvoas.geoserviceisochrone.controller.rest.analytics.Stat;
+import com.github.cunvoas.geoserviceisochrone.controller.rest.analytics.StatsSurfaceJson;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
@@ -31,6 +34,7 @@ import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadRefere
 import com.github.cunvoas.geoserviceisochrone.service.export.dto.CityDto;
 import com.github.cunvoas.geoserviceisochrone.service.export.dto.CommunauteCommuneDto;
 import com.github.cunvoas.geoserviceisochrone.service.export.dto.RegionDto;
+import com.github.cunvoas.geoserviceisochrone.service.export.dto.TerritoiresIndex;
 import com.github.cunvoas.geoserviceisochrone.service.map.GeoMapServiceV2;
 
 import lombok.extern.slf4j.Slf4j;
@@ -437,6 +441,71 @@ public class ServicePublicationExporter {
 		file = new File(applicationBusinessProperties.getJsonFileFolder()+"/data/cities/densite.json");
 		objectMapper.writeValue(file, dentistyMap);
 		
+	}
+
+	/**
+	 * Écrit data/territoires.json : communes et EPCI dont les statistiques sont publiées.
+	 * Fichier consommé par le front pour ses routes territoriales, son sitemap et son pré-rendu.
+	 *
+	 * @return fichier écrit
+	 * @throws IOException en cas d'erreur d'écriture
+	 */
+	public File writeTerritoires() throws IOException {
+		int annee = dernierMillesime();
+		String folder = applicationBusinessProperties.getJsonFileFolder();
+
+		List<TerritoiresIndex.Commune> communes = new ArrayList<>();
+		for (City city : serviceReadReferences.getCity()) {
+			if (city.getInseeCode() == null || city.getInseeCode().length() < 2) {
+				log.warn("Commune sans code INSEE ignorée : id={}", city.getId());
+				continue;
+			}
+			File stats = statsFileCommune(folder, city, annee);
+			if (!stats.isFile()) {
+				continue;
+			}
+			StatsSurfaceJson json = objectMapper.readValue(stats, StatsSurfaceJson.class);
+			int population = json.getStats().stream()
+					.mapToInt(stat -> stat.getHabitants() == null ? 0 : stat.getHabitants()).sum();
+			communes.add(new TerritoiresIndex.Commune(
+					city.getInseeCode(), String.valueOf(city.getId()), city.getDisplayName(), population));
+		}
+		communes.sort(Comparator.comparingInt(TerritoiresIndex.Commune::population).reversed()
+				.thenComparing(TerritoiresIndex.Commune::nom, String.CASE_INSENSITIVE_ORDER));
+
+		List<TerritoiresIndex.Epci> epcis = new ArrayList<>();
+		for (CommunauteCommune com2co : serviceReadReferences.getCommunauteCommune()) {
+			if (com2co.getSiren() != null && statsFileEpci(folder, com2co, annee).isFile()) {
+				epcis.add(new TerritoiresIndex.Epci(
+						com2co.getSiren(), com2co.getName(), String.valueOf(com2co.getId())));
+			}
+		}
+		epcis.sort(Comparator.comparing(TerritoiresIndex.Epci::nom, String.CASE_INSENSITIVE_ORDER));
+
+		File file = new File(folder + "/data/territoires.json");
+		file.getParentFile().mkdirs();
+		objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, new TerritoiresIndex(communes, epcis));
+		log.info("Index des territoires écrit : {} communes, {} EPCI ({})", communes.size(), epcis.size(), file);
+		return file;
+	}
+
+	private int dernierMillesime() {
+		Integer[] annees = applicationBusinessProperties.getInseeAnnees();
+		if (annees == null || annees.length == 0) {
+			throw new IllegalStateException("Aucun millésime INSEE configuré (application.business.insee.annees)");
+		}
+		return annees[annees.length - 1];
+	}
+
+	private File statsFileCommune(String folder, City city, int annee) {
+		String insee = city.getInseeCode();
+		return new File(folder + "/data/stats/" + insee.substring(0, 2) + "/" + insee
+				+ "/stats_" + insee + "_" + annee + ".json");
+	}
+
+	private File statsFileEpci(String folder, CommunauteCommune com2co, int annee) {
+		return new File(folder + "/data/stats/com2co/" + com2co.getId()
+				+ "/stats_c2c_" + com2co.getId() + "_all_" + annee + ".json");
 	}
 
 }

@@ -313,6 +313,26 @@
                             </a>
                         </div>
 
+                        <div class="col-sm-3 col-md-3 col-lg-3" sec:authorize="hasAuthority('ADMINISTRATOR')">
+                            <div class="card bg-info text-white shadow h-100 py-2 border-left-primary">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col-auto">
+                                            <i class="fas fa-draw-polygon fa-2x text-gray-300"></i>
+                                        </div>
+                                        <div class="col mr-2">
+                                            <div
+                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+                                                th:text="#{association.nbIrisJobPending}">
+                                                nbIrisJobPending</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
+                                                th:text="${#numbers.formatInteger(dashboard.nbIrisJobPending, 1, 'POINT')}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
 					</div>
 
 					<!-- Historique et suggestions -->

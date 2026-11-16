@@ -42,6 +42,15 @@
                                 <input id="id" name="id" type="hidden" th:field="*{id}" />
                             </div>
                     </div>
+
+                    <div class="form-floating mb-3">
+                            <div class="form-floating">
+                                <input class="form-control" id="siren" name="siren" type="text" inputmode="numeric"
+                                    maxlength="9" pattern="[0-9]{9}"
+                                    th:attr="placeholder=#{communautecommune.siren.placeholder}" th:field="*{siren}" />
+                                <label for="siren" th:text="#{communautecommune.siren}">Siren</label>
+                            </div>
+                    </div>
                 
                     <div class="form-floating mb-3">
                             <div class="form-floating">
