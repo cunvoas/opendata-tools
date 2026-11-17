@@ -2,7 +2,14 @@
 # deploy on github
 
 export DIST_PATH=/work/PERSO/github/opendata-tools/geoservice-map-vue3
+
+
+# prod
 export GH_PAGES_LOCAL_PATH=/work/PERSO/github/gh_pages/parcs-et-jardins
+
+# prep
+export GH_PAGES_LOCAL_PATH=/work/PERSO/github/gh_pages/geolocation
+
 
 # Feature flags (build) : décommenter pour activer l'écran NDVI dans ce déploiement
 export VITE_FEATURE_NDVI=false

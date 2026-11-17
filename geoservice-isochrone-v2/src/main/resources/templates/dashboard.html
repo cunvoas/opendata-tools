@@ -198,73 +198,6 @@
 
 					<div class="row mt-3">
 
-
-                        <div class="col-sm-3 col-md-3 col-lg-3">
-                            <div
-                                class="card bg-primary text-white  border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col-auto">
-                                            <i class="fas fa-check fa-2x text-gray-300"></i>
-                                        </div>
-                                        <div class="col mr-2">
-                                            <div
-                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
-                                                th:text="#{association.nbParc}">nbParc</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                th:text="${#numbers.formatInteger(dashboard.nbParc, 1, 'POINT')}"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-sm-3 col-md-3 col-lg-3">
-                            <div
-                                class="card bg-primary text-white  border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col-auto">
-                                            <i class="fas fa-torii-gate fa-2x text-gray-300"></i>
-                                        </div>
-                                        <div class="col mr-2">
-                                            <div
-                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
-                                                th:text="#{association.nbParcEntance}">nbParcEntance</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                th:text="${#numbers.formatInteger(dashboard.nbParcEntance, 1, 'POINT')}"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-						<div class="col-sm-3 col-md-3 col-lg-3">
-							<div
-								class="card bg-success text-white  border-left-primary shadow h-100 py-2">
-								<div class="card-body">
-									<div class="row no-gutters align-items-center">
-										<div class="col-auto">
-											<i class="fas fa-gears fa-2x text-gray-300"></i>
-										</div>
-										<div class="col mr-2">
-											<div
-												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
-												th:text="#{association.nbParcIsochrone}">
-												nbParcIsochrone</div>
-											<div class="h5 mb-0 font-weight-bold text-gray-800"
-												th:text="${#numbers.formatInteger(dashboard.nbParcIsochrone, 1, 'POINT')}"></div>
-										</div>
-										
-
-										
-									</div>
-								</div>
-							</div>
-						</div>
-						
-						
                         <div class="col-sm-3 col-md-3 col-lg-3" sec:authorize="hasAuthority('ADMINISTRATOR')">
                             <a th:href="@{/mvc/management/jobs/progress}" style="text-decoration: none;">
                                 <div class="card bg-info text-white shadow h-100 py-2 border-left-primary">
@@ -287,9 +220,25 @@
                             </a>
                         </div>
 
-					</div>
-
-					<div class="row mt-3">
+                        <div class="col-sm-3 col-md-3 col-lg-3" sec:authorize="hasAuthority('ADMINISTRATOR')">
+                            <div class="card bg-info text-white shadow h-100 py-2 border-left-primary">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col-auto">
+                                            <i class="fas fa-draw-polygon fa-2x text-gray-300"></i>
+                                        </div>
+                                        <div class="col mr-2">
+                                            <div
+                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+                                                th:text="#{association.nbIrisJobPending}">
+                                                nbIrisJobPending</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
+                                                th:text="${#numbers.formatInteger(dashboard.nbIrisJobPending, 1, 'POINT')}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="col-sm-3 col-md-3 col-lg-3" sec:authorize="hasAuthority('ADMINISTRATOR')">
                             <a th:href="@{/mvc/management/jobs/ndvi/progress}" style="text-decoration: none;">
@@ -313,20 +262,65 @@
                             </a>
                         </div>
 
-                        <div class="col-sm-3 col-md-3 col-lg-3" sec:authorize="hasAuthority('ADMINISTRATOR')">
-                            <div class="card bg-info text-white shadow h-100 py-2 border-left-primary">
+						<div class="col-sm-3 col-md-3 col-lg-3">
+							<div
+								class="card bg-success text-white  border-left-primary shadow h-100 py-2">
+								<div class="card-body">
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<i class="fas fa-gears fa-2x text-gray-300"></i>
+										</div>
+										<div class="col mr-2">
+											<div
+												class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+												th:text="#{association.nbParcIsochrone}">
+												nbParcIsochrone</div>
+											<div class="h5 mb-0 font-weight-bold text-gray-800"
+												th:text="${#numbers.formatInteger(dashboard.nbParcIsochrone, 1, 'POINT')}"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+					<div class="row mt-3">
+
+                        <div class="col-sm-3 col-md-3 col-lg-3">
+                            <div
+                                class="card bg-primary text-white  border-left-primary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col-auto">
-                                            <i class="fas fa-draw-polygon fa-2x text-gray-300"></i>
+                                            <i class="fas fa-torii-gate fa-2x text-gray-300"></i>
                                         </div>
                                         <div class="col mr-2">
                                             <div
                                                 class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
-                                                th:text="#{association.nbIrisJobPending}">
-                                                nbIrisJobPending</div>
+                                                th:text="#{association.nbParcEntance}">nbParcEntance</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                th:text="${#numbers.formatInteger(dashboard.nbIrisJobPending, 1, 'POINT')}"></div>
+                                                th:text="${#numbers.formatInteger(dashboard.nbParcEntance, 1, 'POINT')}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-3 col-md-3 col-lg-3">
+                            <div
+                                class="card bg-primary text-white  border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col-auto">
+                                            <i class="fas fa-check fa-2x text-gray-300"></i>
+                                        </div>
+                                        <div class="col mr-2">
+                                            <div
+                                                class="text-xs text-white font-weight-bold text-primary text-uppercase mb-1"
+                                                th:text="#{association.nbParc}">nbParc</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"
+                                                th:text="${#numbers.formatInteger(dashboard.nbParc, 1, 'POINT')}"></div>
                                         </div>
                                     </div>
                                 </div>

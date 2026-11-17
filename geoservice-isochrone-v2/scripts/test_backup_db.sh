@@ -50,11 +50,11 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-[ -z "$DB" ]        && { echo "ERROR: -d DB_SOURCE required"; usage; }
-[ -z "$TARGET_DB" ] && { echo "ERROR: --target-db DB_TEST required"; usage; }
-[ -z "$OUTDIR" ]    && { echo "ERROR: -o OUTDIR required"; usage; }
-[ -d "$OUTDIR" ]    || { echo "ERROR: OUTDIR not found: $OUTDIR"; exit 1; }
-[ "$DB" = "$TARGET_DB" ] && { echo "ERROR: source and target DB must differ"; exit 1; }
+[ -z "$DB" ]        && { echo "ERROR: -d DB_SOURCE required" >&2; usage; }
+[ -z "$TARGET_DB" ] && { echo "ERROR: --target-db DB_TEST required" >&2; usage; }
+[ -z "$OUTDIR" ]    && { echo "ERROR: -o OUTDIR required" >&2; usage; }
+[ -d "$OUTDIR" ]    || { echo "ERROR: OUTDIR not found: $OUTDIR" >&2; exit 1; }
+[ "$DB" = "$TARGET_DB" ] && { echo "ERROR: source and target DB must differ" >&2; exit 1; }
 
 SRC_OPTS="-h $HOST -p $PORT -U $USER -d $DB"
 TGT_OPTS="-h $HOST -p $PORT -U $USER -d $TARGET_DB"
@@ -63,7 +63,7 @@ TGT_OPTS="-h $HOST -p $PORT -U $USER -d $TARGET_DB"
 LIST_ARGS="-d $DB -h $HOST -p $PORT -U $USER"
 [ "$OPENDATA" = true ] && LIST_ARGS="$LIST_ARGS --opendata"
 TABLES=$(bash "$SCRIPT_DIR/backup_restore_db.sh" list $LIST_ARGS | sed -n 's/^  \[[0-9]*\] //p')
-[ -n "$TABLES" ] || { echo "ERROR: no table list from backup_restore_db.sh"; exit 1; }
+[ -n "$TABLES" ] || { echo "ERROR: no table list from backup_restore_db.sh" >&2; exit 1; }
 
 echo "=== 1. Vérification des fichiers de $OUTDIR/ ==="
 ERRORS=0
@@ -101,7 +101,7 @@ if [ "$RESET" = true ]; then
     -c "DROP SCHEMA IF EXISTS $SCHEMA CASCADE;" \
     -c "CREATE SCHEMA $SCHEMA;"
 elif [ "$nb_tables" -ne 0 ]; then
-  echo "  ERROR: la base cible contient déjà $nb_tables tables dans $SCHEMA."
+  echo "  ERROR: la base cible contient déjà $nb_tables tables dans $SCHEMA." >&2
   echo "  Utiliser une base vide ou --reset (destructif)."
   exit 1
 fi

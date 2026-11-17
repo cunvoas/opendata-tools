@@ -79,15 +79,18 @@ describe('AppLanding.vue', () => {
     expect(wrapper.attributes('data-landing-ready')).toBe('false')
   })
 
-  it("présente la comparaison avec l'INSEE et son étude", async () => {
+  it("résume la comparaison avec l'INSEE et renvoie à sa page dédiée", async () => {
     simulerReseau({ lille, mel })
     const wrapper = monter()
     await flushPromises()
 
-    expect(wrapper.find('table').text()).toContain('72 grands centres urbains')
-    const lienInsee = wrapper.findAll('a').find((a) => a.attributes('href')?.includes('insee.fr/fr/statistiques/8558420'))
-    expect(lienInsee).toBeTruthy()
-    expect(lienInsee.attributes('rel')).toContain('noopener')
+    const section = wrapper.find('section[aria-labelledby="insee"]')
+    const texte = section.text().replace(/\s/g, ' ')
+    expect(texte).toContain('Réponse courte')
+    expect(texte).toContain('51,9 % de la population du grand centre urbain de Lille (et non de la commune seule) vivait à moins de 300 m')
+    // le tableau de comparaison a quitté l'accueil
+    expect(section.find('table').exists()).toBe(false)
+    expect(section.find('a').attributes('href')).toBe('/etude-insee')
   })
 
   it('ajoute son JSON-LD (page et jeu de données) au document puis le retire en quittant la page', async () => {
@@ -149,32 +152,13 @@ describe('AppLanding.vue', () => {
     expect(wrapper.text().replace(/\s/g, ' ')).toContain("les résultats n'existent que là où des associations ont décrit les parcs")
   })
 
-  it("attribue les seuils à leur source sans affirmer de valeurs non sourcées", async () => {
+  it("renvoie vers la page dédiée pour la méthode et les sources", async () => {
     simulerReseau({ lille, mel })
     const wrapper = monter()
     await flushPromises()
 
-    const texte = wrapper.text().replace(/\s/g, ' ')
-    expect(texte).toContain('circulaire ministérielle du 8 février 1973')
-    expect(texte).toContain('selon le Réseau français des Villes-Santé')
-    expect(texte).toContain('forêts urbaines et des espaces boisés périurbains')
-    // 12 m² et 45 m² « conseillés » : aucune source ne les établit, ils ne doivent pas figurer sur la page
-    expect(texte).not.toMatch(/12 conseillés|45 conseillés/)
-    expect(texte).not.toMatch(/\b(12|45) ?m²/)
-  })
-
-  it("cite les trois sources de l'OMS et du réseau Villes-Santé avec des liens externes sûrs", async () => {
-    simulerReseau({ lille, mel })
-    const wrapper = monter()
-    await flushPromises()
-
-    const liens = wrapper.findAll('a').filter((a) => /who\.int|villes-sante\.com/.test(a.attributes('href') ?? ''))
-    expect(liens.map((a) => a.attributes('href'))).toEqual([
-      'https://www.who.int/europe/publications/i/item/WHO-EURO-2016-3352-43111-60341',
-      'https://www.who.int/europe/publications/i/item/9789289052498',
-      'https://villes-sante.com/wp-content/uploads/2023/02/Espaces-verts-urbains.pdf'
-    ])
-    liens.forEach((a) => expect(a.attributes('rel')).toContain('noopener'))
+    const liens = wrapper.findAll('a').map((a) => a.attributes('href'))
+    expect(liens).toContain('/etude-insee')
   })
 
   it('annonce la licence AGPLv3', async () => {
@@ -197,62 +181,17 @@ describe('AppLanding.vue', () => {
     expect(ecrireAuProjet).toHaveBeenCalledWith(expect.stringContaining('Décrire les parcs'))
   })
 
-  it("présente la simulation d'ajout de parcs et ses méthodes en langage courant", async () => {
+  it("ne parle plus de la simulation d'ajout de parcs ni du mode manuel sur l'accueil", async () => {
     simulerReseau({ lille, mel })
     const wrapper = monter()
     await flushPromises()
 
-    const histoire = wrapper.find('section[aria-labelledby="genese"]')
-    const texte = histoire.text().replace(/\s/g, ' ')
-    expect(texte).toContain('Depuis le printemps 2026')
-    expect(texte).toContain("simuler l'ajout de parcs")
-    expect(texte).toContain('recherche opérationnelle')
-
-    const methodes = histoire.findAll('li').map((li) => li.text().replace(/\s/g, ' '))
-    expect(methodes).toHaveLength(3)
-    expect(methodes[0]).toContain('programmation par contraintes')
-    expect(methodes[1]).toContain('algorithme génétique')
-    expect(methodes[2]).toContain('algorithme glouton')
-    // lecture grand public : chaque méthode a un nom courant avant le terme technique
-    expect(methodes[0]).toMatch(/^Les règles d'abord \(programmation par contraintes\)/)
-    expect(texte).toContain('Encore faut-il savoir où poser ces parcs')
-  })
-
-  it("ne fait pas de la simulation une promesse au public : réservée au système de gestion", async () => {
-    simulerReseau({ lille, mel })
-    const wrapper = monter()
-    await flushPromises()
-
-    expect(wrapper.text().replace(/\s/g, ' ')).toContain("n'est disponible que dans notre système de gestion")
-  })
-
-  it("décrit le mode manuel de l'été 2026 et signale que son évaluation est simplifiée", async () => {
-    simulerReseau({ lille, mel })
-    const wrapper = monter()
-    await flushPromises()
-
-    const histoire = wrapper.find('section[aria-labelledby="genese"]')
-
-    const texte = histoire.text().replace(/\s/g, ' ')
-    expect(texte).toContain("Autre nouveauté, ajoutée pendant l'été 2026 : un mode manuel")
-    expect(texte).toContain('on dessine soi-même un futur parc')
-    expect(texte).toContain('d\'un simple cercle ou d\'un contour précis')
-    expect(texte).toMatch(/Un clic sur « ?Évaluer ? »/)
-    // aucune méthode d'étude principale n'est attribuée au mode manuel : la simplification est dite
-    expect(texte).toContain('cette évaluation est simplifiée')
-    expect(texte).toContain("à vol d'oiseau")
-    expect(texte).toContain('sans calcul d\'itinéraire depuis des entrées')
-    expect(texte).toContain('version bêta')
-  })
-
-  it("place le mode manuel après la simulation automatique de l'histoire", async () => {
-    simulerReseau({ lille, mel })
-    const wrapper = monter()
-    await flushPromises()
-
-    const texte = wrapper.find('section[aria-labelledby="genese"]').text()
-    expect(texte.indexOf('Depuis le printemps 2026')).toBeGreaterThan(-1)
-    expect(texte.indexOf("pendant l'été 2026")).toBeGreaterThan(texte.indexOf('Depuis le printemps 2026'))
+    const texte = wrapper.find('section[aria-labelledby="genese"]').text().replace(/\s/g, ' ')
+    expect(texte).not.toContain('Depuis le printemps 2026')
+    expect(texte).not.toContain('recherche opérationnelle')
+    expect(texte).not.toContain('mode manuel')
+    expect(texte).not.toContain('programmation par contraintes')
+    expect(texte).not.toContain('Évaluer')
   })
 
   it("titre la section sur la genèse de l'outil, pas sur l'histoire des associations", async () => {
@@ -273,7 +212,7 @@ describe('AppLanding.vue', () => {
     const genese = wrapper.find('section[aria-labelledby="genese"]')
     expect(genese.findAll('h3')).toHaveLength(0)
     const texte = genese.text().replace(/\s/g, ' ')
-    const ordre = ['municipales de 2026', 'Depuis le printemps 2026', 'Encore faut-il savoir où poser ces parcs', 'Autre nouveauté', 'Une précision importante']
+    const ordre = ["L'outil est né d'un chiffre", '17 m² par habitant', 'municipales de 2026']
     const positions = ordre.map((phrase) => texte.indexOf(phrase))
     positions.forEach((position, i) => expect(position, ordre[i]).toBeGreaterThan(-1))
     expect([...positions].sort((a, b) => a - b)).toEqual(positions)
