@@ -383,7 +383,7 @@ function getColorLegend(legendeDense, colorblindMode = false) {
 			from = grades[i];
 			to = grades[i + 1];
 
-      let tSurface = `${from}${to ? `&ndash;${to}` : '+'}`
+      let tSurface = `${from}${to ? `&ndash;${to}` : '+'}`;
       let tColors = `<i style="border:1px solid #4b5563;background:${hexToRgba(getSquareColor(legendeDense, from, colorblindMode), 0.4)}"></i> `;
 			
       labels.push(tColors+tSurface);

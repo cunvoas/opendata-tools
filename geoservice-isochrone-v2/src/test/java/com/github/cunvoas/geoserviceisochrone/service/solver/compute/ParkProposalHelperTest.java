@@ -128,7 +128,6 @@ class ParkProposalHelperTest extends BaseUnitTest {
                 "C--3--3", map, URBAN_DISTANCE);
 
         assertNotNull(neighbors);
-        assertTrue(neighbors.size() >= 0);
     }
 
     @Test
@@ -168,7 +167,7 @@ class ParkProposalHelperTest extends BaseUnitTest {
                 Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("ParkProposalWork_neibours.csv")),
                 StandardCharsets.UTF_8))) {
 
-            String header = br.readLine();
+            br.readLine();
             String line;
             int lineNum = 1;
             while ((line = br.readLine()) != null) {

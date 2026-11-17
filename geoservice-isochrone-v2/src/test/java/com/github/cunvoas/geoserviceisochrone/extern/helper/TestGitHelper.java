@@ -33,15 +33,15 @@ class TestGitHelper {
 	void testAddCommitPushSuccess(@TempDir Path tempDir) throws Exception {
 		// Arrange - Create actual .git folder (required for validation)
 		File gitDir = new File(tempDir.toFile(), ".git");
-		gitDir.mkdir();
+		assertTrue(gitDir.mkdir());
 		
 		// Create data folder
 		File dataFolder = new File(tempDir.toFile(), "data");
-		dataFolder.mkdir();
+		assertTrue(dataFolder.mkdir());
 		
 		// Create a test file in data folder
 		File testFile = new File(dataFolder, "test.json");
-		testFile.createNewFile();
+		assertTrue(testFile.createNewFile());
 
 		Git gitMock = mock(Git.class);
 		Repository repositoryMock = mock(Repository.class);
@@ -141,7 +141,7 @@ class TestGitHelper {
 	void testAddCommitPushWithNonExistentFolder(@TempDir Path tempDir) throws Exception {
 		// Arrange
 		File gitDir = new File(tempDir.toFile(), ".git");
-		gitDir.mkdir();
+		assertTrue(gitDir.mkdir());
 
 		Git gitMock = mock(Git.class);
 		Repository repositoryMock = mock(Repository.class);

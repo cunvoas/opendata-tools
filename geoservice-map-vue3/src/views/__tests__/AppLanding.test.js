@@ -241,7 +241,7 @@ describe('AppLanding.vue', () => {
     expect(genese.text().replace(/\s/g, ' ')).toContain('Médiacités et AEF info en ont rendu compte.')
     // neutralité : aucun candidat n'est nommé ni cité, ni dans le texte ni par un lien vers un réseau social
     expect(wrapper.text()).not.toMatch(/Spillebout|Deslandes|Baly|Addouche/)
-    expect(wrapper.findAll('a').some((a) => /x\.com|twitter\.com/.test(a.attributes('href') ?? ''))).toBe(false)
+    expect(wrapper.findAll('a').some((a) => /^https?:\/\/(www\.)?(x|twitter)\.com(\/|$)/.test(a.attributes('href') ?? ''))).toBe(false)
   })
 
   it("présente la conférence comme le démarrage des débats publics, sans parler de série", async () => {

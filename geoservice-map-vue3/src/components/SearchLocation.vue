@@ -186,7 +186,7 @@ export default {
         async fetchCom2cos() {  // call by region
             if (!this.selectedRegion) return;
             try {
-                const response = await axios.get(`https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/com2cos/${this.selectedRegion}/com2cos_${this.selectedRegion}.json`);
+                const response = await axios.get(`https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/com2cos/${encodeURIComponent(this.selectedRegion)}/com2cos_${encodeURIComponent(this.selectedRegion)}.json`);
                 this.com2cos = response.data;
                 
                 // Wait for the next tick to ensure com2cos are loaded
@@ -222,7 +222,7 @@ export default {
         async fetchCities() { // call by com2co
             if (!this.selectedCom2co) return;
             try {
-                const response = await axios.get(`https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/cities/com2co/cities_${this.selectedCom2co}.json`);
+                const response = await axios.get(`https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/cities/com2co/cities_${encodeURIComponent(this.selectedCom2co)}.json`);
                 this.cities = response.data;
                 
                 // Si nous avons un selectedCity sauvegardé, attendons que les données soient chargées
