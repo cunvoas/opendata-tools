@@ -16,7 +16,7 @@ import com.github.cunvoas.geoserviceisochrone.extern.overpass.OverpassRawParser;
 
 @SpringBootTest()
 @ActiveProfiles({"dev"})
-class OverpassIntegration {
+class AdmUtilOverpassIntegration {
     
     @Autowired
     private OverpassRawParser parserRaw;

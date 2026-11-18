@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -86,6 +87,7 @@ public class AssociationControler {
 	 * @throws ExceptionAdmin si l'utilisateur n'a pas le droit d'éditer
 	 */
 	@PostMapping("/edit")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER')")
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public String save(@ModelAttribute Association asso, 
 		final BindingResult bindingResult, 

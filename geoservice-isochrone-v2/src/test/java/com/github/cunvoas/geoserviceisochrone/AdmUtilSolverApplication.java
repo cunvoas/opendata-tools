@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ActiveProfiles({"secret","rep"}) //pi_nuc rep
 @Disabled
-class TestSolverApplication {
+class AdmUtilSolverApplication {
 
 
 	@Autowired

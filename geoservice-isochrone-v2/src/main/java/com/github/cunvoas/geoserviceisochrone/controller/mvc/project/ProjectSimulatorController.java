@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -186,6 +187,7 @@ public class ProjectSimulatorController {
      * Delete a project.
      */
     @PostMapping("/delete")
+	@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER','ASSO_CONSTRIB')")
     public String deleteProject(@RequestParam("projectId") Long projectId, @ModelAttribute FormProjectSimulator form, Model model) {
         log.info("deleteProject() - projectId={}", projectId);
         ProjectSimulator ps = projectSimulatorService.getById(projectId);
@@ -219,6 +221,7 @@ public class ProjectSimulatorController {
      * @return JSON response or view name
      */
     @PostMapping("/compute")
+	@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER','ASSO_CONSTRIB')")
     public String compute(
             @ModelAttribute FormProjectSimulator form,
             @RequestParam(required = false) String sGeometry,

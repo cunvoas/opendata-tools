@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,6 +62,7 @@ public class PublishRestControler {
 	 * @return Réponse avec le statut HTTP 202 si lancé, ou 401/400 en cas d'erreur
 	 */
 	@PostMapping("/request")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
 	public ResponseEntity<ComputeJobResponse> request(@RequestBody ComputeJobRequest req) {
 		HttpStatus code= HttpStatus.OK;
 		

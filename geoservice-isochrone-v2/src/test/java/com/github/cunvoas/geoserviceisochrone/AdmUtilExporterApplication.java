@@ -32,7 +32,7 @@ cd /work/PERSO/github/gh_pages/geoservice-data
 git status
 
  */
-class TestExporterApplication {
+class AdmUtilExporterApplication {
 
 	@Autowired
 	private ServiceReadReferences serviceReadReferences;
