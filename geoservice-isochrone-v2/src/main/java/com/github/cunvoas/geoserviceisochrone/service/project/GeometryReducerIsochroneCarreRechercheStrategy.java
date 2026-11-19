@@ -61,7 +61,7 @@ public class GeometryReducerIsochroneCarreRechercheStrategy implements CarreRech
         Geometry reducedGeom = geometryPointReducer.reduceConvexHullToMax10Min6(projectSimulator.getShapeArea());
         List<Point> points = geometryPointReducer.getPoints(reducedGeom);
         
-        List<ProjectSimulatorIsochone> isochrones = List.of();
+        List<ProjectSimulatorIsochone> isochrones = new ArrayList<>();
         if (projectSimulator.getId()!=null) {
         	isochrones = projectSimulatorlIsochroneRepository.findByIdProjectSimulator(projectSimulator.getId());
         	isochrones.sort(COMP_INSTANCE);
