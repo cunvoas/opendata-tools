@@ -37,6 +37,11 @@ public interface NdviResultRepository extends JpaRepository<NdviResult, Long> {
 		BigDecimal getGndviMin();
 		BigDecimal getGndviMax();
 		BigDecimal getGndviStddev();
+		BigDecimal getSaviMean();
+		BigDecimal getSaviMin();
+		BigDecimal getSaviMax();
+		BigDecimal getSaviStddev();
+		Integer getSampleCount();
 		Date getAcquisitionDate();
 		Integer getAnnee();
 	}
@@ -82,6 +87,9 @@ public interface NdviResultRepository extends JpaRepository<NdviResult, Long> {
 					+ " m.ndre_max AS \"ndreMax\", m.ndre_stddev AS \"ndreStddev\","
 					+ " m.gndvi_mean AS \"gndviMean\", m.gndvi_min AS \"gndviMin\","
 					+ " m.gndvi_max AS \"gndviMax\", m.gndvi_stddev AS \"gndviStddev\","
+					+ " m.savi_mean AS \"saviMean\", m.savi_min AS \"saviMin\","
+					+ " m.savi_max AS \"saviMax\", m.savi_stddev AS \"saviStddev\","
+					+ " m.sample_count AS \"sampleCount\","
 					+ " m.period_end AS \"acquisitionDate\", pac.annee AS \"annee\""
 					+ " FROM ndvi_result m"
 					+ " JOIN park_area_computed pac ON pac.id = m.park_area_computed_id"
@@ -108,6 +116,9 @@ public interface NdviResultRepository extends JpaRepository<NdviResult, Long> {
 					+ " m.ndre_max AS \"ndreMax\", m.ndre_stddev AS \"ndreStddev\","
 					+ " m.gndvi_mean AS \"gndviMean\", m.gndvi_min AS \"gndviMin\","
 					+ " m.gndvi_max AS \"gndviMax\", m.gndvi_stddev AS \"gndviStddev\","
+					+ " m.savi_mean AS \"saviMean\", m.savi_min AS \"saviMin\","
+					+ " m.savi_max AS \"saviMax\", m.savi_stddev AS \"saviStddev\","
+					+ " m.sample_count AS \"sampleCount\","
 					+ " m.period_end AS \"acquisitionDate\", pac.annee AS \"annee\""
 					+ " FROM ndvi_result m"
 					+ " JOIN park_area_computed pac ON pac.id = m.park_area_computed_id"
@@ -138,6 +149,9 @@ public interface NdviResultRepository extends JpaRepository<NdviResult, Long> {
 					+ " m.ndre_max AS \"ndreMax\", m.ndre_stddev AS \"ndreStddev\","
 					+ " m.gndvi_mean AS \"gndviMean\", m.gndvi_min AS \"gndviMin\","
 					+ " m.gndvi_max AS \"gndviMax\", m.gndvi_stddev AS \"gndviStddev\","
+					+ " m.savi_mean AS \"saviMean\", m.savi_min AS \"saviMin\","
+					+ " m.savi_max AS \"saviMax\", m.savi_stddev AS \"saviStddev\","
+					+ " m.sample_count AS \"sampleCount\","
 					+ " m.period_end AS \"acquisitionDate\", pac.annee AS \"annee\""
 					+ " FROM ndvi_result m"
 					+ " JOIN park_area_computed pac ON pac.id = m.park_area_computed_id"

@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.NdviStatistics;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.VegetationEvaluator;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.VegetationEvaluator.VegetationEvaluation;
 import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository.NdviSummaryProjection;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
@@ -27,10 +30,39 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 public class NdviController {
 
 	/** Une mesure NDVI de parc. */
+	/**
+	 * Résumé NDVI d'un parc : les quatre indices avec leur moyenne, min, max et écart-type,
+	 * et l'évaluation de végétation qui en découle.
+	 *
+	 * @param parkId          identifiant du parc
+	 * @param name            nom du parc
+	 * @param surface         surface de la zone
+	 * @param ndviMean        NDVI moyen
+	 * @param ndviMin         NDVI minimal
+	 * @param ndviMax         NDVI maximal
+	 * @param ndviStddev      écart-type du NDVI
+	 * @param ndreMean        NDRE moyen
+	 * @param ndreMin         NDRE minimal
+	 * @param ndreMax         NDRE maximal
+	 * @param ndreStddev      écart-type du NDRE
+	 * @param gndviMean       GNDVI moyen
+	 * @param gndviMin        GNDVI minimal
+	 * @param gndviMax        GNDVI maximal
+	 * @param gndviStddev     écart-type du GNDVI
+	 * @param saviMean        SAVI moyen
+	 * @param saviMin         SAVI minimal
+	 * @param saviMax         SAVI maximal
+	 * @param saviStddev      écart-type du SAVI
+	 * @param evaluation      évaluation de végétation (recouvrement, score, confiance, ...)
+	 * @param acquisitionDate date d'acquisition de la mesure
+	 * @param annee           année de calcul
+	 */
 	public record NdviSummary(String parkId, String name, BigDecimal surface,
 			BigDecimal ndviMean, BigDecimal ndviMin, BigDecimal ndviMax, BigDecimal ndviStddev,
 			BigDecimal ndreMean, BigDecimal ndreMin, BigDecimal ndreMax, BigDecimal ndreStddev,
 			BigDecimal gndviMean, BigDecimal gndviMin, BigDecimal gndviMax, BigDecimal gndviStddev,
+			BigDecimal saviMean, BigDecimal saviMin, BigDecimal saviMax, BigDecimal saviStddev,
+			VegetationEvaluation evaluation,
 			String acquisitionDate, Integer annee) {
 	}
 
@@ -108,7 +140,7 @@ public class NdviController {
 		return new NdviSummaries(target, total, parks.size(), latest, parks);
 	}
 
-	private static NdviSummary toSummary(NdviSummaryProjection projection) {
+	static NdviSummary toSummary(NdviSummaryProjection projection) {
 		return new NdviSummary(
 				String.valueOf(projection.getParkId()),
 				projection.getName(),
@@ -125,8 +157,31 @@ public class NdviController {
 				projection.getGndviMin(),
 				projection.getGndviMax(),
 				projection.getGndviStddev(),
+				projection.getSaviMean(),
+				projection.getSaviMin(),
+				projection.getSaviMax(),
+				projection.getSaviStddev(),
+				VegetationEvaluator.evaluate(toStatistics(projection)),
 				formatDate(projection.getAcquisitionDate()),
 				projection.getAnnee());
+	}
+
+	private static NdviStatistics toStatistics(NdviSummaryProjection projection) {
+		return new NdviStatistics(
+				index(projection.getNdviMean(), projection.getNdviMin(), projection.getNdviMax(), projection.getNdviStddev()),
+				index(projection.getNdreMean(), projection.getNdreMin(), projection.getNdreMax(), projection.getNdreStddev()),
+				index(projection.getGndviMean(), projection.getGndviMin(), projection.getGndviMax(), projection.getGndviStddev()),
+				index(projection.getSaviMean(), projection.getSaviMin(), projection.getSaviMax(), projection.getSaviStddev()),
+				null,
+				null,
+				projection.getSampleCount());
+	}
+
+	private static NdviStatistics.IndexStatistics index(BigDecimal mean, BigDecimal min, BigDecimal max, BigDecimal stdDev) {
+		if (mean == null && min == null && max == null && stdDev == null) {
+			return null;
+		}
+		return new NdviStatistics.IndexStatistics(mean, min, max, stdDev);
 	}
 
 	private static String formatDate(Date date) {

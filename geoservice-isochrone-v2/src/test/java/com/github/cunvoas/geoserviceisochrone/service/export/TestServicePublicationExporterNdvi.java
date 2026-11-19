@@ -128,8 +128,25 @@ class TestServicePublicationExporterNdvi {
 		List<NdviSummary> parks = Arrays.stream(parkNames)
 				.map(name -> new NdviSummary("1", name, new BigDecimal("1200"), new BigDecimal("0.5"),
 						new BigDecimal("0.1"), new BigDecimal("0.9"), new BigDecimal("0.2"),
-						null, null, null, null, null, null, null, null, "2025-06-16", 2021))
+						null, null, null, null, null, null, null, null,
+						null, null, null, null,
+						new com.github.cunvoas.geoserviceisochrone.extern.ndvi.VegetationEvaluator.VegetationEvaluation(
+								"Couvert dense / Strate arborée ou parc mature", 42.0, "Élevée",
+								"Normal", "Homogène", false),
+						"2025-06-16", 2021))
 				.toList();
 		return new NdviSummaries(2021, total, withNdvi, withNdvi == 0 ? null : "2025-06-16", parks);
+	}
+
+	@Test
+	void exportedFileCarriesTheFourIndicesAndTheirEvaluation() throws Exception {
+		stubLilleWithMeasuresRoubaixWithout();
+
+		tested.writeNdviJson(com2co, 2021);
+
+		String json = Files.readString(tempDir.resolve("data/ndvi/1/59350/ndvi_2021_59350.json"));
+		assertTrue(json.contains("\"saviMean\""), "le SAVI doit être exporté");
+		assertTrue(json.contains("\"evaluation\""), "l'évaluation de végétation doit être exportée");
+		assertTrue(json.contains("\"confiance\""), "le niveau de confiance doit être exporté");
 	}
 }

@@ -120,6 +120,7 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
                 index("0.42", "0.10", "0.80", "0.05"),
                 index("0.31", "0.08", "0.60", "0.04"),
                 index("0.55", "0.20", "0.90", "0.06"),
+                index("0.63", "0.15", "1.20", "0.07"),
                 new Date(3000L), new Date(2000L), 150);
     }
 
@@ -149,6 +150,10 @@ class NdviBatchJobServiceTest extends BaseUnitTest {
         assertEquals(new BigDecimal("0.42"), result.getNdviMean());
         assertEquals(new BigDecimal("0.31"), result.getNdreMean());
         assertEquals(new BigDecimal("0.55"), result.getGndviMean());
+        assertEquals(new BigDecimal("0.63"), result.getSaviMean());
+        assertEquals(new BigDecimal("0.15"), result.getSaviMin());
+        assertEquals(new BigDecimal("1.20"), result.getSaviMax());
+        assertEquals(new BigDecimal("0.07"), result.getSaviStddev());
     }
 
     @Test

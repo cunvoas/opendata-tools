@@ -35,13 +35,15 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Composant d'intégration avec l'API Statistical de Copernicus Data Space Ecosystem (CDSE).
- * Récupère les statistiques de trois indices Sentinel-2 (moyenne, min, max, écart-type)
- * d'un polygone de parc : NDVI, NDRE et GNDVI.
+ * Récupère les statistiques de quatre indices Sentinel-2 (moyenne, min, max, écart-type)
+ * d'un polygone de parc : NDVI, NDRE, GNDVI et SAVI.
  *
- * <p>Les trois indices sont calculés dans le même appel : le NDVI (B08/B04) mesure la
+ * <p>Les quatre indices sont calculés dans le même appel : le NDVI (B08/B04) mesure la
  * vigueur, le NDRE (B08/B05) reste sensible dans les couverts denses où le NDVI sature,
- * et le GNDVI (B08/B03) suit la concentration en chlorophylle. Le capteur MSI de
- * Sentinel-2 fournit les bandes B03 et B05 dont ces deux indices ont besoin.</p>
+ * le GNDVI (B08/B03) suit la concentration en chlorophylle et le SAVI (Soil-Adjusted Vegetation Index,
+ * B08/B04 avec correction du sol L = 0,5) limite l'influence de la réflectance du sol sur les
+ * couverts clairsemés. Le capteur MSI de Sentinel-2 fournit les bandes B03 et B05
+ * dont ces indices ont besoin.</p>
  *
  * <p>Le résultat porte aussi la période d'agrégation et le nombre de pixels valides :
  * ces métadonnées sont conservées dans la table {@code ndvi_result}, car le
@@ -67,9 +69,10 @@ public class ClientCopernicusNdvi {
     private static final Duration TOKEN_EXPIRY_MARGIN = Duration.ofSeconds(30);
 
     /**
-     * NDVI (B08/B04), NDRE (B08/B05) et GNDVI (B08/B03) calculés dans le même appel.
+     * NDVI (B08/B04), NDRE (B08/B05), GNDVI (B08/B03) et SAVI (B08/B04 corrigé du sol)
+     * calculés dans le même appel.
      * La sortie est demandée à 10 m : Sentinel Hub rééchantillonne B03 (10 m) et B05 (20 m)
-     * sur cette grille, donc les trois indices sont comparables pixel à pixel.
+     * sur cette grille, donc les quatre indices sont comparables pixel à pixel.
      * Pixels nuageux, saturés, ombres et eau exclus via le masque SCL.
      */
     private static final String VEGETATION_INDICES_EVALSCRIPT = """
@@ -81,6 +84,7 @@ public class ClientCopernicusNdvi {
                   { id: "ndvi", bands: 1, sampleType: "FLOAT32" },
                   { id: "ndre", bands: 1, sampleType: "FLOAT32" },
                   { id: "gndvi", bands: 1, sampleType: "FLOAT32" },
+                  { id: "savi", bands: 1, sampleType: "FLOAT32" },
                   { id: "dataMask", bands: 1 }
                 ]
               };
@@ -89,12 +93,13 @@ public class ClientCopernicusNdvi {
               var ndvi = (s.B08 - s.B04) / (s.B08 + s.B04);
               var ndre = (s.B08 - s.B05) / (s.B08 + s.B05);
               var gndvi = (s.B08 - s.B03) / (s.B08 + s.B03);
+              var savi = ((s.B08 - s.B04) / (s.B08 + s.B04 + 0.5)) * 1.5;
               var valid = s.dataMask === 1
                   && (s.B04 + s.B08) !== 0
                   && (s.B05 + s.B08) !== 0
                   && (s.B03 + s.B08) !== 0
                   && [1, 3, 6, 8, 9, 10].indexOf(s.SCL) === -1;
-              return { ndvi: [ndvi], ndre: [ndre], gndvi: [gndvi], dataMask: [valid ? 1 : 0] };
+              return { ndvi: [ndvi], ndre: [ndre], gndvi: [gndvi], savi: [savi], dataMask: [valid ? 1 : 0] };
             }
             """;
 
@@ -304,12 +309,14 @@ public class ClientCopernicusNdvi {
         }
         for (int i = data.size() - 1; i >= 0; i--) {
             JsonNode item = data.get(i);
-            JsonNode stats = item.path("outputs").path("ndvi").path("bands").path("B0").path("stats");
             NdviStatistics.IndexStatistics ndvi = toIndexStatistics(item, "ndvi");
             NdviStatistics.IndexStatistics ndre = toIndexStatistics(item, "ndre");
             NdviStatistics.IndexStatistics gndvi = toIndexStatistics(item, "gndvi");
-            if (stats.path("sampleCount").asInt(0) > 0
-                    && (ndvi != null || ndre != null || gndvi != null)) {
+            NdviStatistics.IndexStatistics savi = toIndexStatistics(item, "savi");
+            // les indices partagent la même grille : le premier disponible donne le nombre de pixels
+            int sampleCount = sampleCount(item, "ndvi", "ndre", "gndvi", "savi");
+            if (sampleCount > 0
+                    && (ndvi != null || ndre != null || gndvi != null || savi != null)) {
                 JsonNode interval = item.path("interval");
                 // La période retournée est conservée pour l'historique : elle permet
                 // de rattacher l'observation à la bonne année lors d'une reventilation.
@@ -317,12 +324,24 @@ public class ClientCopernicusNdvi {
                         ndvi,
                         ndre,
                         gndvi,
+                        savi,
                         toDate(interval.path("to").asText(null)),
                         toDate(interval.path("from").asText(null)),
-                        stats.path("sampleCount").asInt(0)));
+                        sampleCount));
             }
         }
         return Optional.empty();
+    }
+
+    private static int sampleCount(JsonNode item, String... indices) {
+        for (String index : indices) {
+            JsonNode value = item.path("outputs").path(index).path("bands").path("B0").path("stats")
+                    .path("sampleCount");
+            if (value.isNumber() && value.asInt() > 0) {
+                return value.asInt();
+            }
+        }
+        return 0;
     }
 
     private static NdviStatistics.IndexStatistics toIndexStatistics(JsonNode item, String index) {

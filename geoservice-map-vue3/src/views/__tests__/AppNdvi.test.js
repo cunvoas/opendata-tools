@@ -32,7 +32,7 @@ const header = (wrapper, label) =>
 const sortBy = (wrapper, label) => header(wrapper, label).find('button').trigger('click');
 const rowOf = (wrapper, name) =>
   detailTable(wrapper).findAll('tbody tr').find((tr) => tr.find('th').text() === name);
-const categoryOf = (wrapper, name) => rowOf(wrapper, name).findAll('td')[2].text();
+const categoryOf = (wrapper, name) => rowOf(wrapper, name).findAll('td')[5].text();
 const chartRows = (wrapper) => wrapper.findAll('div[role="group"] > div').map((row) => {
   const count = row.find('span.w-10');
   return {
@@ -333,7 +333,7 @@ describe('AppNdvi', () => {
       const wrapper = await mountWith();
 
       expect(parkNames(wrapper)).toEqual(['Citadelle', 'Parc A', 'Parc B', 'Parc C']);
-      expect(header(wrapper, 'NDVI moyen').attributes('aria-sort')).toBe('descending');
+      expect(header(wrapper, 'NDVI').attributes('aria-sort')).toBe('descending');
       expect(detailTable(wrapper).findAll('[aria-sort]')).toHaveLength(1);
     });
 
@@ -343,7 +343,7 @@ describe('AppNdvi', () => {
       await sortBy(wrapper, 'Surface');
       expect(parkNames(wrapper)).toEqual(['Parc C', 'Parc B', 'Parc A', 'Citadelle']);
       expect(header(wrapper, 'Surface').attributes('aria-sort')).toBe('ascending');
-      expect(header(wrapper, 'NDVI moyen').attributes('aria-sort')).toBeUndefined();
+      expect(header(wrapper, 'NDVI').attributes('aria-sort')).toBeUndefined();
 
       await sortBy(wrapper, 'Surface');
       expect(parkNames(wrapper)).toEqual(['Citadelle', 'Parc A', 'Parc B', 'Parc C']);
@@ -370,18 +370,18 @@ describe('AppNdvi', () => {
 
     it('garde les valeurs absentes en fin de tableau dans les deux sens', async () => {
       const wrapper = await mountWith([
-        { ...payload.parks[0], parkId: '1', name: 'Sans min A', ndviMin: null },
-        { ...payload.parks[1], parkId: '2', name: 'Min 0.2', ndviMin: 0.2 },
-        { ...payload.parks[2], parkId: '3', name: 'Sans min B', ndviMin: null },
-        { ...payload.parks[3], parkId: '4', name: 'Min 0.1', ndviMin: 0.1 },
-        { ...payload.parks[0], parkId: '5', name: 'Sans min C', ndviMin: null }
+        { ...payload.parks[0], parkId: '1', name: 'Sans SAVI A', saviMean: null },
+        { ...payload.parks[1], parkId: '2', name: 'SAVI 0.2', saviMean: 0.2 },
+        { ...payload.parks[2], parkId: '3', name: 'Sans SAVI B', saviMean: null },
+        { ...payload.parks[3], parkId: '4', name: 'SAVI 0.1', saviMean: 0.1 },
+        { ...payload.parks[0], parkId: '5', name: 'Sans SAVI C', saviMean: null }
       ]);
-      const absents = ['Sans min A', 'Sans min B', 'Sans min C'];
+      const absents = ['Sans SAVI A', 'Sans SAVI B', 'Sans SAVI C'];
 
-      await sortBy(wrapper, 'Min');
-      expect(parkNames(wrapper)).toEqual(['Min 0.1', 'Min 0.2', ...absents]);
-      await sortBy(wrapper, 'Min');
-      expect(parkNames(wrapper)).toEqual(['Min 0.2', 'Min 0.1', ...absents]);
+      await sortBy(wrapper, 'SAVI');
+      expect(parkNames(wrapper)).toEqual(['SAVI 0.1', 'SAVI 0.2', ...absents]);
+      await sortBy(wrapper, 'SAVI');
+      expect(parkNames(wrapper)).toEqual(['SAVI 0.2', 'SAVI 0.1', ...absents]);
     });
 
     it('annonce le tri aux lecteurs d’écran, sans message au chargement', async () => {
@@ -432,7 +432,7 @@ describe('AppNdvi', () => {
 
       const fromColumn = {};
       detailTable(wrapper).findAll('tbody tr').forEach((tr) => {
-        const category = tr.findAll('td')[2].text();
+        const category = tr.findAll('td')[5].text();
         fromColumn[category] = (fromColumn[category] || 0) + 1;
       });
       chartRows(wrapper).forEach((row) => {
@@ -493,7 +493,7 @@ describe('AppNdvi', () => {
       localStorage.setItem('colorblindMode', 'true');
       const wrapper = await mountWith([{ ...payload.parks[0], parkId: '1', name: 'Dense', ndviMean: 0.6 }]);
 
-      const swatch = rowOf(wrapper, 'Dense').find('td span[aria-hidden="true"]');
+      const swatch = rowOf(wrapper, 'Dense').find('td .ndvi-swatch');
       expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].colorDaltonien, 0.5)));
       expect(chartRows(wrapper)[3].bar.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].colorDaltonien, 0.5)));
     });
@@ -504,9 +504,9 @@ describe('AppNdvi', () => {
         { ...payload.parks[1], parkId: '2', name: 'Sans mesure', ndviMean: null }
       ]);
 
-      const swatch = rowOf(wrapper, 'Dense').find('td span[aria-hidden="true"]');
+      const swatch = rowOf(wrapper, 'Dense').find('td .ndvi-swatch');
       expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].color, 0.5)));
-      expect(rowOf(wrapper, 'Sans mesure').find('td span[aria-hidden="true"]').exists()).toBe(false);
+      expect(rowOf(wrapper, 'Sans mesure').find('td .ndvi-swatch').exists()).toBe(false);
     });
 
     it('affiche N/A quand le NDVI moyen est absent', async () => {
@@ -518,11 +518,11 @@ describe('AppNdvi', () => {
     it('se trie comme le NDVI moyen', async () => {
       const wrapper = await mountWith();
 
-      await sortBy(wrapper, 'Catégorie NDVI');
+      await sortBy(wrapper, 'Catégorisation');
       expect(parkNames(wrapper)).toEqual(['Parc C', 'Parc B', 'Parc A', 'Citadelle']);
-      expect(header(wrapper, 'Catégorie NDVI').attributes('aria-sort')).toBe('ascending');
+      expect(header(wrapper, 'Catégorisation').attributes('aria-sort')).toBe('ascending');
 
-      await sortBy(wrapper, 'Catégorie NDVI');
+      await sortBy(wrapper, 'Catégorisation');
       expect(parkNames(wrapper)).toEqual(['Citadelle', 'Parc A', 'Parc B', 'Parc C']);
     });
   });
@@ -609,6 +609,60 @@ describe('AppNdvi', () => {
 
       expect(wrapper.find('#ndviFiltreParc').element.value).toBe('parc');
       expect(parkNames(wrapper)).toEqual(['Parc A', 'Parc B', 'Parc C']);
+    });
+  });
+
+  describe('indices et évaluation de végétation', () => {
+    it('affiche les colonnes SAVI, score et confiance', async () => {
+      const enriched = {
+        ...payload.parks[0],
+        ndreMean: 0.36,
+        gndviMean: 0.55,
+        saviMean: 0.5,
+        saviMin: 0.1,
+        saviMax: 0.7,
+        saviStddev: 0.1,
+        evaluation: { recouvrement: 'Couvert dense', scoreSante: 46.5, confiance: 'Élevée' }
+      };
+      const wrapper = await mountWith([enriched]);
+
+      expect(header(wrapper, 'NDRE').exists()).toBe(true);
+      expect(header(wrapper, 'GNDVI').exists()).toBe(true);
+      expect(header(wrapper, 'SAVI').exists()).toBe(true);
+      expect(header(wrapper, 'Score santé').exists()).toBe(true);
+      expect(header(wrapper, 'Confiance').exists()).toBe(true);
+
+      const row = rowOf(wrapper, 'Citadelle');
+      const cells = row.findAll('td');
+      // surface, NDVI, catégorie, NDRE, GNDVI, SAVI, score, confiance, acquisition
+      expect(cells[4].text()).toContain('0,500');
+      expect(cells[6].text()).toBe('46,5');
+      expect(cells[7].text()).toBe('Élevée');
+      expect(cells[4].attributes('aria-label')).toBe('SAVI\nCitadelle\nmoyenne 0,500\nmin 0,100\nmax 0,700\nécart-type 0,100');
+      expect(cells[4].find('strong').text()).toBe('SAVI');
+    });
+
+    it('affiche N/A quand l’évaluation manque', async () => {
+      const wrapper = await mountWith([{ ...payload.parks[1], saviMean: null, evaluation: null }]);
+
+      const row = rowOf(wrapper, 'Parc A');
+      expect(row.findAll('td')[6].text()).toBe('N/A');
+      expect(row.findAll('td')[7].text()).toBe('N/A');
+    });
+
+    it('limite l’infobulle aux statistiques disponibles', async () => {
+      const wrapper = await mountWith([{ ...payload.parks[0], ndviMin: null, ndviMax: null, ndviStddev: null }]);
+
+      const cell = rowOf(wrapper, 'Citadelle').findAll('td')[1];
+      expect(cell.attributes('aria-label')).toBe('NDVI\nCitadelle\nmoyenne 0,593');
+    });
+
+    it('indique l’absence de mesure dans l’infobulle', async () => {
+      const wrapper = await mountWith([{ ...payload.parks[1], saviMean: null }]);
+
+      const cell = rowOf(wrapper, 'Parc A').findAll('td')[4];
+      expect(cell.find('strong').text()).toBe('SAVI');
+      expect(cell.attributes('aria-label')).toBe('SAVI\nParc A\nMesure non disponible');
     });
   });
 });

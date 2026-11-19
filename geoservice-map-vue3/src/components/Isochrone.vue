@@ -275,6 +275,7 @@ import { ref } from 'vue';
 import { hexToRgba } from "../utils/color.js";
 import { getNdviCategory, getNdviColor, NDVI_CONTOUR_DALTONIEN } from "../utils/ndvi.js";
 import { interpreterStatistiquesNdvi } from "../utils/ndviInterpretation.js";
+import { availableIndices, vegetationEvaluation, anomalieLabel } from "../utils/vegetation.js";
 import { features, DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from "../utils/config.js";
 import axios from 'axios';
 import { buildShareableUrl, isActive } from '../utils/urlParams.js';
@@ -1048,8 +1049,44 @@ export default {
        if (diagnostic) {
          html += `<span style="display:block;margin-top:.3em">${diagnostic.replace(/\n/g, '<br>').replace('Diagnostic :', '<b>Diagnostic :</b>').replace('Structure spatiale :', '<b>Structure spatiale :</b>')}</span>`;
        }
+       html += this.buildVegetationHtml(properties);
        html += '</div>';
        return html;
+    },
+    /**
+     * Quatre indices (moyenne, min, max, écart-type) et évaluation de végétation.
+     * Les autres indices ne sont affichés que s'ils sont présents dans la mesure.
+     */
+    buildVegetationHtml(properties) {
+      let html = '';
+      availableIndices(properties)
+        .filter((stats) => stats.label !== 'NDVI')
+        .forEach((stats) => {
+          html += `<span style="display:block;margin-top:.3em"><b>${stats.label} moyen : ${this.formatNdviValue(stats.mean)}</b>`;
+          const bounds = [];
+          if (stats.min !== null && stats.max !== null) {
+            bounds.push(`min ${this.formatNdviValue(stats.min)}, max ${this.formatNdviValue(stats.max)}`);
+          }
+          if (stats.std !== null) bounds.push(`écart-type ${this.formatNdviValue(stats.std)}`);
+          if (bounds.length) html += ` (${bounds.join(', ')})`;
+          html += '</span>';
+        });
+
+      const evaluation = vegetationEvaluation(properties);
+      if (evaluation) {
+        html += '<span style="display:block;margin-top:.3em">';
+        if (evaluation.recouvrement) html += `Recouvrement : <b>${evaluation.recouvrement}</b><br>`;
+        if (evaluation.score !== null) {
+          let score = `Score santé : <b>${this.formatNdviValue(evaluation.score)} / 100</b>`;
+          if (evaluation.confiance) score += ` (confiance ${evaluation.confiance})`;
+          html += `${score}<br>`;
+        }
+        if (evaluation.diagnostic) html += `Diagnostic : ${evaluation.diagnostic}<br>`;
+        if (evaluation.homogeneite) html += `Homogénéité : ${evaluation.homogeneite}<br>`;
+        html += `Anomalie locale : ${anomalieLabel(evaluation.anomalie)}`;
+        html += '</span>';
+      }
+      return html;
     },
     showParkDetail(properties) {
       this._parkClicked = true;

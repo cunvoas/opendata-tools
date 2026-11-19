@@ -96,14 +96,44 @@
                         <tr v-for="park in sortedParks" :key="park.parkId">
                             <th scope="row" class="text-left pr-3 font-normal">{{ park.name }}</th>
                             <td class="pr-3">{{ formatNumber(park.surface, 0) }}</td>
-                            <td class="pr-3">{{ formatNumber(park.ndviMean, 3) }}</td>
+                            <td class="pr-3 relative group" tabindex="0" :aria-label="indexTooltip(park, 'ndvi')">
+                                {{ formatNumber(park.ndviMean, 3) }}
+                                <span class="hidden group-hover:block group-focus:block absolute z-20 left-0 top-full mt-1 w-max max-w-xs rounded bg-gray-900 text-white text-xs p-2 whitespace-pre-line shadow-lg"
+                                    aria-hidden="true">
+                                    <strong>{{ indexTooltipLines(park, 'ndvi').label }}</strong>
+                                    <template v-for="line in indexTooltipLines(park, 'ndvi').lines" :key="line"><br>{{ line }}</template>
+                                </span>
+                            </td>
+                            <td class="pr-3 relative group" tabindex="0" :aria-label="indexTooltip(park, 'ndre')">
+                                {{ formatNumber(park.ndreMean, 3) }}
+                                <span class="hidden group-hover:block group-focus:block absolute z-20 left-0 top-full mt-1 w-max max-w-xs rounded bg-gray-900 text-white text-xs p-2 whitespace-pre-line shadow-lg"
+                                    aria-hidden="true">
+                                    <strong>{{ indexTooltipLines(park, 'ndre').label }}</strong>
+                                    <template v-for="line in indexTooltipLines(park, 'ndre').lines" :key="line"><br>{{ line }}</template>
+                                </span>
+                            </td>
+                            <td class="pr-3 relative group" tabindex="0" :aria-label="indexTooltip(park, 'gndvi')">
+                                {{ formatNumber(park.gndviMean, 3) }}
+                                <span class="hidden group-hover:block group-focus:block absolute z-20 left-0 top-full mt-1 w-max max-w-xs rounded bg-gray-900 text-white text-xs p-2 whitespace-pre-line shadow-lg"
+                                    aria-hidden="true">
+                                    <strong>{{ indexTooltipLines(park, 'gndvi').label }}</strong>
+                                    <template v-for="line in indexTooltipLines(park, 'gndvi').lines" :key="line"><br>{{ line }}</template>
+                                </span>
+                            </td>
+                            <td class="pr-3 relative group" tabindex="0" :aria-label="indexTooltip(park, 'savi')">
+                                {{ formatNumber(park.saviMean, 3) }}
+                                <span class="hidden group-hover:block group-focus:block absolute z-20 left-0 top-full mt-1 w-max max-w-xs rounded bg-gray-900 text-white text-xs p-2 whitespace-pre-line shadow-lg"
+                                    aria-hidden="true">
+                                    <strong>{{ indexTooltipLines(park, 'savi').label }}</strong>
+                                    <template v-for="line in indexTooltipLines(park, 'savi').lines" :key="line"><br>{{ line }}</template>
+                                </span>
+                            </td>
                             <td class="pr-3 whitespace-nowrap">
-                                <span v-if="ndviColor(park.ndviMean)" class="inline-block w-3 h-3 mr-1 align-middle border border-gray-600"
+                                <span v-if="ndviColor(park.ndviMean)" class="ndvi-swatch inline-block w-3 h-3 mr-1 align-middle border border-gray-600"
                                     :style="{ backgroundColor: pastille(ndviColor(park.ndviMean)) }" aria-hidden="true" />{{ ndviCategory(park.ndviMean) }}
                             </td>
-                            <td class="pr-3">{{ formatNumber(park.ndviMin, 3) }}</td>
-                            <td class="pr-3">{{ formatNumber(park.ndviMax, 3) }}</td>
-                            <td class="pr-3">{{ formatNumber(park.ndviStddev, 3) }}</td>
+                            <td class="pr-3">{{ formatScore(park.evaluation?.scoreSante) }}</td>
+                            <td class="pr-3">{{ park.evaluation?.confiance ?? 'N/A' }}</td>
                             <td class="pr-3">{{ formatDate(park.acquisitionDate) }}</td>
                         </tr>
                     </tbody>
@@ -116,6 +146,7 @@
 <script>
 import SearchLocation from '../components/SearchLocation.vue';
 import { NDVI_CATEGORIES, couleurCategorie, getNdviCategory } from '../utils/ndvi.js';
+import { VEGETATION_INDICES } from '../utils/vegetation.js';
 import { hexToRgba } from '../utils/color.js';
 import { DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from '../utils/config.js';
 
@@ -137,14 +168,18 @@ function currentCityInsee() {
     return new URLSearchParams(window.location.search).get('city');
 }
 
+// Une seule colonne par indice : la moyenne. Le détail (min, max, écart-type) est dans
+// l'infobulle de la valeur, pour garder le tableau lisible sur petit écran.
 const COLUMNS = [
     { key: 'name', label: 'Parc', type: 'text' },
     { key: 'surface', label: 'Surface (m²)', type: 'number' },
-    { key: 'ndviMean', label: 'NDVI moyen', type: 'number' },
-    { key: 'ndviCategory', label: 'Catégorie NDVI', type: 'number', field: 'ndviMean' },
-    { key: 'ndviMin', label: 'Min', type: 'number' },
-    { key: 'ndviMax', label: 'Max', type: 'number' },
-    { key: 'ndviStddev', label: 'Écart-type', type: 'number' },
+    { key: 'ndviMean', label: 'NDVI', type: 'number' },
+    { key: 'ndreMean', label: 'NDRE', type: 'number' },
+    { key: 'gndviMean', label: 'GNDVI', type: 'number' },
+    { key: 'saviMean', label: 'SAVI', type: 'number' },
+    { key: 'ndviCategory', label: 'Catégorisation', type: 'number', field: 'ndviMean' },
+    { key: 'vegetationScore', label: 'Score santé', type: 'number', field: 'evaluation.scoreSante' },
+    { key: 'vegetationConfiance', label: 'Confiance', type: 'text', field: 'evaluation.confiance' },
     { key: 'acquisitionDate', label: 'Acquisition', type: 'date' }
 ];
 const collator = new Intl.Collator('fr', { sensitivity: 'base', numeric: true });
@@ -363,6 +398,36 @@ export default {
             return new Intl.NumberFormat('fr-FR', {
                 minimumFractionDigits: digits,
                 maximumFractionDigits: digits
+            }).format(value);
+        },
+        // Infobulle d'une moyenne : type d'indice en première ligne (affiché en gras), puis les statistiques.
+        indexTooltipLines(park, prefix) {
+            const label = VEGETATION_INDICES.find((index) => index.prefix === prefix)?.label ?? prefix.toUpperCase();
+            // nom du parc juste après le type : sans lui, on ne sait plus de quel parc parle la bulle
+            const name = park?.name ? [String(park.name)] : [];
+            const mean = park?.[`${prefix}Mean`];
+            if (mean === null || mean === undefined) {
+                return { label, lines: [...name, 'Mesure non disponible'] };
+            }
+            const lines = [...name, `moyenne ${this.formatNumber(mean, 3)}`];
+            const min = park[`${prefix}Min`];
+            const max = park[`${prefix}Max`];
+            const std = park[`${prefix}Stddev`];
+            if (min !== null && min !== undefined) lines.push(`min ${this.formatNumber(min, 3)}`);
+            if (max !== null && max !== undefined) lines.push(`max ${this.formatNumber(max, 3)}`);
+            if (std !== null && std !== undefined) lines.push(`écart-type ${this.formatNumber(std, 3)}`);
+            return { label, lines };
+        },
+        // Version texte (une ligne par statistique) pour l'alternative non visuelle.
+        indexTooltip(park, prefix) {
+            const { label, lines } = this.indexTooltipLines(park, prefix);
+            return [label, ...lines].join('\n');
+        },
+        formatScore(value) {
+            if (value === null || value === undefined) return 'N/A';
+            return new Intl.NumberFormat('fr-FR', {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1
             }).format(value);
         },
         formatDate(value) {
