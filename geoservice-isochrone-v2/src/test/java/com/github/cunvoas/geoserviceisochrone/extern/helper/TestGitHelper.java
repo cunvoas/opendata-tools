@@ -65,6 +65,7 @@ class TestGitHelper {
 		// Set credentials
 		ReflectionTestUtils.setField(tested, "username", "testuser");
 		ReflectionTestUtils.setField(tested, "token", "testtoken");
+		ReflectionTestUtils.setField(tested, "publishGeoData", true);
 
 		// Mock Git.open to return our mock
 		try (MockedStatic<Git> gitStatic = mockStatic(Git.class)) {
@@ -151,6 +152,7 @@ class TestGitHelper {
 
 		ReflectionTestUtils.setField(tested, "username", "testuser");
 		ReflectionTestUtils.setField(tested, "token", "testtoken");
+		ReflectionTestUtils.setField(tested, "publishGeoData", true);
 
 		try (MockedStatic<Git> gitStatic = mockStatic(Git.class)) {
 			gitStatic.when(() -> Git.open(any(File.class))).thenReturn(gitMock);

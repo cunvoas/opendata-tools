@@ -4,41 +4,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.junit.jupiter.api.Disabled;
 
-import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJob;
-import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
-
-@SpringBootTest
-@ActiveProfiles({"pi_nuc"})
-@DisplayName("Tests pour ComputeCarreServiceV3")
+@DisplayName("Tests des calculs de répartition de population (ComputeCarreServiceV3)")
 class TestComputeServiceV3 {
 
-	@Autowired
-	private ComputeCarreServiceV3 tested;
-	
-
+	/**
+	 * Le calcul complet d'un carreau (test_computeCarreByComputeJob) nécessite un
+	 * jeu de données de production et la propriété application.feature-flipping.carre200m-impl=v3.
+	 * Seuls les calculs unitaires sont couverts ici.
+	 */
 	@Test
-//	@Disabled
-	@DisplayName("calcul de surface d'un carreau: test_computeCarreByComputeJob")
+	@Disabled("nécessite les données INSEE de production et carre200m-impl=v3")
 	void test_computeCarreByComputeJob() {
-		ComputeJob job = new ComputeJob();
-		job.setDemand(new Date());
-		job.setStatus(ComputeJobStatusEnum.TO_PROCESS);
-		job.setCodeInsee("59350");
-		job.setAnnee(2021);
-		job.setIdInspire("CRS3035RES200mN3079600E3834800");
-		
-		Boolean ret = tested.computeCarreByComputeJob(job);
-		assertTrue(ret);
-		
 	}
 
 	@Test

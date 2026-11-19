@@ -15,15 +15,12 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import com.github.cunvoas.geoserviceisochrone.support.PostgisContextTestBase;
 
 import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceParcPrefecture;
 
 
-@SpringBootTest
-@ActiveProfiles({"prod","dev"})
-class TestReversePrefectureReverse {
+class TestReversePrefectureReverse extends PostgisContextTestBase {
 
 	
 	@Autowired
@@ -36,7 +33,7 @@ class TestReversePrefectureReverse {
 	 * @throws Exception
 	 */
 	@Test
-//	@Disabled
+	@Disabled("met à jour toutes les préfectures : réservé à un environnement avec le jeu de données complet")
 	void testUpdate() throws Exception {
 		serviceParcPrefecture.update();
 	}

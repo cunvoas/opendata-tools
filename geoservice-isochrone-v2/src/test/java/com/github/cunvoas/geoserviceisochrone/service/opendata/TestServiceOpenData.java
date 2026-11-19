@@ -1,67 +1,50 @@
 package com.github.cunvoas.geoserviceisochrone.service.opendata;
 
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.Disabled;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
-import com.github.cunvoas.geoserviceisochrone.model.opendata.Region;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
-import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
 
-@SpringBootTest
-@ActiveProfiles({"prod","dev"})
 class TestServiceOpenData {
-	
 
-	@Autowired
-	private CommunauteCommuneRepository ccRepo;
-	
-	@Autowired
-	private ServiceOpenData tested;
+	private final CommunauteCommuneRepository ccRepo = mock(CommunauteCommuneRepository.class);
+	private final ServiceOpenData tested = new ServiceOpenData();
 
-	@Autowired
-	private RegionRepository  regionRepository;
-
-	@Test
-	@Disabled
-	void testRegion() {
-		
-		String sRegions = "Auvergne-Rhône-Alpes, Bourgogne-Franche-Comté, Bretagne, Centre-Val de Loire, Corse, Grand-Est, Guadeloupe, Guyane, Hauts-de-France, Île-de-France, La Réunion, Martinique, Mayotte, Normandie, Nouvelle-Aquitaine, Occitanie, Pays de la Loire, Provence-Alpes-Côte d'Azur";
-		String[] tRegions = sRegions.split(", ");
-		
-		for (int i = 0; i < tRegions.length; i++) {
-			String sRegion = tRegions[i];
-			Region region = new Region() ;
-			region.setName(sRegion);
-			tested.save(region);
-		}
-	}
-	
-
-	@Test
-	@Disabled
-	void testComm2Co() {
-		
-		Region region = regionRepository.findById(9L).get();
-		CommunauteCommune com2co = new CommunauteCommune();
-		com2co.setName("Métropôle Européenne de Lille");
-		com2co.setRegion(region);
-		tested.save(com2co);
-	}
-	
-
-	@Test
-	void testEnvelopeBox() {
-		List<CommunauteCommune> ccs=ccRepo.findAll();
-		for (CommunauteCommune cc : ccs) {
-			tested.computeSquareOnMap(cc);
-			
-		}
+	TestServiceOpenData() {
+		ReflectionTestUtils.setField(tested, "communauteCommuneRepository", ccRepo);
 	}
 
+	@Test
+	void testEnvelopeBox_returns_null_when_communaute_is_unknown() {
+		CommunauteCommune cc = new CommunauteCommune();
+		cc.setId(1L);
+		when(ccRepo.findById(1L)).thenReturn(Optional.empty());
+
+		assertNull(tested.computeSquareOnMap(cc));
+		verify(ccRepo).updateGeoShape(1L);
+	}
+
+	@Test
+	void testEnvelopeBox_returns_low_shape_when_found() {
+		CommunauteCommune input = new CommunauteCommune();
+		input.setId(1L);
+		CommunauteCommune stored = new CommunauteCommune();
+		stored.setId(1L);
+		org.locationtech.jts.geom.Polygon shape =
+				new org.locationtech.jts.geom.GeometryFactory().createPolygon();
+		stored.setGeoShapeLow(shape);
+		when(ccRepo.findById(1L)).thenReturn(Optional.of(stored));
+
+		org.locationtech.jts.geom.Geometry ret = tested.computeSquareOnMap(input);
+
+		org.junit.jupiter.api.Assertions.assertSame(shape, ret);
+	}
 }
