@@ -73,8 +73,8 @@ describe('AppNdvi', () => {
     const wrapper = mount(AppNdvi);
     await flushPromises();
 
-    expect(wrapper.text()).toContain('Parcs avec NDVI');
-    expect(wrapper.text()).toContain('Parcs sans NDVI');
+    expect(wrapper.text()).toContain('Parcs avec mesure');
+    expect(wrapper.text()).toContain('Parcs sans mesure');
     expect(wrapper.text()).toContain('6 (60 %)');
     expect(wrapper.text()).toContain('10/06/2025');
     expect(wrapper.text()).toContain('Citadelle');
@@ -99,7 +99,7 @@ describe('AppNdvi', () => {
     const wrapper = mount(AppNdvi);
     await flushPromises();
 
-    expect(wrapper.text()).toContain('NDVI non disponible pour ce territoire et cette année');
+    expect(wrapper.text()).toContain('Mesures de végétation non disponibles pour ce territoire et cette année');
     expect(wrapper.text()).not.toContain('NDVI moyen');
   });
 
@@ -160,13 +160,13 @@ describe('AppNdvi', () => {
     expect(wrapper.text()).not.toContain('Commune :');
   });
 
-  it('affiche « NDVI non disponible », et non une erreur, quand aucun fichier n’est publié pour l’EPCI', async () => {
+  it('affiche « mesures de végétation non disponibles », et non une erreur, quand aucun fichier n’est publié pour l’EPCI', async () => {
     mockFetch({ ok: false, status: 404 });
     const wrapper = mount(AppNdvi);
     await flushPromises();
 
     expect(wrapper.find('[role="alert"]').exists()).toBe(false);
-    expect(wrapper.text()).toContain('NDVI non disponible pour ce territoire et cette année');
+    expect(wrapper.text()).toContain('Mesures de végétation non disponibles pour ce territoire et cette année');
   });
 
   describe('sélecteur de localisation', () => {

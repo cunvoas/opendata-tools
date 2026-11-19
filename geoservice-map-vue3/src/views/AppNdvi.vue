@@ -1,9 +1,17 @@
 <template>
     <div class="text-left align-top">
-        <h1 class="text-2xl font-bold my-4">NDVI des parcs et jardins</h1>
+        <h1 class="text-2xl font-bold my-4">Végétation des parcs et jardins</h1>
+        <p class="mb-2 max-w-3xl">
+            Quatre indices de végétation sont calculés sur chaque parc à partir des images satellite
+            Sentinel-2 : le <strong>NDVI</strong> (vigueur et densité de la végétation), le
+            <strong>NDRE</strong> (chlorophylle des canopées denses, là où le NDVI sature), le
+            <strong>GNDVI</strong> (concentration en chlorophylle et stress hydrique) et le
+            <strong>SAVI</strong> (NDVI corrigé de la réflectance du sol, utile en milieu urbain minéral).
+        </p>
         <p class="mb-4 max-w-3xl">
-            Indice de végétation par différence normalisée (NDVI) mesuré sur chaque parc à partir
-            d'images satellite Sentinel-2. Plus la valeur est élevée, plus la végétation est dense.
+            Le tableau affiche la moyenne de chaque indice ; le minimum, le maximum et l'écart-type
+            sont dans l'infobulle de la valeur. Le score de santé, le niveau de confiance et le
+            diagnostic physiologique croisent ces quatre indices.
         </p>
 
         <SearchLocation class="mb-4" @com2co-selected="selectEpci" @city-selected="selectCity"
@@ -27,27 +35,27 @@
         <div v-if="loading" role="status">Chargement en cours...</div>
 
         <div v-else-if="error" role="alert" class="border border-red-700 text-red-800 p-3 rounded">
-            Les mesures NDVI ne sont pas disponibles pour le moment. Veuillez réessayer plus tard.
+            Les mesures de végétation ne sont pas disponibles pour le moment. Veuillez réessayer plus tard.
         </div>
 
         <div v-else-if="!data || data.withNdvi === 0" role="status" class="border p-3 rounded">
-            NDVI non disponible pour ce territoire et cette année.
+            Mesures de végétation non disponibles pour ce territoire et cette année.
         </div>
 
         <template v-else>
             <table class="mb-6">
-                <caption class="sr-only">Couverture des mesures NDVI pour l'année {{ data.annee }}</caption>
+                <caption class="sr-only">Couverture des mesures de végétation pour l'année {{ data.annee }}</caption>
                 <tbody>
                     <tr>
                         <th scope="row" class="text-left pr-2 font-normal">Parcs calculés</th>
                         <td>{{ data.total }}</td>
                     </tr>
                     <tr>
-                        <th scope="row" class="text-left pr-2 font-normal">Parcs avec NDVI</th>
+                        <th scope="row" class="text-left pr-2 font-normal">Parcs avec mesure</th>
                         <td>{{ data.withNdvi }} ({{ coverage }} %)</td>
                     </tr>
                     <tr>
-                        <th scope="row" class="text-left pr-2 font-normal">Parcs sans NDVI</th>
+                        <th scope="row" class="text-left pr-2 font-normal">Parcs sans mesure</th>
                         <td>{{ withoutNdvi }} ({{ 100 - coverage }} %)</td>
                     </tr>
                     <tr>
@@ -58,6 +66,10 @@
             </table>
 
             <h2 class="text-xl font-bold mb-2">Répartition des parcs par NDVI moyen</h2>
+            <p class="mb-2 max-w-3xl">
+                Le NDVI sert de référence pour classer les parcs ; le NDRE, le GNDVI et le SAVI
+                affinent le diagnostic dans le tableau ci-dessous.
+            </p>
             <div class="mb-8 max-w-3xl" role="group" aria-label="Répartition des parcs par tranche de NDVI moyen">
                 <div v-for="bucket in distribution" :key="bucket.range" class="flex items-center gap-2 mb-1">
                     <span class="w-48 sm:w-96 shrink-0">{{ bucket.range }} : {{ bucket.label }}</span>

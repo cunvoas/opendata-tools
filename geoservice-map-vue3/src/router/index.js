@@ -55,8 +55,8 @@ const routes = [
     name: 'ndvi',
     component: () => import("../views/AppNdvi.vue"),
     meta: {
-      title: 'NDVI des parcs et jardins – MEL | Parcs & Jardins',
-      description: 'Indice de végétation NDVI mesuré par satellite sur les parcs et jardins de la Métropole Européenne de Lille : moyenne, minimum, maximum et écart-type par parc.',
+      title: 'Végétation des parcs et jardins – MEL | Parcs & Jardins',
+      description: 'Indices de végétation (NDVI, NDRE, GNDVI, SAVI) mesurés par satellite sur les parcs et jardins de la Métropole Européenne de Lille : moyenne, minimum, maximum et écart-type par parc.',
     },
   }] : []),
   {
