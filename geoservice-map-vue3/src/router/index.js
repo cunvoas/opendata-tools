@@ -5,6 +5,7 @@
 import { createWebHistory, createRouter } from "vue-router";
 import AppLanding from "../views/AppLanding.vue";
 import { features } from "../utils/config.js";
+import { routeDepuisParametres } from "../utils/territoires.js";
 
 //Vue.use(Router);
 
@@ -36,14 +37,26 @@ const routes = [
       description: 'Statistiques détaillées sur la superficie et la répartition des espaces verts par habitant dans la MEL. Comparaison avec les standards OMS (10 m² par habitant).',
     },
   },
+  {
+    // Une page par intercommunalité, adressée par son numéro Siren (stable après ré-import).
+    path: '/stats/epci/:siren',
+    name: 'statsEpci',
+    component: () => import("../views/AppStatistics.vue"),
+  },
+  {
+    // Une page par commune, adressée par son code officiel géographique (code Insee).
+    path: '/stats/:insee',
+    name: 'statsCommune',
+    component: () => import("../views/AppStatistics.vue"),
+  },
   // Écran NDVI derrière le flag VITE_FEATURE_NDVI : sans lui, /ndvi retombe sur la redirection vers /carte.
   ...(features.ndvi ? [{
     path: '/ndvi',
     name: 'ndvi',
     component: () => import("../views/AppNdvi.vue"),
     meta: {
-      title: 'NDVI des parcs et jardins – MEL | Parcs & Jardins',
-      description: 'Indice de végétation NDVI mesuré par satellite sur les parcs et jardins de la Métropole Européenne de Lille : moyenne, minimum, maximum et écart-type par parc.',
+      title: 'Végétation des parcs et jardins – MEL | Parcs & Jardins',
+      description: 'Indices de végétation (NDVI, NDRE, GNDVI, SAVI) mesurés par satellite sur les parcs et jardins de la Métropole Européenne de Lille : moyenne, minimum, maximum et écart-type par parc.',
     },
   }] : []),
   {
@@ -56,14 +69,13 @@ const routes = [
     },
   },
   {
+    // Page dédiée : la comparaison avec l'étude de l'INSEE a son URL, l'accueil n'en garde qu'un résumé.
     path: '/etude-insee',
-    name: 'appEtudeInsee',
+    name: 'etudeInsee',
     component: () => import("../views/AppEtudeInsee.vue"),
     meta: {
-      title: 'Étude de l\'INSEE sur l\'accès aux espaces verts | Parcs & Jardins',
-      description: 'Liens vers l\'étude de l\'INSEE sur l\'accès aux espaces verts dans les grands centres urbains et vers sa méthode.',
-      // Page sans contenu propre pour l'instant : à indexer une fois la comparaison rédigée.
-      robots: 'noindex, follow',
+      title: 'Étude INSEE et espaces verts : pourquoi les chiffres diffèrent',
+      description: 'Pourquoi nos chiffres d\'espaces verts par habitant diffèrent de ceux de l\'INSEE : périmètre, seuils OMS, mesure de l\'accès à pied et sources datées.',
     },
   },
   {
@@ -85,6 +97,13 @@ const router = createRouter({
   //history: createWebHistory(import.meta.env.VITE_APP_BASE_URL),
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+});
+
+// Anciens liens ?city=… / ?c2c=… : renvoyés vers l'adresse canonique du territoire.
+router.beforeEach((to) => {
+  if (to.name !== 'stats') return true;
+  const cible = routeDepuisParametres(to.query);
+  return cible ? { path: cible, replace: true } : true;
 });
 
 export default router;

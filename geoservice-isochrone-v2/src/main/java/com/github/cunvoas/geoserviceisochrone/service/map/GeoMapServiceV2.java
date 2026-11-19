@@ -42,6 +42,8 @@ import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonFeature;
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkArea;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviResult;
+import com.github.cunvoas.geoserviceisochrone.model.isochrone.NdviResultObjectType;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkAreaComputed;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkEntrance;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.ParkType;
@@ -65,6 +67,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 import com.github.cunvoas.geoserviceisochrone.repo.InseeCarre200mComputedV2Repository;
 import com.github.cunvoas.geoserviceisochrone.repo.IrisDataComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.ParkEntranceRepository;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.view.ParkProposalWorkView;
@@ -80,6 +83,9 @@ import com.github.cunvoas.geoserviceisochrone.repo.proposal.manual.ManualParkPro
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.manual.ManualParkProposalRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlWorkRepository;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.NdviStatistics;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.VegetationEvaluator;
+import com.github.cunvoas.geoserviceisochrone.extern.ndvi.VegetationEvaluator.VegetationEvaluation;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
@@ -179,6 +185,8 @@ public class GeoMapServiceV2 {
     private ParkEntranceRepository parkEntranceRepository;
     @Autowired
     private ParkAreaComputedRepository parkAreaComputedRepository;
+    @Autowired
+    private NdviResultRepository ndviResultRepository;
     @Autowired
     private ClientCopernicusNdvi clientCopernicusNdvi;
     @Autowired
@@ -570,6 +578,7 @@ public class GeoMapServiceV2 {
 									pv.setNdviAcquisitionDate(pac.getNdviAcquisitionDate());
 								});
 					}
+					applyVegetation(pv, pa);
 					
 					
     			}
@@ -641,6 +650,7 @@ public class GeoMapServiceV2 {
 									pv.setNdviAcquisitionDate(pac.getNdviAcquisitionDate());
 								});
 					}
+					applyVegetation(pv, pa);
 //					if (pa!=null && pa.getPolygon()!=null) {
 //						pv.setEntry(true);
 //					}
@@ -1109,6 +1119,111 @@ public class GeoMapServiceV2 {
 	}
 	
 	/**
+	 * Complète une vue de parc avec les quatre indices et l'évaluation de végétation,
+	 * à partir de la dernière mesure Copernicus persistée (source de vérité : ndvi_result).
+	 *
+	 * @param pv vue du parc
+	 * @param parkArea zone de parc
+	 */
+	private void applyVegetation(ParkGardenView pv, ParkArea parkArea) {
+		NdviResult latest = latestNdvi(parkArea == null ? null : parkArea.getId());
+		if (latest == null) {
+			return;
+		}
+		pv.setNdviMean(latest.getNdviMean());
+		pv.setNdviMin(latest.getNdviMin());
+		pv.setNdviMax(latest.getNdviMax());
+		pv.setNdviStddev(latest.getNdviStddev());
+		pv.setNdreMean(latest.getNdreMean());
+		pv.setNdreMin(latest.getNdreMin());
+		pv.setNdreMax(latest.getNdreMax());
+		pv.setNdreStddev(latest.getNdreStddev());
+		pv.setGndviMean(latest.getGndviMean());
+		pv.setGndviMin(latest.getGndviMin());
+		pv.setGndviMax(latest.getGndviMax());
+		pv.setGndviStddev(latest.getGndviStddev());
+		pv.setSaviMean(latest.getSaviMean());
+		pv.setSaviMin(latest.getSaviMin());
+		pv.setSaviMax(latest.getSaviMax());
+		pv.setSaviStddev(latest.getSaviStddev());
+		pv.setNdviAcquisitionDate(latest.getPeriodEnd());
+
+		VegetationEvaluation evaluation = VegetationEvaluator.evaluate(statistics(latest));
+		pv.setVegetationRecouvrement(evaluation.recouvrement());
+		pv.setVegetationScore(evaluation.scoreSante());
+		pv.setVegetationConfiance(evaluation.confiance());
+		pv.setVegetationDiagnostic(evaluation.diagnosticPhysiologique());
+		pv.setVegetationHomogeneite(evaluation.homogeneite());
+		pv.setVegetationAnomalie(evaluation.anomalieLocaleDetectee());
+	}
+
+	/**
+	 * Même complément pour les vues de type ParkView.
+	 *
+	 * @param pv vue du parc
+	 * @param parkAreaId identifiant de la zone de parc
+	 */
+	private void applyVegetation(ParkView pv, Long parkAreaId) {
+		NdviResult latest = latestNdvi(parkAreaId);
+		if (latest == null) {
+			return;
+		}
+		pv.setNdviMean(latest.getNdviMean());
+		pv.setNdviMin(latest.getNdviMin());
+		pv.setNdviMax(latest.getNdviMax());
+		pv.setNdviStddev(latest.getNdviStddev());
+		pv.setNdreMean(latest.getNdreMean());
+		pv.setNdreMin(latest.getNdreMin());
+		pv.setNdreMax(latest.getNdreMax());
+		pv.setNdreStddev(latest.getNdreStddev());
+		pv.setGndviMean(latest.getGndviMean());
+		pv.setGndviMin(latest.getGndviMin());
+		pv.setGndviMax(latest.getGndviMax());
+		pv.setGndviStddev(latest.getGndviStddev());
+		pv.setSaviMean(latest.getSaviMean());
+		pv.setSaviMin(latest.getSaviMin());
+		pv.setSaviMax(latest.getSaviMax());
+		pv.setSaviStddev(latest.getSaviStddev());
+		pv.setNdviAcquisitionDate(latest.getPeriodEnd());
+
+		VegetationEvaluation evaluation = VegetationEvaluator.evaluate(statistics(latest));
+		pv.setVegetationRecouvrement(evaluation.recouvrement());
+		pv.setVegetationScore(evaluation.scoreSante());
+		pv.setVegetationConfiance(evaluation.confiance());
+		pv.setVegetationDiagnostic(evaluation.diagnosticPhysiologique());
+		pv.setVegetationHomogeneite(evaluation.homogeneite());
+		pv.setVegetationAnomalie(evaluation.anomalieLocaleDetectee());
+	}
+
+	private NdviResult latestNdvi(Long parkAreaId) {
+		if (parkAreaId == null) {
+			return null;
+		}
+		List<NdviResult> results = ndviResultRepository
+				.findByObjectTypeAndParkAreaComputedIdOrderByPeriodEndAsc(
+						NdviResultObjectType.PARK_AREA_COMPUTED, parkAreaId);
+		return results == null || results.isEmpty() ? null : results.get(results.size() - 1);
+	}
+
+	private static NdviStatistics statistics(NdviResult result) {
+		return new NdviStatistics(
+				index(result.getNdviMean(), result.getNdviMin(), result.getNdviMax(), result.getNdviStddev()),
+				index(result.getNdreMean(), result.getNdreMin(), result.getNdreMax(), result.getNdreStddev()),
+				index(result.getGndviMean(), result.getGndviMin(), result.getGndviMax(), result.getGndviStddev()),
+				index(result.getSaviMean(), result.getSaviMin(), result.getSaviMax(), result.getSaviStddev()),
+				result.getPeriodEnd(),
+				result.getPeriodStart(),
+				result.getSampleCount());
+	}
+
+	private static NdviStatistics.IndexStatistics index(BigDecimal mean, BigDecimal min, BigDecimal max, BigDecimal stdDev) {
+		if (mean == null && min == null && max == null && stdDev == null) {
+			return null;
+		}
+		return new NdviStatistics.IndexStatistics(mean, min, max, stdDev);
+	}
+
+	/**
 	 * extraFeature.
 	 * @param pv DTO
 	 * @param pac ParkAreaComputed
@@ -1134,6 +1249,7 @@ public class GeoMapServiceV2 {
 			pv.setGndviMax(pac.getGndviMax());
 			pv.setGndviStddev(pac.getGndviStddev());
 			pv.setNdviAcquisitionDate(pac.getNdviAcquisitionDate());
+			applyVegetation(pv, pac.getId());
 			
 			//pv.setFillColor(this.getFillColorPark(pv, pac));
 		}

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -126,6 +127,7 @@ public class ParksPropositionController {
      * Compute park proposal for the selected commune.
      */
     @PostMapping("/compute")
+	@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER','ASSO_CONSTRIB')")
     public String compute(
             @ModelAttribute FormProposition form,
             Model model) {
@@ -180,6 +182,7 @@ public class ParksPropositionController {
      * Clear all proposals for the selected commune.
      */
     @PostMapping("/delete")
+	@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER','ASSO_CONSTRIB')")
     public String delete(@ModelAttribute FormProposition form, Model model) {
     	
     	

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +49,7 @@ public class ComputeJobRestControler {
 	private CityRepository cityRepository;
 
 	@PostMapping("/request")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER')")
 	public ResponseEntity<ComputeJobResponse> request(@RequestBody ComputeJobRequest req) {
 		HttpStatus code = HttpStatus.OK;
 
@@ -121,6 +123,7 @@ public class ComputeJobRestControler {
 	 * @return nombre de parcs relancés
 	 */
 	@PostMapping("/ndvi/request")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER')")
 	public ResponseEntity<ComputeJobResponse> requestNdvi(@RequestBody ComputeJobRequest req) {
 		if (!tokenManagement.isTokenValid(req.getToken())) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -154,6 +157,7 @@ public class ComputeJobRestControler {
 	 * Demande un calcul NDVI (sans force) pour un parc.
 	 */
 	@PostMapping("/ndvi/request/park")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER')")
 	public ResponseEntity<ComputeJobResponse> requestNdviForPark(@RequestBody ComputeJobRequest req) {
 		if (!tokenManagement.isTokenValid(req.getToken())) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

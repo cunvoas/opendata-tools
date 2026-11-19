@@ -9,6 +9,7 @@ import router from './router';
 import { getUrlParams, hasGeographicalParams } from './utils/urlParams.js'
 import { initVersionCheck } from './utils/versionCheck.js'
 import { applyRouteMeta } from './utils/seoMeta.js'
+import { metaRoute } from './utils/territoires.js'
 
 const app = createApp(HeaderAsso);
 
@@ -87,7 +88,7 @@ if ('serviceWorker' in navigator) {
 
 router.afterEach((to) => {
   // Titre, description et balises de partage de la route (capturés par le pré-rendu)
-  applyRouteMeta(document, to);
+  applyRouteMeta(document, metaRoute(to));
   // Log the page view to Matomo
   window._paq = window._paq || [];
   window._paq.push(['setCustomUrl', to.fullPath]);

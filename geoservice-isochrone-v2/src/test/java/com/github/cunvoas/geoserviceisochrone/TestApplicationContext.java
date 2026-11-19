@@ -1,19 +1,18 @@
 package com.github.cunvoas.geoserviceisochrone;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import com.github.cunvoas.geoserviceisochrone.support.PostgisContextTestBase;
+
 /**
- * Test de sanité pour vérifier que le contexte Spring se charge correctement.
+ * Test de sanité pour vérifier que le contexte Spring se charge correctement
+ * (PostGIS via Testcontainers, ignoré si Docker est absent).
  */
 @DisplayName("Tests d'intégration Spring - Sanité")
-@SpringBootTest
-@ActiveProfiles({"test"})
-class TestApplicationContext {
+class TestApplicationContext extends PostgisContextTestBase {
 
     @Test
     @DisplayName("le contexte Spring se charge sans erreur")

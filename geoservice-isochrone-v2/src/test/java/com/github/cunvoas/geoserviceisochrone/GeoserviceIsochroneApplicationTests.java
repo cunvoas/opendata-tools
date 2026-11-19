@@ -1,14 +1,13 @@
 package com.github.cunvoas.geoserviceisochrone;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class GeoserviceIsochroneApplicationTests {
+import com.github.cunvoas.geoserviceisochrone.support.PostgisContextTestBase;
+
+class GeoserviceIsochroneApplicationTests extends PostgisContextTestBase {
 
     @Test
     void contextLoads() {
-        // simply verifies that the Spring application context starts
+        // vérifie simplement que le contexte Spring démarre
     }
-
 }

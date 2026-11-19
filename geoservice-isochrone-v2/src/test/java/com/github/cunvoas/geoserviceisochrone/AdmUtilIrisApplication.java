@@ -25,7 +25,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ComputeIrisServiceIri
 @SpringBootTest
 @ActiveProfiles({"secret","rep"})
 @Disabled
-class TestIrisApplication {
+class AdmUtilIrisApplication {
 	
 	
 	@Autowired 

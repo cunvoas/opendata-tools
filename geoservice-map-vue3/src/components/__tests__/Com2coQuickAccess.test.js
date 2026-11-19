@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import Com2coQuickAccess from '../Com2coQuickAccess.vue'
 
@@ -109,7 +109,6 @@ describe('Com2coQuickAccess.vue', () => {
 
     it('gère window._paq si présent', async () => {
       const pushSpy = vi.fn()
-      const paqArray = { push: pushSpy }
       // Rendre _paq détectable par Array.isArray via un proxy tableau
       const realArray = []
       realArray.push = pushSpy

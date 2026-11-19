@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
@@ -320,6 +321,7 @@ public class EntranceControler {
 	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/mergeIsochrone")
+	@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER','ASSO_CONSTRIB')")
 	public String mergeIsochrone(@ModelAttribute FormParkEntranceDetail formDetail, Model model) {
 		// rebuild parent form context
 		FormParkEntrance form=new FormParkEntrance(formDetail);
@@ -339,6 +341,7 @@ public class EntranceControler {
 	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/editEntrance")
+	@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER','ASSO_CONSTRIB')")
 	public String saveEntrance(@ModelAttribute FormParkEntranceDetail formDetail, Model model) {
 		// rebuild parent form context
 		FormParkEntrance form=new FormParkEntrance(formDetail);

@@ -3,20 +3,18 @@ package com.github.cunvoas.geoserviceisochrone.service.export;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Polygon;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import com.github.cunvoas.geoserviceisochrone.support.PostgisContextTestBase;
 import org.springframework.util.Assert;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 
-@SpringBootTest
-@ActiveProfiles({"prod","dev"})
-class TestServicePublicationExporter {
+class TestServicePublicationExporter extends PostgisContextTestBase {
 
 	@Autowired
 	private ServicePublicationExporter tested;
 	
 	@Test
+	@org.junit.jupiter.api.Disabled("nécessite le jeu de données de production (communaute de communes id=1)")
 	void testGetCom2CoShape() {
 		CommunauteCommune c2c = new CommunauteCommune();
 		c2c.setId(1L);

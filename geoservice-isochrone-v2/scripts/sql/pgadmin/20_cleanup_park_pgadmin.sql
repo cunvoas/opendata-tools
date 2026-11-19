@@ -61,7 +61,7 @@ FROM h, cible c
 WHERE h.nom_key = c.nom_key
    OR (length(h.nom_key) > 3 AND c.nom_key LIKE h.nom_key || '%')
    OR (length(c.nom_key) > 3 AND h.nom_key LIKE c.nom_key || '%')
-ORDER BY h.identifiant;
+ORDER BY h.identifiant ASC;
 
 -- Cible effective : un park_area précis, ou tous ceux du parc_jardin.
 CREATE TEMP TABLE tmp_del_area ON COMMIT DROP AS

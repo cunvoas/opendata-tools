@@ -37,8 +37,8 @@ class OverpassRawParserTest {
     @Test
     void testParseElements_Way_withDemoGeoJson() throws Exception {
         List<ParkOverpass> results = new ArrayList<>();
-        try (InputStream in = getClass().getResourceAsStream("/overpass/01_way.geo.json")) {
-            assertNotNull(in, "demo.geo.json should be found in test resources");
+        try (InputStream in = getClass().getResourceAsStream("/overpass/01_way.raw.json")) {
+            assertNotNull(in, "01_way.raw.json should be found in test resources");
             parser.parseElements(in, results::add);
         }
         assertFalse(results.isEmpty(), "Should parse at least one ParkOverpass");
@@ -49,8 +49,8 @@ class OverpassRawParserTest {
     @Test
     void testParseElements_Relation_withDemoGeoJson() throws Exception {
         List<ParkOverpass> results = new ArrayList<>();
-        try (InputStream in = getClass().getResourceAsStream("/overpass/02_relation.geo.json")) {
-            assertNotNull(in, "demo.geo.json should be found in test resources");
+        try (InputStream in = getClass().getResourceAsStream("/overpass/02_relation.raw.json")) {
+            assertNotNull(in, "01_way.raw.json should be found in test resources");
             parser.parseElements(in, results::add);
         }
         assertFalse(results.isEmpty(), "Should parse at least one ParkOverpass");
@@ -61,9 +61,9 @@ class OverpassRawParserTest {
 
     @Test
     void testParseEntityFromPath_callsRepositorySave() throws Exception {
-        Path path = Path.of(getClass().getResource("/overpass/demo.geo.json").toURI());
+        Path path = Path.of(getClass().getResource("/overpass/demo.raw.json").toURI());
         parser.parseEntityFromPath(path);
-        verify(parkOverpassRepository, atLeastOnce()).save(any(ParkOverpass.class));
+        verify(parkOverpassRepository, atLeastOnce()).saveAll(any(java.util.List.class));
     }
 
     @Test
@@ -77,8 +77,8 @@ class OverpassRawParserTest {
                 latlon(0, 0)
         );
         double area = parser.geodeticArea(poly);
-        // Aire attendue ≈ 12364 km² (1.2364e7 m²)
-        assertTrue(area > 1.2e7 && area < 1.27e7, "Area should be close to 1.2364e7 m², got: " + area);
+        // Aire attendue ≈ 12 364 km², soit 1.2364e10 m²
+        assertTrue(area > 1.2e10 && area < 1.27e10, "Area should be close to 1.2364e10 m², got: " + area);
     }
 
     @Test

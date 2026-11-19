@@ -1,0 +1,581 @@
+{
+  "communes": [
+    {
+      "insee": "59350",
+      "id": "2878",
+      "nom": "Lille",
+      "population": 205789
+    },
+    {
+      "insee": "59599",
+      "id": "27137",
+      "nom": "Tourcoing",
+      "population": 102477
+    },
+    {
+      "insee": "59512",
+      "id": "27046",
+      "nom": "Roubaix",
+      "population": 98175
+    },
+    {
+      "insee": "59009",
+      "id": "2810",
+      "nom": "Villeneuve D Ascq",
+      "population": 59387
+    },
+    {
+      "insee": "59378",
+      "id": "2886",
+      "nom": "Marcq En Baroeul",
+      "population": 48423
+    },
+    {
+      "insee": "59650",
+      "id": "27159",
+      "nom": "Wattrelos",
+      "population": 43185
+    },
+    {
+      "insee": "59328",
+      "id": "23420",
+      "nom": "Lambersart",
+      "population": 31277
+    },
+    {
+      "insee": "59163",
+      "id": "10158",
+      "nom": "Croix",
+      "population": 28374
+    },
+    {
+      "insee": "59368",
+      "id": "10194",
+      "nom": "La Madeleine",
+      "population": 27731
+    },
+    {
+      "insee": "59017",
+      "id": "10138",
+      "nom": "Armentieres",
+      "population": 26849
+    },
+    {
+      "insee": "59646",
+      "id": "23587",
+      "nom": "Wasquehal",
+      "population": 25671
+    },
+    {
+      "insee": "59299",
+      "id": "2871",
+      "nom": "Hem",
+      "population": 24043
+    },
+    {
+      "insee": "59220",
+      "id": "23370",
+      "nom": "Faches Thumesnil",
+      "population": 22722
+    },
+    {
+      "insee": "59360",
+      "id": "23442",
+      "nom": "Loos",
+      "population": 22517
+    },
+    {
+      "insee": "59410",
+      "id": "10205",
+      "nom": "Mons En Baroeul",
+      "population": 21601
+    },
+    {
+      "insee": "59507",
+      "id": "23499",
+      "nom": "Ronchin",
+      "population": 21336
+    },
+    {
+      "insee": "59279",
+      "id": "26856",
+      "nom": "Halluin",
+      "population": 20226
+    },
+    {
+      "insee": "59367",
+      "id": "2883",
+      "nom": "Lys Lez Lannoy",
+      "population": 18311
+    },
+    {
+      "insee": "59421",
+      "id": "26960",
+      "nom": "Mouvaux",
+      "population": 16883
+    },
+    {
+      "insee": "59286",
+      "id": "28712",
+      "nom": "Haubourdin",
+      "population": 16540
+    },
+    {
+      "insee": "59648",
+      "id": "23593",
+      "nom": "Wattignies",
+      "population": 15952
+    },
+    {
+      "insee": "59527",
+      "id": "2920",
+      "nom": "St Andre Lez Lille",
+      "population": 15721
+    },
+    {
+      "insee": "59386",
+      "id": "28773",
+      "nom": "Marquette Lez Lille",
+      "population": 15060
+    },
+    {
+      "insee": "59508",
+      "id": "10222",
+      "nom": "Roncq",
+      "population": 14854
+    },
+    {
+      "insee": "59560",
+      "id": "28883",
+      "nom": "Seclin",
+      "population": 12834
+    },
+    {
+      "insee": "59152",
+      "id": "23323",
+      "nom": "Comines",
+      "population": 12610
+    },
+    {
+      "insee": "59090",
+      "id": "28552",
+      "nom": "Bondues",
+      "population": 11790
+    },
+    {
+      "insee": "59636",
+      "id": "2941",
+      "nom": "Wambrechies",
+      "population": 11298
+    },
+    {
+      "insee": "59426",
+      "id": "26968",
+      "nom": "Neuville En Ferrain",
+      "population": 11297
+    },
+    {
+      "insee": "59343",
+      "id": "23428",
+      "nom": "Lesquin",
+      "population": 10306
+    },
+    {
+      "insee": "59011",
+      "id": "26670",
+      "nom": "Annoeullin",
+      "population": 10136
+    },
+    {
+      "insee": "59339",
+      "id": "26922",
+      "nom": "Leers",
+      "population": 10053
+    },
+    {
+      "insee": "59143",
+      "id": "2838",
+      "nom": "La Chapelle D Armentieres",
+      "population": 9503
+    },
+    {
+      "insee": "59317",
+      "id": "23414",
+      "nom": "Houplines",
+      "population": 9009
+    },
+    {
+      "insee": "59352",
+      "id": "28760",
+      "nom": "Linselles",
+      "population": 8660
+    },
+    {
+      "insee": "59457",
+      "id": "10212",
+      "nom": "Perenchies",
+      "population": 8590
+    },
+    {
+      "insee": "59653",
+      "id": "23598",
+      "nom": "Wavrin",
+      "population": 8579
+    },
+    {
+      "insee": "59202",
+      "id": "2852",
+      "nom": "Erquinghem Lys",
+      "population": 6968
+    },
+    {
+      "insee": "59482",
+      "id": "27031",
+      "nom": "Quesnoy Sur Deule",
+      "population": 6749
+    },
+    {
+      "insee": "59052",
+      "id": "23254",
+      "nom": "Bauvin",
+      "population": 6082
+    },
+    {
+      "insee": "59524",
+      "id": "23514",
+      "nom": "Sainghin En Weppes",
+      "population": 5906
+    },
+    {
+      "insee": "59553",
+      "id": "27087",
+      "nom": "Santes",
+      "population": 5864
+    },
+    {
+      "insee": "59278",
+      "id": "28702",
+      "nom": "Hallennes Lez Haubourdin",
+      "population": 5653
+    },
+    {
+      "insee": "59051",
+      "id": "2821",
+      "nom": "La Bassee",
+      "population": 5609
+    },
+    {
+      "insee": "59566",
+      "id": "23534",
+      "nom": "Sequedin",
+      "population": 5599
+    },
+    {
+      "insee": "59477",
+      "id": "28822",
+      "nom": "Provin",
+      "population": 5471
+    },
+    {
+      "insee": "59656",
+      "id": "28942",
+      "nom": "Wervicq Sud",
+      "population": 5423
+    },
+    {
+      "insee": "59044",
+      "id": "23252",
+      "nom": "Baisieux",
+      "population": 5293
+    },
+    {
+      "insee": "59098",
+      "id": "2826",
+      "nom": "Bousbecque",
+      "population": 4993
+    },
+    {
+      "insee": "59585",
+      "id": "27119",
+      "nom": "Templemars",
+      "population": 4501
+    },
+    {
+      "insee": "59598",
+      "id": "10234",
+      "nom": "Toufflers",
+      "population": 4499
+    },
+    {
+      "insee": "59005",
+      "id": "26657",
+      "nom": "Allennes Les Marais",
+      "population": 4086
+    },
+    {
+      "insee": "59611",
+      "id": "27141",
+      "nom": "Verlinghem",
+      "population": 4039
+    },
+    {
+      "insee": "59193",
+      "id": "28628",
+      "nom": "Emmerin",
+      "population": 3781
+    },
+    {
+      "insee": "59550",
+      "id": "2927",
+      "nom": "Salome",
+      "population": 3613
+    },
+    {
+      "insee": "59256",
+      "id": "28675",
+      "nom": "Fretin",
+      "population": 3601
+    },
+    {
+      "insee": "59146",
+      "id": "2840",
+      "nom": "Chereng",
+      "population": 3577
+    },
+    {
+      "insee": "59356",
+      "id": "2879",
+      "nom": "Lompret",
+      "population": 3558
+    },
+    {
+      "insee": "59316",
+      "id": "26894",
+      "nom": "Houplin Ancoisne",
+      "population": 3487
+    },
+    {
+      "insee": "59470",
+      "id": "2912",
+      "nom": "Premesques",
+      "population": 3212
+    },
+    {
+      "insee": "59660",
+      "id": "28950",
+      "nom": "Willems",
+      "population": 3132
+    },
+    {
+      "insee": "59523",
+      "id": "23511",
+      "nom": "Sainghin En Melantois",
+      "population": 3083
+    },
+    {
+      "insee": "59346",
+      "id": "26930",
+      "nom": "Lezennes",
+      "population": 3039
+    },
+    {
+      "insee": "59128",
+      "id": "2833",
+      "nom": "Capinghem",
+      "population": 2982
+    },
+    {
+      "insee": "59252",
+      "id": "26841",
+      "nom": "Frelinghien",
+      "population": 2885
+    },
+    {
+      "insee": "59332",
+      "id": "28740",
+      "nom": "Lannoy",
+      "population": 2803
+    },
+    {
+      "insee": "59522",
+      "id": "10224",
+      "nom": "Sailly Lez Lannoy",
+      "population": 2326
+    },
+    {
+      "insee": "59250",
+      "id": "10175",
+      "nom": "Fournes En Weppes",
+      "population": 2277
+    },
+    {
+      "insee": "59303",
+      "id": "26875",
+      "nom": "Herlies",
+      "population": 2233
+    },
+    {
+      "insee": "59173",
+      "id": "2844",
+      "nom": "Deulemont",
+      "population": 1981
+    },
+    {
+      "insee": "59088",
+      "id": "28544",
+      "nom": "Bois Grenier",
+      "population": 1965
+    },
+    {
+      "insee": "59388",
+      "id": "2889",
+      "nom": "Marquillies",
+      "population": 1944
+    },
+    {
+      "insee": "59013",
+      "id": "28494",
+      "nom": "Anstaing",
+      "population": 1880
+    },
+    {
+      "insee": "59670",
+      "id": "2948",
+      "nom": "Don",
+      "population": 1842
+    },
+    {
+      "insee": "59609",
+      "id": "23560",
+      "nom": "Vendeville",
+      "population": 1705
+    },
+    {
+      "insee": "59196",
+      "id": "10166",
+      "nom": "Ennetieres En Weppes",
+      "population": 1702
+    },
+    {
+      "insee": "59025",
+      "id": "26677",
+      "nom": "Aubers",
+      "population": 1700
+    },
+    {
+      "insee": "59602",
+      "id": "2936",
+      "nom": "Tressin",
+      "population": 1676
+    },
+    {
+      "insee": "59487",
+      "id": "28833",
+      "nom": "Radinghem En Weppes",
+      "population": 1655
+    },
+    {
+      "insee": "59247",
+      "id": "10174",
+      "nom": "Forest Sur Marque",
+      "population": 1574
+    },
+    {
+      "insee": "59320",
+      "id": "26897",
+      "nom": "Illies",
+      "population": 1545
+    },
+    {
+      "insee": "59275",
+      "id": "26854",
+      "nom": "Gruson",
+      "population": 1386
+    },
+    {
+      "insee": "59281",
+      "id": "28706",
+      "nom": "Hantay",
+      "population": 1178
+    },
+    {
+      "insee": "59133",
+      "id": "10152",
+      "nom": "Carnin",
+      "population": 1109
+    },
+    {
+      "insee": "59257",
+      "id": "23387",
+      "nom": "Fromelles",
+      "population": 1080
+    },
+    {
+      "insee": "59056",
+      "id": "10143",
+      "nom": "Beaucamps Ligny",
+      "population": 1062
+    },
+    {
+      "insee": "59458",
+      "id": "26991",
+      "nom": "Peronne En Melantois",
+      "population": 1059
+    },
+    {
+      "insee": "59437",
+      "id": "23477",
+      "nom": "Noyelles Les Seclin",
+      "population": 898
+    },
+    {
+      "insee": "59106",
+      "id": "23300",
+      "nom": "Bouvines",
+      "population": 892
+    },
+    {
+      "insee": "59201",
+      "id": "23362",
+      "nom": "Erquinghem Le Sec",
+      "population": 668
+    },
+    {
+      "insee": "59371",
+      "id": "10196",
+      "nom": "Le Maisnil",
+      "population": 664
+    },
+    {
+      "insee": "59195",
+      "id": "23357",
+      "nom": "Englos",
+      "population": 637
+    },
+    {
+      "insee": "59658",
+      "id": "23604",
+      "nom": "Wicres",
+      "population": 594
+    },
+    {
+      "insee": "59643",
+      "id": "2944",
+      "nom": "Warneton",
+      "population": 567
+    },
+    {
+      "insee": "59208",
+      "id": "26813",
+      "nom": "Escobecques",
+      "population": 549
+    }
+  ],
+  "epcis": [
+    {
+      "siren": "200093201",
+      "nom": "Métropole Européenne de Lille",
+      "dossier": "1"
+    }
+  ]
+}

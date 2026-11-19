@@ -2,8 +2,11 @@ package com.github.cunvoas.geoserviceisochrone.controller.mvc;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -118,7 +121,8 @@ public class MvcDashBoardControler {
 	 * @return page
 	 */
 	@GetMapping("/dashboard")
-	public String dashboard(Model model, @RequestParam(name = "refresh", required = false) Boolean refresh, ModelAndView modelAndView) {
+	public String dashboard(Model model, @RequestParam(name = "refresh", required = false) Boolean refresh, ModelAndView modelAndView,
+			Authentication authentication) {
 		DashboardSummary data = null;
 		if (Boolean.TRUE.equals(refresh)) {
 			data = dashboadService.getDashboardAndRefresh();
@@ -126,7 +130,14 @@ public class MvcDashBoardControler {
 			data = dashboadService.getDashboard();
 		}
 		model.addAttribute("dashboard", data);
-		
+
+		// mêmes droits que le menu gauche : tuile visible, lien seulement si autorisé
+		Set<String> roles = authentication.getAuthorities().stream()
+				.map(GrantedAuthority::getAuthority)
+				.collect(Collectors.toSet());
+		model.addAttribute("admin", roles.contains("ADMINISTRATOR"));
+		model.addAttribute("batch", roles.contains("ADMINISTRATOR") || roles.contains("ASSO_MANAGER"));
+
         return "dashboard";
 	}
 	@GetMapping("/")

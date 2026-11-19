@@ -1,6 +1,6 @@
 <template>
   <div v-if="loaded" class="flex flex-col items-center w-full">
-    <h2 class="text-center">{{ villeNom }}</h2>
+    <h2 class="text-center">Répartition des habitants {{ villeNom ? 'de ' + villeNom : '' }} par surface de parc accessible à pied</h2>
     <div v-if="shouldDisplayBarChart" class="w-full max-w-4xl">
       <Bar :data="dataBar" :options="barOptions" class="w-full h-[300px]" />
     </div>
@@ -34,8 +34,15 @@ import { Bar, Pie } from 'vue-chartjs';
 import { toRaw } from 'vue'
 import StatsTableAccessibility from './StatsTableAccessibility.vue';
 import { DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from '../utils/config.js';
+import { formaterNom } from '../utils/territoires.js';
+import { libelleTranche } from '../utils/tranches.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
+
+// Couleurs d'affichage côté front (les données n'en portent plus).
+const PALETTE_5 = ['#0000e8', '#6060e8', '#b0b0e8', '#578817', '#57ee17'];
+const PALETTE_3 = ['#b0b0e8', '#578817', '#57ee17'];
+const palette = (nombre) => (nombre <= 3 ? PALETTE_3 : PALETTE_5).slice(0, nombre);
 
 // Fonction pour convertir les couleurs normales en couleurs daltonien
 function convertToColorblindPalette(normalColor) {
@@ -212,21 +219,21 @@ export default {
       return retData;
     },
     parseJsonBar(jsonData) {
-      console.log("parseJsonBar.nom:", jsonData["nom"]);
-      this.villeNom = jsonData["nom"];
-      
-      const tLabels = jsonData["stats"].map(value => value.surface);
-      // Appliquer la conversion des couleurs selon le mode daltonien
-      const tFillColors = jsonData["stats"].map(value => convertToColorblindPalette(value.barColor));
-      const tHabitants = jsonData["stats"].map(value => value.habitants);
- 
+      this.villeNom = this.villeNom || formaterNom(jsonData.nom);
+
+      // Le libellé vient de la tranche, ou du seuil correspondant quand la tranche n'en porte pas.
+      const tranches = jsonData.stats ?? [];
+      const tLabels = tranches.map((value, index) => libelleTranche(value.surface ? value : jsonData.seuils?.[index] ?? {}));
+      const tFillColors = palette(tranches.length).map(convertToColorblindPalette);
+      const tHabitants = tranches.map(value => value.habitants);
+
       this.dataBar= this.getChartData(' m² par habitant de parcs', tLabels,  tHabitants, tFillColors);
     },
     parseJsonPie(jsonData) {
-      const tLabels = jsonData["seuils"].map(value => value.surface);
-      // Appliquer la conversion des couleurs selon le mode daltonien
-      const tFillColors = jsonData["seuils"].map(value => convertToColorblindPalette(value.barColor));
-      const tHabitants = jsonData["seuils"].map(value => value.habitants );  // +" ("+ value.ratio +")"
+      const seuils = jsonData.seuils ?? [];
+      const tLabels = seuils.map(value => libelleTranche(value));
+      const tFillColors = palette(seuils.length).map(convertToColorblindPalette);
+      const tHabitants = seuils.map(value => value.habitants );
 
       this.dataPie= this.getChartData(' m² par habitant de parcs', tLabels,  tHabitants, tFillColors);
     },
@@ -260,6 +267,9 @@ export default {
       this.currentGraphType = graphType;
 
       console.log("Extracted values - locType:", locType, "graphType:", graphType);
+
+      // Sur une page EPCI, le nom vient de l'index (sans le suffixe de densité du fichier de statistiques).
+      this.villeNom = locType === 'com2co' ? (newLocation.com2coName || '') : '';
 
       const annee   = this.annee;
 

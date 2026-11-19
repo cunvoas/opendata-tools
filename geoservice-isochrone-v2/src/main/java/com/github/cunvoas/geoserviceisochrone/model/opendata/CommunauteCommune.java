@@ -49,6 +49,12 @@ public class CommunauteCommune implements Comparator<CommunauteCommune> {
 	 * Nom de la communauté de communes.
 	 */
 	private String name;
+
+	@Column(name = "siren", length = 9)
+	/**
+	 * Numéro Siren de l'EPCI (identifiant public, jamais clé technique).
+	 */
+	private String siren;
 	 
 	@ManyToOne
 	@JoinColumn(name="id_region", nullable=true)

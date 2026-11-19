@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -180,6 +181,7 @@ public class CityAssociationControler {
 	 * @return Redirection vers la page d'édition
 	 */
 	@PostMapping("/associate")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public String associateCity(
 			@RequestParam("cityId") Long cityId, 
@@ -214,6 +216,7 @@ public class CityAssociationControler {
 	 * @return Redirection vers la page d'édition
 	 */
 	@PostMapping("/dissociate")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public String dissociateCity(
 			@RequestParam("cityId") Long cityId, 
@@ -248,6 +251,7 @@ public class CityAssociationControler {
 	 * @return Redirection vers la page d'édition
 	 */
 	@PostMapping("/uploadCsv")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public String uploadCsv(
 			@RequestParam("file") MultipartFile file,

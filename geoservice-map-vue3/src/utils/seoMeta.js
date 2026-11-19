@@ -22,4 +22,13 @@ export function applyRouteMeta(doc, route) {
   }
   set('meta[property="og:url"]', SITE_URL + route.path);
   set('meta[name="robots"]', route.meta?.robots ?? 'index, follow');
+
+  // Adresse canonique : celle de la route, sans paramètre ni ancre.
+  let canonical = doc.querySelector('link[rel="canonical"]');
+  if (!canonical && doc.head) {
+    canonical = doc.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    doc.head.appendChild(canonical);
+  }
+  canonical?.setAttribute('href', SITE_URL + route.path);
 }

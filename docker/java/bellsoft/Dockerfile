@@ -16,4 +16,5 @@ USER app:app
 
 EXPOSE 8089
 
-ENTRYPOINT ["java", "-Xms2g", "-Xmx2g", "-Dspring.profiles.active=prod,pi,metrics", "-jar", "app.jar"]
+# Fix CVE-2026-114938 (Java4Shell) : -XX:-UseBASE64Intrinsics
+ENTRYPOINT ["java", "-Xms2g", "-Xmx2g", "-XX:-UseBASE64Intrinsics", "-Dspring.profiles.active=prod,pi,metrics", "-jar", "app.jar"]

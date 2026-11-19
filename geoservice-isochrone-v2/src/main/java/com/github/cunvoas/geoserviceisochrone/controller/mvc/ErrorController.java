@@ -40,6 +40,24 @@ public class ErrorController  extends ResponseEntityExceptionHandler{
         this.messageSource = messageSource;
     }
 
+	@ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	public String accessDenied(final Throwable throwable, final Model model) {
+		log.warn("Access denied: {}", throwable.getMessage());
+		HttpStatus status = HttpStatus.FORBIDDEN;
+		String statusLabel = messageSource.getMessage("http.status." + status.value(),
+			null, "HTTP " + status.value(), LocaleContextHolder.getLocale()
+		);
+		model.addAttribute("errorMessage", statusLabel);
+		model.addAttribute("exception", throwable.getClass().getName());
+		model.addAttribute("trace", "");
+		model.addAttribute("httpStatus", status);
+		model.addAttribute("status", status.value());
+		model.addAttribute("httpStatusLabel", statusLabel);
+		model.addAttribute("showStacktrace", false);
+		return "error";
+	}
+
 	/**
 	 * Gestionnaire d'exception générique.
 	 * <p>

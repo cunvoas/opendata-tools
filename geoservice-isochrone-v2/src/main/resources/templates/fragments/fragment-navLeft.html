@@ -44,6 +44,7 @@
                             </div>
                        </span>
                             
+                       <span sec:authorize="hasAuthority('ADMINISTRATOR')">
                              <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayout2" aria-expanded="false" aria-controls="collapseLayouts">
                                 <div class="sb-nav-link-icon"><i class="fas fa-database"></i></div>
                                  <div th:text="#{menu.management.opendata}">group2-2</div>
@@ -55,6 +56,7 @@
                                     <a class="nav-link" th:href="@{/mvc/management/cityassoc/list}" th:text="#{menu.management.cities}">g2-1 t2</a>
                                 </nav>
                             </div>
+                       </span>
                             
                             
                             
@@ -80,8 +82,6 @@
                                 <div th:text="#{menu.maps.entances}">g3 t1</div>
                             </a>
 
-
-
                             
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayout4" aria-expanded="false" aria-controls="collapseLayouts">
                                 <div class="sb-nav-link-icon"><i class="fas fa-calculator"></i></div>
@@ -96,6 +96,7 @@
                                 </nav>
                             </div>
 
+                         <span sec:authorize="hasAuthority('ADMINISTRATOR') or hasAuthority('ASSO_MANAGER')">
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayout5" aria-expanded="false" aria-controls="collapseLayout5">
                                 <div class="sb-nav-link-icon"><i class="fas fa-server"></i></div>
                                 <div th:text="#{menu.compute.batch}">Calculs Batchs</div>
@@ -108,6 +109,7 @@
                                     <a class="nav-link" th:href="@{/mvc/management/jobs/ndvi/progress}" th:text="#{menu.compute.ndvi.progress}">Suivi des calculs NDVI</a>
                                 </nav>
                             </div>
+                        </span>
 
 
                         </div>

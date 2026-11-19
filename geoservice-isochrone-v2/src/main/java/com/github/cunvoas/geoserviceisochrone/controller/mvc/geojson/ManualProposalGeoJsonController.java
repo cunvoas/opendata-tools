@@ -1,6 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.controller.mvc.geojson;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -64,6 +65,7 @@ public class ManualProposalGeoJsonController {
      * @return GeoJsonRoot contenant les résultats du nouveau calcul
      */
     @PostMapping("/{insee}/evaluate")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER','ASSO_CONSTRIB')")
     public GeoJsonRoot computeEvaluation(@PathVariable("insee") String insee,
                                          @RequestParam("annee") Integer annee) {
         return evaluationService.evaluate(insee, annee);

@@ -128,4 +128,20 @@ public class NdviResult {
 	/** Écart-type du GNDVI observé. */
 	@Column(name = "gndvi_stddev", precision = 6, scale = 4)
 	private BigDecimal gndviStddev;
+
+	/** SAVI moyen observé (B08/B04, correction du sol L = 0,5). */
+	@Column(name = "savi_mean", precision = 6, scale = 4)
+	private BigDecimal saviMean;
+
+	/** SAVI minimal observé. */
+	@Column(name = "savi_min", precision = 6, scale = 4)
+	private BigDecimal saviMin;
+
+	/** SAVI maximal observé. */
+	@Column(name = "savi_max", precision = 6, scale = 4)
+	private BigDecimal saviMax;
+
+	/** Écart-type du SAVI observé. */
+	@Column(name = "savi_stddev", precision = 6, scale = 4)
+	private BigDecimal saviStddev;
 }

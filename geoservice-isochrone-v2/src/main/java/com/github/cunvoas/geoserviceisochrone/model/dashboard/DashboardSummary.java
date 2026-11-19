@@ -33,6 +33,8 @@ public class DashboardSummary {
     private Long nbParcIsochrone;
         /** Nombre de ComputeJob en attente de calcul. */
         private Long nbComputeJobPending;
+    /** Nombre de jobs IRIS en attente de calcul. */
+    private Long nbIrisJobPending;
     /** Nombre de jobs NDVI en attente de calcul. */
     private Long nbNdviJobPending;
     /** Date de mise à jour des données. */

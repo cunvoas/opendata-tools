@@ -1,17 +1,15 @@
 package com.github.cunvoas.geoserviceisochrone.service.solver.compute;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -22,7 +20,6 @@ import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ParkProposalHelper;
 import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
-import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
 
 import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j;
@@ -128,24 +125,19 @@ class ParkProposalHelperTest extends BaseUnitTest {
                 "C--3--3", map, URBAN_DISTANCE);
 
         assertNotNull(neighbors);
-        assertTrue(neighbors.size() >= 0);
     }
 
     @Test
-    void findNeighbors_withCsvEntries_returnsExpectedNeighbors() {
-        Map<String, ParkProposalWork> map = buildFromCsv();
+    void findNeighbors_withDenseTerritory_returnsExpectedNeighbors() {
+        Map<String, ParkProposalWork> map = buildGrid(5, 0.002);
 
         List<ParkProposalWork> neighbors = ParkProposalHelper.findNeighbors(
-                "CRS3035RES200mN3080400E3833200", map, URBAN_DISTANCE);
+                "C-0-0", map, URBAN_DISTANCE);
 
         assertNotNull(neighbors);
-        assertTrue(neighbors.size() > 0);
-        assertTrue(neighbors.size() < map.size());
-        
-        for (ParkProposalWork parkProposalWork : neighbors) {
-        	 log.warning("\t"+ parkProposalWork.getIdInspire());
-		}
-       
+        assertFalse(neighbors.isEmpty(), "un carré entouré doit avoir des voisins");
+        assertTrue(neighbors.size() < map.size(), "le carré central ne doit pas etre son propre voisin");
+        assertFalse(neighbors.stream().anyMatch(n -> "C-0-0".equals(n.getIdInspire())));
     }
 
     private Map<String, ParkProposalWork> buildGrid(int size, double stepDeg) {
@@ -160,75 +152,6 @@ class ParkProposalHelperTest extends BaseUnitTest {
             }
         }
         return map;
-    }
-
-    private Map<String, ParkProposalWork> buildFromCsv() {
-        Map<String, ParkProposalWork> map = new HashMap<>();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("ParkProposalWork_neibours.csv")),
-                StandardCharsets.UTF_8))) {
-
-            String header = br.readLine();
-            String line;
-            int lineNum = 1;
-            while ((line = br.readLine()) != null) {
-                lineNum++;
-                line = line.trim();
-                if (line.isEmpty()) continue;
-
-                String[] cols = parseCsvLine(line);
-                if (cols.length < 12) {
-                    continue;
-                }
-
-                ParkProposalWork p = new ParkProposalWork();
-                p.setAnnee(Integer.parseInt(cols[0].trim()));
-                p.setIdInspire(cols[1].trim());
-                p.setAccessingPopulation(new BigDecimal(cols[2].trim()));
-                p.setAccessingSurface(new BigDecimal(cols[3].trim()));
-                p.setCentre(parseWktPoint(cols[4].trim()));
-                p.setIsDense("True".equalsIgnoreCase(cols[5].trim()) || "t".equalsIgnoreCase(cols[5].trim()));
-                p.setLocalPopulation(new BigDecimal(cols[6].trim()));
-                p.setMissingSurface(new BigDecimal(cols[7].trim()));
-                p.setNewMissingSurface(new BigDecimal(cols[8].trim()));
-//                p.setNewSurface(new BigDecimal(cols[9].trim()));
-                p.setNewSurfacePerCapita(new BigDecimal(cols[10].trim()));
-                p.setSurfacePerCapita(new BigDecimal(cols[11].trim()));
-                p.setTypeAlgo(ProposalComputationTypeAlgo.ITERATIVE_1);
-
-                map.put(p.getIdInspire(), p);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load ParkProposalWork_neibours.csv", e);
-        }
-        return map;
-    }
-
-    private static String[] parseCsvLine(String line) {
-        List<String> fields = new java.util.ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < line.length(); i++) {
-            char c = line.charAt(i);
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                fields.add(sb.toString());
-                sb.setLength(0);
-            } else {
-                sb.append(c);
-            }
-        }
-        fields.add(sb.toString());
-        return fields.toArray(new String[0]);
-    }
-
-    private static Point parseWktPoint(String wkt) {
-        String inner = wkt.replace("POINT(", "").replace(")", "").trim();
-        String[] parts = inner.split("\\s+");
-        double lon = NumberHelper.parseDoubleOrThrow(parts[0]);
-        double lat = NumberHelper.parseDoubleOrThrow(parts[1]);
-        return GF.createPoint(new Coordinate(lon, lat));
     }
 
     private static ParkProposalWork makeSquare(String id, double lon, double lat) {

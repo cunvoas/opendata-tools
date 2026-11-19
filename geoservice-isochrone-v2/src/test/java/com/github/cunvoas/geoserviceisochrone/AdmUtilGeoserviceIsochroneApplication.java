@@ -41,7 +41,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 @SpringBootTest
 @ActiveProfiles({"secret","pi_nuc"})
 @Disabled
-class TestGeoserviceIsochroneApplication {
+class AdmUtilGeoserviceIsochroneApplication {
 
 	@Autowired
 	private IrisGeoJsonIntegratorParser irisGeoJsonIntegratorParser;

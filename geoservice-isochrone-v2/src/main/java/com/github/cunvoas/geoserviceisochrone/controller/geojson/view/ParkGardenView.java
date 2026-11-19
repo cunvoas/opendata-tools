@@ -39,6 +39,22 @@ public class ParkGardenView extends GeoJsonProperty {
 	private BigDecimal gndviMin;
 	private BigDecimal gndviMax;
 	private BigDecimal gndviStddev;
+	private BigDecimal saviMean;
+	private BigDecimal saviMin;
+	private BigDecimal saviMax;
+	private BigDecimal saviStddev;
 	private Date ndviAcquisitionDate;
+	/** Recouvrement évalué (minéral, clairsemé, dense). */
+	private String vegetationRecouvrement;
+	/** Score de santé de la végétation sur 100. */
+	private Double vegetationScore;
+	/** Confiance de l'évaluation (Élevée, Moyenne, Faible, Nulle). */
+	private String vegetationConfiance;
+	/** Diagnostic physiologique (stress, diagnostic limité). */
+	private String vegetationDiagnostic;
+	/** Hétérogénéité spatiale de la zone. */
+	private String vegetationHomogeneite;
+	/** Anomalie locale (amplitude NDVI), null si non calculable. */
+	private Boolean vegetationAnomalie;
 	
 }

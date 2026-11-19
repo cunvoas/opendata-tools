@@ -28,6 +28,7 @@ describe('applyRouteMeta', () => {
     expect(content('meta[property="og:description"]')).toBe('Description')
     expect(content('meta[name="twitter:description"]')).toBe('Description')
     expect(content('meta[property="og:url"]')).toBe(`${SITE_URL}/stats`)
+    expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe(`${SITE_URL}/stats`)
   })
 
   it('la racine garde une URL se terminant par /', () => {
@@ -48,7 +49,7 @@ describe('applyRouteMeta', () => {
   })
 
   it('applique la balise robots de la route puis la réinitialise sur la route suivante', () => {
-    applyRouteMeta(document, { path: '/etude-insee', meta: { title: 'T', robots: 'noindex, follow' } })
+    applyRouteMeta(document, { path: '/stats/99999', meta: { title: 'T', robots: 'noindex, follow' } })
     expect(content('meta[name="robots"]')).toBe('noindex, follow')
 
     applyRouteMeta(document, { path: '/carte', meta: { title: 'T' } })

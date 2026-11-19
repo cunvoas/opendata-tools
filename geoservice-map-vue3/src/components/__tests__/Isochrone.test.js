@@ -171,9 +171,45 @@ describe('Isochrone - mode et détail NDVI', () => {
     const html = document.getElementById('dataDetail').innerHTML;
     expect(html).toContain('Citadelle');
     expect(html).toContain('<b>NDVI moyen : 0,593</b>');
-    expect(html).toContain('(min 0,100, max 0,900)');
-    expect(html).toContain('<i>0,4 à 0,7 :</i>');
+    expect(html).toContain('(min 0,100, max 0,900, écart-type 0,300)');
     expect(html).toContain('Végétation en croissance');
+    expect(html).toContain('Structure spatiale');
+  });
+
+  it('affiche les autres indices et l’évaluation de végétation dans le détail', () => {
+    const wrapper = mountIsochrone();
+    const properties = {
+      name: 'Parc urbain',
+      ndviEnabled: true,
+      ndviMean: 0.5, ndviMin: 0.2, ndviMax: 0.8, ndviStddev: 0.02,
+      ndreMean: 0.3, ndreMin: 0.1, ndreMax: 0.5, ndreStddev: 0.01,
+      gndviMean: 0.45, gndviMin: 0.2, gndviMax: 0.7, gndviStddev: 0.01,
+      saviMean: 0.3, saviMin: 0.1, saviMax: 0.5, saviStddev: 0.02,
+      vegetationRecouvrement: 'Couvert faible / Pelouse ouverte ou arbustif jeune',
+      vegetationScore: 36.6,
+      vegetationConfiance: 'Élevée',
+      vegetationDiagnostic: 'Normal',
+      vegetationHomogeneite: 'Homogène',
+      vegetationAnomalie: true
+    };
+
+    const html = wrapper.vm.buildVegetationHtml(properties);
+
+    expect(html).toContain('<b>SAVI moyen : 0,300</b>');
+    expect(html).toContain('(min 0,100, max 0,500, écart-type 0,020)');
+    expect(html).toContain('<b>NDRE moyen : 0,300</b>');
+    expect(html).toContain('<b>GNDVI moyen : 0,450</b>');
+    expect(html).toContain('Recouvrement : <b>Couvert faible / Pelouse ouverte ou arbustif jeune</b>');
+    expect(html).toContain('Score santé : <b>36,600 / 100</b> (confiance Élevée)');
+    expect(html).toContain('Diagnostic : Normal');
+    expect(html).toContain('Homogénéité : Homogène');
+    expect(html).toContain('Anomalie locale : oui');
+  });
+
+  it('n’affiche pas d’évaluation sans mesure', () => {
+    const wrapper = mountIsochrone();
+
+    expect(wrapper.vm.buildVegetationHtml({ name: 'Sans mesure' })).toBe('');
   });
 
   it('affiche « pas encore calculé » sans valeur implicite pour un parc sans NDVI', () => {
