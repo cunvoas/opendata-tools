@@ -27,7 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
 @SpringBootTest
 @ActiveProfiles({"prod","dev"})
-class TestCsvParkEntranceUpdateParser {
+class AdmUtilCsvParkEntranceUpdateParser {
 	
 
 	private CsvParkGeomUpdateParser testedGeomUpdate = new CsvParkGeomUpdateParser();
