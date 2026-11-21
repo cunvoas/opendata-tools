@@ -26,7 +26,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurActionRepos
 import com.github.cunvoas.geoserviceisochrone.repo.admin.StatsRepository;
 
 @ExtendWith(MockitoExtension.class)
-class ActivityTrackerServiceTest {
+class TestActivityTrackerService {
 
 	@Mock
 	private StatsRepository statsRepository;

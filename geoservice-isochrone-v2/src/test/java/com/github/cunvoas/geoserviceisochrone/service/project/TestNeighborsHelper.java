@@ -12,7 +12,7 @@ import org.locationtech.jts.geom.Polygon;
 
 import com.github.cunvoas.geoserviceisochrone.model.opendata.InseeCarre200mOnlyShape;
 
-class NeighborsHelperTest {
+class TestNeighborsHelper {
 
 	private final GeometryFactory factory = new GeometryFactory();
 

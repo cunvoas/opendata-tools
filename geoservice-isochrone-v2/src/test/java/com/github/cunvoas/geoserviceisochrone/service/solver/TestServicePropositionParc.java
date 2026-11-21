@@ -56,7 +56,7 @@ import lombok.extern.java.Log;
  */
 @ExtendWith(MockitoExtension.class)
 @Log
-class ServicePropositionParcTest {
+class TestServicePropositionParc {
 
 	// ---- Collaborateurs mockés ----
 

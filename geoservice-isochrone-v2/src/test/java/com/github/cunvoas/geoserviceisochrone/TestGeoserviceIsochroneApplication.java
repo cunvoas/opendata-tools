@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.cunvoas.geoserviceisochrone.support.PostgisContextTestBase;
 
-class GeoserviceIsochroneApplicationTests extends PostgisContextTestBase {
+class TestGeoserviceIsochroneApplication extends PostgisContextTestBase {
 
     @Test
     void contextLoads() {

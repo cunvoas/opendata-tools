@@ -10,7 +10,7 @@ import org.mockito.MockitoAnnotations;
  * À utiliser pour tester les services, utils et logique métier isolée.
  */
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-public abstract class BaseUnitTest {
+public abstract class TestBaseUnit {
     
     protected AutoCloseable mockResources;
     

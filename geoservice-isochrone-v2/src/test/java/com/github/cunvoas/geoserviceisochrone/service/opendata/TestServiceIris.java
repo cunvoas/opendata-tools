@@ -25,7 +25,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisDataRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository;
 
 @ExtendWith(MockitoExtension.class)
-class ServiceIrisTest {
+class TestServiceIris {
 
 	@Mock
 	private IrisDataRepository irisDataRepository;

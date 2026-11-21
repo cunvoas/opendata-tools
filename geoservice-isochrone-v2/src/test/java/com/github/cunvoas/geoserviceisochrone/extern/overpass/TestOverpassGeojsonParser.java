@@ -16,7 +16,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkOverpassReposit
 
 import tools.jackson.databind.ObjectMapper;
 
-class OverpassGeojsonParserTest {
+class TestOverpassGeojsonParser {
     private ObjectMapper objectMapper;
     private ParkOverpassRepository parkOverpassRepository;
     private OverpassGeojsonParser parser;

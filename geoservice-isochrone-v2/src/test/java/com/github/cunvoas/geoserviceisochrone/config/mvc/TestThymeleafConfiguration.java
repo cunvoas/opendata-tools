@@ -13,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 /**
  * Tests unitaires simples pour {@link ThymeleafConfiguration}.
  */
-class ThymeleafConfigurationTest {
+class TestThymeleafConfiguration {
 
 	@Test
 	void addResourceHandlers_registersExpectedHandlers() {

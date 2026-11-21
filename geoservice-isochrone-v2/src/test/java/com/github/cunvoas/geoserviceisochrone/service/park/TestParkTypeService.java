@@ -29,7 +29,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkTypeRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
 @ExtendWith(MockitoExtension.class)
-class ParkTypeServiceTest {
+class TestParkTypeService {
 
 	@Mock
 	private ParkTypeRepository parkTypeRepository;

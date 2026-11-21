@@ -22,7 +22,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkOverpassReposit
 
 import tools.jackson.databind.ObjectMapper;
 
-class OverpassRawParserTest {
+class TestOverpassRawParser {
     private ObjectMapper objectMapper;
     private ParkOverpassRepository parkOverpassRepository;
     private OverpassRawParser parser;

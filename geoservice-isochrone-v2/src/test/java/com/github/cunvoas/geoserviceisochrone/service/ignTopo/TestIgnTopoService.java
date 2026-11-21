@@ -20,7 +20,7 @@ import com.github.cunvoas.geoserviceisochrone.model.ignTopo.IgnTopoVegetal;
 import com.github.cunvoas.geoserviceisochrone.repo.ignTopo.IgnTopoVegetalRepository;
 
 @ExtendWith(MockitoExtension.class)
-class IgnTopoServiceTest {
+class TestIgnTopoService {
 
 	@Mock
 	private IgnTopoVegetalRepository ignTopoVegetalRepository;

@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import com.github.cunvoas.geoserviceisochrone.config.property.FeatureFlippingProperties;
 import com.sun.net.httpserver.HttpServer;
 
-class CpuTemperatureServiceTest {
+class TestCpuTemperatureService {
 
 	private HttpServer server;
 	private String metricsBody;

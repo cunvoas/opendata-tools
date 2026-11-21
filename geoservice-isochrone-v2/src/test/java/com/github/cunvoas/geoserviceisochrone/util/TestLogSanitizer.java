@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-public class LogSanitizerTest {
+public class TestLogSanitizer {
 
     @Test
     public void sanitize_shouldReplaceCrLfAndTab() {

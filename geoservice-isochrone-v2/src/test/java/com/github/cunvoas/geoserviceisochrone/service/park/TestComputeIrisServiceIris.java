@@ -29,7 +29,7 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class ComputeIrisServiceIrisTest {
+class TestComputeIrisServiceIris {
 
 	@Mock private ParkJardinRepository parkJardinRepository;
 	@Mock private InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;

@@ -15,7 +15,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CadastreRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.LaposteRepository;
 
-class CityServiceTest {
+class TestCityServiceGetGzipCadastre {
     @Mock
     private GeoJson2GeometryHelper geoJson2GeometryHelper;
     @Mock

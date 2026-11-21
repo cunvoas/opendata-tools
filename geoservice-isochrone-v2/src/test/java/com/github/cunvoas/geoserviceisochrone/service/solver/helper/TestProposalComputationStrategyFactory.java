@@ -15,7 +15,7 @@ import com.github.cunvoas.geoserviceisochrone.service.solver.compute.IterativeCo
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.IterativeComputationPopulation1Strategy;
 import com.github.cunvoas.geoserviceisochrone.service.solver.compute.LeastSquaresNeighbour2Strategy;
 
-class ProposalComputationStrategyFactoryTest {
+class TestProposalComputationStrategyFactory {
 
 	@Test
 	void available_types_are_stable() {

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 import static org.junit.jupiter.api.Assertions.*;
 
-class CityServiceGzipTest {
+class TestCityServiceGzip {
     @Test
     void testGetGeoJsonCadastre_decompressesGzip() throws IOException {
         CityService service = new CityService();

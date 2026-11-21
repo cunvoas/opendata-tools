@@ -14,7 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest
 @ActiveProfiles({"test"})
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-public abstract class BaseTest {
+public abstract class TestBase {
     
     /**
      * Initialise les annotations Mockito avant chaque test.

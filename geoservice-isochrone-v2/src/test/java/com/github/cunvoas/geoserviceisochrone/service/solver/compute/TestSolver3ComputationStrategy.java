@@ -18,7 +18,7 @@ import org.locationtech.jts.geom.Point;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 
-class Solver3ComputationStrategyTest {
+class TestSolver3ComputationStrategy {
 
     private static final GeometryFactory geometryFactory = new GeometryFactory();
 

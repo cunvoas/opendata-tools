@@ -22,7 +22,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.service.analytics.NoStatsException;
 import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceService;
 
-class StatsControllerTest {
+class TestStatsController {
 
 	private StatsSurfaceService statsSurfaceService;
 	private CityRepository cityRepository;

@@ -22,7 +22,7 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.AssociationRepository;
 
 @ExtendWith(MockitoExtension.class)
-class AssociationServiceTest {
+class TestAssociationService {
 
 	@Mock
 	private AssociationRepository associationRepository;

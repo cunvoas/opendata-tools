@@ -27,7 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class GeoMapServiceV2VegetationTest {
+class TestGeoMapServiceV2Vegetation {
 
 	@Mock
 	private NdviResultRepository ndviResultRepository;

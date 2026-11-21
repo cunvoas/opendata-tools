@@ -13,7 +13,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 
-class GeometryPointReducerTest {
+class TestGeometryPointReducer {
 
 	private final GeometryFactory factory = new GeometryFactory();
 	private final GeometryPointReducer tested = new GeometryPointReducer();

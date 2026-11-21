@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.cunvoas.geoserviceisochrone.extern.ndvi.VegetationEvaluator.VegetationEvaluation;
 
-class VegetationEvaluatorTest {
+class TestVegetationEvaluator {
 
 	private static NdviStatistics.IndexStatistics index(Double mean, Double min, Double max, Double std) {
 		return new NdviStatistics.IndexStatistics(dec(mean), dec(min), dec(max), dec(std));

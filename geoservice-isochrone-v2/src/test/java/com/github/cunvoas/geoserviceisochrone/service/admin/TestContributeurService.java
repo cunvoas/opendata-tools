@@ -34,7 +34,7 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurRole;
 import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
 
 @ExtendWith(MockitoExtension.class)
-class ContributeurServiceTest {
+class TestContributeurService {
 
 	@Mock
 	private ContributeurRepository contributeurRepository;

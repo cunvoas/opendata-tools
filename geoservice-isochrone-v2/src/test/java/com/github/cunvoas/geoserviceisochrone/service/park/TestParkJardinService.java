@@ -32,7 +32,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class ParkJardinServiceTest {
+class TestParkJardinService {
 
 	@Mock private ParkJardinRepository parkJardinRepository;
 	@Mock private ParkAreaRepository parkAreaRepository;

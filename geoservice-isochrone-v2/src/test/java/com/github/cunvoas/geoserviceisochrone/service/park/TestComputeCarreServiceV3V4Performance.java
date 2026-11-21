@@ -1,6 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.service.park;
 
-import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
+import com.github.cunvoas.geoserviceisochrone.TestBaseUnit;
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJob;
 import com.github.cunvoas.geoserviceisochrone.model.isochrone.InseeCarre200mComputedV2;
@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-public class ComputeCarreServiceV3V4PerformanceTest extends BaseUnitTest {
+public class TestComputeCarreServiceV3V4Performance extends TestBaseUnit {
 
     private static final GeometryFactory GF = new GeometryFactory(new PrecisionModel(), 4326);
     private static final int WARMUP_ITERS = 3;

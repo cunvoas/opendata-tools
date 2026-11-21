@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
-class CityDisplayNameTest {
+class TestCityDisplayName {
 
     @Test
     void toTitleCaseFormatsUppercaseNames() {

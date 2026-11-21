@@ -27,7 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 
 @ExtendWith(MockitoExtension.class)
-class CityAssociationServiceTest {
+class TestCityAssociationService {
 
 	@Mock
 	private CityRepository cityRepository;

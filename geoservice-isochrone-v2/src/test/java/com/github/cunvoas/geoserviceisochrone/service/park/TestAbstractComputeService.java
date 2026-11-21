@@ -24,7 +24,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyS
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
 @ExtendWith(MockitoExtension.class)
-class AbstractComputeServiceTest {
+class TestAbstractComputeService {
 
 	@Mock
 	private ParkJardinRepository parkJardinRepository;

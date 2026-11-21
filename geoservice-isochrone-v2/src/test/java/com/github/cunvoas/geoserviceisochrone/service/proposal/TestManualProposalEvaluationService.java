@@ -29,7 +29,7 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class ManualProposalEvaluationServiceTest {
+class TestManualProposalEvaluationService {
 
 	@Mock private ApplicationBusinessProperties applicationBusinessProperties;
 	@Mock private ServiceOpenData serviceOpenData;

@@ -41,7 +41,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class DashboadServiceTest {
+class TestDashboadService {
 
 	@Mock private ContributeurRepository contributeurRepository;
 	@Mock private AssociationRepository associationRepository;

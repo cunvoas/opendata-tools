@@ -12,7 +12,7 @@ import com.github.cunvoas.geoserviceisochrone.extern.gouv.adress.dto.AdressBo;
 import java.util.Set;
 
 @SuppressWarnings("rawtypes")
-class AdresseClientServiceGouvImplTest {
+class TestAdresseClientServiceGouvImpl {
     @Test
     void testSearch() {
         AdressGeoJsonParser parserMock = Mockito.mock(AdressGeoJsonParser.class);

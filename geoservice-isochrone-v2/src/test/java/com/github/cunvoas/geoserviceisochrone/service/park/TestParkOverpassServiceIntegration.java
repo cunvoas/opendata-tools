@@ -20,7 +20,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 @SpringBootTest
 @ActiveProfiles({"dev"})
 //@Disabled("manual integration - needs real DB with Overpass data for INSEE 44109")
-class ParkOverpassServiceIntegrationTest {
+class TestParkOverpassServiceIntegration {
 
     @Autowired
     private ParkOverpassService parkOverpassService;

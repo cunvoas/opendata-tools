@@ -9,7 +9,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 
-class ParkProposalClusterableTest {
+class TestParkProposalClusterable {
 
 	@Test
 	void exposes_centre_as_lon_lat_array() {

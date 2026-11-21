@@ -18,7 +18,7 @@ import tools.jackson.databind.SerializationContext;
  * Tests d'intégration légers pour vérifier la sérialisation GeoJSON des géométries JTS
  * via le module configuré dans {@link JacksonConfig}.
  */
-public class JtsGeometrySerializerTest {
+public class TestJtsGeometrySerializer {
 
     private JsonFactory jsonFactory;
     private GeometryFactory gf;

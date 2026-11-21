@@ -39,7 +39,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.RegionRepository;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class ServiceReadReferencesTest {
+class TestServiceReadReferences {
 
 	@Mock private ApplicationBusinessProperties applicationBusinessProperties;
 	@Mock private RegionRepository regionRepository;

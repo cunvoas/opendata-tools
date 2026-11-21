@@ -27,7 +27,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
+import com.github.cunvoas.geoserviceisochrone.TestBaseUnit;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobProgressStat;
 import com.github.cunvoas.geoserviceisochrone.model.admin.ComputeJobStatusEnum;
 import com.github.cunvoas.geoserviceisochrone.model.admin.NdviJob;
@@ -48,7 +48,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.IrisShapeRepository
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
 
 @DisplayName("NdviBatchJobService")
-class NdviBatchJobServiceTest extends BaseUnitTest {
+class TestNdviBatchJobService extends TestBaseUnit {
 
     private static final long PARK_ID = 7L;
     private static final long PARC_ID = 12L;

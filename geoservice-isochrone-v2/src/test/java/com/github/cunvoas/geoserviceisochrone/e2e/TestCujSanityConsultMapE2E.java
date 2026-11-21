@@ -40,15 +40,15 @@ import com.github.cunvoas.geoserviceisochrone.repo.admin.ContributeurRepository;
  * </p>
  * <p>
  * Exécution (nécessite Docker) :
- * {@code mvn test -De2e=true -Dtest=CujSanityConsultMapE2EIT}
+ * {@code mvn test -De2e=true -Dtest=TestCujSanityConsultMapE2E}
  * </p>
  * @author cunvoas
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"test"})
 @EnabledIfSystemProperty(named = "e2e", matches = "true",
-	disabledReason = "CUJ sanity E2E (Docker requis). Exécuter: mvn test -De2e=true -Dtest=CujSanityConsultMapE2EIT")
-class CujSanityConsultMapE2EIT {
+	disabledReason = "CUJ sanity E2E (Docker requis). Exécuter: mvn test -De2e=true -Dtest=TestCujSanityConsultMapE2E")
+class TestCujSanityConsultMapE2E {
 
 	private static final String LOGIN = "e2e-cuj";
 	private static final String PASSWORD = "e2e-password-1234";

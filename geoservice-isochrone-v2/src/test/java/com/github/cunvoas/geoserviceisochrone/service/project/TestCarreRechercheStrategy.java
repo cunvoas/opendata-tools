@@ -33,7 +33,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.proposal.ProjectSimulatorlIso
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class CarreRechercheStrategyTest {
+class TestCarreRechercheStrategy {
 
 	private final GeometryFactory factory = new GeometryFactory();
 

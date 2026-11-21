@@ -8,7 +8,7 @@ Le service propose **deux approches complémentaires** pour résoudre le problè
 1. **Approche itérative** (`calculeEtapeProposition`) : traite les carrés un par un, par ordre de déficit décroissant
 2. **Approche globale** (`calculePropositionSolver`) : utilise Choco Solver pour optimiser l'allocation sur l'ensemble de la ville
 
-## Classe de test : ServicePropositionParcTest
+## Classe de test : TestServicePropositionParc
 
 ### Méthode testée : `calculeEtapeProposition`
 
@@ -193,13 +193,13 @@ Crée des instances de `ParkProposalWork` pour les tests avec les paramètres :
 ## Exécution des tests
 
 ```bash
-mvn test -Dtest=ServicePropositionParcTest
+mvn test -Dtest=TestServicePropositionParc
 ```
 
 ### Test spécifique
 
 ```bash
-mvn test -Dtest=ServicePropositionParcTest#testCalculeEtapeProposition_avecDeficitImportant_ajouteParc
+mvn test -Dtest=TestServicePropositionParc#testCalculeEtapeProposition_avecDeficitImportant_ajouteParc
 ```
 
 ## Contraintes métier

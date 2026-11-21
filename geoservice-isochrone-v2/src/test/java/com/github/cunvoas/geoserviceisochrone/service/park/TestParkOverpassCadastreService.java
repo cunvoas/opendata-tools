@@ -27,7 +27,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
+import com.github.cunvoas.geoserviceisochrone.TestBaseUnit;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.Cadastre;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
@@ -42,7 +42,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepositor
 import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkOverpassRepository;
 
 @DisplayName("ParkOverpassCadastreService")
-class ParkOverpassCadastreServiceTest extends BaseUnitTest {
+class TestParkOverpassCadastreService extends TestBaseUnit {
 
 	private static final String INSEE_A = "59100";
 	private static final String INSEE_B = "59350";

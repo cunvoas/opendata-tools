@@ -21,7 +21,7 @@ seul les service  ParkAreaComputed, rest  ParkAreaComputed doivent évoluer. le 
 - Synthèse NDVI `/mvc/management/jobs/ndvi/progress` + template `ndviProgress.html`, sans année.
 - Lien depuis la pastille NDVI du dashboard.
 - Distinction par type : filtre et colonne `Type` (PARC, IRIS, CADASTRE, CARRE) dans la synthèse, dérivée de `ndvi_result.object_type`.
-- Tests OK : `NdviBatchJobServiceTest` 11/11, `MvcNdviControlerTest` 4/4.
+- Tests OK : `TestNdviBatchJobService` 11/11, `TestMvcNdviControler` 4/4.
 
 
 

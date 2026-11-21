@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-public class ComputeCarreServiceV4Test {
+public class TestComputeCarreServiceV4 {
 
     @Mock private ApplicationBusinessProperties properties;
     @Mock private ParkAreaRepository parkAreaRepository;

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 
-class ProposalSortStrategyTest {
+class TestProposalSortStrategy {
 
 	private static ParkProposalWork work(String id, Double accessingSurface, Double missingSurface,
 			Double surfacePerCapita, Double population) {

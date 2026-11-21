@@ -17,7 +17,7 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.ContributeurAction;
 import com.github.cunvoas.geoserviceisochrone.service.dashboard.ActivityTrackerService;
 
 @ExtendWith(MockitoExtension.class)
-class AopSaveTrackerTest {
+class TestAopSaveTracker {
 
 	@Mock
 	private ActivityTrackerService activityTrackerService;

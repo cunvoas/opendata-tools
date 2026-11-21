@@ -30,7 +30,7 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class ComputeServicesGuardsTest {
+class TestComputeServicesGuards {
 
 	@Mock private ApplicationBusinessProperties applicationBusinessProperties;
 	@Mock private InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository;

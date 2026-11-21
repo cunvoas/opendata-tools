@@ -12,6 +12,6 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest
 @ActiveProfiles({"test"})
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-public abstract class BaseIntegrationTest {
+public abstract class TestBaseIntegration {
     
 }

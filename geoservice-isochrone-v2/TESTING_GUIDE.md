@@ -4,13 +4,13 @@
 
 ### 1. Classes de Base
 
-#### `BaseUnitTest`
+#### `TestBaseUnit`
 - Utilisée pour les tests unitaires **SANS** contexte Spring
 - Initialise automatiquement MockitoAnnotations
 - À utiliser pour tester: services, utilities, logique métier isolée
 
 ```java
-class MyServiceTest extends BaseUnitTest {
+class TestMyService extends TestBaseUnit {
     @Mock
     private DependencyA mockDependency;
     
@@ -24,7 +24,7 @@ class MyServiceTest extends BaseUnitTest {
 }
 ```
 
-#### `BaseIntegrationTest`
+#### `TestBaseIntegration`
 - Utilisée pour les tests d'intégration **AVEC** contexte Spring
 - Active le profil `test` automatiquement
 - À utiliser pour: contrôleurs, services avec dépendances Spring réelles
@@ -32,7 +32,7 @@ class MyServiceTest extends BaseUnitTest {
 ```java
 @SpringBootTest
 @AutoConfigureMockMvc
-class MyControllerTest extends BaseIntegrationTest {
+class TestMyController extends TestBaseIntegration {
     @Autowired
     private MockMvc mockMvc;
     
@@ -66,7 +66,7 @@ TestDataFactory.resetCounters();
 ### Pattern 1: Mock avec Repository
 
 ```java
-class TestCityService extends BaseUnitTest {
+class TestCityService extends TestBaseUnit {
     
     @Mock
     private CityRepository cityRepository;
@@ -180,7 +180,7 @@ mvn test -P integration-tests
 
 ### ✅ À Faire
 
-1. **Utiliser BaseUnitTest et BaseIntegrationTest** pour une cohérence
+1. **Utiliser TestBaseUnit et TestBaseIntegration** pour une cohérence
 2. **Utiliser TestDataFactory** pour créer des données cohérentes
 3. **Nommer clairement** les tests avec @DisplayName
 4. **Arranger-Act-Assert** (AAA pattern)

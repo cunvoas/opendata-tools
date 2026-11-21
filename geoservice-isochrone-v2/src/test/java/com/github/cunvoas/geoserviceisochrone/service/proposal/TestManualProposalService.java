@@ -37,7 +37,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.reference.InseeCarre200mOnlyS
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class ManualProposalServiceTest {
+class TestManualProposalService {
 
 	@Mock
 	private ManualParkProposalMetaRepository metaRepository;

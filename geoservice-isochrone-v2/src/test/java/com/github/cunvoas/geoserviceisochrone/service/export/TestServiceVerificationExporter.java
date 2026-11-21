@@ -27,7 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.service.export.dto.ParkExportLine;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class ServiceVerificationExporterTest {
+class TestServiceVerificationExporter {
 
 	@Mock
 	private ParkJardinRepository parkJardinRepository;

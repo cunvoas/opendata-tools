@@ -20,7 +20,7 @@ class TestMyService {
 
 // APRÈS (✅ Correct)
 @DisplayName("Tests pour MyService")
-class TestMyService extends BaseUnitTest {
+class TestMyService extends TestBaseUnit {
     @Mock private DependencyRepository mockRepository;
     @InjectMocks private MyService tested;
     
@@ -142,8 +142,8 @@ test_[methodName]_[scenario]
 ### ✅ DO
 
 ```java
-// ✅ Utiliser BaseUnitTest
-class TestMyService extends BaseUnitTest { ... }
+// ✅ Utiliser TestBaseUnit
+class TestMyService extends TestBaseUnit { ... }
 
 // ✅ Utiliser @Mock et @InjectMocks
 @Mock private Repository repo;
@@ -201,7 +201,7 @@ Optional<Entity> result = service.get(1L);
 
 ### Mes Tests Ne Compilent Pas
 
-1. Vérifier que vous étendez `BaseUnitTest` ou `BaseIntegrationTest`
+1. Vérifier que vous étendez `TestBaseUnit` ou `TestBaseIntegration`
 2. Vérifier que `@Mock` et `@InjectMocks` sont importés de `org.mockito`
 3. Vérifier que vous avez un `@BeforeEach` qui appelle `TestDataFactory.resetCounters()`
 
@@ -221,8 +221,8 @@ Optional<Entity> result = service.get(1L);
 
 ```
 src/test/java/
-├── BaseUnitTest.java                  ← Étendre cette classe
-├── BaseIntegrationTest.java           ← Ou celle-ci
+├── TestBaseUnit.java                  ← Étendre cette classe
+├── TestBaseIntegration.java           ← Ou celle-ci
 ├── factory/
 │   ├── TestDataFactory.java           ← Créer données avec ceci
 │   └── MockFactory.java               ← Mocks communs

@@ -41,7 +41,7 @@ import com.github.cunvoas.geoserviceisochrone.service.opendata.ServiceOpenData;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class ParkServiceTest {
+class TestParkService {
 
 	@Mock private ServiceOpenData serviceOpenData;
 	@Mock private CsvParkEntranceParser csvParkEntranceParser;

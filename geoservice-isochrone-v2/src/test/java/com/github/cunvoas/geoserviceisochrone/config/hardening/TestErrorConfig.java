@@ -9,7 +9,7 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
  * Test basique pour {@link ErrorConfig} : vérifie que le customizer s'applique
  * et ajoute au moins un context customizer au factory.
  */
-public class ErrorConfigTest {
+public class TestErrorConfig {
 
     @Test
     public void errorReportValveCustomizer_shouldAddContextCustomizer() {

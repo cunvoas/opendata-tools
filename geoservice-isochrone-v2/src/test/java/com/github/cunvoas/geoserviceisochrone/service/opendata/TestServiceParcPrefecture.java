@@ -33,7 +33,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.IComputeCarreService;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class ServiceParcPrefectureTest {
+class TestServiceParcPrefecture {
 
 	@Mock private ParcPrefectureRepository parcPrefectureRepository;
 	@Mock private ParkJardinRepository parkJardinRepository;

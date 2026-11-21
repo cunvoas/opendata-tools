@@ -47,7 +47,7 @@ import com.github.cunvoas.geoserviceisochrone.service.park.IComputeIrisService;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class BatchJobServiceTest {
+class TestBatchJobService {
 
 	@Mock private ApplicationBusinessProperties applicationBusinessProperties;
 	@Mock private CadastreRepository cadastreRepository;

@@ -6,10 +6,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
+import com.github.cunvoas.geoserviceisochrone.TestBaseUnit;
 
 @DisplayName("Tests pour EmailSender")
-class TestEmailSender extends BaseUnitTest {
+class TestEmailSender extends TestBaseUnit {
 	
 	private EmailSender tested = new EmailSender();
 	

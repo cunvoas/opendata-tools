@@ -23,7 +23,7 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 
 @ExtendWith(MockitoExtension.class)
-class CommunauteCommuneServiceTest {
+class TestCommunauteCommuneService {
 
 	@Mock
 	private CommunauteCommuneRepository repository;

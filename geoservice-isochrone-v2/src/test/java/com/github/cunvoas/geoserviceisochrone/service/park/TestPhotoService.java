@@ -28,7 +28,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkPhotoRepository;
 import com.github.cunvoas.geoserviceisochrone.service.park.dto.PhotoDto;
 
 @ExtendWith(MockitoExtension.class)
-class PhotoServiceTest {
+class TestPhotoService {
 
 	@Mock
 	private ParkPhotoRepository parkPhotoRepository;

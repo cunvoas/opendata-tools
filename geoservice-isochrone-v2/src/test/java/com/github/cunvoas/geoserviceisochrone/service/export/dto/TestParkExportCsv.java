@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-class ParkExportCsvTest {
+class TestParkExportCsv {
 
 	@Test
 	void header_contains_all_columns_in_declaration_order() {

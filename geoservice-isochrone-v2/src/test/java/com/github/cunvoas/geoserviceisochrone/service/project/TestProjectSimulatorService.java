@@ -40,7 +40,7 @@ import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadRefere
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class ProjectSimulatorServiceTest {
+class TestProjectSimulatorService {
 
 	@Mock private ApplicationBusinessProperties applicationBusinessProperties;
 	@Mock private InseeCarre200mComputedV2Repository inseeCarre200mComputedV2Repository;

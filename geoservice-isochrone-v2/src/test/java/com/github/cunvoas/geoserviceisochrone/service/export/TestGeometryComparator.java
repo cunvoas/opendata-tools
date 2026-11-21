@@ -8,7 +8,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-class GeometryComparatorTest {
+class TestGeometryComparator {
 
 	private final GeometryFactory factory = new GeometryFactory();
 	private final GeometryComparator tested = new GeometryComparator();

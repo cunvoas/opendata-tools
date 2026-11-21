@@ -16,7 +16,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 
-import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
+import com.github.cunvoas.geoserviceisochrone.TestBaseUnit;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ParkProposalHelper;
 import com.github.cunvoas.geoserviceisochrone.service.solver.helper.ProposalComputationTypeAlgo;
@@ -25,7 +25,7 @@ import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j;
 
 @Log
-class ParkProposalHelperTest extends BaseUnitTest {
+class TestParkProposalHelper extends TestBaseUnit {
 
     private static final GeometryFactory GF = new GeometryFactory();
 

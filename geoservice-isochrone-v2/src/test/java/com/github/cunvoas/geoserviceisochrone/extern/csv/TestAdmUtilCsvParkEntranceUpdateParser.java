@@ -27,7 +27,8 @@ import com.github.cunvoas.geoserviceisochrone.service.park.ParkService;
 
 @SpringBootTest
 @ActiveProfiles({"prod","dev"})
-class AdmUtilCsvParkEntranceUpdateParser {
+@Disabled("outil de mise à jour manuel: dépend de fichiers locaux et de la base de production")
+class TestAdmUtilCsvParkEntranceUpdateParser {
 	
 
 	private CsvParkGeomUpdateParser testedGeomUpdate = new CsvParkGeomUpdateParser();

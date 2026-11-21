@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposal;
 import com.github.cunvoas.geoserviceisochrone.model.proposal.ParkProposalWork;
 
-class SolverStrategiesTest {
+class TestSolverStrategies {
 
 	private static ParkProposalWork work(String id, double missing, double population, double perCapita) {
 		ParkProposalWork w = new ParkProposalWork();

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import com.github.cunvoas.geoserviceisochrone.controller.geojson.NdviController.NdviSummary;
 import com.github.cunvoas.geoserviceisochrone.repo.NdviResultRepository.NdviSummaryProjection;
 
-class NdviControllerSummaryTest {
+class TestNdviControllerSummary {
 
 	/** Projection factice : un parc urbain au couvert clairsemé. */
 	private static class FakeProjection implements NdviSummaryProjection {

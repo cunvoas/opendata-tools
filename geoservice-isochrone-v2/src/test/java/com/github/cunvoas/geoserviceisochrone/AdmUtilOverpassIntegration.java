@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +17,7 @@ import com.github.cunvoas.geoserviceisochrone.extern.overpass.OverpassRawParser;
 
 @SpringBootTest()
 @ActiveProfiles({"dev"})
+@Disabled("test manuel: dépend d'un répertoire Overpass local")
 class AdmUtilOverpassIntegration {
     
     @Autowired

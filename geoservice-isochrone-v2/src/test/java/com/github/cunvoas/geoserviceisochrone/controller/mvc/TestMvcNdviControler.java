@@ -27,7 +27,7 @@ import com.github.cunvoas.geoserviceisochrone.repo.ParkAreaComputedRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 
-class MvcNdviControlerTest {
+class TestMvcNdviControler {
 
 	private static final long REGION_ID = 9L;
 	private static final long COM2CO_ID = 1L;
