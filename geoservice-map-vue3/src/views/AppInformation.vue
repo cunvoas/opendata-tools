@@ -189,20 +189,23 @@
                 </div>
             </div>
 
-            <section v-if="ndviEnabled" aria-labelledby="thesaurus-ndvi" class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
-                <h3 id="thesaurus-ndvi" class="text-lg font-semibold">Indices de végétation</h3>
+            <section v-if="ndviEnabled" aria-labelledby="thesaurus-vegetation" class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                <h3 id="thesaurus-vegetation" class="text-lg font-semibold">La végétation des parcs</h3>
                 <p class="mt-2 text-sm leading-relaxed">
-                    Depuis l'espace, une image satellite Sentinel-2 permet d'évaluer la végétation d'un parc sans aucun relevé sur place. Trois indices en sont extraits, qui se complètent : le NDVI donne la densité de végétation, le GNDVI l'état chlorophyllien et le stress hydrique, le NDRE la structure de la canopée. Plus une valeur est élevée, plus la végétation est dense et active. Ce sont des lectures écologiques du parc : elles ne remplacent ni la surface OMS ni l'accessibilité. Le seul indice affiché aujourd'hui est le NDVI, sur la carte (bouton NDVI) et dans l'écran NDVI ; le GNDVI et le NDRE sont conservés pour l'analyse.
+                    Depuis l'espace, les satellites Sentinel-2 observent la lumière renvoyée par les feuilles. Une végétation active absorbe le rouge et réfléchit fortement le proche infrarouge (une lumière invisible pour l'œil) ; un sol nu, du béton, une ombre ou de l'eau ne se comportent pas de la même façon. Quatre indicateurs complémentaires sont calculés pour chaque parc : le NDVI, le SAVI, le NDRE et le GNDVI. Ils décrivent la quantité de végétation, sa vigueur, sa teneur en chlorophylle (le pigment vert des feuilles) et les signes de stress. Ce sont des lectures écologiques : elles ne remplacent ni la surface OMS ni l'accessibilité du parc.
                 </p>
-                <h4 class="mt-4 font-semibold">Ce que mesure chaque indice</h4>
+                <p class="mt-2 text-sm leading-relaxed">
+                    Pourquoi quatre ? Parce qu'un seul indicateur ne suffit pas : le NDVI plafonne sur les feuillages très denses et peut sous-estimer un parc clairsemé dont le sol est visible. Le SAVI corrige cet effet du sol, le NDRE reste sensible à la chlorophylle des feuillages denses, et le GNDVI suit l'activité chlorophyllienne et le stress. Les croiser donne une lecture plus robuste que n'importe lequel pris seul.
+                </p>
+                <h4 class="mt-4 font-semibold">Ce que mesure chaque indicateur</h4>
                 <div class="mt-2 overflow-x-auto">
-                    <table class="w-full text-sm border-collapse" aria-label="NDVI, GNDVI et NDRE : ce que chacun mesure">
+                    <table class="w-full text-sm border-collapse" aria-label="NDVI, SAVI, NDRE et GNDVI : ce que chacun mesure">
                         <thead>
                             <tr>
-                                <th scope="col" class="text-left pr-3 pb-1">Indice</th>
+                                <th scope="col" class="text-left pr-3 pb-1">Indicateur</th>
                                 <th scope="col" class="text-left pr-3 pb-1">Nom complet</th>
-                                <th scope="col" class="text-left pr-3 pb-1">Ce qu'il mesure spécifiquement</th>
-                                <th scope="col" class="text-left pb-1">Utilité pour notre étude</th>
+                                <th scope="col" class="text-left pr-3 pb-1">Ce qu'il mesure</th>
+                                <th scope="col" class="text-left pb-1">À quoi il sert</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -215,17 +218,24 @@
                         </tbody>
                     </table>
                 </div>
+                <p class="mt-3 text-sm leading-relaxed">
+                    L'application croise ces quatre indicateurs pour décrire la végétation d'un parc.
+                </p>
                 <h4 class="mt-4 font-semibold">Calcul</h4>
                 <p class="mt-1 text-sm leading-relaxed">
                     NDVI = (proche infrarouge − rouge) / (proche infrarouge + rouge). <br />
-                    GNDVI = (proche infrarouge − vert) / (proche infrarouge + vert).<br />
+                    SAVI = ((proche infrarouge − rouge) / (proche infrarouge + rouge + 0,5)) × 1,5.<br />
                     NDRE = (proche infrarouge − <a href="https://fr.wikipedia.org/wiki/Red-edge" target="_blank" rel="noopener noreferrer" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">red edge</a>) / (proche infrarouge + red edge).<br />
-                    Chaque valeur est comprise entre −1 et 1. Pour chaque parc, l'application affiche la moyenne, le minimum, le maximum et l'écart-type des pixels, ainsi que la date de l'image utilisée.
+                    GNDVI = (proche infrarouge − vert) / (proche infrarouge + vert).<br />
+                    Le NDVI, le NDRE et le GNDVI sont compris entre −1 et 1 ; le SAVI peut dépasser 1 en couvert très dense. Plus la valeur est élevée, plus la végétation est active et fournie. Pour chaque parc, l'application affiche la moyenne, le minimum, le maximum et l'écart-type des pixels, ainsi que la période d'observation.
                 </p>
-                <h4 class="mt-4 font-semibold">Lire les valeurs</h4>
+                <h4 class="mt-4 font-semibold">Lire le NDVI sur la carte</h4>
+                <p class="mt-1 text-sm leading-relaxed">
+                    La carte colore les parcs selon leur NDVI moyen. Les autres indicateurs servent à nuancer l'analyse ; ils ne changent pas la couleur du parc.
+                </p>
                 <div class="mt-2 overflow-x-auto">
                     <table class="w-full text-sm border-collapse">
-                        <caption class="text-left mb-2">Seuils NDVI par type de surface</caption>
+                        <caption class="text-left mb-2">Seuils NDVI utilisés pour la coloration de la carte</caption>
                         <thead>
                             <tr>
                                 <th scope="col" class="text-left pr-3 pb-1">Valeur NDVI</th>
@@ -245,7 +255,7 @@
                     </table>
                 </div>
                 <p class="mt-3 text-sm leading-relaxed">
-                    Source : images Sentinel-2 L2A. Les statistiques sont calculées par le fournisseur Copernicus Data Space Ecosystem, sans téléchargement d'image.
+                    Source : images Sentinel-2 L2A. Les quatre indicateurs sont calculés par le fournisseur Copernicus Data Space Ecosystem, sans téléchargement d'image. Ce sont des indicateurs de télédétection : ils aident à repérer les parcs à examiner, ils ne remplacent pas une expertise de terrain.
                 </p>
             </section>
 
@@ -352,20 +362,26 @@ export default {
                 {
                     code: 'NDVI',
                     nom: 'Normalized Difference Vegetation Index',
-                    mesure: "La densité globale de la végétation et la présence de chlorophylle active (via le spectre Rouge).",
-                    utilite: "Détecter la fracture verte : distinguer instantanément les zones purement minérales/bétonnées des zones végétalisées dans les quartiers."
+                    mesure: "La quantité et la vigueur de la végétation : plus les feuilles sont nombreuses et actives, plus la valeur monte.",
+                    utilite: "Distinguer d'un coup d'œil les parcs bien végétalisés des zones minérales ou des pelouses sèches."
                 },
                 {
-                    code: 'GNDVI',
-                    nom: 'Green Normalized Difference Vegetation Index',
-                    mesure: "La concentration en chlorophylle et le stress hydrique (via le spectre Vert). Plus sensible que le NDVI sur la végétation dense.",
-                    utilite: "Évaluer la fraîcheur : repérer si les arbres des parcs souffrent de la sécheresse ou s'ils sont assez vigoureux pour créer de vrais îlots de fraîcheur urbains."
+                    code: 'SAVI',
+                    nom: 'Soil-Adjusted Vegetation Index',
+                    mesure: "La végétation en corrigeant l'effet du sol visible, qui fausse le NDVI quand le couvert est clairsemé.",
+                    utilite: "Éviter de sous-estimer un parc jeune ou peu dense dont le sol apparaît entre les plants."
                 },
                 {
                     code: 'NDRE',
                     nom: 'Normalized Difference Red Edge Index',
-                    mesure: "La structure de la canopée et l'azote foliaire (via la bande de transition red edge). Pénètre plus profondément le feuillage.",
-                    utilite: "Mesurer la qualité de la strate arborée : différencier une simple pelouse pelée (faible volume de fraîcheur) d'une forêt urbaine dense ou de grands arbres capables de filtrer l'air."
+                    mesure: "La teneur en chlorophylle des feuillages denses, là où le NDVI atteint son plafond.",
+                    utilite: "Voir si les arbres restent actifs et en bonne santé même quand la canopée est épaisse."
+                },
+                {
+                    code: 'GNDVI',
+                    nom: 'Green Normalized Difference Vegetation Index',
+                    mesure: "L'activité chlorophyllienne et les signes de stress hydrique, lus dans le vert réfléchi par les feuilles.",
+                    utilite: "Repérer plus tôt les arbres qui souffrent de la sécheresse et suivre la fraîcheur apportée par le parc."
                 }
             ]
         }
