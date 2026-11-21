@@ -141,12 +141,6 @@ export default {
             return [...this.cities].sort((a, b) =>
                 a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' })
             );
-        },
-        selectedCityInsee() {
-            return this.cities.find(city => city.id === this.selectedCityId) || {};
-        },
-        selectedAddressCoordinates() {
-            return this.selectedAddress.coordinates;
         }
     },
     methods: {
@@ -161,7 +155,8 @@ export default {
                 // If we have a saved region, find it in the loaded data
                 if (this.selectedRegion) {
                     
-                    const regionOption = this.regions.find(region => region.id === this.selectedRegion);
+                    // Les ids de regions.json sont numériques, ceux de localStorage/URL sont des chaînes.
+                    const regionOption = this.regions.find(region => String(region.id) === String(this.selectedRegion));
                     if (regionOption) {
                         this.selectedRegionName = regionOption.name;
                         this.regionSearch = regionOption.name;
@@ -194,7 +189,7 @@ export default {
                 
                 // Always fetch cities if we have a selectedCom2co (from localStorage or default)
                 if (this.selectedCom2co) {
-                    const com2coOption = this.com2cos.find(com2co => com2co.id === this.selectedCom2co);
+                    const com2coOption = this.com2cos.find(com2co => String(com2co.id) === String(this.selectedCom2co));
                     if (com2coOption) {
                         // Assign the com2co name directly
                         this.selectedCom2coName = com2coOption.name;
@@ -298,7 +293,7 @@ export default {
             if (!this.selectedCity && !this.selectedCityInseeCode) return [];
             
             try {
-                const response = await axios.get(`https://api-adresse.data.gouv.fr/search/?citycode=${this.selectedCityInseeCode}&q=` + encodeURI(query), { timeout: 5000 });
+                const response = await axios.get(`https://api-adresse.data.gouv.fr/search/?citycode=${this.selectedCityInseeCode}&q=` + encodeURIComponent(query), { timeout: 5000 });
                 const geojson = response.data;
                 this.addresses = geojson.features.map(feature => ({
                     id: feature.geometry.coordinates.join(', '),

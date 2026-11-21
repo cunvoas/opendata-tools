@@ -72,7 +72,7 @@ export default {
     data() {
         return {
             location: null,
-            colorblindMode: false,
+            colorblindMode: localStorage.getItem('colorblindMode') === 'true',
             showParcsLegend: false,
             showNdviLegend: false,
             ndviLegend: NDVI_CATEGORIES

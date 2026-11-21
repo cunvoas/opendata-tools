@@ -150,6 +150,26 @@ describe('SearchLocation.vue', () => {
       // Le premier emit vient du localStorage restore
       expect(emitted[0][0]).toMatchObject({ cityId: '2878', regionId: '9' })
     })
+
+    it('préremplit région, EPCI et commune quand les ids des fichiers sont numériques', async () => {
+      localStorage.setItem('location-selected', JSON.stringify({
+        locType: 'city', regionId: '9', com2coId: '1',
+        cityId: '2878', cityName: 'Lille (59350)', cityInsee: '59350'
+      }))
+      axios.get.mockImplementation((url) => {
+        if (url.includes('regions.json')) return Promise.resolve({ data: [{ id: 9, name: 'Hauts-de-France' }] })
+        if (url.includes('com2cos_')) return Promise.resolve({ data: [{ id: 1, name: 'Métropole Européenne de Lille' }] })
+        if (url.includes('cities_')) return Promise.resolve({ data: [{ id: 2878, name: 'LILLE', inseeCode: '59350', lonX: '3.05', latY: '50.63' }] })
+        return Promise.resolve({ data: { features: [] } })
+      })
+
+      const wrapper = mount(SearchLocation)
+      await flushPromises()
+
+      expect(wrapper.find('#selRegion').element.value).toBe('Hauts-de-France')
+      expect(wrapper.find('#selCom2co').element.value).toBe('Métropole Européenne de Lille')
+      expect(wrapper.find('#selCity').element.value).toBe('Lille (59350)')
+    })
   })
 
   describe('erreurs fetch', () => {
@@ -366,6 +386,21 @@ describe('SearchLocation.vue', () => {
       const adresseCall = axios.get.mock.calls.find(c => c[0].includes('api-adresse'))
       expect(adresseCall).toBeDefined()
       expect(adresseCall[0]).toContain('59350')
+    }, 2000)
+
+    it('encode les caractères réservés de la requête (&, ?, #)', async () => {
+      mockAxiosForAllCalls()
+      const wrapper = mount(SearchLocation)
+      await flushPromises()
+
+      await wrapper.setData({ selectedCityInseeCode: '59350', selectedCity: '2878' })
+      wrapper.vm.fetchAddresses('Rue A & B?')
+      await new Promise(resolve => setTimeout(resolve, 400))
+      await flushPromises()
+
+      const adresseCall = axios.get.mock.calls.find(c => c[0].includes('api-adresse'))
+      expect(adresseCall[0]).toContain('q=Rue%20A%20%26%20B%3F')
+      expect(adresseCall[0]).not.toContain('q=Rue A & B?')
     }, 2000)
   })
 })

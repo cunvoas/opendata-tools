@@ -384,6 +384,22 @@ describe('AppNdvi', () => {
       expect(parkNames(wrapper)).toEqual(['SAVI 0.2', 'SAVI 0.1', ...absents]);
     });
 
+    it('trie sur une colonne imbriquée (evaluation.scoreSante et evaluation.confiance)', async () => {
+      const evaluation = (scoreSante, confiance) => ({ recouvrement: 'x', scoreSante, confiance });
+      const wrapper = await mountWith([
+        { ...payload.parks[0], name: 'Citadelle', evaluation: evaluation(46.5, 'Élevée') },
+        { ...payload.parks[1], name: 'Parc A', evaluation: evaluation(20, 'Moyenne') },
+        { ...payload.parks[2], name: 'Parc B', evaluation: evaluation(80, 'Faible') },
+        { ...payload.parks[3], name: 'Parc C', evaluation: null }
+      ]);
+
+      await sortBy(wrapper, 'Score santé');
+      expect(parkNames(wrapper)).toEqual(['Parc A', 'Citadelle', 'Parc B', 'Parc C']);
+
+      await sortBy(wrapper, 'Confiance');
+      expect(parkNames(wrapper)).toEqual(['Citadelle', 'Parc B', 'Parc A', 'Parc C']);
+    });
+
     it('annonce le tri aux lecteurs d’écran, sans message au chargement', async () => {
       const wrapper = await mountWith();
       const status = wrapper.find('p[role="status"]');
@@ -496,6 +512,19 @@ describe('AppNdvi', () => {
       const swatch = rowOf(wrapper, 'Dense').find('td .ndvi-swatch');
       expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].colorDaltonien, 0.5)));
       expect(chartRows(wrapper)[3].bar.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].colorDaltonien, 0.5)));
+    });
+
+    it('actualise les couleurs quand le mode daltonien change sans rechargement', async () => {
+      const wrapper = await mountWith([{ ...payload.parks[0], parkId: '1', name: 'Dense', ndviMean: 0.6 }]);
+      expect(wrapper.vm.daltonien).toBe(false);
+
+      localStorage.setItem('colorblindMode', 'true');
+      window.dispatchEvent(new Event('colorblind-mode-changed'));
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.vm.daltonien).toBe(true);
+      const swatch = rowOf(wrapper, 'Dense').find('td .ndvi-swatch');
+      expect(swatch.element.style.backgroundColor).toBe(cssColor(hexToRgba(NDVI_CATEGORIES[3].colorDaltonien, 0.5)));
     });
 
     it('affiche la couleur de la catégorie dans une pastille, sans pastille quand le NDVI est absent', async () => {

@@ -342,6 +342,38 @@ describe('Isochrone - couleurs NDVI en mode daltonien', () => {
   });
 });
 
+describe('Isochrone - changement d’année', () => {
+  it('envoie neLat et neLng corrects dans les paramètres de la boîte englobante', () => {
+    const wrapper = mountIsochrone();
+    wrapper.vm.boundSwLat = 50.6;
+    wrapper.vm.boundSwLng = 2.9;
+    wrapper.vm.boundNeLat = 50.7;
+    wrapper.vm.boundNeLng = 3.1;
+    wrapper.vm.annee = 2019;
+    const isochrones = vi.spyOn(wrapper.vm, 'callGeoJsonIsochrones').mockImplementation(() => {});
+    const carres = vi.spyOn(wrapper.vm, 'callGeoJsonCarres').mockImplementation(() => {});
+
+    wrapper.vm.onAnnee();
+
+    const expected = '?swLat=50.6&swLng=2.9&neLat=50.7&neLng=3.1&annee=2019';
+    expect(isochrones).toHaveBeenCalledWith(expected);
+    expect(carres).toHaveBeenCalledWith(expected);
+  });
+});
+
+describe('Isochrone - échappement du HTML des infobulles', () => {
+  it('n’injecte pas de balise depuis le nom du parc', () => {
+    const wrapper = mountIsochrone();
+    const html = wrapper.vm.buildParkDetailHtml({
+      name: '<img src=x onerror=alert(1)>',
+      ndviEnabled: false
+    });
+
+    expect(html).not.toContain('<img');
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+  });
+});
+
 describe('Isochrone - requête des parcs (mode dynamic)', () => {
   it('sans paramètres, reprend les bornes courantes au lieu de « undefined »', () => {
     const wrapper = mountIsochrone();

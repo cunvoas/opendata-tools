@@ -1,19 +1,27 @@
 <template>
-  <div v-if="loaded" class="flex flex-col items-center w-full">
-    <h2 class="text-center">Répartition des habitants {{ villeNom ? 'de ' + villeNom : '' }} par surface de parc accessible à pied</h2>
-    <div v-if="shouldDisplayBarChart" class="w-full max-w-4xl">
-      <Bar :data="dataBar" :options="barOptions" class="w-full h-[300px]" />
+  <div class="flex flex-col items-center w-full">
+    <div class="mb-4">
+      <label for="anneeStats" class="font-medium mr-2">Année</label>
+      <select id="anneeStats" v-model.number="annee" class="border rounded px-2 py-1">
+        <option v-for="year in annees" :key="year" :value="year">{{ year }}</option>
+      </select>
     </div>
-    <div class="w-full max-w-xs mt-6">
-      <Pie :data="dataPie" :options="myOptions" class="w-full h-[300px]" />
-      <div class="text-center text-sm mt-2 mb-5">
-        <span>Répartition des habitants par seuil de surface de parc et jardin public accessible</span>
+    <template v-if="loaded">
+      <h2 class="text-center">Répartition des habitants {{ villeNom ? 'de ' + villeNom : '' }} par surface de parc accessible à pied</h2>
+      <div v-if="shouldDisplayBarChart" class="w-full max-w-4xl">
+        <Bar :data="dataBar" :options="barOptions" class="w-full h-[300px]" />
       </div>
-    </div>
-    <!-- Alternative textuelle pour les agents IA et l'accessibilité -->
-    <StatsTableAccessibility :villeNom="villeNom" :dataPie="dataPie" :loaded="loaded" />
+      <div class="w-full max-w-xs mt-6">
+        <Pie :data="dataPie" :options="myOptions" class="w-full h-[300px]" />
+        <div class="text-center text-sm mt-2 mb-5">
+          <span>Répartition des habitants par seuil de surface de parc et jardin public accessible</span>
+        </div>
+      </div>
+      <!-- Alternative textuelle pour les agents IA et l'accessibilité -->
+      <StatsTableAccessibility :villeNom="villeNom" :dataPie="dataPie" :loaded="loaded" />
+    </template>
+    <div v-else class="text-center" role="status">Chargement en cours...</div>
   </div>
-  <div v-else class="text-center" role="status">Chargement en cours...</div>
 </template>
 
 
@@ -90,6 +98,7 @@ export default {
       dataBar:  {},
       dataPie:  {},
       annee: 2021,
+      annees: [2021, 2019, 2017, 2015],
       loaded: false,
       villeNom: '',
       locationType: null,
@@ -108,7 +117,7 @@ export default {
                 const value = context.parsed.y;
                 const dataset = context.dataset;
                 const total = dataset.data.reduce((acc, val) => acc + val, 0);
-                const percentage = ((value / total) * 100).toFixed(1);
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
                 return `${value} habitants (${percentage}%)`;
               }
             }
@@ -143,7 +152,7 @@ export default {
                 const value = context.parsed;
                 const dataset = context.dataset;
                 const total = dataset.data.reduce((acc, val) => acc + val, 0);
-                const percentage = ((value / total) * 100).toFixed(1);
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
                 const label = context.label || '';
                 return `${label}: ${value} habitants (${percentage}%)`;
               }
@@ -154,6 +163,12 @@ export default {
     }
   },
     watch: {
+        annee() {
+            // Même territoire, nouveau millésime : on recharge les statistiques affichées.
+            if (this.lastProcessedLocation) {
+                this.processLocation(this.lastProcessedLocation);
+            }
+        },
         location: {
             async handler(newLocation) {
               
@@ -295,6 +310,7 @@ export default {
         // Load city stats (existing behavior)
         const cityInsee = newLocation.cityInsee;
         console.log("processLocation (city):", regionId, com2coId, cityInsee);
+        // 2 caractères volontairement : le back publie aussi les dossiers DOM sous insee.substring(0, 2) ("97").
         const dept = cityInsee.substring(0,2);
         callUrl = DATA_MODE === 'dynamic'
           ? `${DYNAMIC_ON_LOCAL}/map/stats/city/${cityInsee}?annee=${annee}`

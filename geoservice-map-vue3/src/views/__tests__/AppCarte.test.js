@@ -74,6 +74,17 @@ describe('AppCarte', () => {
     expect(ndviRows(wrapper).every(isHidden)).toBe(true);
   });
 
+  it('démarre en mode daltonien si localStorage le dit (légende alignée sur la carte)', () => {
+    localStorage.setItem('colorblindMode', 'true');
+    try {
+      const wrapper = mountAppCarte();
+      expect(wrapper.vm.colorblindMode).toBe(true);
+      expect(wrapper.findAll('td div[style*="rgba"]')[0].attributes('style')).toContain(hexToRgba('#d73027', 0.4));
+    } finally {
+      localStorage.removeItem('colorblindMode');
+    }
+  });
+
   it('la légende NDVI suit le mode daltonien de la carte', async () => {
     const wrapper = mountAppCarte();
     const isochrone = wrapper.findComponent('[data-stub="isochrone"]');

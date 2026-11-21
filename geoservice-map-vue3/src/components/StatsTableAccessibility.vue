@@ -42,7 +42,7 @@ export default {
   },
   computed: {
     tableData() {
-      if (!this.dataPie?.labels || !this.dataPie.datasets) return [];
+      if (!this.dataPie?.labels || !this.dataPie.datasets?.[0]?.data) return [];
       const labels = this.dataPie.labels;
       const data = this.dataPie.datasets[0].data;
       const total = data.reduce((somme, valeur) => somme + (valeur || 0), 0);

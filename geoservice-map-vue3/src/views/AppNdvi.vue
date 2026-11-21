@@ -205,7 +205,10 @@ function normalize(text) {
 }
 
 function sortValue(park, column) {
-    const value = park[column.field || column.key];
+    // field peut être un chemin imbriqué (evaluation.scoreSante) : on le résout propriété par propriété.
+    const value = (column.field || column.key)
+        .split('.')
+        .reduce((node, path) => (node == null ? undefined : node[path]), park);
     if (value === null || value === undefined || value === '') return null;
     if (column.type === 'text') return String(value);
     const parsed = column.type === 'date' ? new Date(value).getTime() : Number(value);
@@ -298,6 +301,9 @@ export default {
         }
     },
     mounted() {
+        // Le mode daltonien peut changer dans un autre onglet (storage) ou via l'événement applicatif.
+        window.addEventListener('storage', this.syncColorblindMode);
+        window.addEventListener('colorblind-mode-changed', this.syncColorblindMode);
         this.epciId = currentEpciId();
         // La commune peut venir du lien (écran MVC) ou du sélecteur mémorisé, si elle appartient à cet EPCI.
         const saved = savedLocation();
@@ -311,7 +317,15 @@ export default {
         }
         this.load();
     },
+    beforeUnmount() {
+        window.removeEventListener('storage', this.syncColorblindMode);
+        window.removeEventListener('colorblind-mode-changed', this.syncColorblindMode);
+    },
     methods: {
+        syncColorblindMode(event) {
+            if (event?.type === 'storage' && event.key !== 'colorblindMode') return;
+            this.daltonien = localStorage.getItem('colorblindMode') === 'true';
+        },
         // Même transparence (0,5) que les polygones et la légende de la carte.
         pastille(hex) {
             return hexToRgba(hex, 0.5);

@@ -7,5 +7,5 @@ const enTexte = (codes) => codes.map((code) => String.fromCodePoint(code)).join(
  */
 export function ecrireAuProjet(sujet) {
   const adresse = enTexte([111, 120, 121, 103, 101, 110, 101, 46, 108, 109]) + enTexte([64, 103, 109, 97, 105, 108, 46, 99, 111, 109]);
-  window.location.href = `${enTexte([77, 65, 73, 76, 84, 79])}:${adresse}?subject=${encodeURIComponent(sujet)}`;
+  window.location.href = `${enTexte([77, 65, 73, 76, 84, 79])}:${adresse}?subject=${encodeURIComponent(sujet || '')}`;
 }
