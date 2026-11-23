@@ -74,6 +74,7 @@ import Com2coQuickAccess from "../components/Com2coQuickAccess.vue";
 import {
     COMMUNES, EPCIS, communeParInsee, epciParSiren, urlCommune, urlEpci
 } from "../utils/territoires.js";
+import { dossierEpciMel } from "../utils/landingStats.js";
 
 export default {
     name: "AppStatistics",
@@ -167,7 +168,7 @@ export default {
             this.location = {
                 cityInsee: '59350',
                 regionId: '32',
-                com2coId: '1',
+                com2coId: dossierEpciMel(),
                 cityName: 'Lille',
                 lat: 50.62925,
                 lng: 3.057256

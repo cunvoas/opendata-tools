@@ -97,6 +97,27 @@ public class CommunauteCommuneService {
 	}
 	
 	/**
+	 * Vérifie le format et l'unicité du numéro Siren.
+	 * @param comm2co EPCI à enregistrer
+	 * @throws IllegalArgumentException si le numéro est invalide ou déjà utilisé
+	 */
+	private void validerSiren(CommunauteCommune comm2co) {
+		String siren = comm2co.getSiren();
+		if (siren == null) {
+			return;
+		}
+		if (!siren.matches("\\d{9}")) {
+			throw new IllegalArgumentException("Le numéro Siren doit comporter exactement 9 chiffres.");
+		}
+		communauteCommuneRepository.findBySiren(siren).ifPresent(autre -> {
+			if (!autre.getId().equals(comm2co.getId())) {
+				throw new IllegalArgumentException("Le numéro Siren " + siren
+						+ " est déjà utilisé par l'intercommunalité " + autre.getName() + ".");
+			}
+		});
+	}
+
+	/**
 	 * Sauvegarde ou met à jour une communauté de communes.
 	 * 
 	 * @param comm2co CommunauteCommune à sauvegarder
@@ -105,6 +126,7 @@ public class CommunauteCommuneService {
 	public CommunauteCommune save(CommunauteCommune comm2co) {
 		if (comm2co != null) {
 			comm2co.setSiren(StringUtils.hasText(comm2co.getSiren()) ? comm2co.getSiren().trim() : null);
+			validerSiren(comm2co);
 			if (comm2co.getId() != null) {
 				Optional<CommunauteCommune> oComm2co = communauteCommuneRepository.findById(comm2co.getId());
 				if (oComm2co.isPresent()) {

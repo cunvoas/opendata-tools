@@ -22,6 +22,12 @@ describe('libelleTranche', () => {
     expect(libelleTranche({ surface: 'Non respect des minima OMS' })).toBe('Sous les minima de l’OMS')
     expect(libelleTranche({ surface: 'Préconisé par l\'OMS' })).toBe('Niveau préconisé par l’OMS')
   })
+
+  it('lit les niveaux OMS du contrat v2', () => {
+    expect(libelleTranche({ niveauOms: 'INSUFFISANT' })).toBe('Sous les minima de l’OMS')
+    expect(libelleTranche({ niveauOms: 'MINIMUM' })).toBe('Minimum conseillé par l’OMS')
+    expect(libelleTranche({ niveauOms: 'PRECONISE' })).toBe('Niveau préconisé par l’OMS')
+  })
 })
 
 describe('formaterPourcentage', () => {

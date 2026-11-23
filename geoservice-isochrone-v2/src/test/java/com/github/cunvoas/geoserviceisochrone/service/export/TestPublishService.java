@@ -1,8 +1,15 @@
 package com.github.cunvoas.geoserviceisochrone.service.export;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +22,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
-import com.github.cunvoas.geoserviceisochrone.extern.helper.GitHelper;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
 import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceService;
@@ -27,7 +33,6 @@ class TestPublishService {
 	private ServicePublicationExporter exporter;
 	private StatsSurfaceService statsSurfaceService;
 	private CommunauteCommuneRepository repository;
-	private GitHelper gitHelper;
 	private ApplicationBusinessProperties properties;
 
 	@BeforeEach
@@ -36,23 +41,38 @@ class TestPublishService {
 		exporter = mock(ServicePublicationExporter.class);
 		statsSurfaceService = mock(StatsSurfaceService.class);
 		repository = mock(CommunauteCommuneRepository.class);
-		gitHelper = mock(GitHelper.class);
 		properties = mock(ApplicationBusinessProperties.class);
 
 		ReflectionTestUtils.setField(tested, "servicePublicationExporter", exporter);
 		ReflectionTestUtils.setField(tested, "statsSurfaceService", statsSurfaceService);
 		ReflectionTestUtils.setField(tested, "communauteCommuneRepository", repository);
-		ReflectionTestUtils.setField(tested, "gitHelper", gitHelper);
 		ReflectionTestUtils.setField(tested, "applicationBusinessProperties", properties);
 
 		CommunauteCommune c2c = new CommunauteCommune();
 		c2c.setId(1L);
+		c2c.setName("Métropole Européenne de Lille");
+		c2c.setSiren("200093201");
 		when(repository.findById(1L)).thenReturn(Optional.of(c2c));
-		when(gitHelper.getLocalPath()).thenReturn("/tmp/repo");
 	}
 
 	@Test
-	void testProductionFailureBlocksGitPublication() throws Exception {
+	void testPublicationRefuseeSansSiren() {
+		CommunauteCommune sansSiren = new CommunauteCommune();
+		sansSiren.setId(1L);
+		sansSiren.setName("CA sans Siren");
+		when(repository.findById(1L)).thenReturn(Optional.of(sansSiren));
+
+		tested.publishAsync(1L, 2025);
+
+		PublicationStatus status = tested.getStatus(1L, 2025);
+		assertEquals(PublicationStatus.Phase.PRODUCTION_FAILED, status.getPhase());
+		assertTrue(status.getMessage().contains("CA sans Siren"));
+		assertTrue(status.getMessage().contains("Siren"));
+		verifyNoInteractions(exporter, statsSurfaceService);
+	}
+
+	@Test
+	void testProductionFailureBlocksCommit() throws Exception {
 		when(properties.getJsonFileFolder()).thenReturn("/tmp/data");
 		doThrow(new IOException("boom")).when(exporter).writeGeoJsonCarreaux(any(), any());
 
@@ -62,88 +82,84 @@ class TestPublishService {
 		assertEquals(PublicationStatus.Phase.PRODUCTION_FAILED, status.getPhase());
 		assertTrue(status.getMessage().contains("carres"));
 		assertNull(status.getGitSha());
-		verifyNoInteractions(gitHelper);
 	}
 
 	@Test
-	void testPushSkippedWhenGitNotConfigured() throws Exception {
-		when(properties.getJsonFileFolder()).thenReturn("/tmp/data");
-		when(gitHelper.isConfigured()).thenReturn(false);
+	void testSuccessfulProductionWaitsForFinalCommit(@TempDir Path tempDir) throws Exception {
+		createExpectedFiles(tempDir);
+		when(properties.getJsonFileFolder()).thenReturn(tempDir.toString());
 
 		tested.publishAsync(1L, 2025);
 
 		PublicationStatus status = tested.getStatus(1L, 2025);
-		assertEquals(PublicationStatus.Phase.PUSH_NOT_CONFIGURED, status.getPhase());
-		verify(gitHelper, never()).addCommitPush(any(), any(String[].class));
-	}
-
-	@Test
-	void testPublishedAfterSuccessfulProduction(@TempDir Path tempDir) throws Exception {
-		Files.createDirectories(tempDir.resolve("geojson/carres/1"));
-		Files.createDirectories(tempDir.resolve("data/stats/com2co/1"));
-		Files.createDirectories(tempDir.resolve("data/ndvi/1/59350"));
-		Files.createDirectories(tempDir.resolve("data"));
-		Files.writeString(tempDir.resolve("data/territoires.json"), "{}");
-
-		String[] folders = publishedFolders(tempDir);
-
-		PublicationStatus status = tested.getStatus(1L, 2025);
-		assertEquals(PublicationStatus.Phase.PUBLISHED, status.getPhase());
-		assertEquals("abc123", status.getGitSha());
+		assertEquals(PublicationStatus.Phase.PRODUCED, status.getPhase());
+		assertNull(status.getGitSha());
 		assertEquals(12, status.getFiles().size());
-		assertEquals("referentiels", status.getFiles().get(0).getType());
-		assertEquals("ndvi", status.getFiles().get(10).getType());
+		assertEquals(12, status.getFilesProduced());
+		assertEquals(9, status.getSteps().size());
+		assertTrue(status.getSteps().stream().allMatch(s -> s.getState() == PublicationStatus.StepState.DONE));
+		assertEquals("referentiel", status.getFiles().get(0).getType());
 		assertEquals("territoires", status.getFiles().get(11).getType());
 		assertEquals(tempDir + "/data/ndvi/1/ndvi_2025_1.json", status.getFiles().get(10).getPath());
 		assertEquals(tempDir + "/data/territoires.json", status.getFiles().get(11).getPath());
-		// le dossier de l'EPCI contient aussi les sous-dossiers des villes (data/ndvi/1/59350)
-		assertArrayEquals(new String[] { "data/territoires.json", "geojson/carres/1", "data/stats/com2co/1", "data/ndvi/1" }, folders);
 	}
 
 	@Test
-	void testNdviFolderIsNotPublishedWhenAbsent(@TempDir Path tempDir) throws Exception {
-		Files.createDirectories(tempDir.resolve("geojson/carres/1"));
-		Files.createDirectories(tempDir.resolve("data/stats/com2co/1"));
-
-		String[] folders = publishedFolders(tempDir);
-
-		assertArrayEquals(new String[] { "geojson/carres/1", "data/stats/com2co/1" }, folders);
-	}
-
-	@Test
-	void testReferentialPublishedWithExistingFiles(@TempDir Path tempDir) throws Exception {
-		Files.createDirectories(tempDir.resolve("data/com2cos"));
-		Files.createDirectories(tempDir.resolve("data/cities"));
-		Files.writeString(tempDir.resolve("data/regions.json"), "[]");
-		Files.writeString(tempDir.resolve("data/territoires.json"), "{}");
-
+	void testMissingFileBlocksPublication(@TempDir Path tempDir) throws Exception {
+		createExpectedFiles(tempDir);
+		Files.delete(tempDir.resolve("geojson/carres/1/carre_2025_1.json"));
 		when(properties.getJsonFileFolder()).thenReturn(tempDir.toString());
-		when(gitHelper.isConfigured()).thenReturn(true);
-		when(gitHelper.isAutorisedToPublish()).thenReturn(true);
-		when(gitHelper.getLocalPath()).thenReturn(tempDir.toString());
-		when(gitHelper.addCommitPush(eq(tempDir.toString()), any(String[].class))).thenReturn("ref123");
+
+		tested.publishAsync(1L, 2025);
+
+		PublicationStatus status = tested.getStatus(1L, 2025);
+		assertEquals(PublicationStatus.Phase.PRODUCTION_FAILED, status.getPhase());
+		assertEquals(11, status.getFilesProduced());
+		assertTrue(status.hasProductionError());
+	}
+
+	@Test
+	void testReferentialProductionDoesNotPush(@TempDir Path tempDir) throws Exception {
+		when(properties.getJsonFileFolder()).thenReturn(tempDir.toString());
 
 		tested.publishReferentialAsync();
 
 		verify(exporter).writeRegions();
 		verify(exporter).writeTerritoires();
-		org.mockito.ArgumentCaptor<String[]> folders = org.mockito.ArgumentCaptor.forClass(String[].class);
-		verify(gitHelper).addCommitPush(eq(tempDir.toString()), folders.capture());
-		assertArrayEquals(new String[] { "data/regions.json", "data/com2cos", "data/cities", "data/territoires.json" },
-				folders.getValue());
 	}
 
-	private String[] publishedFolders(Path tempDir) throws Exception {
+	@Test
+	void testPrepareCreatesStatusBeforeAsync(@TempDir Path tempDir) throws Exception {
 		when(properties.getJsonFileFolder()).thenReturn(tempDir.toString());
-		when(gitHelper.isConfigured()).thenReturn(true);
-		when(gitHelper.isAutorisedToPublish()).thenReturn(true);
-		when(gitHelper.getLocalPath()).thenReturn(tempDir.toString());
-		when(gitHelper.addCommitPush(eq(tempDir.toString()), any(String[].class))).thenReturn("abc123");
 
-		tested.publishAsync(1L, 2025);
+		PublicationStatus prepared = tested.prepare(1L, 2025);
 
-		org.mockito.ArgumentCaptor<String[]> folders = org.mockito.ArgumentCaptor.forClass(String[].class);
-		verify(gitHelper).addCommitPush(eq(tempDir.toString()), folders.capture());
-		return folders.getValue();
+		assertNotNull(prepared);
+		assertEquals(PublicationStatus.Phase.PRODUCING, prepared.getPhase());
+		assertEquals(9, prepared.getSteps().size());
+		assertNotNull(tested.getStatus(1L, 2025));
+		assertTrue(tested.isRunning(1L, 2025));
+	}
+
+	private void createExpectedFiles(Path tempDir) throws IOException {
+		Files.createDirectories(tempDir.resolve("data/cities/com2co"));
+		Files.createDirectories(tempDir.resolve("data/stats/com2co/1"));
+		Files.createDirectories(tempDir.resolve("data/ndvi/1"));
+		Files.createDirectories(tempDir.resolve("geojson/parkOutline/1"));
+		Files.createDirectories(tempDir.resolve("geojson/isochrones/1"));
+		Files.createDirectories(tempDir.resolve("geojson/carres/1"));
+		Files.createDirectories(tempDir.resolve("geojson/iris/1"));
+		Files.writeString(tempDir.resolve("data/regions.json"), "[]");
+		Files.writeString(tempDir.resolve("data/cities/densite.json"), "{}");
+		Files.writeString(tempDir.resolve("data/cities/com2co/cities_1.json"), "[]");
+		Files.writeString(tempDir.resolve("data/territoires.json"), "{}");
+		Files.writeString(tempDir.resolve("data/stats/com2co/1/stats_c2c_1_urbans_2025.json"), "{}");
+		Files.writeString(tempDir.resolve("data/stats/com2co/1/stats_c2c_1_suburbs_2025.json"), "{}");
+		Files.writeString(tempDir.resolve("data/stats/com2co/1/stats_c2c_1_all_2025.json"), "{}");
+		Files.writeString(tempDir.resolve("data/ndvi/1/ndvi_2025_1.json"), "{}");
+		Files.writeString(tempDir.resolve("geojson/parkOutline/1/parkOutline_2025_1.json"), "{}");
+		Files.writeString(tempDir.resolve("geojson/isochrones/1/isochrone_2025_1.json"), "{}");
+		Files.writeString(tempDir.resolve("geojson/carres/1/carre_2025_1.json"), "{}");
+		Files.writeString(tempDir.resolve("geojson/iris/1/iris_2025_1.json"), "{}");
 	}
 }

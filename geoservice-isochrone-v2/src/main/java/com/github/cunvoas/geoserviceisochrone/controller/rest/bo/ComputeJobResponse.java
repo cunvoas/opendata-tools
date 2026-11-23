@@ -14,6 +14,7 @@ public class ComputeJobResponse extends ComputeJobRequest {
 	private Integer nbCarre;
 	private Integer nbIris;
 	private boolean canPublish;
+	private String message;
 	private PublicationStatus publication;
 	
 	public ComputeJobResponse(ComputeJobRequest reg) {

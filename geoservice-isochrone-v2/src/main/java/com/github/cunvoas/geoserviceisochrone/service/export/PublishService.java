@@ -1,25 +1,20 @@
 package com.github.cunvoas.geoserviceisochrone.service.export;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.github.cunvoas.geoserviceisochrone.config.property.ApplicationBusinessProperties;
-import com.github.cunvoas.geoserviceisochrone.extern.helper.GitHelper;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.City;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
@@ -28,9 +23,9 @@ import com.github.cunvoas.geoserviceisochrone.service.analytics.StatsSurfaceServ
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Service de publication asynchrone pour les données géographiques.
- * Produit les fichiers GeoJSON et statistiques, puis publie le résultat sur GitHub.
- * Le statut de production est consultable avant la publication Git (voir {@link #getStatus(Long, Integer)}).
+ * Service de production asynchrone des données géographiques.
+ * Produit les fichiers GeoJSON et statistiques ; le commit final est délégué au dashboard.
+ * Le statut de production est consultable via {@link #getStatus(Long, Integer)}.
  */
 @Service
 @Slf4j
@@ -46,12 +41,55 @@ public class PublishService {
     private CommunauteCommuneRepository communauteCommuneRepository;
 
     @Autowired
-    private GitHelper gitHelper;
-
-    @Autowired
     private ApplicationBusinessProperties applicationBusinessProperties;
 
     private final Map<String, PublicationStatus> statuses = new ConcurrentHashMap<>();
+
+    private PublicationStatus newStatus(Long c2cId, Integer requestedYear) {
+        PublicationStatus status = new PublicationStatus();
+        status.setCom2coId(c2cId);
+        status.setYear(requestedYear);
+        status.setPhase(PublicationStatus.Phase.PRODUCING);
+        status.setStartedAt(LocalDateTime.now());
+        status.setUpdatedAt(status.getStartedAt());
+        status.setSteps(new ArrayList<>(List.of(
+                new PublicationStatus.StepStatus("referentiel", "Référentiel", 8),
+                new PublicationStatus.StepStatus("stats-cities", "Stats par ville", 27),
+                new PublicationStatus.StepStatus("stats-epci", "Stats EPCI", 10),
+                new PublicationStatus.StepStatus("parkOutline", "Park outline", 10),
+                new PublicationStatus.StepStatus("isochrone", "Isochrones", 15),
+                new PublicationStatus.StepStatus("carres", "Carreaux", 15),
+                new PublicationStatus.StepStatus("iris", "IRIS", 5),
+                new PublicationStatus.StepStatus("ndvi", "NDVI", 5),
+                new PublicationStatus.StepStatus("territoires", "Territoires", 5)
+        )));
+        return status;
+    }
+
+    /**
+     * Crée le statut avant le lancement asynchrone, pour que le premier /status ne renvoie pas null.
+     * @return copie du statut créé
+     */
+    public PublicationStatus prepare(Long c2cId, Integer requestedYear) {
+        PublicationStatus status = statuses.compute(key(c2cId, requestedYear), (k, existing) -> {
+            if (existing != null && (existing.getPhase() == PublicationStatus.Phase.PRODUCING
+                    || existing.getPhase() == PublicationStatus.Phase.PUBLISHING)) {
+                return existing;
+            }
+            return newStatus(c2cId, requestedYear);
+        });
+        status.touch();
+        return status.copy();
+    }
+
+    /**
+     * @return true si une production ou une publication est déjà en cours pour ce couple EPCI/année
+     */
+    public boolean isRunning(Long c2cId, Integer requestedYear) {
+        PublicationStatus status = statuses.get(key(c2cId, requestedYear));
+        return status != null && (status.getPhase() == PublicationStatus.Phase.PRODUCING
+                || status.getPhase() == PublicationStatus.Phase.PUBLISHING);
+    }
 
     /**
      * Exécute les tâches de publication de manière asynchrone.
@@ -61,67 +99,88 @@ public class PublishService {
      */
     @Async
     public void publishAsync(Long c2cId, Integer requestedYear) {
+        PublicationStatus status = statuses.computeIfAbsent(key(c2cId, requestedYear),
+                k -> newStatus(c2cId, requestedYear));
+        run(status);
+    }
+
+    @Async
+    public void publishAsync(PublicationStatus status) {
+        run(status);
+    }
+
+    private void run(PublicationStatus status) {
+        Long c2cId = status.getCom2coId();
+        Integer requestedYear = status.getYear();
         log.info("Starting async publication for com2co {} and year {}", c2cId, requestedYear);
-        PublicationStatus status = new PublicationStatus();
-        status.setCom2coId(c2cId);
-        status.setYear(requestedYear);
-        status.setPhase(PublicationStatus.Phase.PRODUCING);
-        status.setStartedAt(LocalDateTime.now());
-        status.setUpdatedAt(status.getStartedAt());
-        statuses.put(key(c2cId, requestedYear), status);
 
         try {
             CommunauteCommune com2co = communauteCommuneRepository.findById(c2cId)
                 .orElseThrow(() -> new IllegalArgumentException("CommunauteCommune not found with id: " + c2cId));
 
-            // Phase 1 : production des fichiers, un fichier par étape
-            // (séquence reprise de TestExporterApplication#export)
+            if (!StringUtils.hasText(com2co.getSiren())) {
+                status.setPhase(PublicationStatus.Phase.PRODUCTION_FAILED);
+                status.setMessage("Publication refusée : l'intercommunalité " + com2co.getName()
+                        + " n'a pas de numéro Siren.");
+                status.touch();
+                log.error("Publication refused for com2co {}: missing Siren", c2cId);
+                return;
+            }
+
             // 1a. référentiels : régions, EPCI par région, villes par EPCI
-            produce(status, () -> servicePublicationExporter.writeRegions(),
-                    "referentiels", referentialPaths(com2co));
+            produce(status, "referentiel", () -> servicePublicationExporter.writeRegions(),
+                    referentialPaths(com2co));
 
-            // stats
-            produce(status, () -> statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(c2cId, requestedYear),
-                    "stats-cities", statsCityPaths(com2co, requestedYear));
-            produce(status, () -> statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(requestedYear, c2cId),
-                    "stats-urbans", statsPath(c2cId, requestedYear, "urbans"));
-            produce(status, () -> statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(requestedYear, c2cId),
-                    "stats-suburbs", statsPath(c2cId, requestedYear, "suburbs"));
-            produce(status, () -> statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(requestedYear, c2cId),
-                    "stats-all", statsPath(c2cId, requestedYear, "all"));
-            
-            // 1b. données géographiques et statistiques de l'EPCI
-            produce(status, () -> servicePublicationExporter.writeGeoJsonParkOutline(com2co, requestedYear),
-                    "parkOutline", parkOutlinePath(c2cId, requestedYear));
-            produce(status, () -> servicePublicationExporter.writeGeoJsonIsochrone(com2co, requestedYear),
-                    "isochrone", isochronePath(c2cId, requestedYear));
-            produce(status, () -> servicePublicationExporter.writeGeoJsonCarreaux(com2co, requestedYear),
-                    "carres", carrePath(c2cId, requestedYear));
-            produce(status, () -> servicePublicationExporter.writeGeoJsonIris(com2co, requestedYear),
-                    "iris", irisPath(c2cId, requestedYear));
-            produce(status, () -> servicePublicationExporter.writeNdviJson(com2co, requestedYear),
-                    "ndvi", ndviPath(c2cId, requestedYear));
+            // 1b. statistiques
+            produce(status, "stats-cities", () -> statsSurfaceService.writeStatsSurfaceByCom2CoIdAndAnnee(
+                            c2cId, requestedYear,
+                            (index, total, city) -> {
+                                status.city(index, total, city.getInseeCode(), city.getName());
+                                status.objects("villes", 1);
+                            }),
+                    statsCityPaths(com2co, requestedYear));
+            produce(status, "stats-epci", () -> {
+                statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllDense(requestedYear, c2cId);
+                statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllSuburbs(requestedYear, c2cId);
+                statsSurfaceService.getStatsSurfaceByCom2CoAndAnneeAllV2(requestedYear, c2cId);
+            },
+                    statsPath(c2cId, requestedYear, "urbans"),
+                    statsPath(c2cId, requestedYear, "suburbs"),
+                    statsPath(c2cId, requestedYear, "all"));
 
-            // 1c. index des territoires publiés, consommé par le front (routes, sitemap, pré-rendu)
-            produce(status, () -> servicePublicationExporter.writeTerritoires(),
-                    "territoires", territoiresPath());
+            // 1c. données géographiques
+            produce(status, "parkOutline", () -> servicePublicationExporter.writeGeoJsonParkOutline(com2co, requestedYear),
+                    parkOutlinePath(c2cId, requestedYear));
+            produce(status, "isochrone", () -> servicePublicationExporter.writeGeoJsonIsochrone(com2co, requestedYear),
+                    isochronePath(c2cId, requestedYear));
+            produce(status, "carres", () -> servicePublicationExporter.writeGeoJsonCarreaux(com2co, requestedYear),
+                    carrePath(c2cId, requestedYear));
+            produce(status, "iris", () -> servicePublicationExporter.writeGeoJsonIris(com2co, requestedYear),
+                    irisPath(c2cId, requestedYear));
+            produce(status, "ndvi", () -> servicePublicationExporter.writeNdviJson(com2co, requestedYear),
+                    ndviPath(c2cId, requestedYear));
 
-            if (status.getPhase() == PublicationStatus.Phase.PRODUCTION_FAILED) {
-                log.error("Publication {} stopped: production failed ({})", key(c2cId, requestedYear), status.getMessage());
+            // 1d. index des territoires publiés, consommé par le front (routes, sitemap, pré-rendu)
+            produce(status, "territoires", () -> servicePublicationExporter.writeTerritoires(),
+                    territoiresPath());
+
+            if (status.hasProductionError()) {
+                status.setPhase(PublicationStatus.Phase.PRODUCTION_FAILED);
+                status.setMessage("Production incomplète : un ou plusieurs fichiers attendus sont absents.");
+                status.touch();
+                log.error("Publication {} stopped: production incomplete", key(c2cId, requestedYear));
                 return;
             }
 
             status.setPhase(PublicationStatus.Phase.PRODUCED);
-            status.setUpdatedAt(LocalDateTime.now());
-
-            // Phase 2 : publication Git, uniquement si la production est complète
-            publishGit(status, com2co);
-            log.info("Finished async publication for com2co {} and year {}: {}", c2cId, requestedYear, status.getPhase());
+            status.setMessage("Fichiers produits ; en attente du dashboard et du commit final.");
+            status.touch();
+            log.info("Finished async production for com2co {} and year {}: {}", c2cId, requestedYear, status.getPhase());
         } catch (Exception e) {
             log.error("Error during async publication for com2co {} and year {}", c2cId, requestedYear, e);
             status.setPhase(PublicationStatus.Phase.PRODUCTION_FAILED);
             status.setMessage(e.getMessage());
-            status.setUpdatedAt(LocalDateTime.now());
+            status.touch();
         }
     }
 
@@ -133,168 +192,54 @@ public class PublishService {
         if (source == null) {
             return null;
         }
-        synchronized (source) {
-            PublicationStatus copy = new PublicationStatus();
-            copy.setCom2coId(source.getCom2coId());
-            copy.setYear(source.getYear());
-            copy.setPhase(source.getPhase());
-            copy.setFiles(new ArrayList<>(source.getFiles()));
-            copy.setGitSha(source.getGitSha());
-            copy.setMessage(source.getMessage());
-            copy.setStartedAt(source.getStartedAt());
-            copy.setUpdatedAt(source.getUpdatedAt());
-            return copy;
-        }
+        return source.copy();
     }
 
-    private void produce(PublicationStatus status, ThrowingRunnable step, String type, String... paths) {
+    private void produce(PublicationStatus status, String stepCode, ThrowingRunnable step, String... paths) {
+        status.startStep(stepCode);
         try {
             step.run();
             for (String path : paths) {
-                record(status, type, path, null);
+                record(status, stepCode, path, null);
             }
+            status.endStep(stepCode);
         } catch (Exception e) {
-            log.error("Production failed for {} ({} file(s))", type, paths.length, e);
+            log.error("Production failed for {} ({} file(s))", stepCode, paths.length, e);
             for (String path : paths) {
-                record(status, type, path, e.getMessage());
+                record(status, stepCode, path, e.getMessage());
             }
             if (paths.length == 0) {
-                record(status, type, null, e.getMessage());
+                record(status, stepCode, null, e.getMessage());
             }
+            status.failStep(stepCode);
             status.setPhase(PublicationStatus.Phase.PRODUCTION_FAILED);
-            status.setMessage("Production en échec : " + type + " — " + e.getMessage());
-            status.setUpdatedAt(LocalDateTime.now());
+            status.setMessage("Production en échec : " + stepCode + " — " + e.getMessage());
             throw new ProductionException(status.getMessage());
         }
     }
 
     private void record(PublicationStatus status, String type, String path, String error) {
-        synchronized (status) {
-            File file = path == null ? null : new File(path);
-            boolean produced = file != null && file.isFile();
-            status.addFile(type, path, produced,
-                    produced ? file.length() : 0,
-                    produced ? LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.systemDefault()) : null,
-                    error);
-            status.setUpdatedAt(LocalDateTime.now());
-        }
-    }
-
-    private void publishGit(PublicationStatus status, CommunauteCommune com2co) {
-        if (!gitHelper.isConfigured()) {
-            status.setPhase(PublicationStatus.Phase.PUSH_NOT_CONFIGURED);
-            status.setMessage("Fichiers produits ; publication Git non configurée (username/token absents).");
-            status.setUpdatedAt(LocalDateTime.now());
-            return;
-        }
-        
-        if (!gitHelper.isAutorisedToPublish()) {
-            status.setPhase(PublicationStatus.Phase.PUSH_NOT_CONFIGURED);
-            status.setMessage("Toggle Feature: publication Git déasctivée).");
-            status.setUpdatedAt(LocalDateTime.now());
-            return;
-        }
-
-        status.setPhase(PublicationStatus.Phase.PUBLISHING);
-        status.setUpdatedAt(LocalDateTime.now());
-        String repoRoot = gitHelper.getLocalPath();
-        if (repoRoot == null || repoRoot.isBlank()) {
-            repoRoot = applicationBusinessProperties.getJsonFileFolder();
-        }
-
-        try {
-            List<String> folders = foldersToPublish(repoRoot, com2co);
-            if (folders.isEmpty()) {
-                throw new IllegalStateException("Aucun dossier produit à publier pour com2co " + status.getCom2coId());
-            }
-            String sha = gitHelper.addCommitPush(repoRoot, folders.toArray(new String[0]));
-            status.setGitSha(sha);
-            status.setPhase(PublicationStatus.Phase.PUBLISHED);
-            status.setMessage("Fichiers produits et poussés (" + folders.size() + " dossier(s)).");
-        } catch (Exception e) {
-            log.error("Git publication failed for {}", key(status.getCom2coId(), status.getYear()), e);
-            status.setPhase(PublicationStatus.Phase.PUSH_FAILED);
-            status.setMessage("Fichiers produits ; push en échec : " + e.getMessage());
-        } finally {
-            status.setUpdatedAt(LocalDateTime.now());
-        }
-    }
-
-    private List<String> foldersToPublish(String repoRoot, CommunauteCommune com2co) {
-        Path dataRoot = Paths.get(applicationBusinessProperties.getJsonFileFolder()).toAbsolutePath().normalize();
-        Set<Path> folders = new LinkedHashSet<>();
-        String c2cId = String.valueOf(com2co.getId());
-        // référentiels : régions, EPCI, villes, index des territoires
-        folders.add(dataRoot.resolve("data/regions.json"));
-        folders.add(dataRoot.resolve("data/com2cos"));
-        folders.add(dataRoot.resolve("data/cities"));
-        folders.add(dataRoot.resolve("data/territoires.json"));
-        // données géographiques de l'EPCI
-        folders.add(dataRoot.resolve("geojson/parkOutline").resolve(c2cId));
-        folders.add(dataRoot.resolve("geojson/isochrones").resolve(c2cId));
-        folders.add(dataRoot.resolve("geojson/carres").resolve(c2cId));
-        folders.add(dataRoot.resolve("geojson/iris").resolve(c2cId));
-        // statistiques de l'EPCI et de ses villes
-        folders.add(dataRoot.resolve("data/stats/com2co").resolve(c2cId));
-        folders.add(dataRoot.resolve("data/ndvi").resolve(c2cId));
-        for (City city : cities(com2co)) {
-            String insee = city.getInseeCode();
-            folders.add(dataRoot.resolve("data/stats").resolve(insee.substring(0, 2)).resolve(insee));
-        }
-        return toRelative(repoRoot, folders);
+        File file = path == null ? null : new File(path);
+        boolean produced = file != null && file.isFile();
+        status.addFile(type, path, produced,
+                produced ? file.length() : 0,
+                produced ? LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.systemDefault()) : null,
+                error);
     }
 
     /**
-     * Publie le seul référentiel (régions, EPCI, villes, index des territoires), sans passer par un EPCI.
+     * Produit le seul référentiel (régions, EPCI, villes, index des territoires).
+     * Le commit est délégué au dashboard d'état des lieux.
      */
     @Async
     public void publishReferentialAsync() {
         try {
             servicePublicationExporter.writeRegions();
             servicePublicationExporter.writeTerritoires();
+            log.info("Référentiel écrit ; en attente du dashboard et du commit final");
         } catch (Exception e) {
             log.error("Référentiel : production en échec", e);
-            return;
         }
-        if (!gitHelper.isConfigured() || !gitHelper.isAutorisedToPublish()) {
-            log.info("Référentiel écrit ; publication Git non configurée ou désactivée");
-            return;
-        }
-        String repoRoot = gitHelper.getLocalPath();
-        if (repoRoot == null || repoRoot.isBlank()) {
-            repoRoot = applicationBusinessProperties.getJsonFileFolder();
-        }
-        try {
-            Path dataRoot = Paths.get(applicationBusinessProperties.getJsonFileFolder()).toAbsolutePath().normalize();
-            Set<Path> folders = new LinkedHashSet<>();
-            folders.add(dataRoot.resolve("data/regions.json"));
-            folders.add(dataRoot.resolve("data/com2cos"));
-            folders.add(dataRoot.resolve("data/cities"));
-            folders.add(dataRoot.resolve("data/territoires.json"));
-            List<String> relative = toRelative(repoRoot, folders);
-            if (relative.isEmpty()) {
-                throw new IllegalStateException("Aucun fichier de référentiel à publier");
-            }
-            String sha = gitHelper.addCommitPush(repoRoot, relative.toArray(new String[0]));
-            log.info("Référentiel publié : {}", sha);
-        } catch (Exception e) {
-            log.error("Référentiel : push en échec", e);
-        }
-    }
-
-    private List<String> toRelative(String repoRoot, Set<Path> folders) {
-        Path root = Paths.get(repoRoot).toAbsolutePath().normalize();
-        Set<String> relative = new LinkedHashSet<>();
-        for (Path folder : folders) {
-            if (!Files.exists(folder)) {
-                continue;
-            }
-            if (!folder.startsWith(root)) {
-                throw new IllegalStateException("Dossier d'export hors du dépôt Git : " + folder);
-            }
-            relative.add(root.relativize(folder).toString().replace('\\', '/'));
-        }
-        return new ArrayList<>(relative);
     }
 
     private String[] referentialPaths(CommunauteCommune com2co) {

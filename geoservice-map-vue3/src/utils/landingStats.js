@@ -1,11 +1,16 @@
 import { DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from './config.js';
+import { epciParSiren } from './territoires.js';
+import { bornesTranche } from './tranches.js';
 
 /** Dernier millésime Filosofi publié dans geoservice-data. */
 export const ANNEE_DONNEES = 2021;
 /** Code INSEE de Lille. */
 export const COMMUNE_LILLE = '59350';
-/** Identifiant de la Métropole Européenne de Lille dans geoservice-data (dossier com2co). */
-export const EPCI_MEL = 1;
+/** Numéro Siren de la Métropole Européenne de Lille (identifiant public, jamais l'id technique). */
+export const SIREN_MEL = '200093201';
+
+/** Dossier de publication de la MEL, résolu par son numéro Siren. */
+export const dossierEpciMel = () => epciParSiren(SIREN_MEL)?.dossier ?? null;
 
 /**
  * URL des statistiques d'une commune, au même format que StatsGraph.
@@ -20,15 +25,69 @@ export function urlStatsCommune(insee, annee = ANNEE_DONNEES) {
 }
 
 /**
- * URL des statistiques « densités confondues » d'un EPCI.
- * @param {number} id - identifiant de l'EPCI.
+ * URL des statistiques d'un EPCI pour un type de graphique.
+ * @param {number|string} id - dossier de publication de l'EPCI.
+ * @param {string} type - `all`, `urbans` ou `suburbs`.
  * @param {number} annee - millésime.
  * @returns {string} URL du JSON.
  */
-export function urlStatsEpci(id, annee = ANNEE_DONNEES) {
+export function urlStatsEpciType(id, type = 'all', annee = ANNEE_DONNEES) {
   return DATA_MODE === 'dynamic'
-    ? `${DYNAMIC_ON_LOCAL}/map/stats/com2co/${id}/all?annee=${annee}`
-    : `${STATIC_ON_GIT}/data/stats/com2co/${id}/stats_c2c_${id}_all_${annee}.json`;
+    ? `${DYNAMIC_ON_LOCAL}/map/stats/com2co/${id}/${type}?annee=${annee}`
+    : `${STATIC_ON_GIT}/data/stats/com2co/${id}/stats_c2c_${id}_${type}_${annee}.json`;
+}
+
+/**
+ * URL des statistiques « densités confondues » d'un EPCI.
+ * @param {number|string} id - dossier de publication de l'EPCI.
+ * @param {number} annee - millésime.
+ * @returns {string} URL du JSON.
+ */
+export const urlStatsEpci = (id, annee = ANNEE_DONNEES) => urlStatsEpciType(id, 'all', annee);
+
+/** Ajoute le suffixe v2 à un chemin JSON. */
+const suffixeV2 = (url) => url.replace(/\.json$/, '.v2.json');
+
+/**
+ * URLs à essayer pour une commune : contrat v2 d'abord, ancien format en secours.
+ * En mode dynamique, l'API locale n'expose pas encore les fichiers v2.
+ * @param {string} insee - code INSEE.
+ * @param {number} annee - millésime.
+ * @returns {string[]} URLs candidates.
+ */
+export function urlsStatsCommune(insee, annee = ANNEE_DONNEES) {
+  const url = urlStatsCommune(insee, annee);
+  return DATA_MODE === 'dynamic' ? [url] : [suffixeV2(url), url];
+}
+
+/**
+ * URLs à essayer pour un EPCI : contrat v2 d'abord, ancien format en secours.
+ * @param {number|string} id - dossier de publication.
+ * @param {string} type - `all`, `urbans` ou `suburbs`.
+ * @param {number} annee - millésime.
+ * @returns {string[]} URLs candidates.
+ */
+export function urlsStatsEpciType(id, type = 'all', annee = ANNEE_DONNEES) {
+  const url = urlStatsEpciType(id, type, annee);
+  return DATA_MODE === 'dynamic' ? [url] : [suffixeV2(url), url];
+}
+
+/**
+ * Télécharge le premier JSON disponible d'une liste d'URLs.
+ * @param {string|string[]} urls - URLs candidates.
+ * @param {Function} fetchFn - fonction fetch (injectable pour les tests).
+ * @returns {Promise<object|null>} JSON, null si toutes les URLs échouent.
+ */
+export async function chargerStats(urls, fetchFn = fetch) {
+  for (const url of [].concat(urls)) {
+    try {
+      const reponse = await fetchFn(url);
+      if (reponse.ok) return await reponse.json();
+    } catch {
+      // URL suivante
+    }
+  }
+  return null;
 }
 
 const somme = (stats) => stats.reduce((total, tranche) => total + (tranche.habitants || 0), 0);
@@ -53,16 +112,15 @@ export function resumeStats(json) {
 
   const parCommune = stats.length >= 5;
   const sousMinimum = parCommune ? somme(stats.slice(0, 3)) : stats[0].habitants;
-  const borne = (texte, motif) => {
-    const trouve = motif.exec(texte ?? '');
-    return trouve ? Number(trouve[1]) : null;
-  };
+  const bornes = (tranche) => bornesTranche(tranche) ?? { min: null, max: null };
+  const seuilMinimum = bornes(json.seuils?.[3] ?? json.stats?.[3]);
+  const premiereTranche = bornes(json.seuils?.[0] ?? json.stats?.[0]);
   return {
     annee: String(json.annee ?? ''),
     habitants,
     sousMinimum: pourcent(sousMinimum, habitants),
-    minimumM2: parCommune ? borne(json.seuils?.[3]?.surface, /^\s*(\d+)\s*<=/) : null,
-    premiereBorne: parCommune ? borne(json.seuils?.[0]?.surface, /<\s*(\d+)\s*m²/) : null,
+    minimumM2: parCommune ? seuilMinimum.min : null,
+    premiereBorne: parCommune ? premiereTranche.max : null,
     premiereTranche: parCommune ? pourcent(stats[0].habitants, habitants) : null,
     m2Moyen: nombreOuNull(json.descripteur?.m2ParHabitantMoyen),
     m2Global: nombreOuNull(json.descripteur?.m2ParHabitantGlobal)
@@ -71,17 +129,13 @@ export function resumeStats(json) {
 
 /**
  * Télécharge et résume un JSON de statistiques.
- * @param {string} url - URL du JSON.
+ * @param {string|string[]} urls - URLs candidates (v2 puis ancien format).
  * @param {Function} fetchFn - fonction fetch (injectable pour les tests).
  * @returns {Promise<object|null>} résumé, null si le téléchargement ou le JSON échoue.
  */
-export async function chargerResume(url, fetchFn = fetch) {
-  try {
-    const reponse = await fetchFn(url);
-    return reponse.ok ? resumeStats(await reponse.json()) : null;
-  } catch {
-    return null;
-  }
+export async function chargerResume(urls, fetchFn = fetch) {
+  const json = await chargerStats(urls, fetchFn);
+  return json ? resumeStats(json) : null;
 }
 
 const ID_DONNEES_INTEGREES = 'landing-stats';

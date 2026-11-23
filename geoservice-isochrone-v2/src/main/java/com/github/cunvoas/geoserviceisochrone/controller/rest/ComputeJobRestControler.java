@@ -1,5 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.controller.rest;
 
+import java.util.Arrays;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,8 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
 import com.github.cunvoas.geoserviceisochrone.model.opendata.ParcEtJardin;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CityRepository;
 import com.github.cunvoas.geoserviceisochrone.repo.reference.CommunauteCommuneRepository;
+import com.github.cunvoas.geoserviceisochrone.repo.reference.ParkJardinRepository;
+import com.github.cunvoas.geoserviceisochrone.service.admin.AccessScopeService;
 import com.github.cunvoas.geoserviceisochrone.service.compute.BatchJobService;
 import com.github.cunvoas.geoserviceisochrone.util.LogSanitizer;
 import com.github.cunvoas.geoserviceisochrone.util.NumberHelper;
@@ -47,11 +51,14 @@ public class ComputeJobRestControler {
 	private CommunauteCommuneRepository communauteCommuneRepository;
 	@Autowired
 	private CityRepository cityRepository;
+	@Autowired
+	private ParkJardinRepository parkJardinRepository;
+	@Autowired
+	private AccessScopeService accessScopeService;
 
 	@PostMapping("/request")
     @PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER')")
-	public ResponseEntity<ComputeJobResponse> request(@RequestBody ComputeJobRequest req) {
-		HttpStatus code = HttpStatus.OK;
+	public ResponseEntity<ComputeJobResponse> request(@RequestBody ComputeJobRequest req) {		HttpStatus code = HttpStatus.OK;
 
 		log.warn("ComputeJobRequest received: {}", LogSanitizer.sanitize(req));
 
@@ -64,50 +71,76 @@ public class ComputeJobRestControler {
 
 		ComputeJobResponse resp = new ComputeJobResponse(req);
 
+		int scopes = (req.getParkId() != null ? 1 : 0)
+				+ (req.getParkOverpass() != null ? 1 : 0)
+				+ (req.getCityId() != null ? 1 : 0)
+				+ (req.getCom2coId() != null ? 1 : 0);
+		if (scopes != 1) {
+			log.error("ComputeJobRequest with {} scope(s): {}", scopes, LogSanitizer.sanitize(req));
+			return new ResponseEntity<ComputeJobResponse>(HttpStatus.BAD_REQUEST);
+		}
+		if (req.getRequestedYear() != null && !isYearAllowed(req.getRequestedYear())) {
+			return new ResponseEntity<ComputeJobResponse>(HttpStatus.BAD_REQUEST);
+		}
+
 		Integer requestedYear = null;
 		if (req.getRequestedYear() != null) {
 			requestedYear = req.getRequestedYear();
 		}
 
 		if (req.getParkId() != null) {
-			ParcEtJardin pj = new ParcEtJardin();
 			Long parkId = NumberHelper.toLong(req.getParkId());
 			if (parkId == null) {
 				return new ResponseEntity<ComputeJobResponse>(HttpStatus.BAD_REQUEST);
 			}
-			pj.setId(parkId);
+			ParcEtJardin pj = parkJardinRepository.findById(parkId).orElse(null);
+			if (pj == null) {
+				return new ResponseEntity<ComputeJobResponse>(HttpStatus.NOT_FOUND);
+			}
+			if (!canAccessPark(contrib, pj)) {
+				return new ResponseEntity<ComputeJobResponse>(resp, HttpStatus.FORBIDDEN);
+			}
 			resp.setParkId(req.getParkId());
 			resp.setNbCarre(batchJobService.requestProcessParc(pj));
 			code = HttpStatus.ACCEPTED;
 		} else if (req.getParkOverpass() != null) {
+			if (!accessScopeService.isAdmin(contrib)) {
+				return new ResponseEntity<ComputeJobResponse>(resp, HttpStatus.FORBIDDEN);
+			}
 			// TODO OVERPASS
 			resp.setParkOverpass(req.getParkOverpass());
-//			batchJobService.processParkOverpass();
 			resp.setNbCarre(0);
 			code = HttpStatus.ACCEPTED;
-		} else if (req.getCityId() != null && ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
+		} else if (req.getCityId() != null) {
 			Long cityId = NumberHelper.toLong(req.getCityId());
 			if (cityId == null) {
 				return new ResponseEntity<ComputeJobResponse>(HttpStatus.BAD_REQUEST);
 			}
-			City n = cityRepository.getReferenceById(cityId);
+			City city = cityRepository.findById(cityId).orElse(null);
+			if (city == null) {
+				return new ResponseEntity<ComputeJobResponse>(HttpStatus.NOT_FOUND);
+			}
+			if (!canAccessCity(contrib, city)) {
+				return new ResponseEntity<ComputeJobResponse>(resp, HttpStatus.FORBIDDEN);
+			}
 			resp.setCityId(req.getCityId());
-			resp.setNbCarre(batchJobService.requestProcessCity(n, requestedYear));
+			resp.setNbCarre(batchJobService.requestProcessCity(city, requestedYear));
 			code = HttpStatus.ACCEPTED;
-		} else if (req.getCom2coId() != null && ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
+		} else if (req.getCom2coId() != null) {
 			Long com2coId = NumberHelper.toLong(req.getCom2coId());
 			if (com2coId == null) {
 				return new ResponseEntity<ComputeJobResponse>(HttpStatus.BAD_REQUEST);
 			}
-			CommunauteCommune com2co = communauteCommuneRepository.getReferenceById(com2coId);
+			CommunauteCommune com2co = communauteCommuneRepository.findById(com2coId).orElse(null);
+			if (com2co == null) {
+				return new ResponseEntity<ComputeJobResponse>(HttpStatus.NOT_FOUND);
+			}
+			if (!accessScopeService.canAccessEpci(contrib, com2coId)) {
+				return new ResponseEntity<ComputeJobResponse>(resp, HttpStatus.FORBIDDEN);
+			}
 			resp.setCom2coId(req.getCom2coId());
 			resp.setNbCarre(batchJobService.requestProcessCom2Co(com2co, requestedYear));
 			code = HttpStatus.ACCEPTED;
-		} else if (! ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
-			resp.setCom2coId(req.getCom2coId());
-			resp.setCityId(req.getCityId());
-			resp.setNbCarre(0);
-			code = HttpStatus.FORBIDDEN;
 		} else {
 			log.error("ComputeJobRequest without valid id: {}", LogSanitizer.sanitize(req));
 			code = HttpStatus.BAD_REQUEST;
@@ -116,9 +149,28 @@ public class ComputeJobRestControler {
 		return new ResponseEntity<ComputeJobResponse>(resp, code);
 	}
 
+	private boolean canAccessCity(Contributeur contrib, City city) {
+		if (city == null || city.getCommunauteCommune() == null) {
+			return accessScopeService.isAdmin(contrib);
+		}
+		return accessScopeService.canAccessEpci(contrib, city.getCommunauteCommune().getId());
+	}
+
+	private boolean canAccessPark(Contributeur contrib, ParcEtJardin park) {
+		if (park == null || park.getCommune() == null) {
+			return accessScopeService.isAdmin(contrib);
+		}
+		return canAccessCity(contrib, park.getCommune());
+	}
+
+	private boolean isYearAllowed(Integer year) {
+		Integer[] years = applicationBusinessProperties.getInseeAnnees();
+		return year != null && years != null && Arrays.stream(years).anyMatch(year::equals);
+	}
+
 	/**
 	 * Relance forcée de l'appel Copernicus pour tous les parcs d'un EPCI ou d'une ville.
-	 * Réservé aux administrateurs : contourne la règle d'un appel par an.
+	 * Un gestionnaire d'association est limité à son EPCI.
 	 * @param req demande (token, com2coId ou cityId, requestedYear facultatif)
 	 * @return nombre de parcs relancés
 	 */
@@ -128,14 +180,23 @@ public class ComputeJobRestControler {
 		if (!tokenManagement.isTokenValid(req.getToken())) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
-		Contributeur contrib = (Contributeur) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		if (!ContributeurRole.ADMINISTRATOR.equals(contrib.getRole())) {
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
+		Contributeur contrib = accessScopeService.current();
 		Long cityId = NumberHelper.toLong(req.getCityId());
 		Long com2coId = NumberHelper.toLong(req.getCom2coId());
 		if (cityId == null && com2coId == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		if (cityId != null) {
+			City city = cityRepository.findById(cityId).orElse(null);
+			if (city == null) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+			if (!canAccessCity(contrib, city)) {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}
+		}
+		if (com2coId != null && !accessScopeService.canAccessEpci(contrib, com2coId)) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 		Integer annee = req.getRequestedYear() != null
 				? req.getRequestedYear()
@@ -165,6 +226,13 @@ public class ComputeJobRestControler {
 		Long parkId = NumberHelper.toLong(req.getParkId());
 		if (parkId == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		ParcEtJardin park = parkJardinRepository.findById(parkId).orElse(null);
+		if (park == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		if (!canAccessPark(accessScopeService.current(), park)) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 		ComputeJobResponse resp = new ComputeJobResponse(req);
 		resp.setParkId(req.getParkId());

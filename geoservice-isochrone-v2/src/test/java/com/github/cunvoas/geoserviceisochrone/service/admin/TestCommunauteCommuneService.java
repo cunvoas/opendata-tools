@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.service.admin;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -101,6 +102,29 @@ class TestCommunauteCommuneService {
 		assertSame(existing, ret);
 		assertEquals("Nouveau nom", existing.getName());
 		assertEquals("222222222", existing.getSiren());
+	}
+
+	@Test
+	void save_refuse_un_siren_deja_utilise() {
+		CommunauteCommune existing = c2c(8L, "Métropole Européenne de Lille", "200093201");
+		CommunauteCommune in = c2c(9L, "Autre EPCI", "200093201");
+		when(repository.findBySiren("200093201")).thenReturn(Optional.of(existing));
+
+		IllegalArgumentException erreur = assertThrows(IllegalArgumentException.class, () -> tested.save(in));
+
+		org.junit.jupiter.api.Assertions.assertTrue(erreur.getMessage().contains("déjà utilisé"));
+		org.junit.jupiter.api.Assertions.assertTrue(erreur.getMessage().contains("Métropole Européenne de Lille"));
+		verify(repository, never()).save(any());
+	}
+
+	@Test
+	void save_refuse_un_siren_qui_n_a_pas_neuf_chiffres() {
+		CommunauteCommune in = c2c(9L, "Autre EPCI", "12345");
+
+		IllegalArgumentException erreur = assertThrows(IllegalArgumentException.class, () -> tested.save(in));
+
+		org.junit.jupiter.api.Assertions.assertTrue(erreur.getMessage().contains("9 chiffres"));
+		verify(repository, never()).save(any());
 	}
 
 	@Test

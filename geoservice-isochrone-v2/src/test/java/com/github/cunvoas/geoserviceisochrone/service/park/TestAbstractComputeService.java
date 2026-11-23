@@ -32,7 +32,7 @@ class TestAbstractComputeService {
 	private InseeCarre200mOnlyShapeRepository surfaceRepository;
 
 	/** Implémentation concrète minimale pour tester la classe abstraite. */
-	private class Testable extends AbstractComputeService {
+	private static class Testable extends AbstractComputeService {
 		Testable(ParkJardinRepository parkJardinRepository,
 				InseeCarre200mOnlyShapeRepository inseeCarre200mOnlyShapeRepository) {
 			super(parkJardinRepository, inseeCarre200mOnlyShapeRepository);

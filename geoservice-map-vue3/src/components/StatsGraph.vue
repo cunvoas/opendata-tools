@@ -41,8 +41,8 @@ import {
 import { Bar, Pie } from 'vue-chartjs';
 import { toRaw } from 'vue'
 import StatsTableAccessibility from './StatsTableAccessibility.vue';
-import { DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from '../utils/config.js';
 import { formaterNom } from '../utils/territoires.js';
+import { chargerStats, urlsStatsCommune, urlsStatsEpciType } from '../utils/landingStats.js';
 import { libelleTranche } from '../utils/tranches.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
@@ -51,6 +51,15 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tool
 const PALETTE_5 = ['#0000e8', '#6060e8', '#b0b0e8', '#578817', '#57ee17'];
 const PALETTE_3 = ['#b0b0e8', '#578817', '#57ee17'];
 const palette = (nombre) => (nombre <= 3 ? PALETTE_3 : PALETTE_5).slice(0, nombre);
+
+/** Libellé d'une tranche v2 (bornes ou niveau OMS), sinon du seuil de secours. */
+function libelleTrancheOuSeuil(tranche, secours) {
+  const porteUnLibelle = tranche && (
+    tranche.surface || tranche.niveauOms ||
+    tranche.borneMin != null || tranche.borneMax != null
+  );
+  return libelleTranche(porteUnLibelle ? tranche : secours ?? {});
+}
 
 // Fonction pour convertir les couleurs normales en couleurs daltonien
 function convertToColorblindPalette(normalColor) {
@@ -238,7 +247,7 @@ export default {
 
       // Le libellé vient de la tranche, ou du seuil correspondant quand la tranche n'en porte pas.
       const tranches = jsonData.stats ?? [];
-      const tLabels = tranches.map((value, index) => libelleTranche(value.surface ? value : jsonData.seuils?.[index] ?? {}));
+      const tLabels = tranches.map((value, index) => libelleTrancheOuSeuil(value, jsonData.seuils?.[index]));
       const tFillColors = palette(tranches.length).map(convertToColorblindPalette);
       const tHabitants = tranches.map(value => value.habitants);
 
@@ -288,19 +297,15 @@ export default {
 
       const annee   = this.annee;
 
-      let callUrl;
+      let callUrls;
       
       // Check if we're loading com2co (communauté de communes) stats or city stats
       if (locType === 'com2co') {
         // Load community stats
         console.log("processLocation (com2co):", regionId, com2coId, graphType);
         
-        // If graphType is specified, use the new URL format for specific graph types
         if (graphType) {
-          // Format: https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/stats/com2co/1/stats_c2c_1_urbans_2019.json
-          callUrl = DATA_MODE === 'dynamic'
-            ? `${DYNAMIC_ON_LOCAL}/map/stats/com2co/${com2coId}/${graphType}?annee=${annee}`
-            : `${STATIC_ON_GIT}/data/stats/com2co/${com2coId}/stats_c2c_${com2coId}_${graphType}_${annee}.json`;
+          callUrls = urlsStatsEpciType(com2coId, graphType, annee);
         } else {
           console.error("graphType is required for com2co location type");
           this.loaded = false;
@@ -310,31 +315,21 @@ export default {
         // Load city stats (existing behavior)
         const cityInsee = newLocation.cityInsee;
         console.log("processLocation (city):", regionId, com2coId, cityInsee);
-        // 2 caractères volontairement : le back publie aussi les dossiers DOM sous insee.substring(0, 2) ("97").
-        const dept = cityInsee.substring(0,2);
-        callUrl = DATA_MODE === 'dynamic'
-          ? `${DYNAMIC_ON_LOCAL}/map/stats/city/${cityInsee}?annee=${annee}`
-          : `${STATIC_ON_GIT}/data/stats/${dept}/${cityInsee}/stats_${cityInsee}_${annee}.json`;
+        callUrls = urlsStatsCommune(cityInsee, annee);
       }
 
-      
-      
-      console.log("Fetching stats from:", callUrl);
+      console.log("Fetching stats from:", callUrls);
 
       this.loaded = false;
       try {
-        const respData = await fetch(callUrl);
-        if (!respData.ok) {
-            throw new Error(`HTTP error! status: ${respData.status}`);
-        }   
-        const newData = await respData.json();
+        const newData = await chargerStats(callUrls);
+        if (!newData) {
+            throw new Error('Statistiques indisponibles');
+        }
 
         this.parseJsonBar(newData);
         this.parseJsonPie(newData);
         this.loaded = true;
-
-
-        
       } catch (error) {
         console.error("Error loading stats:", error);
         this.loaded = false;

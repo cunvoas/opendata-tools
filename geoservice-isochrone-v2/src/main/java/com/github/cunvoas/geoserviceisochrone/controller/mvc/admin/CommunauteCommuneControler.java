@@ -197,8 +197,12 @@ public class CommunauteCommuneControler {
 		}
 		
 		if (granted) {
-			comm2co = communauteCommuneService.save(comm2co);
-			model.addAttribute("successMessage", "La communauté de communes a été sauvegardée avec succès.");
+			try {
+				comm2co = communauteCommuneService.save(comm2co);
+				model.addAttribute("successMessage", "La communauté de communes a été sauvegardée avec succès.");
+			} catch (IllegalArgumentException e) {
+				model.addAttribute("errorMessage", e.getMessage());
+			}
 		} else {
 			throw new ExceptionAdmin("EDIT_NOT_ALLOWED");
 		}

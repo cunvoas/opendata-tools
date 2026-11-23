@@ -32,6 +32,12 @@ const LIBELLES_CONNUS = [
   [/pr[ée]conis/i, 'Niveau préconisé par l’OMS']
 ];
 
+const NIVEAUX_OMS = {
+  INSUFFISANT: 'Sous les minima de l’OMS',
+  MINIMUM: 'Minimum conseillé par l’OMS',
+  PRECONISE: 'Niveau préconisé par l’OMS'
+};
+
 /** Traduit un libellé brut publié, sans notation mathématique. */
 function humaniser(texte) {
   const propre = String(texte ?? '').trim();
@@ -46,6 +52,7 @@ function humaniser(texte) {
  * @returns {string} libellé, sans « <= » ni « < ».
  */
 export function libelleTranche(tranche = {}) {
+  if (tranche.niveauOms) return NIVEAUX_OMS[tranche.niveauOms] ?? humaniser(tranche.niveauOms);
   const bornes = bornesTranche(tranche);
   if (!bornes) return humaniser(tranche.surface);
   const { min, max } = bornes;

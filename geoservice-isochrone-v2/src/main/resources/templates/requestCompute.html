@@ -133,7 +133,8 @@
                                 <button id="btnPublishEpci" onclick="publishEpci()" type="button" class="btn btn-outline-primary">
                                     <i class="fas fa-upload me-1"></i><span th:text="#{compute.request.publish.epci}">Publier les données de l'EPCI</span>
                                 </button>
-                                <button id="btnPublishCity" onclick="publishCity()" type="button" class="btn btn-outline-primary">
+                                <button id="btnPublishCity" onclick="publishCity()" type="button" class="btn btn-outline-primary" disabled
+                                        title="Publication par ville : à venir">
                                     <i class="fas fa-upload me-1"></i><span th:text="#{compute.request.publish.city}">Publier les données de la ville</span>
                                 </button>
                                 <div id="computeSpinner" class="spinner-border text-success" role="status" style="display:none;">
@@ -363,13 +364,14 @@
                 body: JSON.stringify(payload)
             });
             if (response.status === 202 || response.status === 200) {
-                alert(messageOk);
+                alert(messageOk + " Le commit final se fait depuis le dashboard Exports.");
             } else if (response.status === 412) {
                 alert("Publication impossible : les calculs de cet EPCI ne sont pas termin\u00e9s.");
             } else if (response.status === 401 || response.status === 403) {
                 alert("Action r\u00e9serv\u00e9e aux administrateurs.");
             } else {
-                alert("Publication impossible.");
+                const content = await response.json().catch(() => ({}));
+                alert(content.message || "Publication impossible.");
             }
         } catch (error) {
             console.error("Error during publish request:", error);

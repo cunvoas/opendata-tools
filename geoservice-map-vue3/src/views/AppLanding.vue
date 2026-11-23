@@ -183,7 +183,8 @@
 
 <script>
 import {
-    chargerResume, urlStatsCommune, urlStatsEpci, lireDonneesIntegrees, integrerDonnees, COMMUNE_LILLE, EPCI_MEL
+    chargerResume, urlsStatsCommune, urlsStatsEpciType, urlStatsEpci, dossierEpciMel,
+    lireDonneesIntegrees, integrerDonnees, COMMUNE_LILLE
 } from '../utils/landingStats.js';
 import { SITE_URL } from '../utils/seoMeta.js';
 import { communesPourLiens, urlCommune } from '../utils/territoires.js';
@@ -268,9 +269,10 @@ export default {
     },
     async mounted() {
         this.injecterJsonLd();
+        const dossierMel = dossierEpciMel();
         const [lille, mel] = await Promise.all([
-            chargerResume(urlStatsCommune(COMMUNE_LILLE)),
-            chargerResume(urlStatsEpci(EPCI_MEL))
+            chargerResume(urlsStatsCommune(COMMUNE_LILLE)),
+            dossierMel ? chargerResume(urlsStatsEpciType(dossierMel)) : null
         ]);
         // Un échec réseau garde les chiffres intégrés au HTML plutôt que d'effacer la page
         this.lille = lille ?? this.lille;
@@ -291,6 +293,7 @@ export default {
             script.type = 'application/ld+json';
             script.id = ID_JSON_LD;
             const auteurs = ["Aut'MEL", "Deûl'Air", 'Entrelianes', 'LM Oxygène'].map((name) => ({ '@type': 'Organization', name }));
+            const dossierMel = dossierEpciMel();
             script.textContent = JSON.stringify({
                 '@context': 'https://schema.org',
                 '@graph': [
@@ -318,7 +321,9 @@ export default {
                         spatialCoverage: { '@type': 'Place', name: 'Métropole Européenne de Lille' },
                         variableMeasured: 'Surface de parc public accessible à pied par habitant (m² par habitant)',
                         measurementTechnique: "Isochrones piétons de l'IGN depuis les entrées de parc ; population des carreaux de 200 m (INSEE, Filosofi)",
-                        distribution: [{ '@type': 'DataDownload', encodingFormat: 'application/json', contentUrl: urlStatsEpci(EPCI_MEL) }]
+                        distribution: dossierMel
+                            ? [{ '@type': 'DataDownload', encodingFormat: 'application/json', contentUrl: urlStatsEpci(dossierMel) }]
+                            : []
                     }
                 ]
             });

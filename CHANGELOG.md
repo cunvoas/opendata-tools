@@ -1,6 +1,20 @@
 # Changelog
 
  
+## V2.1.3 - 2026-11-22
+
+ - Séparation des exports.
+ - Tableau de bord de suivi des exports.
+
+## V2.1.2 - 2026-11-19
+
+ - Intégration des SIREN et COG coté application publique.
+
+## V2.1.1 - 2026-11-17
+
+ - Intégration des SIREN pour les EPCI
+ - Service et API avec SIREN et COG.
+ 
 ## V2.0.14 - 2026-11-15
 
  - Relance Copernicus NDVI par EPCI, par ville et par IRIS depuis la page de lancement des batchs

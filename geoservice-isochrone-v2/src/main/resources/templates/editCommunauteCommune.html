@@ -21,6 +21,16 @@
                    <h3 class="mt-4" th:text="#{communautecommune.title}">title</h3>
             </div>
            
+            <!-- Message d'erreur -->
+            <div class="row" th:if="${errorMessage}">
+                <div class="col-12">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>Erreur !</strong> <span th:text="${errorMessage}">Message</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Message de succès -->
             <div class="row" th:if="${successMessage}">
                 <div class="col-12">
@@ -101,6 +111,7 @@
                                 </div>
                             </div>
                             <div id="publishStatus" class="form-text mt-2"></div>
+                            <div id="publishTimeline" class="small mt-1"></div>
                         </sec:authorize>
                     </div>
                 </div>
@@ -147,8 +158,11 @@
                     const status = await response.json();
                     document.getElementById("btnPublish").disabled = !status.canPublish;
                     renderPublication(status.publication);
+                    if (!status.canPublish && status.message) {
+                        document.getElementById("publishStatus").textContent = status.message;
+                    }
                     if (status.publication && (status.publication.phase === "PRODUCING" || status.publication.phase === "PUBLISHING")) {
-                        setTimeout(checkPublishStatus, 2000);
+                        setTimeout(checkPublishStatus, 5000);
                     }
                 }
             } catch (error) {
@@ -158,19 +172,35 @@
 
         function renderPublication(pub) {
             const el = document.getElementById("publishStatus");
+            const timeline = document.getElementById("publishTimeline");
             if (!pub) {
                 el.textContent = "";
+                if (timeline) timeline.textContent = "";
                 return;
             }
             const files = pub.files || [];
-            const produced = files.filter(f => f.produced).length;
-            let text = "Production : " + produced + "/" + files.length + " fichier(s)";
+            const produced = pub.filesProduced != null ? pub.filesProduced : files.filter(f => f.produced).length;
+            const expected = pub.filesExpected != null ? pub.filesExpected : files.length;
+            let text = "Production : " + produced + "/" + expected + " fichier(s)";
+            if (pub.currentStepLabel) {
+                text += " — étape " + pub.currentStepIndex + "/" + pub.currentStepTotal + " : " + pub.currentStepLabel;
+            }
+            if (pub.cityTotal > 0) {
+                text += " — " + pub.cityIndex + "/" + pub.cityTotal + " villes";
+                if (pub.cityName) text += " (" + pub.cityName + ")";
+            }
+            if (pub.objects && pub.objects.villes) {
+                text += " — " + pub.objects.villes + " ville(s) traitée(s)";
+            }
+            if (pub.etaSeconds != null) {
+                text += " — ≈ " + humanDuration(pub.etaSeconds) + " restantes";
+            }
             switch (pub.phase) {
                 case "PRODUCING": text += " — en cours…"; break;
                 case "PRODUCTION_FAILED": text += " — en échec"; break;
-                case "PRODUCED": text += " — terminée, publication Git en attente"; break;
-                case "PUBLISHING": text += " — terminée, push en cours…"; break;
-                case "PUBLISHED": text += " — publication Git OK" + (pub.gitSha ? " (" + pub.gitSha.substring(0, 7) + ")" : ""); break;
+                case "PRODUCED": text += " — terminée, en attente du commit final"; break;
+                case "PUBLISHING": text += " — commit en cours…"; break;
+                case "PUBLISHED": text += " — commit OK" + (pub.gitSha ? " (" + pub.gitSha.substring(0, 7) + ")" : ""); break;
                 case "PUSH_FAILED": text += " — push en échec"; break;
                 case "PUSH_NOT_CONFIGURED": text += " — publication Git non configurée"; break;
             }
@@ -178,6 +208,34 @@
                 text += " : " + pub.message;
             }
             el.textContent = text;
+            renderTimeline(pub);
+        }
+
+        function humanDuration(seconds) {
+            const minutes = Math.max(1, Math.round(seconds / 60));
+            if (minutes < 60) return minutes + " min";
+            const h = Math.floor(minutes / 60);
+            const m = minutes % 60;
+            return h + " h " + (m < 10 ? "0" + m : m);
+        }
+
+        function renderTimeline(pub) {
+            const el = document.getElementById("publishTimeline");
+            if (!el) return;
+            el.textContent = "";
+            if (!pub || !pub.steps) return;
+            pub.steps.forEach(function(step) {
+                const line = document.createElement("div");
+                let icon = "○";
+                if (step.state === "DONE") icon = "✔";
+                else if (step.state === "RUNNING") icon = "⟳";
+                else if (step.state === "FAILED") icon = "✖";
+                line.textContent = icon + " " + step.label;
+                if (step.state === "RUNNING" && pub.cityTotal > 0) {
+                    line.textContent += " — " + pub.cityIndex + "/" + pub.cityTotal + " villes";
+                }
+                el.appendChild(line);
+            });
         }
 
         async function doPostCompute(requestPrms, requestedYear) {
@@ -256,8 +314,11 @@
             
             if ( rawResponse.status == 202 || rawResponse.status == 200 )  {
                 const content = await rawResponse.json();
-                alert("Publication demandée pour " + content.nbCarre + " carrés.");
+                alert("Publication demandée pour " + content.nbCarre + " carrés. Le commit final se fait depuis le dashboard Exports.");
                 checkPublishStatus();
+            } else {
+                const content = await rawResponse.json().catch(() => ({}));
+                alert(content.message || "Publication impossible.");
             }
         }
         

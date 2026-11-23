@@ -443,7 +443,7 @@ Scénario 09.4 — Non-régression d'affichage
 - **DEP05** Le lien vers Insee Première n° 2049 doit rester stable. Impact limité à la section sur l'étude de l'Insee.
 - **DEP06** La liste des communes affichées en liens internes doit pouvoir être régénérée sans rédaction manuelle. Impact limité à D07.
 - **DEP08** Le COG de l'Insee doit être disponible pour alimenter le numéro Siren des EPCI lors de la migration, en une passe ou manuellement. Impact limité à l'alimentation initiale de D08. **Réalisé** : Sirene complété par le COG, noms de la base de dev (voir §10.2).
-- **DEP09** Le littéral `com2coId: '245900410'` de `AppStatistics.vue` et la constante `EPCI_MEL = 1` doivent être remplacés par l'index des territoires. Impact limité au défaut de `/stats`. **Partiellement réalisé** : `245900410` a disparu ; `EPCI_MEL = 1` subsiste dans `src/utils/landingStats.js` (voir §10.4).
+- **DEP09** Le littéral `com2coId: '245900410'` de `AppStatistics.vue` et la constante `EPCI_MEL = 1` doivent être remplacés par l'index des territoires. Impact limité au défaut de `/stats`. **Réalisé** : `245900410` a disparu ; la MEL est résolue par `epciParSiren('200093201')` dans `src/utils/landingStats.js`.
 - **DEP11** Les réutilisateurs externes des données doivent être informés de la dépréciation. Impact limité à D11 et D12.
 
 ## 9. APPENDIX
@@ -484,10 +484,10 @@ Séquence proposée. Les durées ne sont pas estimées ici : le PO fixe la capac
 
 Principe : la donnée et son contrat passent avant les URL, les URL avant le contenu. Aucune version ne dépend d'une version ultérieure.
 
-| Version | Contenu | Dépend de | Critère de sortie | Statut au 2026-11-16 |
+| Version | Contenu | Dépend de | Critère de sortie | Statut au 2026-11-21 |
 | --- | --- | --- | --- | --- |
-| **2.1.0** — socle données | US07 (numéro Siren en base et API), D08, D08.1, D08.3, C01 à C03. Export de l'index des territoires (D09). US08 et US09 (JSON v2 en double publication, schéma et licence, D10 à D12). | DEP07, DEP08, DEP11 | Le numéro Siren est en base sans toucher aux PK ni aux FK ; l'index des territoires et les JSON v2 sont publiés ; les anciens fichiers répondent toujours 200 et à l'identique. | **Partiel** : Siren en base, export et page de gestion ; JSON v2 non commencé. L'index est `data/territoires.json`, pas `data/epci/index.json`. |
-| **2.1.1** — lecture du contrat | Lecture du bloc d'identité et des bornes numériques côté front (`landingStats.js`, `StatsGraph.vue`, `Isochrone.vue`), DEP10. Suppression des clés codées en dur (`EPCI_MEL = 1`, `245900410`), DEP09. | 2.1.0 | Les chiffres affichés sont identiques à l'avant-publication v2 ; aucun libellé de tranche vide ; plus aucun identifiant technique dans le front. | **Non commencé**. DEP09 partiel : `245900410` supprimé, `EPCI_MEL = 1` restant. |
+| **2.1.0** — socle données | US07 (numéro Siren en base et API), D08, D08.1, D08.3, C01 à C03. Export de l'index des territoires (D09). US08 et US09 (JSON v2 en double publication, schéma et licence, D10 à D12). | DEP07, DEP08, DEP11 | Le numéro Siren est en base sans toucher aux PK ni aux FK ; l'index des territoires et les JSON v2 sont publiés ; les anciens fichiers répondent toujours 200 et à l'identique. | **Réalisé en code** : Siren, index, JSON v2, schémas dans `geoservice-data`. Reste la publication réelle et la licence des données. L'index est `data/territoires.json`, pas `data/epci/index.json`. |
+| **2.1.1** — lecture du contrat | Lecture du bloc d'identité et des bornes numériques côté front (`landingStats.js`, `StatsGraph.vue`, `Isochrone.vue`), DEP10. Suppression des clés codées en dur (`EPCI_MEL = 1`, `245900410`), DEP09. | 2.1.0 | Les chiffres affichés sont identiques à l'avant-publication v2 ; aucun libellé de tranche vide ; plus aucun identifiant technique dans le front. | **Réalisé** : v2 lu en priorité, repli sur l'ancien format, `EPCI_MEL = 1` supprimé. |
 | **2.1.2** — URL territoriales | US01 (routes `/stats/<insee>` et `/stats/epci/<siren>`, redirections), US02 (pré-rendu et sitemap), US03 (titres et Hn géolocalisés), D07 (bloc de liens internes). | 2.1.1, DEP01, DEP02, DEP03 | Chaque territoire publié répond 200 en HTML pré-rendu, figure au sitemap, et chaque URL ancienne redirige. Build refusé si le HTML pré-rendu est incomplet. | **Réalisé** sans le préalable 2.1.1, en lisant le format JSON actuel. Redirections côté client. La suppression de `/etude-insee` livrée ici est annulée par 2.1.4. |
 | **2.1.3** — contenu éditorial | US04 (comparaison avec l'étude de l'Insee en réponse d'abord), US06 (tranches lisibles et pourcentage). D04, D06. | 2.1.2, DEP04 (validation du chiffre de l'Insee) | La réponse tient dans le premier paragraphe, chaque chiffre porte son périmètre, les tableaux affichent le pourcentage. | **Réalisé** ; validation PO du chiffre de l'Insee (DEP04) encore attendue. |
 | **2.1.4** — page étude Insee | US05 : extraction de la section `#insee` vers `/etude-insee` (D05, D05.1, D05.2). Le résumé et le lien restent sur l'index ; la page est pré-rendue, indexable et au sitemap ; la redirection vers `/#insee` est retirée. | 2.1.3 | `/etude-insee` répond 200 en HTML pré-rendu, figure au sitemap, porte son propre `title`, et le tableau de comparaison a disparu du HTML de l'index. | **Réalisé** : vérifié sur un build `VITE_PRERENDER_MAX=1`. |
@@ -506,7 +506,7 @@ Risques de calendrier :
 
 ## 10. ÉTAT D'AVANCEMENT
 
-État au 2026-11-16, branche `feat/seo` (non fusionnée). Détail par User Story en §10.5.
+État au 2026-11-21, branche `feat/seo` (non fusionnée). Détail par User Story en §10.5.
 
 ### 10.1 Réalisé — front (`geoservice-map-vue3`)
 
@@ -522,7 +522,9 @@ Risques de calendrier :
 | Comparaison en réponse d'abord ; tableau sourcé et daté ; chiffre de l'Insee borné dans la même phrase | fait, sur `/etude-insee` ; résumé borné sur l'index | `src/views/AppEtudeInsee.vue`, `src/views/AppLanding.vue` |
 | 50 liens `<a>` vers les communes ; `keywords` retiré | fait | `src/views/AppLanding.vue` |
 | Libellés de tranches lisibles, colonne de pourcentage, couleurs côté front | fait | `src/utils/tranches.js`, `src/components/StatsTableAccessibility.vue`, `src/components/StatsGraph.vue` |
-| Tests front | 291 tests verts ; 1 échec préexistant `Isochrone.test.js` (attendu `(min 0,100, max 0,900)`) | `npm test` |
+| Lecture du contrat v2 (bornes numériques, niveaux OMS), repli sur le format historique | fait | `src/utils/landingStats.js`, `src/utils/tranches.js`, `src/components/StatsGraph.vue` |
+| `EPCI_MEL = 1` remplacé par la résolution Siren `200093201` → dossier | fait | `src/utils/landingStats.js`, `src/views/AppLanding.vue` |
+| Tests front | 327 tests verts | `npm test` |
 
 ### 10.2 Réalisé — backoffice (`geoservice-isochrone-v2`)
 
@@ -533,6 +535,8 @@ Risques de calendrier :
   - Validée sur une copie de la base de dev : 1 253 lignes, 1 253 Siren distincts, relance idempotente. L'`id` n'a pas de séquence en base : aucun `INSERT` n'est fait, la base de dev contient déjà les 1 253 EPCI.
 - Page `/mvc/management/comm2co/edit?id=…` : champ « Numéro Siren » (9 chiffres), sauvegardé par `CommunauteCommuneService.save` (valeur vide → `null`).
 - Export `data/territoires.json` par `ServicePublicationExporter.writeTerritoires()` : `{communes: [{insee, id, nom, population}], epcis: [{siren, nom, dossier}]}`, limité aux territoires dont le fichier de statistiques existe pour le dernier millésime configuré (2021). Publié par `PublishService` avec les référentiels.
+- JSON v2 (`*.v2.json`) écrits à côté des fichiers historiques par `StatsSurfaceService` : `version`, `typeTerritoire`, `codeInsee` ou `siren`, bornes numériques, population, date de mise à jour, sans couleur ni libellé. Les fichiers historiques portent `"deprecated": true`. Contrat, schémas et licence dans `geoservice-data`.
+- Publication refusée pour un EPCI sans numéro Siren (`PublishService` et contrôleur de publication) ; format et unicité du Siren vérifiés à l'enregistrement (`CommunauteCommuneService`).
 - Aucun JavaScript d'export : `scripts/maj-territoires.js` et le script npm `territoires` supprimés. Le front lit l'instantané `src/data/territoires.json`.
 
 ### 10.3 Écarts au cadrage
@@ -544,17 +548,13 @@ Risques de calendrier :
 
 ### 10.4 Reste à faire
 
-1. **D10 à D12, US08 et US09** : contrat JSON v2 (bloc d'identité, bornes numériques, `version`), double publication, schéma et licence dans `geoservice-data`. Non commencé.
-2. **DEP09** : `EPCI_MEL = 1` subsiste dans `src/utils/landingStats.js` et `AppLanding.vue`. Le remplacer par la résolution `epciParSiren('200093201').dossier` sur `src/data/territoires.json`. Le littéral `245900410` a disparu.
-3. **US07.2** : l'unicité est garantie par l'index SQL (erreur technique), sans message explicite dans la page de gestion.
-4. **US07.3** : la publication d'un EPCI sans numéro Siren n'est pas refusée ; l'EPCI est seulement exclu de `data/territoires.json`.
-5. **US07.1** : le Siren est porté par le modèle et les exports ; vérifier l'exposition par une API REST d'EPCI si un client en dépend.
-6. **US07.5** : la stabilité de `/stats/epci/<siren>` après ré-import est conçue (Siren d'URL, dossier technique dans l'index) mais non testée.
-7. **Publication réelle** : `data/territoires.json` n'existe pas encore dans `autmel/geoservice-data`. Il apparaîtra à la prochaine publication d'un EPCI. Recopier ensuite le fichier publié vers `geoservice-map-vue3/src/data/territoires.json` (aucun script JS pour le faire).
-8. **Migration** : `v2.2.3_com2co_siren.sql` est validée sur copie ; elle reste à appliquer par Flyway sur la base de dev puis de production. La base de dev ne contient pas l'id 18 de l'ancien mapping : `CA Seine-Eure` y est l'id 327.
-9. **DEP04** : validation PO du chiffre de l'Insee (51,9 %, avril 2025, 72 grands centres urbains) et de son périmètre.
-10. **Point ouvert 9** : aucune échéance de retrait des anciens champs JSON n'est fixée.
-11. **Tests front** : l'échec `Isochrone.test.js` est antérieur à la branche et reste à traiter.
+1. **Publication réelle** : `data/territoires.json` et les fichiers `*.v2.json` n'existent pas encore dans `autmel/geoservice-data` ; ils apparaîtront à la prochaine publication d'un EPCI. Recopier ensuite `data/territoires.json` vers `geoservice-map-vue3/src/data/territoires.json` (aucun script JS pour le faire).
+2. **Migration** : `v2.2.3_com2co_siren.sql` est validée sur copie ; elle reste à appliquer par Flyway sur la base de dev puis de production. La base de dev ne contient pas l'id 18 de l'ancien mapping : `CA Seine-Eure` y est l'id 327.
+3. **DEP04** : validation PO du chiffre de l'Insee (51,9 %, avril 2025, 72 grands centres urbains) et de son périmètre.
+4. **Licence des données** : le contrat et les schémas sont publiés dans `geoservice-data` ; la licence dédiée aux données reste à trancher par le PO (le dépôt est sous GPLv3).
+5. **Point ouvert 9** : aucune échéance de retrait des anciens champs JSON n'est fixée.
+6. **US07.1** : le Siren est porté par le modèle et les exports ; aucune API REST d'EPCI n'est consommée aujourd'hui.
+7. **Test de ré-import** : la stabilité de `/stats/epci/<siren>` est garantie par la résolution Siren → dossier ; un test d'intégration sur une base ré-importée reste à faire.
 
 ### 10.5 Correspondance avec les User Stories
 
@@ -563,12 +563,12 @@ Risques de calendrier :
 | US01 | Réalisé | Redirections côté client au lieu de 301 HTTP |
 | US02 | Réalisé | — |
 | US03 | Réalisé | — |
-| US04 | Réalisé sur l'index | Contenu à déplacer sur `/etude-insee` (US05) ; validation PO du chiffre (DEP04) |
+| US04 | Réalisé | Validation PO du chiffre (DEP04) |
 | US05 | Réalisé | La version 2.1.2 (suppression) est remplacée par la page dédiée |
 | US06 | Réalisé | — |
-| US07 | Partiel | 07.1 API si nécessaire, 07.2 message d'unicité, 07.3 refus de publication, 07.5 test de ré-import |
-| US08 | Non commencé | D10, D11 |
-| US09 | Non commencé | D11, D12 |
+| US07 | Réalisé | 07.1 sans API REST consommée ; 07.5 test d'intégration sur base ré-importée |
+| US08 | Réalisé | D10, D11 : `*.v2.json`, identité officielle, bornes numériques, version |
+| US09 | Réalisé | D11, D12 : anciens fichiers `deprecated`, contrat et schémas dans `geoservice-data` ; licence PO |
 
 ## 11. DOCUMENT METADATA
 
@@ -576,21 +576,22 @@ Risques de calendrier :
 | --- | --- |
 | Document | Cadrage SEO — `geoservice-map-vue3` |
 | Chemin | `framing-documents/Front-SEO.md` |
-| Version | 2.7 |
-| Date | 2026-11-16 |
+| Version | 2.8 |
+| Date | 2026-11-21 |
 | Product Owner | à confirmer |
 | Trimestre cible | à confirmer |
 | Cible de livraison | 2.1.0 à 2.1.4 (Annexe C) |
 | Source initiale | note « Objectif amélioration du SEO » (version 0.1, 16 lignes) |
 | Code de référence (front) | `geoservice-map-vue3` : `src/views/AppLanding.vue`, `src/views/AppStatistics.vue`, `src/utils/landingStats.js`, `src/utils/territoires.js`, `src/utils/tranches.js`, `src/utils/seoMeta.js`, `src/data/territoires.json`, `src/router/index.js`, `vite.config.js`, `scripts/postbuild.js` |
 | Code de référence (prérequis) | `geoservice-isochrone-v2` : `model/opendata/CommunauteCommune.java`, `service/opendata/ServiceOpenData.java`, `service/analytics/StatsSurfaceService.java`, `service/export/ServicePublicationExporter.java`, `service/export/PublishService.java`, `controller/mvc/admin/CommunauteCommuneControler.java`, `templates/editCommunauteCommune.html`, `db/migration/v2.2.3_com2co_siren.sql` |
-| Statut | implémenté partiellement (branche `feat/seo`) ; reste le contrat JSON v2 et les validations PO. Voir §10 |
+| Statut | implémenté (branche `feat/seo`) ; restent la publication réelle, la migration et les validations PO. Voir §10 |
 | Révision 2.1 | Prérequis backoffice « numéro Siren » cadré : D08, D09, CA08, CA09, AV06, US07, DEP07, DEP08, DEP09 |
 | Révision 2.2 | Contrat JSON Sirene/COG cadré : IM09, IM10, IS08, D10 à D12, CA10, CA11, AV07, US08, US09, DEP10, DEP11 |
 | Révision 2.3 | Contrainte de migration figée : aucune modification de PK ni de FK (C01 à C03), schéma backend en ajout seul, correspondance du numéro Siren portée par l'export (D08.1, D08.3) |
 | Révision 2.4 | Planning 2.1.x ajouté (Annexe C) : quatre livraisons séquencées, critères de sortie et risques de calendrier |
 | Révision 2.5 | État d'avancement ajouté (§10) : front US01-US06 réalisé, backoffice Siren et `data/territoires.json` réalisés, JSON v2 et validations PO restants. Siren MEL corrigé en `200093201` |
 | Révision 2.7 | US05 réalisé : `/etude-insee` pré-rendue, indexable, au sitemap et liée depuis l'index ; l'index ne garde qu'un résumé borné. Build vérifié |
+| Révision 2.8 | Contrat JSON v2 réalisé : `*.v2.json` en double publication, identité officielle, bornes numériques, schémas et contrat dans `geoservice-data` ; lecture v2 côté front ; `EPCI_MEL = 1` supprimé ; unicité et refus de publication sans Siren. Restent publication réelle, migration, licence des données et validation PO |
 | Révision 2.6 | D05 inversé : la comparaison avec l'étude de l'Insee quitte l'index et devient la page dédiée `/etude-insee` (indexable, pré-rendue, au sitemap). L'index garde un résumé et un lien. Livraison 2.1.4. IM04, IS04, D04, D05, CA04, CA05, AV04, US04, US05 et Annexe A réécrits |
 
 ### Points ouverts à trancher par le PO
