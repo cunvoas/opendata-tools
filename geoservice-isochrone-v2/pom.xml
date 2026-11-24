@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.1.2</version>
+    <version>4.2.0</version>
     <relativePath />
   </parent>
   
@@ -117,7 +117,7 @@
     <dependency>
       <groupId>org.hibernate.orm</groupId>
       <artifactId>hibernate-spatial</artifactId>
-      <version>7.4.16.Final</version>
+      <version>7.4.17.Final</version>
     </dependency>
     
     <dependency>
@@ -260,7 +260,7 @@
     <dependency>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-core</artifactId>
-        <version>13.12.2</version>
+        <version>13.13.0</version>
     </dependency>
 
     <!-- Testcontainers PostgreSQL/PostGIS : test E2E CUJ sanity (docs/cuj-sanity-consult-map.md) -->
@@ -323,7 +323,7 @@
       <plugin>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-maven-plugin</artifactId>
-        <version>13.12.2</version>
+        <version>13.13.0</version>
         <configuration>
           <url>${FLYWAY_URL}</url>
           <user>${FLYWAY_USER}</user>
