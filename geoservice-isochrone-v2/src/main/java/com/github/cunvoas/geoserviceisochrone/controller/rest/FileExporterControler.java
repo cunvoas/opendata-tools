@@ -1,12 +1,15 @@
 package com.github.cunvoas.geoserviceisochrone.controller.rest;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,21 +44,24 @@ public class FileExporterControler {
 	 * Exporte les localisations au format GeoJSON.
 	 * Nécessite une clé d'export et une adresse IP autorisée.
 	 *
-	 * @param credKey Clé d'export à fournir en paramètre
+	 * @param credKeyParam Clé d'export (paramètre ?key=, déprécié)
+	 * @param credKeyHeader Clé d'export (en-tête X-Export-Key, prioritaire)
 	 * @param request Requête HTTP pour obtenir l'adresse IP du client
 	 * @return Statut HTTP et succès de l'opération
 	 */
 	@GetMapping("/json")
-	public ResponseEntity<Boolean> exportLocations( @RequestParam("key") String credKey, HttpServletRequest request) {
+	public ResponseEntity<Boolean> exportLocations( @RequestParam(name = "key", required = false) String credKeyParam,
+			@RequestHeader(name = "X-Export-Key", required = false) String credKeyHeader, HttpServletRequest request) {
 		Boolean success=Boolean.FALSE;
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		
-		if (!this.credKey.equals(credKey)) {
+		String givenKey = credKeyHeader != null ? credKeyHeader : credKeyParam;
+		if (givenKey == null || !MessageDigest.isEqual(this.credKey.getBytes(StandardCharsets.UTF_8), givenKey.getBytes(StandardCharsets.UTF_8))) {
 			log.info("exportLocations: credKey");
 			status = HttpStatus.FORBIDDEN;
 			return new ResponseEntity<Boolean>(success, status);
 		} else {
-			String remote = getClientIp(request);
+			String remote = request.getRemoteAddr();
 			if (!matchOk(remote)) {
 				status = HttpStatus.FORBIDDEN;
 				return new ResponseEntity<Boolean>(success, status);
@@ -103,45 +109,14 @@ public class FileExporterControler {
 		if("127.0.0.1".equals(ip)) {
 			ret = Boolean.TRUE;
 			
-		} else if (creds.length==4) {
+		} else if (creds.length==4 && ips.length==4) {
 			boolean mem=true;
 			for (int i = 0; i < 3; i++) {
-				// OR at least one false, all is false
-				mem = mem || creds[i].equals(ips[i]);
+				// all three first octets must match
+				mem = mem && creds[i].equals(ips[i]);
 			}
 			ret=mem;
 		}
 		return ret;
 	}
-	
-	private static final String[] IP_HEADER_CANDIDATES = {
-	        "X-Forwarded-For",
-	        "Proxy-Client-IP",
-	        "WL-Proxy-Client-IP",
-	        "HTTP_X_FORWARDED_FOR",
-	        "HTTP_X_FORWARDED",
-	        "HTTP_X_CLUSTER_CLIENT_IP",
-	        "HTTP_CLIENT_IP",
-	        "HTTP_FORWARDED_FOR",
-	        "HTTP_FORWARDED",
-	        "HTTP_VIA",
-	        "REMOTE_ADDR"
-	    };
-	
-	/**
-	 * Récupère l'adresse IP du client à partir de la requête HTTP.
-	 *
-	 * @param request Requête HTTP
-	 * @return Adresse IP du client
-	 */
-	protected static String getClientIp(HttpServletRequest request) {
-        for (String header: IP_HEADER_CANDIDATES) {
-            String ipList = request.getHeader(header);
-            if (ipList != null && ipList.length() != 0 && !"unknown".equalsIgnoreCase(ipList)) {
-                String ip = ipList.split(",")[0];
-                return ip;
-            }
-        }
-        return request.getRemoteAddr();
-    }
 }

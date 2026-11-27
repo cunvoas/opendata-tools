@@ -1,0 +1,38 @@
+# ═══════════════════════════════════════════════════
+# Profil OpenBao — PRÉPARÉ, NON ACTIF
+# ═══════════════════════════════════════════════════
+# Ce profil n'est chargé que si "openbao" figure dans spring.profiles.active.
+# Aujourd'hui il ne l'est pas : le démarrage actuel (pi_nuc,metrics) est inchangé.
+#
+# Bascule (plus tard) :
+#   1. ajouter la dépendance spring-cloud-starter-vault-config
+#      (BOM spring-cloud-dependencies 2026.0.0, aligné sur Spring Boot 4.2.0)
+#   2. décommenter spring.config.import ci-dessous
+#   3. activer le profil : -Dspring.profiles.active=pi_nuc,metrics,openbao
+#   4. créer les secrets dans OpenBao (KV v2, chemin secret/isochrone) avec les clés :
+#        spring.datasource.password
+#        application.security.token.secret
+#        application.security.export-credential-key
+#        application.mailjet.apiToken
+#        application.mailjet.apiSecret
+#        application.git.token
+#        application.ndvi.copernicus.client-secret
+#   5. retirer les valeurs correspondantes de l'environnement (.env) une fois validé
+#
+# Authentification : TOKEN en intérim (OPENBAO_TOKEN). Passer en AppRole ensuite.
+# ═══════════════════════════════════════════════════
+
+spring:
+  # config:
+  #   import: "vault://"
+  cloud:
+    vault:
+      uri: ${OPENBAO_ADDR:http://openbao:8200}
+      authentication: TOKEN
+      token: ${OPENBAO_TOKEN:}
+      fail-fast: true
+      kv:
+        enabled: true
+        backend: secret
+        default-context: isochrone
+        backend-version: 2

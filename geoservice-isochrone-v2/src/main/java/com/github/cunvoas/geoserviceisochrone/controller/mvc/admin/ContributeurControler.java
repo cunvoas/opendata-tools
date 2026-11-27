@@ -234,11 +234,19 @@ public class ContributeurControler {
 			final BindingResult bindingResult, final Model model)   {
 		
 		Contributeur contribConnected =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		// un contributeur ne peut modifier que son propre profil
-		if (!ContributeurRole.ADMINISTRATOR.equals(contribConnected.getRole())
-				&& !ContributeurRole.ASSOCIATION_MANAGER.equals(contribConnected.getRole())
-				&& !contribConnected.getId().equals(fContrib.getId())) {
-			throw new ExceptionAdmin("EDIT_NOT_ALLOWED");
+		boolean isAdmin = ContributeurRole.ADMINISTRATOR.equals(contribConnected.getRole());
+		boolean isManager = ContributeurRole.ASSOCIATION_MANAGER.equals(contribConnected.getRole());
+		Contributeur target = fContrib.getId() == null ? null : contributeurService.get(fContrib.getId());
+		boolean self = contribConnected.getId().equals(fContrib.getId());
+		// un contributeur ne peut modifier que son propre profil, un gestionnaire ceux de son association hors administrateurs
+		if (!isAdmin && !self) {
+			boolean managerOfTarget = isManager && (target == null
+					? true
+					: target.getAssociation() != null && target.getAssociation().getId().equals(contribConnected.getAssociation().getId())
+						&& !ContributeurRole.ADMINISTRATOR.equals(target.getRole()));
+			if (!managerOfTarget) {
+				throw new ExceptionAdmin("EDIT_NOT_ALLOWED");
+			}
 		}
 		if (ContributeurRole.ADMINISTRATOR.equals(contribConnected.getRole()))  {
 			model.addAttribute("assos", associationService.findAll());
@@ -256,6 +264,14 @@ public class ContributeurControler {
 		}
 				
 		Contributeur contrib=mapFromForm(fContrib);
+		if (!isAdmin) {
+			// rôle et association imposés côté serveur : pas d'auto-promotion ni de déplacement hors périmètre
+			ContributeurRole requested = fContrib.getRole();
+			boolean roleAllowed = isManager && !self
+					&& (ContributeurRole.ASSOCIATION_MANAGER.equals(requested) || ContributeurRole.ASSOCIATION_CONSTRIBUTOR.equals(requested));
+			contrib.setRole(roleAllowed ? requested : (target != null ? target.getRole() : ContributeurRole.ASSOCIATION_CONSTRIBUTOR));
+			contrib.setAssociation(target != null ? target.getAssociation() : contribConnected.getAssociation());
+		}
 		try {
 			if (contribConnected.equals(contrib)) {
 				contribConnected.setIdRegion(contrib.getIdRegion());
