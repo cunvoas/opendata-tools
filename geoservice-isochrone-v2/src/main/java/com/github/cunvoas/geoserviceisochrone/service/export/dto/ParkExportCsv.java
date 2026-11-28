@@ -35,7 +35,7 @@ public class ParkExportCsv {
 		idCommune("idCommune"),
 		idPark("idPark"),
 		idTypePark("idTypePark"),
-		idParkArea("idTyidParkAreapePark"),
+		idParkArea("idParkArea"),
 		
 		commune("commune"),
 		parkName("parkName"),

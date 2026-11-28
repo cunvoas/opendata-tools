@@ -13,7 +13,7 @@
   
   <groupId>com.github.cunvoas</groupId>
   <artifactId>geoservice-isochrone</artifactId>
-  <version>2.0.14</version>
+  <version>2.1.5</version>
   <name>geoservice-isochrone-v2</name>
 
   <licenses>
@@ -262,6 +262,13 @@
         <artifactId>flyway-core</artifactId>
         <version>13.13.0</version>
     </dependency>
+    
+    <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-core</artifactId>
+        <version>11.0.29</version>
+    </dependency>
+    
 
     <!-- Testcontainers PostgreSQL/PostGIS : test E2E CUJ sanity (docs/cuj-sanity-consult-map.md) -->
     <dependency>

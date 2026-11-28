@@ -2,6 +2,8 @@
 
 Fichiers `data/stats/<dept>/<insee>/stats_<insee>_<année>.json` (commune) et `data/stats/com2co/<id>/stats_c2c_<id>_<urbans|suburbs|all>_<année>.json` (EPCI), servis aussi par `StatsController` (`/map/stats/...`).
 
+Un second fichier, suffixé `.v2.json`, est écrit à côté de chaque fichier historique : identité officielle (`codeInsee` ou `siren`), bornes numériques (`borneMin`, `borneMax`, `unite`), `population`, `version` et `miseAJour`. Les fichiers historiques restent servis et portent `"deprecated": true`. Contrat public : `geoservice-data/CONTRAT-DONNEES.md`.
+
 Code : `StatsSurfaceRepository` (requêtes) et `StatsSurfaceService` (mise en forme).
 
 ## Ce que mesure chaque tranche
@@ -21,7 +23,7 @@ Borne basse incluse, borne haute exclue. Les seuils (`application.business.oms.*
 2. **Habitants sans accès.** `pop_exc` (habitants du carreau hors de toute isochrone d'un parc OMS) est ajouté à la **première tranche**, quelle que soit la tranche du carreau. La première tranche regroupe donc les habitants sans parc accessible et ceux qui en ont très peu par habitant.
 3. **Carreaux à cheval sur plusieurs communes.** `lcog_geo` vaut `INSEE1_INSEE2`. La population du carreau est répartie entre ces communes au prorata de la surface du carreau dans le cadastre de chacune (`cadastre.geo_shape`), parts normalisées à 1. Une commune d'un EPCI ne compte donc que sa part, et le total de l'EPCI est la somme exacte de ses communes. Sans surface exploitable, le partage est égal.
 4. **EPCI.** Les communes denses (`urbans`) et périurbaines (`suburbs`) sont comptées à part, avec leurs tranches propres. `all` regroupe les tranches en trois niveaux OMS (insuffisant, minimum, préconisé).
-5. **Pourcentage `ratio`.** Part de la tranche dans le total, à une décimale (chaîne, par exemple `"44.4"`). Le total est la somme des habitants des carreaux calculés.
+5. **Pourcentage `ratio`.** Part de la tranche dans le total, à une décimale (chaîne, par exemple `"44.4"`) dans le format historique. Le contrat v2 expose un nombre `pourcentage`. Le total est la somme des habitants des carreaux calculés.
 
 ## Descripteur du territoire
 

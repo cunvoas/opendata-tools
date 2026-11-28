@@ -3,6 +3,7 @@ package com.github.cunvoas.geoserviceisochrone.controller.mvc.park;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -87,6 +88,7 @@ public class ParkEditControler {
 	 * @return page name
 	 */
 	@PostMapping("/edit")
+	@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER','ASSO_CONSTRIB')")
 	public String savePark( @ModelAttribute FormParkEdit form, Model model) {
 		
 		ParcPrefecture pf = form.getParcPrefecture();

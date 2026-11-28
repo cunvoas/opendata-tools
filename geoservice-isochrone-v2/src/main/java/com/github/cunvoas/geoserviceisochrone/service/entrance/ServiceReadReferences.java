@@ -181,6 +181,14 @@ public class ServiceReadReferences {
 	}
 	
 	/**
+	 * Retourne toutes les villes.
+	 * @return liste des villes
+	 */
+	public List<City> getCity() {
+		return cityRepository.findAll();
+	}
+
+	/**
 	 * Retourne une ville par son identifiant.
 	 * @param id identifiant de la ville
 	 * @return la ville ou null si non trouvée

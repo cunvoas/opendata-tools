@@ -4,13 +4,18 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -81,12 +86,29 @@ public class StatsSurfaceService {
 			"Non respect des minima OMS",
 			"Minimim conseillé par l'OMS",
 			"Préconisé par l'OMS" };
+
+	/** Version du contrat JSON v2 publié à côté de l'ancien format. */
+	public static final String VERSION_STATS = "2.0";
 	
+	/** Callback de progression pour la boucle des villes. */
+	@FunctionalInterface
+	public interface CityProgress {
+		void onCity(int index, int total, City city);
+	}
+
 	public void writeStatsSurfaceByCom2CoIdAndAnnee(Long com2coId, Integer annee) throws IOException {
+		writeStatsSurfaceByCom2CoIdAndAnnee(com2coId, annee, null);
+	}
+
+	public void writeStatsSurfaceByCom2CoIdAndAnnee(Long com2coId, Integer annee, CityProgress progress) throws IOException {
 		CommunauteCommune com2co = communauteCommuneRepository.getReferenceById(com2coId);
 		if (com2co!=null) {
 			List<City> cities = cityRepository.findByCommunauteCommuneId(com2coId);
-			for (City city : cities) {
+			for (int i = 0; i < cities.size(); i++) {
+				City city = cities.get(i);
+				if (progress != null) {
+					progress.onCity(i + 1, cities.size(), city);
+				}
 				try {
 					log.info("Stats surface for city {} / {}", city.getInseeCode(), city.getName());
 					StatsSurfaceJson stat =  getStatsSurfaceByInseeAndAnnee(city.getInseeCode(), annee);
@@ -99,7 +121,10 @@ public class StatsSurfaceService {
 					file.mkdirs();
 					
 					file = new File(sPath+"/stats_"+city.getInseeCode()+"_"+String.valueOf(annee)+".json");
+					stat.setDeprecated(Boolean.TRUE);
 					objectMapper.writeValue(file, stat);
+					writeStatsV2(stat, "commune", city.getInseeCode(), null,
+							new File(sPath), "stats_"+city.getInseeCode()+"_"+String.valueOf(annee));
 					
 				} catch (Exception e) {
 					log.error("Error processing stats surface for city {} / {} : {}", city.getInseeCode(), city.getName(), e.getMessage());
@@ -116,7 +141,10 @@ public class StatsSurfaceService {
 			file.mkdirs();
 
 			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_urbans_"+String.valueOf(annee)+".json");
+			ret.setDeprecated(Boolean.TRUE);
 			objectMapper.writeValue(file, ret);
+			writeStatsV2(ret, "epci", null, sirenEpci(com2CoId), new File(sPath),
+					"stats_c2c_"+String.valueOf(com2CoId)+"_urbans_"+String.valueOf(annee));
 		}
 		return ret;
 	}
@@ -155,7 +183,10 @@ public class StatsSurfaceService {
 			file.mkdirs();
 
 			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_suburbs_"+String.valueOf(annee)+".json");
+			ret.setDeprecated(Boolean.TRUE);
 			objectMapper.writeValue(file, ret);
+			writeStatsV2(ret, "epci", null, sirenEpci(com2CoId), new File(sPath),
+					"stats_c2c_"+String.valueOf(com2CoId)+"_suburbs_"+String.valueOf(annee));
 		}
 		return ret;
 	}
@@ -217,7 +248,10 @@ public class StatsSurfaceService {
 			file.mkdirs();
 
 			file = new File(sPath+"/stats_c2c_"+String.valueOf(com2CoId)+"_all_"+String.valueOf(annee)+".json");
+			ret.setDeprecated(Boolean.TRUE);
 			objectMapper.writeValue(file, ret);
+			writeStatsV2(ret, "epci", null, sirenEpci(com2CoId), new File(sPath),
+					"stats_c2c_"+String.valueOf(com2CoId)+"_all_"+String.valueOf(annee));
 		}
 		return ret;
 	}
@@ -400,6 +434,143 @@ public class StatsSurfaceService {
 			seuil.setRatio(pourcent(stat.getHabitants(), populationTotale));
 			index++;
 		}
+	}
+
+	/** Numéro Siren d'un EPCI, ou null s'il n'est pas renseigné. */
+	private String sirenEpci(Long com2CoId) {
+		return communauteCommuneRepository.findById(com2CoId)
+				.map(CommunauteCommune::getSiren)
+				.orElse(null);
+	}
+
+	/**
+	 * Écrit le contrat JSON v2 à côté du fichier historique, sans le remplacer.
+	 * Le fichier v2 ne porte ni couleur ni libellé d'affichage : seulement les identifiants
+	 * officiels, des bornes numériques et la version du contrat.
+	 * @param json données historiques
+	 * @param typeTerritoire `commune` ou `epci`
+	 * @param codeInsee code officiel géographique pour une commune
+	 * @param siren numéro Siren pour un EPCI
+	 * @param folder dossier de publication
+	 * @param baseName nom du fichier historique, sans extension
+	 * @throws IOException en cas d'erreur d'écriture
+	 */
+	void writeStatsV2(StatsSurfaceJson json, String typeTerritoire, String codeInsee, String siren,
+			File folder, String baseName) throws IOException {
+		Map<String, Object> v2 = new LinkedHashMap<>();
+		v2.put("version", VERSION_STATS);
+		v2.put("typeTerritoire", typeTerritoire);
+		if ("commune".equals(typeTerritoire)) {
+			v2.put("codeInsee", codeInsee);
+		} else {
+			v2.put("siren", siren);
+		}
+		v2.put("nom", json.getNom());
+		v2.put("annee", json.getAnnee());
+		v2.put("population", population(json));
+		v2.put("miseAJour", LocalDate.now(ZoneOffset.UTC).toString());
+		v2.put("stats", tranchesV2(json.getStats(), json.getSeuils()));
+		v2.put("seuils", seuilsV2(json.getSeuils()));
+		if (json.getDescripteur() != null) {
+			v2.put("descripteur", json.getDescripteur());
+		}
+		objectMapper.writerWithDefaultPrettyPrinter()
+				.writeValue(new File(folder, baseName + ".v2.json"), v2);
+	}
+
+	private static int population(StatsSurfaceJson json) {
+		return json.getStats().stream()
+				.mapToInt(stat -> stat.getHabitants() == null ? 0 : stat.getHabitants())
+				.sum();
+	}
+
+	private static List<Map<String, Object>> tranchesV2(List<Stat> stats, List<Seuil> seuils) {
+		List<Map<String, Object>> tranches = new ArrayList<>();
+		for (int i = 0; i < stats.size(); i++) {
+			Stat stat = stats.get(i);
+			Map<String, Object> tranche = new LinkedHashMap<>();
+			Seuil seuil = i < seuils.size() ? seuils.get(i) : null;
+			ajouterIdentiteTranche(tranche, seuil);
+			tranche.put("habitants", stat.getHabitants() == null ? 0 : stat.getHabitants());
+			tranches.add(tranche);
+		}
+		return tranches;
+	}
+
+	private static List<Map<String, Object>> seuilsV2(List<Seuil> seuils) {
+		int total = seuils.stream().mapToInt(seuil -> seuil.getHabitants() == null ? 0 : seuil.getHabitants()).sum();
+		List<Map<String, Object>> tranches = new ArrayList<>();
+		for (Seuil seuil : seuils) {
+			Map<String, Object> tranche = new LinkedHashMap<>();
+			ajouterIdentiteTranche(tranche, seuil);
+			int habitants = seuil.getHabitants() == null ? 0 : seuil.getHabitants();
+			tranche.put("habitants", habitants);
+			tranche.put("pourcentage", total == 0 ? 0.0 : Math.round(1000.0 * habitants / total) / 10.0);
+			tranches.add(tranche);
+		}
+		return tranches;
+	}
+
+	private static void ajouterIdentiteTranche(Map<String, Object> cible, Seuil seuil) {
+		if (seuil == null) {
+			return;
+		}
+		Integer[] bornes = bornes(seuil.getSurface());
+		if (bornes != null) {
+			if (bornes[0] != null) {
+				cible.put("borneMin", bornes[0]);
+			}
+			if (bornes[1] != null) {
+				cible.put("borneMax", bornes[1]);
+			}
+			cible.put("unite", "m2/hab");
+		}
+		String niveau = niveauOms(seuil.getSurface());
+		if (niveau != null) {
+			cible.put("niveauOms", niveau);
+		}
+	}
+
+	/**
+	 * Bornes numériques d'un libellé de tranche historique.
+	 * @param surface libellé (« 0 <= ... < 3 m²/hab. », « > 0<=3 », « >= 12 m²/hab. »)
+	 * @return [borneMin, borneMax], l'une des deux pouvant être nulle ; null si aucun nombre.
+	 */
+	static Integer[] bornes(String surface) {
+		if (surface == null) {
+			return null;
+		}
+		List<Double> nombres = new ArrayList<>();
+		Matcher matcher = Pattern.compile("\\d+(?:[.,]\\d+)?").matcher(surface);
+		while (matcher.find()) {
+			nombres.add(Double.parseDouble(matcher.group().replace(',', '.')));
+		}
+		if (nombres.isEmpty()) {
+			return null;
+		}
+		if (nombres.size() >= 2) {
+			return new Integer[] { nombres.get(0).intValue(), nombres.get(1).intValue() };
+		}
+		if (surface.trim().startsWith("<")) {
+			return new Integer[] { null, nombres.get(0).intValue() };
+		}
+		return new Integer[] { nombres.get(0).intValue(), null };
+	}
+
+	private static String niveauOms(String surface) {
+		if (surface == null) {
+			return null;
+		}
+		if (surface.matches("(?i).*non\\s*respect.*")) {
+			return "INSUFFISANT";
+		}
+		if (surface.matches("(?i).*minim\\w*\\s*conseill.*")) {
+			return "MINIMUM";
+		}
+		if (surface.matches("(?i).*pr[ée]conis.*")) {
+			return "PRECONISE";
+		}
+		return null;
 	}
 
 	/**

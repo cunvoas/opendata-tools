@@ -1,45 +1,34 @@
 package com.github.cunvoas.geoserviceisochrone.service.map;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Paths;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.zip.GZIPOutputStream;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.ResourceUtils;
 
 class TestCityService {
 
-	
-	CityService tested = new CityService();
-	
+	private final CityService tested = new CityService();
 
-	@Test
-	@Disabled
-	void testGetGzipCadastre() {
-		byte[] geo = tested.getGzipCadastre("59001");
-		
-		assertNotNull(geo);
-	} 
-	@Test
-	void testGetGeoJsonCadastre() {
-
-		try {
-			File f = ResourceUtils.getFile("classpath:cadastre-59001-communes.json.gz");
-			byte[] gzf = java.nio.file.Files.readAllBytes(Paths.get(f.getAbsolutePath()));
-			
-			String geo = tested.getGeoJsonCadastre(gzf);
-			
-			assertNotNull(geo);
-		} catch (FileNotFoundException e) {
-			fail("FileNotFoundException");
-		} catch (IOException e) {
-			fail("IOException");
+	private byte[] gzippedCadastre() throws Exception {
+		try (InputStream in = getClass().getResourceAsStream("/cadastre-59001-communes.json")) {
+			assertNotNull(in, "cadastre-59001-communes.json doit être présent dans les ressources de test");
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			try (GZIPOutputStream gz = new GZIPOutputStream(bos)) {
+				in.transferTo(gz);
+			}
+			return bos.toByteArray();
 		}
 	}
 
+	@Test
+	void testGetGeoJsonCadastre() throws Exception {
+		String geo = tested.getGeoJsonCadastre(gzippedCadastre());
+
+		assertNotNull(geo);
+		assertTrue(geo.contains("FeatureCollection") || geo.contains("features"));
+	}
 }

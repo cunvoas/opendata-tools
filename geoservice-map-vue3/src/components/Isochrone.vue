@@ -83,11 +83,11 @@
           class="ndvi-toggle"
           :class="{ 'ndvi-toggle--active': ndviMode }"
           :aria-pressed="ndviMode ? 'true' : 'false'"
-          title="Colorie les parcs selon leur NDVI (végétation réelle) sans ajouter de calque."
+          title="Colorie les parcs selon leur végétation."
           @click="toggleNdviMode"
         >
           <span aria-hidden="true">🌿</span>
-          NDVI
+          Végétation
         </button>
       </l-control>
 
@@ -275,10 +275,18 @@ import { ref } from 'vue';
 import { hexToRgba } from "../utils/color.js";
 import { getNdviCategory, getNdviColor, NDVI_CONTOUR_DALTONIEN } from "../utils/ndvi.js";
 import { interpreterStatistiquesNdvi } from "../utils/ndviInterpretation.js";
+import { availableIndices, vegetationEvaluation, anomalieLabel } from "../utils/vegetation.js";
 import { features, DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from "../utils/config.js";
 import axios from 'axios';
 import { buildShareableUrl, isActive } from '../utils/urlParams.js';
 import debounce from 'lodash/debounce';
+
+// Les infobulles Leaflet sont injectées en HTML : les libellés issus des données (noms, commentaires) doivent être échappés.
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
+}
 
 // needs to be here for map coloring
 // Fonction pour obtenir les couleurs des parcs selon le mode (normal ou daltonien)
@@ -383,7 +391,7 @@ function getColorLegend(legendeDense, colorblindMode = false) {
 			from = grades[i];
 			to = grades[i + 1];
 
-      let tSurface = `${from}${to ? `&ndash;${to}` : '+'}`
+      let tSurface = `${from}${to ? `&ndash;${to}` : '+'}`;
       let tColors = `<i style="border:1px solid #4b5563;background:${hexToRgba(getSquareColor(legendeDense, from, colorblindMode), 0.4)}"></i> `;
 			
       labels.push(tColors+tSurface);
@@ -740,7 +748,8 @@ export default {
       const qryPrms =
         "?swLat=" + this.boundSwLat +
         "&swLng=" + this.boundSwLng +
-        "&neLat=" + this.boundNeLng +
+        "&neLat=" + this.boundNeLat +
+        "&neLng=" + this.boundNeLng +
         "&annee=" + this.annee;
       
         this.callGeoJsonIsochrones(qryPrms);
@@ -1021,7 +1030,7 @@ export default {
       return html;
     },
     buildParkDetailHtml(properties) {
-      const name = properties?.name || 'Parc sans nom';
+      const name = escapeHtml(properties?.name || 'Parc sans nom');
       if (!this.ndviEnabled || !properties?.ndviEnabled) {
         return '<div style="text-align:left"><b>' + name + '</b></div>';
       }
@@ -1048,8 +1057,44 @@ export default {
        if (diagnostic) {
          html += `<span style="display:block;margin-top:.3em">${diagnostic.replace(/\n/g, '<br>').replace('Diagnostic :', '<b>Diagnostic :</b>').replace('Structure spatiale :', '<b>Structure spatiale :</b>')}</span>`;
        }
+       html += this.buildVegetationHtml(properties);
        html += '</div>';
        return html;
+    },
+    /**
+     * Quatre indices (moyenne, min, max, écart-type) et évaluation de végétation.
+     * Les autres indices ne sont affichés que s'ils sont présents dans la mesure.
+     */
+    buildVegetationHtml(properties) {
+      let html = '';
+      availableIndices(properties)
+        .filter((stats) => stats.label !== 'NDVI')
+        .forEach((stats) => {
+          html += `<span style="display:block;margin-top:.3em"><b>${stats.label} moyen : ${this.formatNdviValue(stats.mean)}</b>`;
+          const bounds = [];
+          if (stats.min !== null && stats.max !== null) {
+            bounds.push(`min ${this.formatNdviValue(stats.min)}, max ${this.formatNdviValue(stats.max)}`);
+          }
+          if (stats.std !== null) bounds.push(`écart-type ${this.formatNdviValue(stats.std)}`);
+          if (bounds.length) html += ` (${bounds.join(', ')})`;
+          html += '</span>';
+        });
+
+      const evaluation = vegetationEvaluation(properties);
+      if (evaluation) {
+        html += '<span style="display:block;margin-top:.3em">';
+        if (evaluation.recouvrement) html += `Recouvrement : <b>${escapeHtml(evaluation.recouvrement)}</b><br>`;
+        if (evaluation.score !== null) {
+          let score = `Score santé : <b>${this.formatNdviValue(evaluation.score)} / 100</b>`;
+          if (evaluation.confiance) score += ` (confiance ${escapeHtml(evaluation.confiance)})`;
+          html += `${score}<br>`;
+        }
+        if (evaluation.diagnostic) html += `Diagnostic : ${escapeHtml(evaluation.diagnostic)}<br>`;
+        if (evaluation.homogeneite) html += `Homogénéité : ${escapeHtml(evaluation.homogeneite)}<br>`;
+        html += `Anomalie locale : ${anomalieLabel(evaluation.anomalie)}`;
+        html += '</span>';
+      }
+      return html;
     },
     showParkDetail(properties) {
       this._parkClicked = true;
@@ -1125,9 +1170,9 @@ export default {
         const parkCity = feature.properties.city || 'N/A';
         
         layer.bindTooltip(
-          "<div>Nom: " + valid +" "+ parkName +
+          "<div>Nom: " + valid +" "+ escapeHtml(parkName) +
           "</div><div>Surface: " + formattedSurface + unit + 
-          "</div><div>Ville: " + parkCity +"</div>" +
+          "</div><div>Ville: " + escapeHtml(parkCity) +"</div>" +
           this.buildNdviHtml(feature.properties) + "<div><i>Cliquez pour le détail</i></div>",
           { permanent: false, sticky: true }
         );
@@ -1243,9 +1288,9 @@ export default {
       return (feature, layer) => {
         layer.bindTooltip(
           "<div>Quartier:" +
-            feature.properties.quartier +
+            escapeHtml(feature.properties.quartier) +
             "</div><div>" +
-            feature.properties.name +
+            escapeHtml(feature.properties.name) +
             " (id:" +
             feature.properties.id +
             ")</div><div>" +
@@ -1287,9 +1332,9 @@ export default {
           const theComment =
             "<h4>Données carroyées</h4>" +
             "<div><b>id Inspire</b>:" +
-            feature.properties.idInspire +
+            escapeHtml(feature.properties.idInspire) +
             "</div><div><br/><b>" +
-            feature.properties.commune +
+            escapeHtml(feature.properties.commune) +
             "</b></br><b>" +
             feature.properties.people +
             "</b> habitants</div>";
@@ -1319,7 +1364,7 @@ export default {
               " m²/hab</b></div>" +
               "<div style='padding-top: 1em;'><i><u>Parcs accessibles:</u><br />";
             if (feature.properties.commentParks !== "") {
-              detailData += feature.properties.commentParks + "</i></div>";
+              detailData += escapeHtml(feature.properties.commentParks) + "</i></div>";
             } else {
               detailData += "Aucun</i></div>";
             }
@@ -1357,8 +1402,8 @@ export default {
     onDetailCadastre() {
       return (feature, layer) => {
         layer.bindTooltip(
-          "<div>INSEE: " + feature.properties.idInsee +
-          "</div><div>Commune: " + feature.properties.nom +
+          "<div>INSEE: " + escapeHtml(feature.properties.idInsee) +
+          "</div><div>Commune: " + escapeHtml(feature.properties.nom) +
            "</div>",
           //{ permanent: false, sticky: true }
         );

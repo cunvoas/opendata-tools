@@ -1,5 +1,6 @@
 package com.github.cunvoas.geoserviceisochrone.service.analytics;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -428,5 +429,14 @@ class TestStatsSurfaceService {
 		assertTrue(StatsSurfaceRepository.QRY_DESC_COM2CO_DENSE.contains("is_dense IS TRUE"));
 		assertTrue(StatsSurfaceRepository.QRY_DESC_COM2CO_SUBURBS.contains("is_dense IS FALSE"));
 		assertFalse(StatsSurfaceRepository.QRY_DESC_COM2CO_ALL.contains("is_dense IS"));
+	}
+
+	@Test
+	void testBornesV2_litLesLibellesHistoriquesSansExpressionReguliereCoteFront() {
+		assertArrayEquals(new Integer[] { 0, 3 }, StatsSurfaceService.bornes("0 <=  surface/habitant < 3 m²/hab."));
+		assertArrayEquals(new Integer[] { 3, 7 }, StatsSurfaceService.bornes("> 3<=7"));
+		assertArrayEquals(new Integer[] { 12, null }, StatsSurfaceService.bornes(">= 12 m²/hab."));
+		assertArrayEquals(new Integer[] { null, 3 }, StatsSurfaceService.bornes("< 3 m²/hab."));
+		assertNull(StatsSurfaceService.bornes("Non respect des minima OMS"));
 	}
 }

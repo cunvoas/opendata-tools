@@ -80,14 +80,11 @@ public class LoginAttemptService {
     }
     
     /**
-     * Récupère l'adresse IP du client à partir de la requête HTTP.
+     * Récupère l'adresse IP du client. Seule source de confiance : {@code getRemoteAddr()},
+     * l'IP réelle de la connexion, ou celle rétablie par {@code server.forward-headers-strategy} pour un proxy de confiance.
      * @return l'adresse IP du client
      */
     private String getClientIP() {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isEmpty() || !xfHeader.contains(request.getRemoteAddr())) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0];
+        return request.getRemoteAddr();
     }
 }

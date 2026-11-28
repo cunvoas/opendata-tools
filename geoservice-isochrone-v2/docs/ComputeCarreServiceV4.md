@@ -451,6 +451,6 @@ N requêtes SQL individuelles par une seule requête JOIN.
 | `src/main/java/.../compute/dto/ComputeDto.java` | DTO de travail |
 | `src/main/java/.../park/ComputeResultDto.java` | DTO de résultat |
 | `src/main/java/.../SurfaceCache.java` | Cache de surface (classe interne) |
-| `src/test/java/.../ComputeCarreServiceV3V4PerformanceTest.java` | Tests de performance comparatifs |
-| `src/test/java/.../ComputeCarreServiceV4Test.java` | Tests unitaires V4 |
+| `src/test/java/.../TestComputeCarreServiceV3V4Performance.java` | Tests de performance comparatifs |
+| `src/test/java/.../TestComputeCarreServiceV4.java` | Tests unitaires V4 |
 | `OPTIMISATION_Carre_Iris.md` | Plan d'optimisation initial |

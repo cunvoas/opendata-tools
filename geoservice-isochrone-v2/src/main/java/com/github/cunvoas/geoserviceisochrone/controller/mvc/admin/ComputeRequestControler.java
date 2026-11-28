@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import com.github.cunvoas.geoserviceisochrone.model.admin.Contributeur;
 import com.github.cunvoas.geoserviceisochrone.service.entrance.ServiceReadReferences;
 
 @Controller
+@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER')")
 @RequestMapping("/mvc/management/compute")
 public class ComputeRequestControler {
 
@@ -36,7 +38,6 @@ public class ComputeRequestControler {
     }
 
     @GetMapping("/request")
-    //@PreAuthorize("hasAuthority('ADMINISTRATOR')")
     public String show(Model model) {
         FormComputeRequest form = new FormComputeRequest();
         locateUser(form);

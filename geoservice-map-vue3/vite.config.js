@@ -52,7 +52,14 @@ const ROOT_PATH = '/'
 // const ROOT_PATH = '/parcs-et-jardins/'
 
 // Routes pré-rendues en HTML réel (GitHub Pages sert dist/<route>/index.html en 200 au lieu du 404)
-const prerenderRoutes = ['/', '/carte', '/stats', '/information', '/etude-insee', '/aideVideo']
+const territoires = JSON.parse(fs.readFileSync('./src/data/territoires.json', 'utf-8'));
+// VITE_PRERENDER_MAX limite le nombre de pages territoriales (budget de build Puppeteer), les plus peuplées d'abord.
+const maxTerritoires = Number(process.env.VITE_PRERENDER_MAX) || territoires.communes.length;
+const prerenderRoutes = [
+  '/', '/carte', '/stats', '/information', '/aideVideo', '/etude-insee',
+  ...territoires.communes.slice(0, maxTerritoires).map((commune) => `/stats/${commune.insee}`),
+  ...territoires.epcis.map((epci) => `/stats/epci/${epci.siren}`)
+];
 if (process.env.VITE_FEATURE_NDVI === 'true') prerenderRoutes.push('/ndvi')
 
 

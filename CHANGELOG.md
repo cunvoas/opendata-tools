@@ -1,5 +1,28 @@
 # Changelog
 
+## V2.1.5 - 2026-11-27
+
+ - différents fix cybersécurité applicatifs
+
+## V2.1.4 - 2026-11-25
+
+ - CVE-2026-121649
+ - CVE-2026-118028
+ - CVE-2026-116600
+  
+## V2.1.3 - 2026-11-22
+
+ - Séparation des exports.
+ - Tableau de bord de suivi des exports.
+
+## V2.1.2 - 2026-11-19
+
+ - Intégration des SIREN et COG coté application publique.
+
+## V2.1.1 - 2026-11-17
+
+ - Intégration des SIREN pour les EPCI
+ - Service et API avec SIREN et COG.
  
 ## V2.0.14 - 2026-11-15
 

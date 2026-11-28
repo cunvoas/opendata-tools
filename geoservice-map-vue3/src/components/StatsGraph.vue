@@ -1,19 +1,27 @@
 <template>
-  <div v-if="loaded" class="flex flex-col items-center w-full">
-    <h2 class="text-center">{{ villeNom }}</h2>
-    <div v-if="shouldDisplayBarChart" class="w-full max-w-4xl">
-      <Bar :data="dataBar" :options="barOptions" class="w-full h-[300px]" />
+  <div class="flex flex-col items-center w-full">
+    <div class="mb-4">
+      <label for="anneeStats" class="font-medium mr-2">Année</label>
+      <select id="anneeStats" v-model.number="annee" class="border rounded px-2 py-1">
+        <option v-for="year in annees" :key="year" :value="year">{{ year }}</option>
+      </select>
     </div>
-    <div class="w-full max-w-xs mt-6">
-      <Pie :data="dataPie" :options="myOptions" class="w-full h-[300px]" />
-      <div class="text-center text-sm mt-2 mb-5">
-        <span>Répartition des habitants par seuil de surface de parc et jardin public accessible</span>
+    <template v-if="loaded">
+      <h2 class="text-center">Répartition des habitants {{ villeNom ? 'de ' + villeNom : '' }} par surface de parc accessible à pied</h2>
+      <div v-if="shouldDisplayBarChart" class="w-full max-w-4xl">
+        <Bar :data="dataBar" :options="barOptions" class="w-full h-[300px]" />
       </div>
-    </div>
-    <!-- Alternative textuelle pour les agents IA et l'accessibilité -->
-    <StatsTableAccessibility :villeNom="villeNom" :dataPie="dataPie" :loaded="loaded" />
+      <div class="w-full max-w-xs mt-6">
+        <Pie :data="dataPie" :options="myOptions" class="w-full h-[300px]" />
+        <div class="text-center text-sm mt-2 mb-5">
+          <span>Répartition des habitants par seuil de surface de parc et jardin public accessible</span>
+        </div>
+      </div>
+      <!-- Alternative textuelle pour les agents IA et l'accessibilité -->
+      <StatsTableAccessibility :villeNom="villeNom" :dataPie="dataPie" :loaded="loaded" />
+    </template>
+    <div v-else class="text-center" role="status">Chargement en cours...</div>
   </div>
-  <div v-else class="text-center" role="status">Chargement en cours...</div>
 </template>
 
 
@@ -33,9 +41,25 @@ import {
 import { Bar, Pie } from 'vue-chartjs';
 import { toRaw } from 'vue'
 import StatsTableAccessibility from './StatsTableAccessibility.vue';
-import { DATA_MODE, STATIC_ON_GIT, DYNAMIC_ON_LOCAL } from '../utils/config.js';
+import { formaterNom } from '../utils/territoires.js';
+import { chargerStats, urlsStatsCommune, urlsStatsEpciType } from '../utils/landingStats.js';
+import { libelleTranche } from '../utils/tranches.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
+
+// Couleurs d'affichage côté front (les données n'en portent plus).
+const PALETTE_5 = ['#0000e8', '#6060e8', '#b0b0e8', '#578817', '#57ee17'];
+const PALETTE_3 = ['#b0b0e8', '#578817', '#57ee17'];
+const palette = (nombre) => (nombre <= 3 ? PALETTE_3 : PALETTE_5).slice(0, nombre);
+
+/** Libellé d'une tranche v2 (bornes ou niveau OMS), sinon du seuil de secours. */
+function libelleTrancheOuSeuil(tranche, secours) {
+  const porteUnLibelle = tranche && (
+    tranche.surface || tranche.niveauOms ||
+    tranche.borneMin != null || tranche.borneMax != null
+  );
+  return libelleTranche(porteUnLibelle ? tranche : secours ?? {});
+}
 
 // Fonction pour convertir les couleurs normales en couleurs daltonien
 function convertToColorblindPalette(normalColor) {
@@ -83,6 +107,7 @@ export default {
       dataBar:  {},
       dataPie:  {},
       annee: 2021,
+      annees: [2021, 2019, 2017, 2015],
       loaded: false,
       villeNom: '',
       locationType: null,
@@ -101,7 +126,7 @@ export default {
                 const value = context.parsed.y;
                 const dataset = context.dataset;
                 const total = dataset.data.reduce((acc, val) => acc + val, 0);
-                const percentage = ((value / total) * 100).toFixed(1);
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
                 return `${value} habitants (${percentage}%)`;
               }
             }
@@ -136,7 +161,7 @@ export default {
                 const value = context.parsed;
                 const dataset = context.dataset;
                 const total = dataset.data.reduce((acc, val) => acc + val, 0);
-                const percentage = ((value / total) * 100).toFixed(1);
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
                 const label = context.label || '';
                 return `${label}: ${value} habitants (${percentage}%)`;
               }
@@ -147,6 +172,12 @@ export default {
     }
   },
     watch: {
+        annee() {
+            // Même territoire, nouveau millésime : on recharge les statistiques affichées.
+            if (this.lastProcessedLocation) {
+                this.processLocation(this.lastProcessedLocation);
+            }
+        },
         location: {
             async handler(newLocation) {
               
@@ -212,21 +243,21 @@ export default {
       return retData;
     },
     parseJsonBar(jsonData) {
-      console.log("parseJsonBar.nom:", jsonData["nom"]);
-      this.villeNom = jsonData["nom"];
-      
-      const tLabels = jsonData["stats"].map(value => value.surface);
-      // Appliquer la conversion des couleurs selon le mode daltonien
-      const tFillColors = jsonData["stats"].map(value => convertToColorblindPalette(value.barColor));
-      const tHabitants = jsonData["stats"].map(value => value.habitants);
- 
+      this.villeNom = this.villeNom || formaterNom(jsonData.nom);
+
+      // Le libellé vient de la tranche, ou du seuil correspondant quand la tranche n'en porte pas.
+      const tranches = jsonData.stats ?? [];
+      const tLabels = tranches.map((value, index) => libelleTrancheOuSeuil(value, jsonData.seuils?.[index]));
+      const tFillColors = palette(tranches.length).map(convertToColorblindPalette);
+      const tHabitants = tranches.map(value => value.habitants);
+
       this.dataBar= this.getChartData(' m² par habitant de parcs', tLabels,  tHabitants, tFillColors);
     },
     parseJsonPie(jsonData) {
-      const tLabels = jsonData["seuils"].map(value => value.surface);
-      // Appliquer la conversion des couleurs selon le mode daltonien
-      const tFillColors = jsonData["seuils"].map(value => convertToColorblindPalette(value.barColor));
-      const tHabitants = jsonData["seuils"].map(value => value.habitants );  // +" ("+ value.ratio +")"
+      const seuils = jsonData.seuils ?? [];
+      const tLabels = seuils.map(value => libelleTranche(value));
+      const tFillColors = palette(seuils.length).map(convertToColorblindPalette);
+      const tHabitants = seuils.map(value => value.habitants );
 
       this.dataPie= this.getChartData(' m² par habitant de parcs', tLabels,  tHabitants, tFillColors);
     },
@@ -261,21 +292,20 @@ export default {
 
       console.log("Extracted values - locType:", locType, "graphType:", graphType);
 
+      // Sur une page EPCI, le nom vient de l'index (sans le suffixe de densité du fichier de statistiques).
+      this.villeNom = locType === 'com2co' ? (newLocation.com2coName || '') : '';
+
       const annee   = this.annee;
 
-      let callUrl;
+      let callUrls;
       
       // Check if we're loading com2co (communauté de communes) stats or city stats
       if (locType === 'com2co') {
         // Load community stats
         console.log("processLocation (com2co):", regionId, com2coId, graphType);
         
-        // If graphType is specified, use the new URL format for specific graph types
         if (graphType) {
-          // Format: https://raw.githubusercontent.com/autmel/geoservice-data/refs/heads/main/data/stats/com2co/1/stats_c2c_1_urbans_2019.json
-          callUrl = DATA_MODE === 'dynamic'
-            ? `${DYNAMIC_ON_LOCAL}/map/stats/com2co/${com2coId}/${graphType}?annee=${annee}`
-            : `${STATIC_ON_GIT}/data/stats/com2co/${com2coId}/stats_c2c_${com2coId}_${graphType}_${annee}.json`;
+          callUrls = urlsStatsEpciType(com2coId, graphType, annee);
         } else {
           console.error("graphType is required for com2co location type");
           this.loaded = false;
@@ -285,30 +315,21 @@ export default {
         // Load city stats (existing behavior)
         const cityInsee = newLocation.cityInsee;
         console.log("processLocation (city):", regionId, com2coId, cityInsee);
-        const dept = cityInsee.substring(0,2);
-        callUrl = DATA_MODE === 'dynamic'
-          ? `${DYNAMIC_ON_LOCAL}/map/stats/city/${cityInsee}?annee=${annee}`
-          : `${STATIC_ON_GIT}/data/stats/${dept}/${cityInsee}/stats_${cityInsee}_${annee}.json`;
+        callUrls = urlsStatsCommune(cityInsee, annee);
       }
 
-      
-      
-      console.log("Fetching stats from:", callUrl);
+      console.log("Fetching stats from:", callUrls);
 
       this.loaded = false;
       try {
-        const respData = await fetch(callUrl);
-        if (!respData.ok) {
-            throw new Error(`HTTP error! status: ${respData.status}`);
-        }   
-        const newData = await respData.json();
+        const newData = await chargerStats(callUrls);
+        if (!newData) {
+            throw new Error('Statistiques indisponibles');
+        }
 
         this.parseJsonBar(newData);
         this.parseJsonPie(newData);
         this.loaded = true;
-
-
-        
       } catch (error) {
         console.error("Error loading stats:", error);
         this.loaded = false;

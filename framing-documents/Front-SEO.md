@@ -6,7 +6,7 @@ Périmètre applicatif : `geoservice-map-vue3` (site `https://parcs-et-jardins.a
 Termes officiels de l'Insee employés dans ce document :
 
 - **code officiel géographique** : code à 5 caractères attribué par l'Insee à chaque commune (ex. `59350` pour Lille). Le terme courant est « code Insee ». Le COG rassemble aussi les codes des départements, des régions et des cantons.
-- **numéro Siren** : identifiant à 9 chiffres attribué par l'Insee à toute personne physique ou morale inscrite au répertoire Sirene (ex. `245900410` pour la MEL). C'est l'identifiant officiel d'une intercommunalité : un EPCI n'a pas de code officiel géographique. Il sert de segment d'URL `/stats/epci/<siren>`.
+- **numéro Siren** : identifiant à 9 chiffres attribué par l'Insee à toute personne physique ou morale inscrite au répertoire Sirene (ex. `200093201` pour la MEL). C'est l'identifiant officiel d'une intercommunalité : un EPCI n'a pas de code officiel géographique. Il sert de segment d'URL `/stats/epci/<siren>`.
 - **répertoire Sirene** : répertoire tenu par l'Insee, qui recense les entreprises et leurs établissements. Il porte le numéro Siren et la catégorie juridique.
 - **COG** : le Code officiel géographique, répertoire de l'Insee dont provient le code officiel géographique des communes.
 
@@ -14,12 +14,12 @@ Termes officiels de l'Insee employés dans ce document :
 
 ### Dans le périmètre
 
-- Index (`/`) : contenu, structure Hn, section sur l'étude de l'Insee, liens internes sortants.
+- Index (`/`) : contenu, structure Hn, résumé court de l'étude de l'Insee et lien vers la page dédiée, liens internes sortants.
 - `/stats` : URL dédiées par commune et par intercommunalité, contenu indexable.
 - Titres et métadonnées (`title`, `description`, `canonical`) par page et par territoire.
-- Pré-rendu (`vite-plugin-prerender`) et `sitemap.xml` étendus aux pages territoriales.
+- Pré-rendu (`vite-plugin-prerender`) et `sitemap.xml` étendus aux pages territoriales et à `/etude-insee`.
 - Tableaux statistiques : libellés lisibles, colonne de pourcentage.
-- Page `/etude-insee` : fusion ou enrichissement (décision D05).
+- Page `/etude-insee` : page dédiée à la comparaison avec l'étude de l'Insee, allégée depuis l'index (décision D05).
 - Cadrage du prérequis backoffice : numéro Siren de l'EPCI dans `CommunauteCommune`, en ajout de colonne seule (D08, D09, contraintes C01 à C03).
 - Contrat de données publiées (`autmel/geoservice-data`) : numéro Siren des EPCI, code officiel géographique des communes, bornes numériques, versionnement (D10 à D12).
 
@@ -36,19 +36,19 @@ Termes officiels de l'Insee employés dans ce document :
 - Backend isochrone (`geoservice-isochrone-v2`) et calcul des statistiques. Raison : hors SEO, données déjà publiées.
 - Contenu en langue étrangère. Raison : public francophone uniquement.
 - Achat de liens, campagnes payantes. Raison : hors démarche associative.
-- Implémentation Java, migration SQL et ré-ingestion des données dans `geoservice-isochrone-v2`. Raison : ce document cadre le prérequis (D08, D09, DEP07), il ne le réalise pas.
+- Implémentation Java, migration SQL et ré-ingestion des données dans `geoservice-isochrone-v2`. Raison : ce document cadre le prérequis (D08, D09, DEP07), il ne le réalise pas. **Réalisé depuis** par la branche `feat/seo` : voir §10.
 - Suppression rétroactive des fichiers publiés au format actuel. Raison : GitHub Raw ne sait pas rediriger, les consommateurs tiers liraient des 404 (D11).
 
 ## 2. IMPACTS
 
 - **IM01** Les champs de recherche auto-complétés (Région, Intercommunalité, Commune) sont infranchissables pour les robots. Seule la commune par défaut, Lille, est indexable sur `/stats`. Toutes les autres communes de la MEL sont invisibles. → requires CA01, CA02 ; raises IS01
 - **IM02** Aucune URL dédiée par commune ou intercommunalité, et aucun lien `<a href>` généré par la sélection. Google ne peut pas indexer une page par ville. → requires CA01 ; raises IS02
-- **IM03** L'index (`/`) promet plus qu'il ne livre : le H1 est une question sans réponse immédiate, et la section « l'étude de l'INSEE et la nôtre, pourquoi les chiffres diffèrent » n'énonce pas la réponse. → requires CA04 ; raises IS03
-- **IM04** La page `/etude-insee` est pré-rendue, presque vide, `noindex`, et orpheline (aucun lien interne). Elle duplique l'intention de la section sur l'étude de l'Insee dans l'index. → requires CA05 ; raises IS04
+- **IM03** L'index (`/`) promet plus qu'il ne livre : le H1 est une question sans réponse immédiate. La comparaison avec l'étude de l'Insee n'a pas de réponse en tête de section. → requires CA04 ; raises IS03
+- **IM04** L'index (`/`) porte une section longue sur l'étude de l'Insee : réponse, tableau de huit lignes, quatre paragraphes de méthode et liste de sources. Elle alourdit la page, retarde les chiffres de l'étude et dilue la promesse du H1. L'intention « pourquoi les chiffres diffèrent » n'a pas de page à elle. → requires CA04, CA05 ; raises IS04
 - **IM05** `/stats` porte un H1 masqué générique (« Statistiques des espaces verts ») et un H2 alimenté par les données brutes. Aucune information géographique dans les titres. → requires CA03 ; raises IS05
 - **IM06** Les libellés du tableau utilisent des notations mathématiques (`0 <= surface/habitant < 3 m²/hab.`) et des capitales issues des données. Lisibilité faible, aucune colonne de pourcentage. → requires CA06 ; raises IS06
 - **IM07** L'index ne redistribue aucune autorité vers les pages territoriales : aucun bloc de liens vers les communes. → requires CA07 ; raises IS02
-- **IM08** L'EPCI n'a pas d'identifiant public stable. `CommunauteCommune` ne porte ni numéro Siren ni code officiel géographique : l'id est une séquence de base. Toute la chaîne (API, publication `stats_c2c_<id>`, front `EPCI_MEL = 1`) utilise cet id technique. Un ré-import change les URL. Le numéro Siren n'existe que dans un littéral du front (`245900410`), incohérent avec `EPCI_MEL = 1`. → requires CA08, CA09 ; raises IS07
+- **IM08** L'EPCI n'a pas d'identifiant public stable. `CommunauteCommune` ne porte ni numéro Siren ni code officiel géographique : l'id est une séquence de base. Toute la chaîne (API, publication `stats_c2c_<id>`, front `EPCI_MEL = 1`) utilise cet id technique. Un ré-import change les URL. Le numéro Siren n'existe que dans un littéral du front (`245900410`), incohérent avec `EPCI_MEL = 1`. → requires CA08, CA09 ; raises IS07. **Corrigé depuis** : voir §10.
 - **IM09** Les JSON publiés ne portent pas l'identité officielle de l'EPCI (pas de numéro Siren, donc aucun rapprochement possible avec le COG) : `stats_c2c_1_all_2021.json` contient `"insee": "C2C_all_2021_1"`, un code synthétique. `cities_1.json` expose l'`id` technique et le code officiel géographique de chaque commune, mais pas le numéro Siren de l'EPCI. Aucun consommateur ne peut joindre ces fichiers aux référentiels officiels sans table de correspondance locale. → requires CA10 ; raises IS08
 - **IM10** Les JSON publiés ne sont pas un contrat stable : pas de champ de version, pas de schéma, bornes de tranches en texte libre et non numériques (`"> 0<=3"`, `"0 <=  surface/habitant < 3 m²/hab."`, libellés d'EPCI en prose, `ratio` en chaîne), couleur de graphique dans les données, nom de commune en capitales, aucune licence ni date de mise à jour. Toute correction est une rupture silencieuse pour le front, le pré-rendu et les réutilisateurs tiers. → requires CA10, CA11 ; raises IS08
 
@@ -56,8 +56,8 @@ Termes officiels de l'Insee employés dans ce document :
 
 - **IS01** Les moteurs ne peuvent pas remplir un menu déroulant : seule Lille est explorée. → requires D01, D02 ; stems from IM01
 - **IS02** Pas de route par territoire, pas de lien HTML classique, pas de maillage interne depuis l'index. → requires D01, D02, D07 ; stems from IM02, IM07
-- **IS03** L'index ne répond pas à sa propre promesse éditoriale. La section sur l'étude de l'Insee pose une question (« pourquoi les chiffres diffèrent ») sans phrase de réponse, sans chiffre de l'étude, et avec un chiffre de l'Insee (51,9 %) dont la portée n'est précisée que deux paragraphes plus loin. Voir Annexe A. → requires D04 ; stems from IM03
-- **IS04** `/etude-insee` : page pré-rendue de deux liens, `noindex, follow`, sans lien entrant. Budget d'exploration gaspillé et intention dupliquée avec l'index. → requires D05 ; stems from IM04
+- **IS03** L'index ne répond pas à sa propre promesse éditoriale. La comparaison avec l'étude de l'Insee pose une question (« pourquoi les chiffres diffèrent ») sans phrase de réponse, sans chiffre de l'étude, et avec un chiffre de l'Insee (51,9 %) dont la portée n'est précisée que deux paragraphes plus loin. Voir Annexe A. → requires D04 ; stems from IM03. **Rouvert** : le contenu reste à réécrire, sur `/etude-insee` cette fois.
+- **IS04** La comparaison avec l'étude de l'Insee est noyée dans l'index : tableau de huit lignes, quatre paragraphes de méthode et liste de sources entre les chiffres de l'étude et l'appel à contribuer. Elle n'a ni URL propre, ni `title` propre, ni cible d'extrait enrichi. → requires D05 ; stems from IM04
 - **IS05** H1 et H2 non géographiques sur `/stats` ; titre du document figé sur la seule page. → requires D03 ; stems from IM05
 - **IS06** Tableau et graphiques : tranches illisibles pour le grand public, capitales brutes, pas de pourcentage. → requires D06 ; stems from IM06
 - **IS07** `/stats/epci/<sirene>` n'est pas réalisable en l'état : le numéro Siren est absent du modèle, absent de l'API et absent du chemin de publication. La clé publique est l'id technique, et deux valeurs différentes cohabitent côté front. → requires D08, D09 ; stems from IM08
@@ -70,15 +70,17 @@ Termes officiels de l'Insee employés dans ce document :
   - **D01.2** Les territoires sans données publiées ne reçoivent pas de route : `/stats` renvoie la liste des territoires couverts.
 - **D02** Pré-rendre et inscrire au `sitemap.xml` uniquement les routes territoriales disposant de données. → addresses IS01, IS02
 - **D03** Dériver `title`, `description`, `canonical`, H1 et H2 du territoire résolu par la route. → addresses IS05
-- **D04** Réécrire la section sur l'étude de l'Insee dans l'index en format réponse d'abord : une phrase de synthèse en tête, puis le tableau, puis les réserves. Chaque ligne du tableau porte sa source et sa date. → addresses IS03
-- **D05** Supprimer `/etude-insee` du pré-rendu, du routeur et du `sitemap.xml`, et rediriger (301) vers l'ancre `#insee` de l'index. → addresses IS04
+- **D04** Rédiger la comparaison avec l'étude de l'Insee en réponse d'abord, sur la page dédiée `/etude-insee` : une phrase de synthèse en tête, puis le tableau, puis les réserves. Chaque ligne du tableau porte sa source et sa date. → addresses IS03
+- **D05** Créer la page dédiée `/etude-insee` et y déplacer la comparaison : pré-rendue, indexable (`index, follow`), inscrite au `sitemap.xml`, avec `title`, `description`, `canonical` et H1 propres. → addresses IS04
+  - **D05.1** L'index ne conserve qu'un résumé : H2 « Espaces verts : l'étude de l'INSEE », la réponse en deux phrases, le chiffre de l'Insee borné dans la même phrase, et un lien vers `/etude-insee`. L'ancre `#insee` reste valide.
+  - **D05.2** `/etude-insee` n'est plus redirigée : la redirection vers `/#insee` posée en 2.1.2 est supprimée.
 - **D06** Humaniser les libellés de tranches et ajouter une colonne de pourcentage. Conserver la borne numérique en attribut ou en note de bas de tableau. → addresses IS06
 - **D07** Ajouter sur l'index un bloc de liens `<a href>` vers les communes couvertes (tri par population, plafonné). → addresses IS02
 - **D08** Ajouter à `CommunauteCommune` le numéro Siren de l'EPCI : colonne `siren`, 9 chiffres, unique, non nulle pour tout EPCI publié. L'`id` reste la PK ; le numéro Siren sert de clé publique d'URL sans devenir une clé de base. → addresses IS07
-  - **D08.1** Migration `adm_com2commune` : ajout de la seule colonne `siren` (nullable), plus une contrainte d'unicité matérialisée en index secondaire. Aucune PK ni FK touchée. Alimentation depuis le répertoire Sirene complété par le COG.
+  - **D08.1** Migration `adm_com2commune` : ajout de la seule colonne `siren` (nullable), plus une contrainte d'unicité matérialisée en index secondaire. Aucune PK ni FK touchée. Alimentation depuis le répertoire Sirene complété par le COG. Implémentation : `v2.2.3_com2co_siren.sql` (voir §10.2).
   - **D08.2** Seul le numéro Siren est requis pour l'URL. Les autres données de l'Insee (dénomination, catégorie juridique, population) sont instruites séparément (point ouvert 6).
-  - **D08.3** Aucune table de correspondance entre le numéro Siren et l'`id` n'est créée en base : la correspondance vit dans l'export `data/epci/index.json` (D09). Raison : éviter une table supplémentaire et une FK.
-- **D09** Publier un index EPCI `data/epci/index.json` (numéro Siren, nom, dossier de statistiques) et le consommer au build et dans le front. Aucun dossier existant n'est renommé, l'id technique reste le nom de dossier. → addresses IS07
+  - **D08.3** Aucune table de correspondance entre le numéro Siren et l'`id` n'est créée en base : la correspondance vit dans l'export des territoires (D09, réalisé en `data/territoires.json`). Raison : éviter une table supplémentaire et une FK.
+- **D09** Publier un index EPCI (numéro Siren, nom, dossier de statistiques) et le consommer au build et dans le front. Aucun dossier existant n'est renommé, l'id technique reste le nom de dossier. → addresses IS07. Implémentation : l'index EPCI est fusionné avec la liste des communes dans `data/territoires.json` (voir §10.3).
 - **D10** Normaliser le contenu des JSON publiés, en ajout seul : bloc d'identité (`codeInsee`, `siren`, `typeTerritoire`), bornes numériques de tranche (`borneMin`, `borneMax`, `unite`), `population`, `version`. Les champs actuels restent présents et inchangés jusqu'à la bascule. → addresses IS08
   - **D10.1** `siren` n'est présent que sur les fichiers d'EPCI et vaut le numéro Siren de l'intercommunalité (9 chiffres). `codeInsee` vaut le code officiel géographique de la commune (5 caractères).
   - **D10.2** Les libellés d'affichage quittent les données : `barColor` et libellés de tranche passent côté front.
@@ -90,8 +92,8 @@ Termes officiels de l'Insee employés dans ce document :
 - **CA01** Routes territoriales par commune et intercommunalité, avec redirection des paramètres historiques. → implements IM01, IM02 ; requires D01 ; is realized by AV01
 - **CA02** Pré-rendu et `sitemap.xml` générés depuis la liste des territoires publiés. → implements IM01 ; requires D02 ; is realized by AV01
 - **CA03** Métadonnées et Hn calculés à partir du territoire. → implements IM05 ; requires D03 ; is realized by AV01
-- **CA04** Section sur l'étude de l'Insee dans l'index, en réponse d'abord, sourcée et datée. → implements IM03 ; requires D04 ; is realized by AV02, AV03
-- **CA05** Suppression de la page orpheline `/etude-insee` et redirection. → implements IM04 ; requires D05 ; is realized by AV04
+- **CA04** Page `/etude-insee` en réponse d'abord, sourcée et datée ; résumé avec lien sur l'index. → implements IM03 ; requires D04 ; is realized by AV02, AV03
+- **CA05** Page `/etude-insee` indexable : pré-rendue, au sitemap, `title` propre, liée depuis l'index. → implements IM04 ; requires D05 ; is realized by AV04
 - **CA06** Libellés de tranches lisibles et colonne de pourcentage. → implements IM06 ; requires D06 ; is realized by AV05
 - **CA07** Bloc de liens internes vers les communes sur l'index. → implements IM07 ; requires D07 ; is realized by AV01
 - **CA08** Numéro Siren porté par `CommunauteCommune`, exposé par l'API et les exports. → implements IM08 ; requires D08 ; is realized by AV06
@@ -104,7 +106,7 @@ Termes officiels de l'Insee employés dans ce document :
 - **AV01** Chaque commune et intercommunalité couverte dispose d'une page indexable et partageable. → realizes CA01, CA02, CA03, CA07 ; is implemented by US01, US02, US03
 - **AV02** Un lecteur qui arrive depuis un moteur comprend en une phrase pourquoi nos chiffres diffèrent de ceux de l'Insee. → realizes CA04 ; is implemented by US04
 - **AV03** Les moteurs et les agents conversationnels peuvent citer l'étude sur la requête « pourquoi les chiffres diffèrent ». → realizes CA04 ; is implemented by US04
-- **AV04** Aucun visiteur n'atterrit sur une page vide ou une URL obsolète. → realizes CA05 ; is implemented by US05
+- **AV04** L'index reste léger : le détail de méthode se lit sur une page dédiée, partageable et indexable. → realizes CA05 ; is implemented by US05
 - **AV05** Les tableaux se lisent sans connaissance des notations mathématiques. → realizes CA06 ; is implemented by US06
 - **AV06** Les URL d'intercommunalité sont stables : elles survivent à un ré-import et ne dépendent pas d'un identifiant technique. → realizes CA08, CA09 ; is implemented by US07
 - **AV07** Un réutilisateur joint nos données aux référentiels Sirene et COG sans table de correspondance : numéro Siren pour les EPCI, code officiel géographique pour les communes. Il lit les tranches sans analyser de texte. → realizes CA10, CA11 ; is implemented by US08, US09
@@ -150,7 +152,7 @@ Scénario 01.4 — Code officiel géographique invalide
 
 Scénario 01.5 — Intercommunalité identifiée par son numéro Siren
   Soit un EPCI dont le numéro Siren est publié
-  Quand j'ouvre l'adresse /stats/epci/245900410
+  Quand j'ouvre l'adresse /stats/epci/200093201
   Alors la page affiche le nom de l'intercommunalité
   Et elle lit les statistiques du dossier déclaré par l'index EPCI
   Mais aucune requête n'utilise l'id technique de la base
@@ -215,7 +217,7 @@ Scénario 03.3 — Intercommunalité
   Et la balise title ne contient pas le numéro Siren seul
 ```
 
-### US04 — Section sur l'étude de l'Insee, en réponse d'abord
+### US04 — Page dédiée à l'étude de l'Insee, en réponse d'abord
 
 - En tant que lecteur ou moteur de recherche
 - Je veux lire en une phrase pourquoi nos chiffres diffèrent de ceux de l'Insee
@@ -227,7 +229,7 @@ Liens : implements AV02, AV03
 
 ```gherkin
 Scénario 04.1 — Réponse immédiate
-  Soit la section « Pourquoi les chiffres diffèrent »
+  Soit la page /etude-insee
   Quand je lis le premier paragraphe
   Alors il énonce la cause principale en une phrase
   Et il ne dépasse pas deux phrases
@@ -243,33 +245,42 @@ Scénario 04.3 — Tableau sourcé
   Quand je lis une ligne
   Alors la ligne porte la source et la date des données comparées
 
-Scénario 04.4 — Ancre citable
+Scénario 04.4 — Résumé citable sur l'index
   Soit l'adresse /#insee
   Quand je l'ouvre
-  Alors la section concernée est visible en haut de fenêtre
-  Et la réponse figure dans le HTML pré-rendu
+  Alors le résumé est visible en haut de fenêtre
+  Et il contient la réponse et un lien vers /etude-insee
+  Et la page /etude-insee figure dans le HTML pré-rendu
 ```
 
-### US05 — Suppression de `/etude-insee`
+### US05 — `/etude-insee` : page indexable liée depuis l'index
 
 - En tant que visiteur ou robot
-- Je veux ne plus trouver de page vide
-- Afin de ne pas perdre de temps sur une URL sans contenu
+- Je veux une page dédiée à la comparaison avec l'Insee, et un index allégé
+- Afin de lire la méthode sans traverser tout l'index
 
 Complexité: Low
 
 Liens : implements AV04
 
 ```gherkin
-Scénario 05.1 — Redirection
-  Soit un ancien lien vers /etude-insee
+Scénario 05.1 — Page servie
+  Soit l'adresse /etude-insee
   Quand je l'ouvre
-  Alors je suis redirigé en 301 vers /#insee
+  Alors elle affiche le H1 de la comparaison
+  Et elle répond 200 sans redirection
 
-Scénario 05.2 — Absence du sitemap et du pré-rendu
+Scénario 05.2 — Page indexable
   Soit la build terminée
   Quand j'inspecte le sitemap et les fichiers pré-rendus
-  Alors /etude-insee n'y figure pas
+  Alors /etude-insee y figure
+  Et son HTML pré-rendu ne porte pas `noindex`
+
+Scénario 05.3 — Lien depuis l'index
+  Soit l'index
+  Quand je lis la section #insee
+  Alors un lien vers /etude-insee est présent
+  Et le tableau de comparaison n'est plus dans le HTML de l'index
 ```
 
 ### US06 — Libellés de tranches et pourcentages
@@ -332,7 +343,7 @@ Scénario 07.3 — Publication sans numéro Siren
 Scénario 07.4 — Index EPCI publié
   Soit des intercommunalités publiées
   Quand l'export s'exécute
-  Alors data/epci/index.json contient pour chacune le numéro Siren, le nom et le dossier de statistiques
+  Alors data/territoires.json contient pour chacune le numéro Siren, le nom et le dossier de statistiques
   Et le build du front produit l'URL /stats/epci/<sirene> correspondante
 
 Scénario 07.5 — Ré-import sans changement d'URL
@@ -420,7 +431,7 @@ Scénario 09.4 — Non-régression d'affichage
 
 ### Dépendances dures
 
-- **DEP07** Prérequis backoffice : `geoservice-isochrone-v2` doit ajouter le numéro Siren à `CommunauteCommune` par ajout de colonne seule, sans toucher aux PK ni aux FK (C01 à C03), puis le propager à l'API et aux exports et publier `data/epci/index.json`. Aucun numéro Siren n'existe aujourd'hui en base ; l'id est une séquence et les dossiers publiés portent cet id (`data/stats/com2co/1`). Bloque la branche EPCI de US01, ainsi que US02, US03 et US07.
+- **DEP07** Prérequis backoffice : `geoservice-isochrone-v2` doit ajouter le numéro Siren à `CommunauteCommune` par ajout de colonne seule, sans toucher aux PK ni aux FK (C01 à C03), puis le propager à l'API et aux exports et publier l'index des territoires. **Réalisé** (branche `feat/seo`) : migration `v2.2.3_com2co_siren.sql`, entité, DTO d'export, page de gestion et `data/territoires.json` (voir §10.2).
 - **DEP01** Les statistiques par commune et par intercommunalité publiées dans `autmel/geoservice-data` doivent exister et couvrir la liste utilisée pour le pré-rendu. Bloque US01, US02, US03. Dépend de DEP07 pour la partie intercommunalités.
 - **DEP02** Le pré-rendu (`vite-plugin-prerender` + Puppeteer) doit tourner au build et joindre les JSON de statistiques. Bloque US02 ; déjà contrôlé par `scripts/postbuild.js` pour l'index.
 - **DEP03** GitHub Pages doit servir `dist/<route>/index.html` en 200. Bloque DEP02.
@@ -431,8 +442,8 @@ Scénario 09.4 — Non-régression d'affichage
 
 - **DEP05** Le lien vers Insee Première n° 2049 doit rester stable. Impact limité à la section sur l'étude de l'Insee.
 - **DEP06** La liste des communes affichées en liens internes doit pouvoir être régénérée sans rédaction manuelle. Impact limité à D07.
-- **DEP08** Le COG de l'Insee doit être disponible pour alimenter le numéro Siren des EPCI lors de la migration, en une passe ou manuellement. Impact limité à l'alimentation initiale de D08.
-- **DEP09** Le littéral `com2coId: '245900410'` de `AppStatistics.vue` et la constante `EPCI_MEL = 1` doivent être remplacés par l'index EPCI. Impact limité au défaut de `/stats`.
+- **DEP08** Le COG de l'Insee doit être disponible pour alimenter le numéro Siren des EPCI lors de la migration, en une passe ou manuellement. Impact limité à l'alimentation initiale de D08. **Réalisé** : Sirene complété par le COG, noms de la base de dev (voir §10.2).
+- **DEP09** Le littéral `com2coId: '245900410'` de `AppStatistics.vue` et la constante `EPCI_MEL = 1` doivent être remplacés par l'index des territoires. Impact limité au défaut de `/stats`. **Réalisé** : `245900410` a disparu ; la MEL est résolue par `epciParSiren('200093201')` dans `src/utils/landingStats.js`.
 - **DEP11** Les réutilisateurs externes des données doivent être informés de la dépréciation. Impact limité à D11 et D12.
 
 ## 9. APPENDIX
@@ -446,9 +457,10 @@ Constat, vérifié dans `src/views/AppLanding.vue`.
 - **Section sur l'étude de l'Insee : la question est posée, la réponse est diluée.** Le H2 promet « pourquoi les chiffres diffèrent ». Le texte répond en trois paragraphes successifs (seuils, mesure de l'accès, comparabilité) sans phrase de synthèse. Un lecteur pressé ne repart pas avec la raison principale.
 - **Section sur l'étude de l'Insee : aucun chiffre de l'étude.** La section cite un chiffre de l'Insee (51,9 % de la population à moins de 300 m) mais aucun résultat de l'étude. La comparaison est donc asymétrique.
 - **Section sur l'étude de l'Insee : chiffre mal borné.** La portée du 51,9 % (grand centre urbain, données 2019, pas la commune seule) est précisée deux paragraphes plus loin. Repris hors contexte (extrait enrichi, agent conversationnel), il devient faux.
-- **Section sur l'étude de l'Insee : tableau non sourcé.** Sept lignes comparées, aucune source par ligne, aucune date pour les données de l'étude.
+- **Section sur l'étude de l'Insee : tableau non sourcé.** Huit lignes comparées, aucune source par ligne, aucune date pour les données de l'étude.
 - **Section sur l'étude de l'Insee : pas de cible d'extrait enrichi.** Aucun H3, aucune formulation question/réponse courte. La requête « pourquoi les chiffres diffèrent » ne trouve pas de bloc citable.
-- **Doublon orphelin.** `/etude-insee` est pré-rendue, contient deux liens, est en `noindex, follow`, et ne reçoit aucun lien interne. Elle duplique l'intention de la section sur l'étude de l'Insee dans l'index.
+- **Section sur l'étude de l'Insee : trop lourde pour l'index.** Réponse, tableau de huit lignes, quatre paragraphes de méthode et quatre sources s'intercalent entre les chiffres de l'étude et l'appel à contribuer. Le contenu a sa propre intention de recherche : il lui faut une URL. → D05 (révisé 2.6).
+- **Page `/etude-insee` : coquille vide.** Pré-rendue, deux liens, `noindex, follow`, aucun lien entrant : ni contenu, ni autorité. La page existait sans porter la comparaison. → D05 (révisé 2.6) : elle reçoit le contenu au lieu d'être supprimée.
 - **Aucun maillage territorial.** L'index ne contient aucun lien vers une commune. Il n'existe d'ailleurs aucune page à lier (IS02).
 - **Métadonnées secondaires.** La balise `keywords` contient des expressions hors sujet (« événements nature Lille », « ateliers biodiversité »). Google l'ignore ; elle n'aide aucun moteur, mais brouille la lecture du document.
 - **Cohérence titre/page.** Le `title` de la route (index) et le `title` statique d'`index.html` portent deux promesses différentes. Le pré-rendu écrase le second ; le premier ne mentionne pas l'Insee alors que la page traite la comparaison.
@@ -472,18 +484,19 @@ Séquence proposée. Les durées ne sont pas estimées ici : le PO fixe la capac
 
 Principe : la donnée et son contrat passent avant les URL, les URL avant le contenu. Aucune version ne dépend d'une version ultérieure.
 
-| Version | Contenu | Dépend de | Critère de sortie |
-| --- | --- | --- | --- |
-| **2.1.0** — socle données | US07 (numéro Siren en base et API), D08, D08.1, D08.3, C01 à C03. Export `data/epci/index.json` (D09). US08 et US09 (JSON v2 en double publication, schéma et licence, D10 à D12). | DEP07, DEP08, DEP11 | Le numéro Siren est en base sans toucher aux PK ni aux FK ; l'index EPCI et les JSON v2 sont publiés ; les anciens fichiers répondent toujours 200 et à l'identique. |
-| **2.1.1** — lecture du contrat | Lecture du bloc d'identité et des bornes numériques côté front (`landingStats.js`, `StatsGraph.vue`, `Isochrone.vue`), DEP10. Suppression des clés codées en dur (`EPCI_MEL = 1`, `245900410`), DEP09. | 2.1.0 | Les chiffres affichés sont identiques à l'avant-publication v2 ; aucun libellé de tranche vide ; plus aucun identifiant technique dans le front. |
-| **2.1.2** — URL territoriales | US01 (routes `/stats/<insee>` et `/stats/epci/<siren>`, redirections), US02 (pré-rendu et sitemap), US03 (titres et Hn géolocalisés), US05 (suppression de `/etude-insee`), D07 (bloc de liens internes). | 2.1.1, DEP01, DEP02, DEP03 | Chaque territoire publié répond 200 en HTML pré-rendu, figure au sitemap, et chaque URL ancienne redirige. Build refusé si le HTML pré-rendu est incomplet. |
-| **2.1.3** — contenu éditorial | US04 (section sur l'étude de l'Insee en réponse d'abord), US06 (tranches lisibles et pourcentage). D04, D06. | 2.1.2, DEP04 (validation du chiffre de l'Insee) | La réponse tient dans le premier paragraphe, chaque chiffre porte son périmètre, les tableaux affichent le pourcentage. |
+| Version | Contenu | Dépend de | Critère de sortie | Statut au 2026-11-21 |
+| --- | --- | --- | --- | --- |
+| **2.1.0** — socle données | US07 (numéro Siren en base et API), D08, D08.1, D08.3, C01 à C03. Export de l'index des territoires (D09). US08 et US09 (JSON v2 en double publication, schéma et licence, D10 à D12). | DEP07, DEP08, DEP11 | Le numéro Siren est en base sans toucher aux PK ni aux FK ; l'index des territoires et les JSON v2 sont publiés ; les anciens fichiers répondent toujours 200 et à l'identique. | **Réalisé en code** : Siren, index, JSON v2, schémas dans `geoservice-data`. Reste la publication réelle et la licence des données. L'index est `data/territoires.json`, pas `data/epci/index.json`. |
+| **2.1.1** — lecture du contrat | Lecture du bloc d'identité et des bornes numériques côté front (`landingStats.js`, `StatsGraph.vue`, `Isochrone.vue`), DEP10. Suppression des clés codées en dur (`EPCI_MEL = 1`, `245900410`), DEP09. | 2.1.0 | Les chiffres affichés sont identiques à l'avant-publication v2 ; aucun libellé de tranche vide ; plus aucun identifiant technique dans le front. | **Réalisé** : v2 lu en priorité, repli sur l'ancien format, `EPCI_MEL = 1` supprimé. |
+| **2.1.2** — URL territoriales | US01 (routes `/stats/<insee>` et `/stats/epci/<siren>`, redirections), US02 (pré-rendu et sitemap), US03 (titres et Hn géolocalisés), D07 (bloc de liens internes). | 2.1.1, DEP01, DEP02, DEP03 | Chaque territoire publié répond 200 en HTML pré-rendu, figure au sitemap, et chaque URL ancienne redirige. Build refusé si le HTML pré-rendu est incomplet. | **Réalisé** sans le préalable 2.1.1, en lisant le format JSON actuel. Redirections côté client. La suppression de `/etude-insee` livrée ici est annulée par 2.1.4. |
+| **2.1.3** — contenu éditorial | US04 (comparaison avec l'étude de l'Insee en réponse d'abord), US06 (tranches lisibles et pourcentage). D04, D06. | 2.1.2, DEP04 (validation du chiffre de l'Insee) | La réponse tient dans le premier paragraphe, chaque chiffre porte son périmètre, les tableaux affichent le pourcentage. | **Réalisé** ; validation PO du chiffre de l'Insee (DEP04) encore attendue. |
+| **2.1.4** — page étude Insee | US05 : extraction de la section `#insee` vers `/etude-insee` (D05, D05.1, D05.2). Le résumé et le lien restent sur l'index ; la page est pré-rendue, indexable et au sitemap ; la redirection vers `/#insee` est retirée. | 2.1.3 | `/etude-insee` répond 200 en HTML pré-rendu, figure au sitemap, porte son propre `title`, et le tableau de comparaison a disparu du HTML de l'index. | **Réalisé** : vérifié sur un build `VITE_PRERENDER_MAX=1`. |
 
 Ordre imposé par les dépendances :
 
 1. Le numéro Siren ne peut pas arriver après les URL, sinon `/stats/epci/<siren>` ne résout rien.
 2. La lecture du contrat v2 précède toute bascule de chemin, sinon le front lit un format qu'il ne connaît pas.
-3. La section sur l'étude de l'Insee en dernier : elle dépend d'un arbitrage PO (DEP04) et n'a aucun impact technique bloquant.
+3. La page `/etude-insee` en dernier : elle dépend d'un arbitrage PO (DEP04) et n'a aucun impact technique bloquant. Si elle glisse, l'index garde la section longue telle quelle.
 
 Risques de calendrier :
 
@@ -491,34 +504,104 @@ Risques de calendrier :
 - Si le pré-rendu des pages territoriales dépasse le budget de build (Puppeteer par route), 2.1.2 se limite aux territoires au-dessus d'un seuil de population (point ouvert 5), sans changer les URL.
 - La double publication de 2.1.0 double la volumétrie jusqu'au retrait des anciens fichiers (point ouvert 9). Aucun nettoyage n'est planifié.
 
-## 10. DOCUMENT METADATA
+## 10. ÉTAT D'AVANCEMENT
+
+État au 2026-11-21, branche `feat/seo` (non fusionnée). Détail par User Story en §10.5.
+
+### 10.1 Réalisé — front (`geoservice-map-vue3`)
+
+| Élément | État | Référence |
+| --- | --- | --- |
+| Routes `/stats/<insee>` et `/stats/epci/<siren>` | fait | `src/router/index.js` |
+| Redirection des anciens `?city=` / `?c2c=` | fait, côté client (`router.replace`) : GitHub Pages n'émet pas de 301 HTTP | `src/router/index.js`, `src/utils/territoires.js` |
+| `/stats` : liste des territoires couverts ; territoire inconnu en `noindex, follow` | fait | `src/views/AppStatistics.vue`, `src/utils/territoires.js` |
+| `title`, `description`, `canonical`, H1 et H2 par territoire | fait | `src/utils/territoires.js`, `src/utils/seoMeta.js`, `src/views/AppStatistics.vue` |
+| Pré-rendu et `sitemap.xml` limités aux territoires publiés ; plafond `VITE_PRERENDER_MAX` | fait | `vite.config.js`, `scripts/postbuild.js` |
+| Build refusé si une page pré-rendue manque ou ne contient pas le nom du territoire | fait | `scripts/postbuild.js` |
+| Page dédiée `/etude-insee` : route, pré-rendu, sitemap, `title`, `description`, `canonical`, `index, follow` ; l'index ne garde qu'un résumé et un lien | fait | `src/views/AppEtudeInsee.vue`, `src/router/index.js`, `vite.config.js`, `scripts/postbuild.js` |
+| Comparaison en réponse d'abord ; tableau sourcé et daté ; chiffre de l'Insee borné dans la même phrase | fait, sur `/etude-insee` ; résumé borné sur l'index | `src/views/AppEtudeInsee.vue`, `src/views/AppLanding.vue` |
+| 50 liens `<a>` vers les communes ; `keywords` retiré | fait | `src/views/AppLanding.vue` |
+| Libellés de tranches lisibles, colonne de pourcentage, couleurs côté front | fait | `src/utils/tranches.js`, `src/components/StatsTableAccessibility.vue`, `src/components/StatsGraph.vue` |
+| Lecture du contrat v2 (bornes numériques, niveaux OMS), repli sur le format historique | fait | `src/utils/landingStats.js`, `src/utils/tranches.js`, `src/components/StatsGraph.vue` |
+| `EPCI_MEL = 1` remplacé par la résolution Siren `200093201` → dossier | fait | `src/utils/landingStats.js`, `src/views/AppLanding.vue` |
+| Tests front | 327 tests verts | `npm test` |
+
+### 10.2 Réalisé — backoffice (`geoservice-isochrone-v2`)
+
+- `CommunauteCommune.siren` : colonne `siren varchar(9)`, mappée JPA ; `CommunauteCommuneDto.siren` propagé aux exports `data/com2cos/<region>/com2cos_<region>.json`.
+- Migration Flyway `v2.2.3_com2co_siren.sql` : ajout de la colonne, mise à jour des 1 253 EPCI **par nom de la base** (pas par id technique), index unique partiel `uk_adm_com2commune_siren`, contrôle du format `^[0-9]{9}$`. Aucune PK ni FK touchée (C01 à C03).
+  - Les noms de la base diffèrent du COG : `CC de Flandre Intérieure`, `CA du Douaisis`, `CC Cœur d'Ostrevent`, `CA Thionville Fensch Agglomération` (Siren `992367730`), `CC du Lévézou` (Siren `994579670`), `CC du Perche Emeraude` (`247200686`).
+  - Les deux homonymes `CC des Quatre Rivières` sont distingués par région (`247000623` en Bourgogne-Franche-Comté, `247400666` en Auvergne-Rhône-Alpes).
+  - Validée sur une copie de la base de dev : 1 253 lignes, 1 253 Siren distincts, relance idempotente. L'`id` n'a pas de séquence en base : aucun `INSERT` n'est fait, la base de dev contient déjà les 1 253 EPCI.
+- Page `/mvc/management/comm2co/edit?id=…` : champ « Numéro Siren » (9 chiffres), sauvegardé par `CommunauteCommuneService.save` (valeur vide → `null`).
+- Export `data/territoires.json` par `ServicePublicationExporter.writeTerritoires()` : `{communes: [{insee, id, nom, population}], epcis: [{siren, nom, dossier}]}`, limité aux territoires dont le fichier de statistiques existe pour le dernier millésime configuré (2021). Publié par `PublishService` avec les référentiels.
+- JSON v2 (`*.v2.json`) écrits à côté des fichiers historiques par `StatsSurfaceService` : `version`, `typeTerritoire`, `codeInsee` ou `siren`, bornes numériques, population, date de mise à jour, sans couleur ni libellé. Les fichiers historiques portent `"deprecated": true`. Contrat, schémas et licence dans `geoservice-data`.
+- Publication refusée pour un EPCI sans numéro Siren (`PublishService` et contrôleur de publication) ; format et unicité du Siren vérifiés à l'enregistrement (`CommunauteCommuneService`).
+- Aucun JavaScript d'export : `scripts/maj-territoires.js` et le script npm `territoires` supprimés. Le front lit l'instantané `src/data/territoires.json`.
+
+### 10.3 Écarts au cadrage
+
+- **D09** : l'index n'est pas `data/epci/index.json`. Il est fusionné avec les communes dans `data/territoires.json` (racine `data/`), pour un seul fichier consommé par le front.
+- **D01.1 et D05** : les redirections sont côté client (`router.replace` / `redirect` Vue Router), pas des 301 HTTP. GitHub Pages ne permet pas de réponse 301.
+- **Annexe C** : 2.1.1 (lecture du contrat JSON v2) n'a pas précédé 2.1.2. Les URL territoriales sont livrées en lisant le format JSON actuel.
+- **US07.4** : implémenté en `data/territoires.json` ; le contenu demandé (Siren, nom, dossier) est présent.
+
+### 10.4 Reste à faire
+
+1. **Publication réelle** : `data/territoires.json` et les fichiers `*.v2.json` n'existent pas encore dans `autmel/geoservice-data` ; ils apparaîtront à la prochaine publication d'un EPCI. Recopier ensuite `data/territoires.json` vers `geoservice-map-vue3/src/data/territoires.json` (aucun script JS pour le faire).
+2. **Migration** : `v2.2.3_com2co_siren.sql` est validée sur copie ; elle reste à appliquer par Flyway sur la base de dev puis de production. La base de dev ne contient pas l'id 18 de l'ancien mapping : `CA Seine-Eure` y est l'id 327.
+3. **DEP04** : validation PO du chiffre de l'Insee (51,9 %, avril 2025, 72 grands centres urbains) et de son périmètre.
+4. **Licence des données** : le contrat et les schémas sont publiés dans `geoservice-data` ; la licence dédiée aux données reste à trancher par le PO (le dépôt est sous GPLv3).
+5. **Point ouvert 9** : aucune échéance de retrait des anciens champs JSON n'est fixée.
+6. **US07.1** : le Siren est porté par le modèle et les exports ; aucune API REST d'EPCI n'est consommée aujourd'hui.
+7. **Test de ré-import** : la stabilité de `/stats/epci/<siren>` est garantie par la résolution Siren → dossier ; un test d'intégration sur une base ré-importée reste à faire.
+
+### 10.5 Correspondance avec les User Stories
+
+| US | État | Reste |
+| --- | --- | --- |
+| US01 | Réalisé | Redirections côté client au lieu de 301 HTTP |
+| US02 | Réalisé | — |
+| US03 | Réalisé | — |
+| US04 | Réalisé | Validation PO du chiffre (DEP04) |
+| US05 | Réalisé | La version 2.1.2 (suppression) est remplacée par la page dédiée |
+| US06 | Réalisé | — |
+| US07 | Réalisé | 07.1 sans API REST consommée ; 07.5 test d'intégration sur base ré-importée |
+| US08 | Réalisé | D10, D11 : `*.v2.json`, identité officielle, bornes numériques, version |
+| US09 | Réalisé | D11, D12 : anciens fichiers `deprecated`, contrat et schémas dans `geoservice-data` ; licence PO |
+
+## 11. DOCUMENT METADATA
 
 | Champ | Valeur |
 | --- | --- |
 | Document | Cadrage SEO — `geoservice-map-vue3` |
 | Chemin | `framing-documents/Front-SEO.md` |
-| Version | 2.4 |
-| Date | 2026-11-15 |
+| Version | 2.8 |
+| Date | 2026-11-21 |
 | Product Owner | à confirmer |
 | Trimestre cible | à confirmer |
-| Cible de livraison | 2.1.0 à 2.1.3 (Annexe C) |
+| Cible de livraison | 2.1.0 à 2.1.4 (Annexe C) |
 | Source initiale | note « Objectif amélioration du SEO » (version 0.1, 16 lignes) |
-| Code de référence (front) | `geoservice-map-vue3` : `src/views/AppLanding.vue`, `src/views/AppStatistics.vue`, `src/utils/landingStats.js`, `src/router/index.js`, `vite.config.js`, `scripts/postbuild.js`, `src/views/AppEtudeInsee.vue` |
-| Code de référence (prérequis) | `geoservice-isochrone-v2` : `model/opendata/CommunauteCommune.java`, `service/opendata/ServiceOpenData.java`, `service/analytics/StatsSurfaceService.java`, `service/export/PublishService.java`, `src/main/resources/db/migration/` |
-| Statut | brouillon à valider par le PO |
+| Code de référence (front) | `geoservice-map-vue3` : `src/views/AppLanding.vue`, `src/views/AppStatistics.vue`, `src/utils/landingStats.js`, `src/utils/territoires.js`, `src/utils/tranches.js`, `src/utils/seoMeta.js`, `src/data/territoires.json`, `src/router/index.js`, `vite.config.js`, `scripts/postbuild.js` |
+| Code de référence (prérequis) | `geoservice-isochrone-v2` : `model/opendata/CommunauteCommune.java`, `service/opendata/ServiceOpenData.java`, `service/analytics/StatsSurfaceService.java`, `service/export/ServicePublicationExporter.java`, `service/export/PublishService.java`, `controller/mvc/admin/CommunauteCommuneControler.java`, `templates/editCommunauteCommune.html`, `db/migration/v2.2.3_com2co_siren.sql` |
+| Statut | implémenté (branche `feat/seo`) ; restent la publication réelle, la migration et les validations PO. Voir §10 |
 | Révision 2.1 | Prérequis backoffice « numéro Siren » cadré : D08, D09, CA08, CA09, AV06, US07, DEP07, DEP08, DEP09 |
 | Révision 2.2 | Contrat JSON Sirene/COG cadré : IM09, IM10, IS08, D10 à D12, CA10, CA11, AV07, US08, US09, DEP10, DEP11 |
 | Révision 2.3 | Contrainte de migration figée : aucune modification de PK ni de FK (C01 à C03), schéma backend en ajout seul, correspondance du numéro Siren portée par l'export (D08.1, D08.3) |
 | Révision 2.4 | Planning 2.1.x ajouté (Annexe C) : quatre livraisons séquencées, critères de sortie et risques de calendrier |
+| Révision 2.5 | État d'avancement ajouté (§10) : front US01-US06 réalisé, backoffice Siren et `data/territoires.json` réalisés, JSON v2 et validations PO restants. Siren MEL corrigé en `200093201` |
+| Révision 2.7 | US05 réalisé : `/etude-insee` pré-rendue, indexable, au sitemap et liée depuis l'index ; l'index ne garde qu'un résumé borné. Build vérifié |
+| Révision 2.8 | Contrat JSON v2 réalisé : `*.v2.json` en double publication, identité officielle, bornes numériques, schémas et contrat dans `geoservice-data` ; lecture v2 côté front ; `EPCI_MEL = 1` supprimé ; unicité et refus de publication sans Siren. Restent publication réelle, migration, licence des données et validation PO |
+| Révision 2.6 | D05 inversé : la comparaison avec l'étude de l'Insee quitte l'index et devient la page dédiée `/etude-insee` (indexable, pré-rendue, au sitemap). L'index garde un résumé et un lien. Livraison 2.1.4. IM04, IS04, D04, D05, CA04, CA05, AV04, US04, US05 et Annexe A réécrits |
 
 ### Points ouverts à trancher par le PO
 
-1. Format d'URL retenu : `/stats/<insee>` (proposé) ou `/stats/<slug-de-commune>` (lisible, mais collision de noms à gérer).
-2. Plafond du bloc de liens internes sur l'index, et critère de tri (population proposée).
-3. Sort de `/etude-insee` : suppression avec redirection (proposé) ou enrichissement en page complète.
-4. Validation du chiffre de l'Insee cité et de son périmètre exact (DEP04).
-5. Périmètre du pré-rendu : toutes les communes couvertes, ou seulement celles au-dessus d'un seuil de population.
-6. Quelles données de l'Insee ajouter à `CommunauteCommune` au-delà du numéro Siren : dénomination, catégorie juridique (métropole, CA, CC), population. Le présent cadrage n'en retient aucune (D08.2).
-7. Publication des statistiques EPCI : conserver `data/stats/com2co/<id>` avec l'index par numéro Siren (proposé), ou renommer les dossiers par numéro Siren au prix d'une republication complète.
-8. Nommage des champs normalisés : `codeInsee` (code officiel géographique de la commune) et `siren` (numéro Siren de l'EPCI) proposés, ou reprise du nom actuel `insee` avec un type explicite.
-9. Échéance de retrait des anciens champs, et niveau d'engagement vis-à-vis des réutilisateurs tiers.
+1. Format d'URL retenu : `/stats/<insee>` (proposé) ou `/stats/<slug-de-commune>` (lisible, mais collision de noms à gérer). **Tranché et implémenté** : `/stats/<insee>` et `/stats/epci/<siren>`.
+2. Plafond du bloc de liens internes sur l'index, et critère de tri (population proposée). **Implémenté** : 50 liens, tri par population.
+3. Sort de `/etude-insee` : suppression avec redirection, ou enrichissement en page complète. **Tranché et implémenté en 2.1.2** en suppression ; **tranché à nouveau en 2.6** en page dédiée (le contenu quitte l'index, voir US05 et 2.1.4).
+4. Validation du chiffre de l'Insee cité et de son périmètre exact (DEP04). **Encore ouvert.**
+5. Périmètre du pré-rendu : toutes les communes couvertes, ou seulement celles au-dessus d'un seuil de population. **Implémenté** : toutes les communes, plafond `VITE_PRERENDER_MAX` (défaut = toutes).
+6. Quelles données de l'Insee ajouter à `CommunauteCommune` au-delà du numéro Siren : dénomination, catégorie juridique (métropole, CA, CC), population. Le présent cadrage n'en retient aucune (D08.2). **Encore ouvert.**
+7. Publication des statistiques EPCI : conserver `data/stats/com2co/<id>` avec l'index par numéro Siren (proposé), ou renommer les dossiers par numéro Siren au prix d'une republication complète. **Tranché et implémenté** : dossiers `data/stats/com2co/<id>` conservés, correspondance Siren → dossier dans `data/territoires.json`.
+8. Nommage des champs normalisés : `codeInsee` (code officiel géographique de la commune) et `siren` (numéro Siren de l'EPCI) proposés, ou reprise du nom actuel `insee` avec un type explicite. **Encore ouvert** (JSON v2 non commencé).
+9. Échéance de retrait des anciens champs, et niveau d'engagement vis-à-vis des réutilisateurs tiers. **Encore ouvert.**

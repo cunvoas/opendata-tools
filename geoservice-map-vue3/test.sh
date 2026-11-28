@@ -21,3 +21,5 @@ else
   export VITE_DYNAMIC_API=http://localhost:8980/isochrone
 fi
 
+npm run build
+

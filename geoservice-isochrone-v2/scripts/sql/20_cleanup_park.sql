@@ -83,7 +83,7 @@ JOIN cible c
   ON h.nom_key = c.nom_key
   OR (length(h.nom_key) > 3 AND c.nom_key LIKE h.nom_key || '%')
   OR (length(c.nom_key) > 3 AND h.nom_key LIKE c.nom_key || '%')
-ORDER BY h.identifiant;
+ORDER BY h.identifiant ASC;
 
 \echo '=== 0. Contexte ==='
 \if :{?park_area_id}

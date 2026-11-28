@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "nom",
     "insee",
     "annee",
+    "deprecated",
     "descripteur",
     "stats",
     "seuils"
@@ -24,6 +25,8 @@ public class StatsSurfaceJson {
     private String insee;
     @JsonProperty("annee")
     private String annee;
+    @JsonProperty("deprecated")
+    private Boolean deprecated;
     @JsonProperty("descripteur")
     private StatsDescripteur descripteur;
     @JsonProperty("stats")
@@ -59,6 +62,16 @@ public class StatsSurfaceJson {
     @JsonProperty("annee")
     public void setAnnee(String annee) {
         this.annee = annee;
+    }
+
+    @JsonProperty("deprecated")
+    public Boolean getDeprecated() {
+        return deprecated;
+    }
+
+    @JsonProperty("deprecated")
+    public void setDeprecated(Boolean deprecated) {
+        this.deprecated = deprecated;
     }
 
     @JsonProperty("descripteur")

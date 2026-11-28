@@ -4,7 +4,6 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 vi.mock('../../views/AppLanding.vue', () => ({ default: { render: () => null } }));
 vi.mock('../../views/AppCarte.vue', () => ({ default: { render: () => null } }));
 vi.mock('../../views/AppStatistics.vue', () => ({ default: { render: () => null } }));
-vi.mock('../../views/AppEtudeInsee.vue', () => ({ default: { render: () => null } }));
 vi.mock('../../views/AppInformation.vue', () => ({ default: { render: () => null } }));
 vi.mock('../../views/AppVideoAdmin.vue', () => ({ default: { render: () => null } }));
 
@@ -38,7 +37,7 @@ describe('router : écran NDVI derrière le feature flag VITE_FEATURE_NDVI', () 
   it('garde les autres écrans quand le flag est inactif', async () => {
     const router = await loadRouter('false');
 
-    ['appLanding', 'appCarte', 'stats', 'appInformation', 'appEtudeInsee', 'appVideoAdmin'].forEach((name) => {
+    ['appLanding', 'appCarte', 'stats', 'appInformation', 'appVideoAdmin'].forEach((name) => {
       expect(router.hasRoute(name), name).toBe(true);
     });
   });
@@ -68,18 +67,53 @@ describe('router : landing à la racine', () => {
   it('chaque écran a un titre et une description pour le référencement', async () => {
     const router = await loadRouter('false');
 
-    router.getRoutes().filter((r) => r.name).forEach((r) => {
+    router.getRoutes().filter((r) => r.name && !r.name.startsWith('stats')).forEach((r) => {
       expect(r.meta.title, r.name).toBeTruthy();
       expect(r.meta.description, r.name).toBeTruthy();
     });
   });
 
-  it("n'indexe pas la page étude INSEE tant qu'elle n'a pas de contenu propre", async () => {
+  it('sert une page dédiée à l’étude INSEE, indexable et titrée', async () => {
     const router = await loadRouter('false');
 
-    expect(router.resolve('/etude-insee').name).toBe('appEtudeInsee');
-    expect(router.resolve('/etude-insee').meta.robots).toContain('noindex');
-    expect(router.resolve('/carte').meta.robots).toBeUndefined();
+    const route = router.resolve('/etude-insee');
+    expect(route.name).toBe('etudeInsee');
+    expect(route.meta.title).toMatch(/INSEE/);
+    expect(route.meta.description).toMatch(/pourquoi/i);
+  });
+
+  it('déclare une route par commune et par intercommunalité', async () => {
+    const router = await loadRouter('false');
+
+    expect(router.resolve('/stats/59350').name).toBe('statsCommune');
+    expect(router.resolve('/stats/59350').params.insee).toBe('59350');
+    expect(router.resolve('/stats/epci/200093201').name).toBe('statsEpci');
+  });
+
+  it('renvoie un ancien lien à paramètres vers l’adresse canonique', async () => {
+    const router = await loadRouter('false');
+
+    await router.push('/stats?city=9,1,2878,50.63,3.05,Lille,city');
+    expect(router.currentRoute.value.path).toBe('/stats/59350');
+
+    await router.push('/stats?c2c=1');
+    expect(router.currentRoute.value.path).toBe('/stats/epci/200093201');
+  });
+
+  it('garde /stats quand le paramètre ne désigne aucun territoire publié', async () => {
+    const router = await loadRouter('false');
+
+    await router.push('/stats?c2c=99999');
+    expect(router.currentRoute.value.path).toBe('/stats');
+  });
+
+  it('attribue un titre et une description à chaque territoire publié', async () => {
+    const router = await loadRouter('false');
+    const { metaRoute } = await import('../../utils/territoires.js');
+
+    expect(metaRoute(router.resolve('/stats/59350')).meta.title).toContain('Lille');
+    expect(metaRoute(router.resolve('/stats/epci/200093201')).meta.title).toContain('Métropole Européenne de Lille');
+    expect(metaRoute(router.resolve('/stats/99999')).meta.robots).toContain('noindex');
   });
 
   it('la landing a un titre et une description qui tiennent dans les résultats de recherche et citent Lille', async () => {
@@ -98,7 +132,7 @@ describe('router : landing à la racine', () => {
     const parNom = Object.fromEntries(router.getRoutes().filter((r) => r.name).map((r) => [r.name, r.components.default]));
 
     // un composant importé à la demande est une fonction ; la landing est un objet composant
-    ['appCarte', 'stats', 'appInformation', 'appEtudeInsee', 'appVideoAdmin'].forEach((nom) => {
+    ['appCarte', 'stats', 'statsCommune', 'statsEpci', 'appInformation', 'appVideoAdmin'].forEach((nom) => {
       expect(typeof parNom[nom], nom).toBe('function');
     });
     expect(typeof parNom.appLanding).toBe('object');

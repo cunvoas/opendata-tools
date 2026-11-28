@@ -30,7 +30,7 @@ Fonctionnalité: Sanity — consultation carte isochrones
 
 ## Test E2E associé
 
-`src/test/java/com/github/cunvoas/geoserviceisochrone/e2e/CujSanityConsultMapE2EIT.java`
+`src/test/java/com/github/cunvoas/geoserviceisochrone/e2e/TestCujSanityConsultMapE2E.java`
 
 - Stack : Spring Boot `RANDOM_PORT` + `TestRestTemplate` + Testcontainers
   PostGIS (`postgis/postgis:16-3.4`).
@@ -38,7 +38,7 @@ Fonctionnalité: Sanity — consultation carte isochrones
   les migrations supposent des données de prod qui n'existent pas en base de test).
 - Utilisateur de test inséré via `ContributeurRepository` avec mot de passe
   haché par le même `PasswordEncoder`.
-- Activation : `mvn test -De2e=true -Dtest=CujSanityConsultMapE2EIT`
+- Activation : `mvn test -De2e=true -Dtest=TestCujSanityConsultMapE2E`
   (nécessite Docker ; désactivé sinon).
 
 ## Gardes-fou "sanity"

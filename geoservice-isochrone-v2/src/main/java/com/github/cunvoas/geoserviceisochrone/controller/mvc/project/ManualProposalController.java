@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -97,6 +98,7 @@ public class ManualProposalController {
      * Traite la sauvegarde d'une nouvelle proposition ou sa modification.
      */
     @PostMapping("/save")
+	@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER','ASSO_CONSTRIB')")
     public String save(@ModelAttribute FormManualProposal form, Model model) {
         log.info("save() - form={}", LogSanitizer.sanitize(form));
 
@@ -138,6 +140,7 @@ public class ManualProposalController {
      * Traite la suppression d'une proposition manuelle.
      */
     @PostMapping("/delete")
+	@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER','ASSO_CONSTRIB')")
     public String delete(@ModelAttribute FormManualProposal form, Model model) {
         log.info("delete() - form={}", LogSanitizer.sanitize(form));
 

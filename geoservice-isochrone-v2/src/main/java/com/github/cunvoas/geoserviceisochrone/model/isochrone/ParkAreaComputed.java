@@ -96,6 +96,18 @@ public class ParkAreaComputed {
     /** Écart-type du GNDVI sur le polygone du parc. */
     @Column(name = "gndvi_stddev", precision = 6, scale = 4)
     private BigDecimal gndviStddev;
+    /** SAVI moyen (B08/B04, correction du sol L = 0,5) : NDVI moins sensible au sol nu. */
+    @Column(name = "savi_mean", precision = 6, scale = 4)
+    private BigDecimal saviMean;
+    /** SAVI minimal sur le polygone du parc. */
+    @Column(name = "savi_min", precision = 6, scale = 4)
+    private BigDecimal saviMin;
+    /** SAVI maximal sur le polygone du parc. */
+    @Column(name = "savi_max", precision = 6, scale = 4)
+    private BigDecimal saviMax;
+    /** Écart-type du SAVI sur le polygone du parc. */
+    @Column(name = "savi_stddev", precision = 6, scale = 4)
+    private BigDecimal saviStddev;
     /** Fin de la fenêtre d'observation NDVI fournie par le fournisseur. */
     @DateTimeFormat
     @Column(name = "ndvi_acquisition_date")

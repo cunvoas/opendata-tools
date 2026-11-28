@@ -31,6 +31,7 @@ class TestClientIsoChrone {
 	
 
 	@Test
+	@Disabled("appel réseau réel à l'API IGN : dépend de la disponibilité externe")
 	void testApiV2GetIsoChrone() {
 		
 		Coordinate coord = new Coordinate(3.0144703388214116,50.63679884038829);

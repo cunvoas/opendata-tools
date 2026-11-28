@@ -4,10 +4,13 @@
             <h1 class="text-3xl font-bold mb-4">Combien de m² de parcs et jardins par habitant dans la Métropole Européenne de Lille&nbsp;?</h1>
             <p class="text-lg">
                 Cette étude porte sur les espaces verts publics de proximité de Lille et de la Métropole Européenne de
-                Lille (MEL). Elle mesure, pour chaque habitant, la surface de parcs et jardins publics accessibles à pied
-                depuis leurs entrées réelles, et la compare aux seuils de référence repris par l'OMS. Elle est réalisée par
-                des associations à partir de données ouvertes. Carte, statistiques, méthode et code source sont consultables
-                par tous.
+                Lille (MEL). Elle identifie les parcs et jardins publics auxquels un habitant peut avoir accès à moins 
+                de 300 m à pied depuis son domicile en zone dense ou de 1200 m en zone péri-urbaine, selon les préconisations OMS, 
+                jusqu’à leur entrée effective et divise leur surface par le nombre d’habitants qui y ont également accès, 
+                ce qui donne un nombre de m² d’espaces verts par habitants et par secteurs.
+                <br />               
+                Elle est réalisée par des associations à partir de données ouvertes. Carte, statistiques, méthode et code 
+                source sont consultables par tous.
             </p>
             <p class="flex flex-wrap gap-3">
                 <router-link to="/carte" :class="boutonPrincipal">Voir la carte</router-link>
@@ -42,26 +45,32 @@
                     <router-link to="/information" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">Méthode détaillée</router-link>
                 </p>
             </section>
-
-            <section aria-labelledby="chez-vous" class="[&_p]:mb-3">
-                <h2 id="chez-vous" class="text-2xl font-bold mt-8 mb-3">Combien de m² de parc autour de chez vous&nbsp;?</h2>
+            <section aria-labelledby="genese" class="[&_p]:mb-3 [&_ul]:mb-3">
+                <h2 id="genese" class="text-2xl font-bold mt-8 mb-3">La genèse de l'outil</h2>
                 <p>
-                    Ces chiffres sont des moyennes. Sur la carte, saisissez votre adresse dans «&nbsp;Aller à une adresse&nbsp;» :
-                    en survolant le carreau de 200&nbsp;m sur 200&nbsp;m qui l'entoure, vous lisez la surface de parc accessible à
-                    pied (en m²), le nombre d'habitants avec lesquels elle est partagée, le résultat en m² par habitant et la
-                    liste des parcs concernés.
+                    <strong>L'outil est né d'un chiffre qui ne collait pas.</strong> Les associations Lilloises LM Oxygène et Deûl'Air, qui œuvrent toutes
+                    deux pour la nature en ville, ont chacune calculé à la main les surfaces de parcs de leur quartier. Le compte
+                    n'y était pas avec les 17&nbsp;m² par habitant annoncés par la ville.
                 </p>
-                <figure class="m-0 mb-3">
-                    <img :src="imageCarte" width="1200" height="630" loading="lazy" decoding="async"
-                         alt="Carte de Lille : chaque carreau de 200 m est coloré du bleu au vert selon les m² de parc accessibles à pied par habitant"
-                         class="w-full h-auto rounded border border-slate-200" />
-                    <figcaption class="text-sm text-slate-600 mt-1">Capture de la carte de Lille : plus le carreau est vert, plus la surface de parc accessible à pied par habitant est élevée. Fond de carte © OpenStreetMap.</figcaption>
-                </figure>
-                <p class="flex flex-wrap gap-3">
-                    <router-link to="/carte" :class="boutonPrincipal">Saisir mon adresse sur la carte</router-link>
+                <p>
+                    Après des échanges sur la méthode la plus précise et la plus factuelle, nous avons créé une mini-application.
+                    Les associations Entrelianes et Aut’Mel nous ont rejoints dans cette démarche ainsi que bien d’autres contributeurs et elle s'est enrichie au fil des années, en fonctionnalités comme en étendue de données.
+                </p>
+                <p>
+                    Les premiers résultats recoupaient nos calculs faits à la main. Nous avons alors élargi le périmètre : Lille,
+                    Hellemmes et Lomme, puis toutes les communes de la MEL.
+                </p>
+                <p>
+                    Ce travail a été présenté le <time datetime="2026-01-15">15 janvier 2026</time> lors de la conférence-débat
+                    «&nbsp;De la friche Saint-Sauveur aux Rives de la Haute-Deûle : quelles alternatives à la densification
+                    urbaine&nbsp;?&nbsp;», à Sciences Po Lille, avec l'Arène et la Ruche. Elle a marqué le démarrage des débats
+                    publics entre les candidats aux municipales de 2026 à Lille.
+                    <a target="_blank" rel="noopener noreferrer" :href="urlReportage" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">Médiacités</a>
+                    et
+                    <a target="_blank" rel="noopener noreferrer" :href="urlDepeche" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">AEF info</a>
+                    en ont rendu compte.
                 </p>
             </section>
-
             <section aria-labelledby="ce-que-mesure" class="[&_p]:mb-3 [&_ul]:mb-3">
                 <h2 id="ce-que-mesure" class="text-2xl font-bold mt-8 mb-3">Comment nous mesurons l'accès aux parcs à pied</h2>
                 <ul class="list-disc list-inside space-y-2">
@@ -80,69 +89,11 @@
                     </li>
                     <li>
                         <strong>Les seuils retenus.</strong> {{ minimumDense }}&nbsp;m² par habitant en zone dense,
-                        {{ minimumPeriurbain }}&nbsp;m² en zone périurbaine. Leur origine est précisée plus bas.
+                        {{ minimumPeriurbain }}&nbsp;m² en zone périurbaine. Leur origine est précisée dans
+                        <router-link to="/etude-insee" class="text-blue-900 hover:text-black visited:text-blue-900 underline">la comparaison avec l'étude de l'INSEE</router-link>.
                     </li>
                 </ul>
             </section>
-
-            <section aria-labelledby="genese" class="[&_p]:mb-3 [&_ul]:mb-3">
-                <h2 id="genese" class="text-2xl font-bold mt-8 mb-3">La genèse de l'outil</h2>
-                <p>
-                    <strong>L'outil est né d'un chiffre qui ne collait pas.</strong> LM Oxygène et Deûl'Air, qui œuvrent toutes
-                    deux pour la nature en ville, ont chacune calculé à la main les surfaces de parcs de leur quartier. Le compte
-                    n'y était pas avec les 17&nbsp;m² par habitant annoncés par la ville.
-                </p>
-                <p>
-                    Après des échanges sur la méthode la plus précise et la plus factuelle, nous avons créé une mini-application.
-                    Elle s'est enrichie au fil des années, en fonctionnalités comme en étendue de données.
-                </p>
-                <p>
-                    Les premiers résultats recoupaient nos calculs faits à la main. Nous avons alors élargi le périmètre : Lille,
-                    Hellemmes et Lomme, puis toutes les communes de la MEL.
-                </p>
-                <p>
-                    Ce travail a été présenté le <time datetime="2026-01-15">15 janvier 2026</time> lors de la conférence-débat
-                    «&nbsp;De la friche Saint-Sauveur aux Rives de la Haute-Deûle : quelles alternatives à la densification
-                    urbaine&nbsp;?&nbsp;», à Sciences Po Lille, avec l'Arène et la Ruche. Elle a marqué le démarrage des débats
-                    publics entre les candidats aux municipales de 2026 à Lille.
-                    <a target="_blank" rel="noopener noreferrer" :href="urlReportage" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">Médiacités</a>
-                    et
-                    <a target="_blank" rel="noopener noreferrer" :href="urlDepeche" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">AEF info</a>
-                    en ont rendu compte.
-                </p>
-
-                <p>
-                    Depuis le printemps 2026, l'outil va plus loin : il sait aussi simuler l'ajout de parcs et en mesurer l'effet
-                    pour les habitants, en comparant la situation avant et après. Cette fonction n'est disponible que dans notre
-                    système de gestion.
-                </p>
-                <p>
-                    Encore faut-il savoir où poser ces parcs. C'est un casse-tête : le nombre de combinaisons possibles est
-                    immense. L'outil s'appuie pour cela sur la recherche opérationnelle, la branche des mathématiques qui cherche
-                    la meilleure solution parmi un très grand nombre de possibilités, comme pour un emploi du temps ou une
-                    tournée de livraison. Parmi les méthodes disponibles&nbsp;:
-                </p>
-                <ul class="list-disc list-inside space-y-2">
-                    <li v-for="methode in methodes" :key="methode.cle">
-                        <strong>{{ methode.titre }}</strong> ({{ methode.technique }})&nbsp;: {{ methode.texte }}
-                    </li>
-                </ul>
-                <p>
-                    Autre nouveauté, ajoutée pendant l'été 2026&nbsp;: un mode manuel. Plutôt que de laisser l'ordinateur proposer
-                    des emplacements, on dessine soi-même un futur parc sur la carte, d'un simple cercle ou d'un contour précis.
-                </p>
-                <p>
-                    Un clic sur «&nbsp;Évaluer&nbsp;», et la carte se colore, carreau de 200&nbsp;m par carreau. Chacun affiche, avec
-                    sa population, les m² de parc par habitant et le manque de surface qui subsiste, avant et après l'ajout.
-                </p>
-                <p>
-                    <strong>Une précision importante&nbsp;:</strong> cette évaluation est simplifiée. Un parc dessiné compte pour un
-                    carreau dès qu'il se trouve, à vol d'oiseau, à moins de la distance de marche de référence (avec une petite
-                    marge), sans calcul d'itinéraire depuis des entrées comme dans l'étude principale. L'outil est en version bêta,
-                    comme la simulation automatique, et lui aussi réservé à notre système de gestion.
-                </p>
-            </section>
-
             <section aria-labelledby="projet-en-chiffres">
                 <h2 id="projet-en-chiffres" class="text-2xl font-bold mt-8 mb-3">Parcs recensés et entrées saisies : le projet en chiffres</h2>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -156,62 +107,40 @@
                     {{ nombre(chiffres.communes) }} communes ; les résultats n'existent que là où des associations ont décrit les parcs.
                 </p>
             </section>
-
-            <section aria-labelledby="insee" class="[&_p]:mb-3 [&_ul]:mb-3">
-                <h2 id="insee" class="text-2xl font-bold mt-8 mb-3">Espaces verts : l'étude de l'INSEE et la nôtre, pourquoi les chiffres diffèrent</h2>
-                <p>
-                    En avril 2025, l'INSEE a publié
-                    <a target="_blank" rel="noopener noreferrer" :href="urlInsee" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">« Un accès inégal aux espaces verts dans les grands centres urbains »</a>
-                    (Insee Première n°&nbsp;2049). Les deux travaux ne mesurent pas la même chose, avec des méthodes
-                    différentes.
-                </p>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm border-collapse">
-                        <caption class="sr-only">Comparaison de la méthode de l'INSEE et de celle de l'étude Aut'MEL</caption>
-                        <thead>
-                            <tr class="bg-slate-100 text-left">
-                                <th scope="col" class="p-2 border border-slate-200">Critère</th>
-                                <th scope="col" class="p-2 border border-slate-200">INSEE (avril 2025)</th>
-                                <th scope="col" class="p-2 border border-slate-200">Étude Aut'MEL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="ligne in comparaison" :key="ligne.critere">
-                                <th scope="row" class="p-2 border border-slate-200 text-left">{{ ligne.critere }}</th>
-                                <td class="p-2 border border-slate-200">{{ ligne.insee }}</td>
-                                <td class="p-2 border border-slate-200">{{ ligne.autmel }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <section aria-labelledby="chez-vous" class="[&_p]:mb-3">
+                <h2 id="chez-vous" class="text-2xl font-bold mt-8 mb-3">Combien de m² de parc autour de chez vous&nbsp;?</h2>
+                <div class="grid gap-6 md:grid-cols-2 md:items-start">
+                    <div>
+                        <p>
+                            Ces chiffres sont des moyennes. Sur la carte, saisissez votre adresse dans «&nbsp;Aller à une adresse&nbsp;» :
+                            en survolant le carreau de 200&nbsp;m sur 200&nbsp;m qui l'entoure, vous lisez la surface de parc accessible à
+                            pied (en m²), le nombre d'habitants avec lesquels elle est partagée, le résultat en m² par habitant et la
+                            liste des parcs concernés.
+                        </p>
+                        <p class="flex flex-wrap gap-3">
+                            <router-link to="/carte" :class="boutonPrincipal">Saisir mon adresse sur la carte</router-link>
+                        </p>
+                    </div>
+                    <figure class="m-0">
+                        <img :src="imageCarte" width="1200" height="630" loading="lazy" decoding="async"
+                             alt="Carte de Lille : chaque carreau de 200 m est coloré du bleu au vert selon les m² de parc accessibles à pied par habitant"
+                             class="w-full h-auto rounded border border-slate-200" />
+                        <figcaption class="text-sm text-slate-600 mt-1">Capture de la carte de Lille : plus le carreau est vert, plus la surface de parc accessible à pied par habitant est élevée. Fond de carte © OpenStreetMap.</figcaption>
+                    </figure>
                 </div>
+            </section>
+            <section aria-labelledby="communes" class="[&_p]:mb-3">
+                <h2 id="communes" class="text-2xl font-bold mt-8 mb-3">Les espaces verts commune par commune</h2>
                 <p>
-                    <strong>Les seuils.</strong> Les {{ minimumDense }}&nbsp;m² (zone centrale) et {{ minimumPeriurbain }}&nbsp;m²
-                    (zone périurbaine) par habitant sont les objectifs de la circulaire ministérielle du 8 février 1973, repris
-                    comme norme par l'OMS selon le Réseau français des Villes-Santé. Le texte de la circulaire précise que le seuil
-                    de {{ minimumPeriurbain }}&nbsp;m² tient compte des forêts urbaines et des espaces boisés périurbains :
-                    l'INSEE le rapporte aux forêts urbaines, l'étude l'applique aux parcs et jardins des communes périurbaines.
+                    Chaque commune couverte dispose de sa page : répartition des habitants par surface de parc accessible à pied
+                    et comparaison aux seuils de l'OMS.
                 </p>
-                <p>
-                    <strong>La mesure de l'accès.</strong> L'OMS Europe retient comme indicateur la part de la population à moins
-                    de 300&nbsp;m, en distance linéaire (approximation de 5 minutes de marche), d'un espace vert d'au moins
-                    0,5&nbsp;ha, et note que la distance par le réseau peut être plus précise mais plus complexe à calculer.
-                    L'INSEE mesure avec des zones tampons autour des parcs. Notre étude mesure depuis les entrées par le réseau
-                    de rues, que le Réseau français des Villes-Santé recommande plutôt que la distance à vol d'oiseau.
-                </p>
-                <p>
-                    L'INSEE offre une comparaison nationale avec une méthode unique pour toutes les villes. Notre étude part des
-                    entrées réelles des parcs et du réseau de rues. Les résultats ne sont donc pas directement comparables :
-                    par exemple, les 51,9&nbsp;% de la population de Lille à moins de 300&nbsp;m d'un espace vert publiés par
-                    l'INSEE (données 2019) concernent le grand centre urbain de Lille, et non la seule commune.
-                </p>
-                <p class="text-sm font-semibold mb-1">Sources</p>
-                <ul class="list-disc list-inside text-sm space-y-1">
-                    <li v-for="source in sources" :key="source.url">
-                        <a target="_blank" rel="noopener noreferrer" :href="source.url" class="text-blue-900 hover:text-black visited:text-blue-900 underline">{{ source.titre }}</a>
+                <ul class="list-disc list-inside columns-1 sm:columns-2 lg:columns-3">
+                    <li v-for="commune in liensCommunes" :key="commune.insee">
+                        <router-link :to="urlCommune(commune.insee)" class="text-blue-900 hover:text-black visited:text-blue-900 underline">{{ commune.nom }}</router-link>
                     </li>
                 </ul>
             </section>
-
             <section aria-labelledby="demarche" class="[&_p]:mb-3 [&_ul]:mb-3">
                 <h2 id="demarche" class="text-2xl font-bold mt-8 mb-3">Une démarche citoyenne et ouverte</h2>
                 <p>
@@ -226,7 +155,20 @@
                     <router-link to="/information" :class="boutonSecondaire">Méthode détaillée</router-link>
                 </p>
             </section>
-
+            <section aria-labelledby="insee" class="[&_p]:mb-3">
+                <h2 id="insee" class="text-2xl font-bold mt-8 mb-3">Espaces verts : pourquoi l’étude de l’INSEE et la nôtre ne donnent pas les mêmes résultats</h2>
+                <p>
+                    <strong>Réponse courte&nbsp;:</strong> les deux travaux ne mesurent ni la même population ni le même accès.
+                    L'INSEE rapporte les espaces verts à la population d'un grand centre urbain avec une zone tampon autour des
+                    parcs&nbsp;; notre étude rapporte les parcs et jardins de proximité à la population de chaque commune, en
+                    mesurant l'accès à pied depuis les entrées réelles. L'INSEE indique ainsi que 51,9&nbsp;% de la population du
+                    grand centre urbain de Lille (et non de la commune seule) vivait à moins de 300&nbsp;m d'un espace vert en 2019.
+                </p>
+                <p>
+                    … il est possible de mieux comprendre ces différences de méthodologie dans l’article en lien ci-dessous :<br />
+                    <router-link to="/etude-insee" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">L'étude de l'INSEE et la nôtre, pourquoi les chiffres diffèrent&nbsp;: périmètre, seuils, mesure de l'accès, tableau comparatif et sources</router-link>
+                </p>
+            </section>
             <section aria-labelledby="votre-territoire" class="[&_p]:mb-3 [&_ul]:mb-3">
                 <h2 id="votre-territoire" class="text-2xl font-bold mt-8 mb-3">Et votre territoire&nbsp;? Étendre l'étude à votre intercommunalité</h2>
                 <p>
@@ -245,9 +187,11 @@
 
 <script>
 import {
-    chargerResume, urlStatsCommune, urlStatsEpci, lireDonneesIntegrees, integrerDonnees, COMMUNE_LILLE, EPCI_MEL
+    chargerResume, urlsStatsCommune, urlsStatsEpciType, urlStatsEpci, dossierEpciMel,
+    lireDonneesIntegrees, integrerDonnees, COMMUNE_LILLE
 } from '../utils/landingStats.js';
 import { SITE_URL } from '../utils/seoMeta.js';
+import { communesPourLiens, urlCommune } from '../utils/territoires.js';
 import { ecrireAuProjet } from '../utils/contact.js';
 import { CHIFFRES_DU, CHIFFRES_PROJET } from '../utils/chiffresProjet.js';
 
@@ -271,82 +215,20 @@ export default {
             imageCarte: `${import.meta.env.BASE_URL}og-carte-lille-1200x630.jpg`,
             minimumDense: MINIMUM_DENSE,
             minimumPeriurbain: MINIMUM_PERIURBAIN,
-            urlInsee: 'https://www.insee.fr/fr/statistiques/8558420',
             urlReportage: 'https://www.mediacites.fr/reportage/lille/2026/01/16/a-lille-les-candidats-sopposent-a-nouveau-sur-lamenagement-de-la-friche-saint-sauveur/',
             urlDepeche: 'https://www.aefinfo.fr/depeche/744403-a-lille-lopposition-remet-en-question-le-modele-de-densification-urbaine',
             boutonPrincipal: 'px-4 py-2 rounded bg-blue-900 text-white font-semibold no-underline hover:bg-blue-800 cursor-pointer',
             boutonSecondaire: 'px-4 py-2 rounded border border-blue-900 text-blue-900 font-semibold no-underline hover:bg-blue-50',
-            methodes: [
-                {
-                    cle: 'contraintes',
-                    titre: "Les règles d'abord",
-                    technique: 'programmation par contraintes',
-                    texte: "on fixe les règles du jeu, comme la surface minimale d'un parc, et le logiciel élimine toutes les combinaisons qui les enfreignent, jusqu'à trouver une solution exacte."
-                },
-                {
-                    cle: 'genetique',
-                    titre: "L'évolution",
-                    technique: 'algorithme génétique',
-                    texte: "comme dans la nature, les meilleures propositions survivent. L'ordinateur en fabrique un grand nombre, garde les plus convaincantes, les croise et les modifie légèrement, génération après génération. Il obtient de très bonnes solutions quand le problème est trop vaste pour un calcul exact, sans garantie que ce soit la meilleure."
-                },
-                {
-                    cle: 'glouton',
-                    titre: 'Pas à pas',
-                    technique: 'algorithme glouton',
-                    texte: "on traite les secteurs de 200 m sur 200 m un par un, en commençant par celui où le manque de parc est le plus fort, puis on mesure l'effet sur ses voisins. C'est très rapide, mais pas toujours optimal : à chaque étape, on prend ce qui semble le mieux sur le moment."
-                }
-            ],
             chiffres: c,
+            liensCommunes: communesPourLiens(50),
+            urlCommune,
             chiffresProjet: [
                 { cle: 'parcs', valeur: nombre(c.parcsReferences), libelle: `parcs référencés, dont ${nombre(c.parcsVerifies)} vérifiés` },
                 { cle: 'entrees', valeur: nombre(c.entreesDeParc), libelle: 'entrées de parc saisies' },
                 { cle: 'associations', valeur: nombre(c.associations), libelle: 'associations' },
                 { cle: 'carreaux', valeur: nombre(c.carreaux), libelle: `carreaux de 200 m, sur ${c.millesimes} millésimes de données carroyées (2015, 2017, 2019, 2021)` }
             ],
-            dateChiffres: new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(CHIFFRES_DU)),
-            sources: [
-                { titre: 'OMS Europe (2016), Urban green spaces and health', url: 'https://www.who.int/europe/publications/i/item/WHO-EURO-2016-3352-43111-60341' },
-                { titre: 'OMS Europe (2017), Urban green spaces: a brief for action', url: 'https://www.who.int/europe/publications/i/item/9789289052498' },
-                { titre: 'Réseau français des Villes-Santé de l\'OMS (2020), Espaces verts urbains : promouvoir l\'équité et la santé', url: 'https://villes-sante.com/wp-content/uploads/2023/02/Espaces-verts-urbains.pdf' },
-                { titre: 'INSEE (avril 2025), Un accès inégal aux espaces verts dans les grands centres urbains', url: 'https://www.insee.fr/fr/statistiques/8558420' }
-            ],
-            comparaison: [
-                {
-                    critere: 'Périmètre',
-                    insee: '72 grands centres urbains de France métropolitaine (770 communes)',
-                    autmel: 'Communes, intercommunalités et régions de la carte'
-                },
-                {
-                    critere: 'Données sur les parcs',
-                    insee: "Extraction d'OpenStreetMap et de la BD TOPO de l'IGN",
-                    autmel: 'Données ouvertes des villes et de la MEL, entrées de chaque parc recensées par des bénévoles'
-                },
-                {
-                    critere: "Types d'espaces verts",
-                    insee: 'Parcs, jardins et forêts publiques',
-                    autmel: 'Parcs et jardins publics de proximité (hors cimetières, bosquets et places minéralisées)'
-                },
-                {
-                    critere: "Mesure de l'accès",
-                    insee: 'Zone tampon autour du contour des parcs : 300 m, 600 m ou 900 m selon la taille du parc',
-                    autmel: "Isochrone piéton de l'IGN depuis chaque entrée de parc : 300 m en zone dense, 1 200 m ailleurs"
-                },
-                {
-                    critere: 'Population',
-                    insee: 'Filosofi 2019, carreaux de 200 m',
-                    autmel: 'Filosofi, carreaux de 200 m, millésimes 2015 à 2021'
-                },
-                {
-                    critere: 'Indicateurs',
-                    insee: "Part de la population à moins de 5 minutes d'un espace vert ; m² par habitant du territoire",
-                    autmel: "Nombre d'habitants par tranche de m² de parc accessible à pied par habitant"
-                },
-                {
-                    critere: 'Seuils de m² par habitant',
-                    insee: '10 m² de parcs et jardins ; 25 m² de forêts urbaines',
-                    autmel: `${MINIMUM_DENSE} m² en zone dense ; ${MINIMUM_PERIURBAIN} m² en zone périurbaine`
-                }
-            ]
+            dateChiffres: new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(CHIFFRES_DU))
         };
     },
     computed: {
@@ -391,9 +273,10 @@ export default {
     },
     async mounted() {
         this.injecterJsonLd();
+        const dossierMel = dossierEpciMel();
         const [lille, mel] = await Promise.all([
-            chargerResume(urlStatsCommune(COMMUNE_LILLE)),
-            chargerResume(urlStatsEpci(EPCI_MEL))
+            chargerResume(urlsStatsCommune(COMMUNE_LILLE)),
+            dossierMel ? chargerResume(urlsStatsEpciType(dossierMel)) : null
         ]);
         // Un échec réseau garde les chiffres intégrés au HTML plutôt que d'effacer la page
         this.lille = lille ?? this.lille;
@@ -414,6 +297,7 @@ export default {
             script.type = 'application/ld+json';
             script.id = ID_JSON_LD;
             const auteurs = ["Aut'MEL", "Deûl'Air", 'Entrelianes', 'LM Oxygène'].map((name) => ({ '@type': 'Organization', name }));
+            const dossierMel = dossierEpciMel();
             script.textContent = JSON.stringify({
                 '@context': 'https://schema.org',
                 '@graph': [
@@ -441,7 +325,9 @@ export default {
                         spatialCoverage: { '@type': 'Place', name: 'Métropole Européenne de Lille' },
                         variableMeasured: 'Surface de parc public accessible à pied par habitant (m² par habitant)',
                         measurementTechnique: "Isochrones piétons de l'IGN depuis les entrées de parc ; population des carreaux de 200 m (INSEE, Filosofi)",
-                        distribution: [{ '@type': 'DataDownload', encodingFormat: 'application/json', contentUrl: urlStatsEpci(EPCI_MEL) }]
+                        distribution: dossierMel
+                            ? [{ '@type': 'DataDownload', encodingFormat: 'application/json', contentUrl: urlStatsEpci(dossierMel) }]
+                            : []
                     }
                 ]
             });

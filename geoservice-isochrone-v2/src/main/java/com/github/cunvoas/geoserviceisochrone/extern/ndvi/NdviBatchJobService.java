@@ -519,6 +519,12 @@ public class NdviBatchJobService {
 			result.setGndviMax(stats.gndvi().max());
 			result.setGndviStddev(stats.gndvi().stdDev());
 		}
+		if (stats.savi() != null) {
+			result.setSaviMean(stats.savi().mean());
+			result.setSaviMin(stats.savi().min());
+			result.setSaviMax(stats.savi().max());
+			result.setSaviStddev(stats.savi().stdDev());
+		}
 	}
 
 	private String cadastreId(ParkArea park) {

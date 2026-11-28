@@ -1,6 +1,7 @@
 package com.github.cunvoas.geoserviceisochrone.repo.reference;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -16,6 +17,13 @@ import com.github.cunvoas.geoserviceisochrone.model.opendata.CommunauteCommune;
  */
 @Repository
 public interface CommunauteCommuneRepository extends JpaRepository<CommunauteCommune, Long>{
+	/**
+	 * Recherche un EPCI par son numéro Siren.
+	 * @param siren numéro Siren à 9 chiffres
+	 * @return EPCI trouvé
+	 */
+	Optional<CommunauteCommune> findBySiren(String siren);
+
 	/**
 	 * findByRegionId.
 	 * @param id region

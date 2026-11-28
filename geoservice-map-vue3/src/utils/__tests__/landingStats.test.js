@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
-  resumeStats, chargerResume, urlStatsCommune, urlStatsEpci, lireDonneesIntegrees, integrerDonnees, COMMUNE_LILLE, EPCI_MEL
+  resumeStats, chargerResume, urlStatsCommune, urlStatsEpci, urlsStatsCommune,
+  lireDonneesIntegrees, integrerDonnees, COMMUNE_LILLE, dossierEpciMel
 } from '../landingStats.js'
 
 // Lille 2021 tel que publié : cinq tranches, seuils de commune dense.
@@ -127,7 +128,50 @@ describe('chargerResume', () => {
 describe('URL des statistiques', () => {
   it('suivent le même format que StatsGraph (mode dynamic des tests)', () => {
     expect(urlStatsCommune(COMMUNE_LILLE, 2021)).toMatch(/\/map\/stats\/city\/59350\?annee=2021$/)
-    expect(urlStatsEpci(EPCI_MEL, 2021)).toMatch(/\/map\/stats\/com2co\/1\/all\?annee=2021$/)
+    expect(urlStatsEpci(dossierEpciMel(), 2021)).toMatch(/\/map\/stats\/com2co\/1\/all\?annee=2021$/)
+    expect(dossierEpciMel()).toBe('1')
+  })
+
+  it('résout la MEL par son numéro Siren, jamais par un id technique en dur', () => {
+    expect(dossierEpciMel()).toBe('1')
+    expect(urlStatsEpci(dossierEpciMel(), 2021)).not.toContain('/com2co/200093201/')
+  })
+
+  it('ne tente pas les fichiers v2 en mode dynamique', () => {
+    expect(urlsStatsCommune(COMMUNE_LILLE, 2021)).toHaveLength(1)
+  })
+})
+
+describe('resumeStats : contrat v2', () => {
+  const lilleV2 = {
+    version: '2.0', typeTerritoire: 'commune', codeInsee: '59350', annee: '2021',
+    stats: [
+      { borneMin: 0, borneMax: 3, habitants: 91445 }, { borneMin: 3, borneMax: 7, habitants: 54092 },
+      { borneMin: 7, borneMax: 10, habitants: 16630 }, { borneMin: 10, borneMax: 12, habitants: 5408 },
+      { borneMin: 12, habitants: 38214 }
+    ],
+    seuils: [
+      { borneMin: 0, borneMax: 3 }, { borneMin: 3, borneMax: 7 }, { borneMin: 7, borneMax: 10 },
+      { borneMin: 10, borneMax: 12 }, { borneMin: 12 }
+    ]
+  }
+
+  it('lit les bornes numériques sans expression régulière sur le texte', () => {
+    const r = resumeStats(lilleV2)
+
+    expect(r.minimumM2).toBe(10)
+    expect(r.premiereBorne).toBe(3)
+    expect(r.sousMinimum).toBe(78.8)
+  })
+
+  it('lit aussi les niveaux OMS des EPCI', () => {
+    const r = resumeStats({
+      annee: '2021',
+      stats: [{ niveauOms: 'INSUFFISANT', habitants: 800 }, { niveauOms: 'MINIMUM', habitants: 50 }, { niveauOms: 'PRECONISE', habitants: 150 }]
+    })
+
+    expect(r.sousMinimum).toBe(80)
+    expect(r.minimumM2).toBeNull()
   })
 })
 

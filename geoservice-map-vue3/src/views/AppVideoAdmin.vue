@@ -27,6 +27,7 @@
           class="video-js vjs-big-play-centered vjs-16-9 w-full h-auto aspect-video"
           controls
           preload="auto"
+          :poster="poster"
         >
           <source :src="videoSource" type="video/webm" />
           <p class="vjs-no-js">

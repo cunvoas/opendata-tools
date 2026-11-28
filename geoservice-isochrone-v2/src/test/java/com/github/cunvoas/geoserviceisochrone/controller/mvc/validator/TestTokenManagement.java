@@ -26,7 +26,9 @@ class TestTokenManagement {
 	    
 	    Field secretFielSecret = TokenManagement.class.getDeclaredField("tokenSecret");
 	    secretFielSecret.setAccessible(true);
-	    secretFielSecret.set(tested, "qf0hbWXyK38g+/bhHDJrcQRIMkDFbaUKw1NBS9HwTjI=");
+	    byte[] randomKey = new byte[32];
+	    new java.security.SecureRandom().nextBytes(randomKey);
+	    secretFielSecret.set(tested, java.util.Base64.getEncoder().encodeToString(randomKey));
 	}
 
 	@Test

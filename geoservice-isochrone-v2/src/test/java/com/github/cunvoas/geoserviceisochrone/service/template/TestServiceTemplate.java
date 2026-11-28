@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
+import com.github.cunvoas.geoserviceisochrone.TestBaseUnit;
 
 /**
  * Template de test pour les services.
@@ -15,7 +15,7 @@ import com.github.cunvoas.geoserviceisochrone.BaseUnitTest;
  */
 @Disabled("Template - remplacer par un test concret avant activation")
 @DisplayName("Template de test pour service (désactivé)")
-class TestServiceTemplate extends BaseUnitTest {
+class TestServiceTemplate extends TestBaseUnit {
 
 	@Test
 	void template_placeholder() {

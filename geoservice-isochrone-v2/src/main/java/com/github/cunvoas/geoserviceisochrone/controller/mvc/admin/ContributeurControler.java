@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -96,6 +97,7 @@ public class ContributeurControler {
 	 * @return Redirection vers la liste
 	 */
 	@GetMapping("/delete")
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
 	public String delete(@RequestParam("id") Long id) {
 		Contributeur contribConnected = (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		if (!ContributeurRole.ADMINISTRATOR.equals(contribConnected.getRole())) {
@@ -201,6 +203,7 @@ public class ContributeurControler {
 	 * @return Nom de la page de formulaire
 	 */
 	@GetMapping("/resetPassword")
+	@PreAuthorize("hasAuthority('ADMINISTRATOR')")
 	public String resetUserPassword(@RequestParam("id") Long id, Model model) {
 		
 		Contributeur contrib = contributeurService.get(id);
@@ -226,10 +229,25 @@ public class ContributeurControler {
 	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/edit")
+	@PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER','ASSO_CONSTRIB')")
 	public String save(@Valid @ModelAttribute(value = "editContributeur") FormContributor fContrib, 
 			final BindingResult bindingResult, final Model model)   {
 		
 		Contributeur contribConnected =  (Contributeur)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		boolean isAdmin = ContributeurRole.ADMINISTRATOR.equals(contribConnected.getRole());
+		boolean isManager = ContributeurRole.ASSOCIATION_MANAGER.equals(contribConnected.getRole());
+		Contributeur target = fContrib.getId() == null ? null : contributeurService.get(fContrib.getId());
+		boolean self = contribConnected.getId().equals(fContrib.getId());
+		// un contributeur ne peut modifier que son propre profil, un gestionnaire ceux de son association hors administrateurs
+		if (!isAdmin && !self) {
+			boolean managerOfTarget = isManager && (target == null
+					? true
+					: target.getAssociation() != null && target.getAssociation().getId().equals(contribConnected.getAssociation().getId())
+						&& !ContributeurRole.ADMINISTRATOR.equals(target.getRole()));
+			if (!managerOfTarget) {
+				throw new ExceptionAdmin("EDIT_NOT_ALLOWED");
+			}
+		}
 		if (ContributeurRole.ADMINISTRATOR.equals(contribConnected.getRole()))  {
 			model.addAttribute("assos", associationService.findAll());
 		} else {
@@ -246,6 +264,14 @@ public class ContributeurControler {
 		}
 				
 		Contributeur contrib=mapFromForm(fContrib);
+		if (!isAdmin) {
+			// rôle et association imposés côté serveur : pas d'auto-promotion ni de déplacement hors périmètre
+			ContributeurRole requested = fContrib.getRole();
+			boolean roleAllowed = isManager && !self
+					&& (ContributeurRole.ASSOCIATION_MANAGER.equals(requested) || ContributeurRole.ASSOCIATION_CONSTRIBUTOR.equals(requested));
+			contrib.setRole(roleAllowed ? requested : (target != null ? target.getRole() : ContributeurRole.ASSOCIATION_CONSTRIBUTOR));
+			contrib.setAssociation(target != null ? target.getAssociation() : contribConnected.getAssociation());
+		}
 		try {
 			if (contribConnected.equals(contrib)) {
 				contribConnected.setIdRegion(contrib.getIdRegion());

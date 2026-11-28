@@ -15,10 +15,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-
 import com.github.cunvoas.geoserviceisochrone.model.geojson.GeoJsonRoot;
 import com.github.cunvoas.geoserviceisochrone.repo.GeometryQueryHelper;
 
@@ -26,16 +22,10 @@ import tools.jackson.core.exc.StreamWriteException;
 import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.ObjectMapper;
 
-@SpringBootTest
-@ActiveProfiles({"prod","dev"})
 class TestGeoMapService {
-	
-	@Autowired
-	GeoMapServiceV2 tested=new GeoMapServiceV2();
-	@Autowired
-	private GeometryQueryHelper geometryQueryHelper;
-	
-	private ObjectMapper mapper = new ObjectMapper();
+
+	private final GeoMapServiceV2 tested = new GeoMapServiceV2();
+	private final ObjectMapper mapper = new ObjectMapper();
 
 
 	@Test

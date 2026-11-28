@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -180,6 +181,7 @@ public class CommunauteCommuneControler {
 	 * @return Nom de la page de formulaire
 	 */
 	@PostMapping("/edit")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRATOR','ASSO_MANAGER')")
 	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public String save(@ModelAttribute CommunauteCommune comm2co, 
 			final BindingResult bindingResult, 
@@ -195,8 +197,12 @@ public class CommunauteCommuneControler {
 		}
 		
 		if (granted) {
-			comm2co = communauteCommuneService.save(comm2co);
-			model.addAttribute("successMessage", "La communauté de communes a été sauvegardée avec succès.");
+			try {
+				comm2co = communauteCommuneService.save(comm2co);
+				model.addAttribute("successMessage", "La communauté de communes a été sauvegardée avec succès.");
+			} catch (IllegalArgumentException e) {
+				model.addAttribute("errorMessage", e.getMessage());
+			}
 		} else {
 			throw new ExceptionAdmin("EDIT_NOT_ALLOWED");
 		}

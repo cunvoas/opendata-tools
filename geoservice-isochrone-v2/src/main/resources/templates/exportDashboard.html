@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{fragments/fragment-head :: head('Exports')}"></head>
+<body class="sb-nav-fixed">
+<div th:replace="~{fragments/fragment-navUp :: navUp}"></div>
+<div id="layoutSidenav">
+    <div th:replace="~{fragments/fragment-navLeft :: navLeft}"></div>
+    <div id="layoutSidenav_content">
+        <main>
+            <div class="container-fluid px-4">
+                <style>
+                    .alert-scroll { max-height: 15rem; overflow-y: auto; }
+                </style>
+                <h1 class="mt-4">État des exports</h1>
+                <ol class="breadcrumb mb-4">
+                    <li class="breadcrumb-item"><a th:href="@{/mvc/dashboard}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Exports</li>
+                </ol>
+
+                <div class="alert alert-danger" th:if="${!dashboard.repositoryFound}">
+                    Dépôt Git introuvable : <span th:text="${dashboard.repoPath}"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body small">
+                                <div><strong>Dépôt :</strong> <span th:text="${dashboard.repoPath}"></span></div>
+                                <div><strong>Branche :</strong> <span th:text="${dashboard.branch}"></span></div>
+                                <div><strong>HEAD :</strong>
+                                    <code th:text="${dashboard.head != null ? #strings.substring(dashboard.head, 0, 8) : 'aucun'}"></code>
+                                </div>
+                                <div><strong>Snapshot :</strong>
+                                    <code th:text="${dashboard.snapshotHash != null ? #strings.substring(dashboard.snapshotHash, 0, 12) : 'indisponible'}"></code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="small text-muted">Fichiers d'export modifiés / nouveaux / supprimés</div>
+                                        <div class="fs-4" th:text="${dashboard.changedFiles.size()}">0</div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a class="btn btn-outline-secondary" th:href="@{/mvc/management/exports}">Rafraîchir</a>
+                                        <button id="btnCommit" class="btn btn-primary" onclick="commitFinal()"
+                                                th:disabled="${#lists.isEmpty(dashboard.changedFiles) or !#lists.isEmpty(dashboard.blockers)}">
+                                            Commit final
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="get" th:action="@{/mvc/management/exports}" class="row g-2 mb-3">
+                    <input type="hidden" name="size" th:value="${pageSize}">
+                    <div class="col-md-5" th:if="${dashboard.scopeLabel != null}">
+                        <label class="form-label small mb-1" for="epciLocked">EPCI</label>
+                        <input id="epciLocked" class="form-control" th:value="${dashboard.scopeLabel}" disabled>
+                    </div>
+                    <div class="col-md-5" th:unless="${dashboard.scopeLabel != null}">
+                        <label class="form-label small mb-1" for="epciFilter">EPCI</label>
+                        <select id="epciFilter" name="epciId" class="form-select select2-single">
+                            <option value="">Tous les EPCI</option>
+                            <option th:each="e : ${epcis}" th:value="${e.id}" th:text="${e.name}"
+                                    th:selected="${epciId != null and epciId == e.id}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small mb-1" for="yearFilter">Année</label>
+                        <select id="yearFilter" name="year" class="form-select">
+                            <option value="">Toutes les années</option>
+                            <option th:each="y : ${years}" th:value="${y}" th:text="${y}"
+                                    th:selected="${year != null and year == y}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">Filtrer</button>
+                        <a class="btn btn-outline-secondary"
+                           th:href="@{/mvc/management/exports(size=${pageSize})}">Effacer</a>
+                    </div>
+                </form>
+
+                <div class="alert-scroll">
+                    <div class="alert alert-danger" th:if="${!#lists.isEmpty(dashboard.blockers)}">
+                        <strong>Commit bloqué</strong>
+                        <ul class="mb-0">
+                            <li th:each="b : ${dashboard.blockers}" th:text="${b}"></li>
+                        </ul>
+                    </div>
+                    <div class="alert alert-warning" th:if="${!#lists.isEmpty(dashboard.warnings)}">
+                        <strong>Avertissements</strong>
+                        <ul class="mb-0">
+                            <li th:each="w : ${dashboard.warnings}" th:text="${w}"></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                    <div class="small text-muted">
+                        <span th:if="${dashboard.scopeLabel}">
+                            Périmètre : <strong th:text="${dashboard.scopeLabel}"></strong> —
+                        </span>
+                        <span th:text="${dashboard.totalEpcis}"></span> EPCI
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="small mb-0" for="pageSize">Par page</label>
+                        <select id="pageSize" class="form-select form-select-sm" style="width:auto;"
+                                onchange="changePageSize(this.value)">
+                            <option value="10" th:selected="${pageSize == 10}">10</option>
+                            <option value="50" th:selected="${pageSize == 50}">50</option>
+                            <option value="100" th:selected="${pageSize == 100}">100</option>
+                        </select>
+                        <a class="btn btn-sm btn-outline-secondary"
+                           th:classappend="${page == 0} ? 'disabled' : ''"
+                           th:href="@{/mvc/management/exports(page=${page > 0 ? page - 1 : 0}, size=${pageSize}, epciId=${epciId}, year=${year})}">Précédent</a>
+                        <span class="small" th:text="${(page + 1) + ' / ' + totalPages}"></span>
+                        <a class="btn btn-sm btn-outline-secondary"
+                           th:classappend="${page + 1 >= totalPages} ? 'disabled' : ''"
+                           th:href="@{/mvc/management/exports(page=${page + 1 < totalPages ? page + 1 : totalPages - 1}, size=${pageSize}, epciId=${epciId}, year=${year})}">Suivant</a>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">Matrice EPCI / année</div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-sm table-striped align-middle">
+                            <thead>
+                            <tr>
+                                <th>EPCI</th>
+                                <th>Année</th>
+                                <th>Réf.</th>
+                                <th>Territoires</th>
+                                <th>Stats EPCI</th>
+                                <th>Stats villes</th>
+                                <th>Park</th>
+                                <th>Isochrone</th>
+                                <th>Carreaux</th>
+                                <th>IRIS</th>
+                                <th>NDVI</th>
+                                <th>Statut</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="e : ${dashboard.epcis}">
+                                <td>
+                                    <span th:text="${e.name}"></span>
+                                    <div class="small text-muted" th:text="${e.id.toString() + ' / ' + (e.siren != null ? e.siren : 'sans Siren')}"></div>
+                                </td>
+                                <td th:text="${e.year}"></td>
+                                <td th:text="${e.referential ? '✔' : '✖'}"></td>
+                                <td th:text="${e.territoires ? '✔' : '✖'}"></td>
+                                <td th:text="${e.statsUrbans and e.statsSuburbs and e.statsAll ? '✔' : '✖'}"></td>
+                                <td th:text="${e.citiesWithStats + '/' + e.citiesTotal}"></td>
+                                <td th:text="${e.parkOutline ? '✔' : '✖'}"></td>
+                                <td th:text="${e.isochrone ? '✔' : '✖'}"></td>
+                                <td th:text="${e.carres ? '✔' : '✖'}"></td>
+                                <td th:text="${e.iris ? '✔' : '✖'}"></td>
+                                <td th:text="${(e.ndvi ? '✔' : '✖') + ' ' + e.citiesWithNdvi + '/' + e.citiesTotal}"></td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${e.status == 'OK' ? 'bg-success' : (e.status == 'PARTIEL' ? 'bg-warning text-dark' : 'bg-secondary')}"
+                                          th:text="${e.status}"></span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">Fichiers à commiter</div>
+                    <div class="card-body">
+                        <div class="small text-muted" th:if="${#lists.isEmpty(dashboard.changedFiles)}">Aucun fichier.</div>
+                        <ul class="mb-0 small">
+                            <li th:each="f : ${dashboard.changedFiles}" th:text="${f}"></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <div th:replace="~{fragments/fragment-footer :: footer}"></div>
+    </div>
+</div>
+<div th:replace="~{fragments/fragment-jslibs :: appPage}"></div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const exportsUrl = /*[[@{/mvc/management/exports}]]*/ '/mvc/management/exports';
+
+    $(function () {
+        const epciFilter = $('#epciFilter');
+        if (epciFilter.length) {
+            epciFilter.select2({
+                placeholder: 'Rechercher un EPCI…',
+                allowClear: true,
+                width: '100%'
+            });
+        }
+    });
+
+    function changePageSize(size) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('page', '0');
+        params.set('size', size);
+        window.location.href = exportsUrl + '?' + params.toString();
+    }
+
+    async function commitFinal() {
+        const btn = document.getElementById("btnCommit");
+        btn.disabled = true;
+        try {
+            const response = await fetch([[@{/mvc/ajax/publish/api/commit}]], {
+                method: "POST",
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: [[${token}]],
+                    snapshotHash: [[${dashboard.snapshotHash}]],
+                    message: null
+                })
+            });
+            const content = await response.json().catch(() => ({}));
+            if (response.ok) {
+                alert((content.message || "Commit OK") + (content.sha ? "\n" + content.sha : ""));
+                location.reload();
+            } else {
+                alert(content.message || "Commit refusé (HTTP " + response.status + ")");
+                btn.disabled = false;
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Erreur lors du commit.");
+            btn.disabled = false;
+        }
+    }
+    /*]]>*/
+</script>
+</body>
+</html>
