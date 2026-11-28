@@ -4,10 +4,13 @@
             <h1 class="text-3xl font-bold mb-4">Combien de m² de parcs et jardins par habitant dans la Métropole Européenne de Lille&nbsp;?</h1>
             <p class="text-lg">
                 Cette étude porte sur les espaces verts publics de proximité de Lille et de la Métropole Européenne de
-                Lille (MEL). Elle mesure, pour chaque habitant, la surface de parcs et jardins publics accessibles à pied
-                depuis leurs entrées réelles, et la compare aux seuils de référence repris par l'OMS. Elle est réalisée par
-                des associations à partir de données ouvertes. Carte, statistiques, méthode et code source sont consultables
-                par tous.
+                Lille (MEL). Elle identifie les parcs et jardins publics auxquels un habitant peut avoir accès à moins 
+                de 300 m à pied depuis son domicile en zone dense ou de 1200 m en zone péri-urbaine, selon les préconisations OMS, 
+                jusqu’à leur entrée effective et divise leur surface par le nombre d’habitants qui y ont également accès, 
+                ce qui donne un nombre de m² d’espaces verts par habitants et par secteurs.
+                <br />               
+                Elle est réalisée par des associations à partir de données ouvertes. Carte, statistiques, méthode et code 
+                source sont consultables par tous.
             </p>
             <p class="flex flex-wrap gap-3">
                 <router-link to="/carte" :class="boutonPrincipal">Voir la carte</router-link>
@@ -45,13 +48,13 @@
             <section aria-labelledby="genese" class="[&_p]:mb-3 [&_ul]:mb-3">
                 <h2 id="genese" class="text-2xl font-bold mt-8 mb-3">La genèse de l'outil</h2>
                 <p>
-                    <strong>L'outil est né d'un chiffre qui ne collait pas.</strong> LM Oxygène et Deûl'Air, qui œuvrent toutes
+                    <strong>L'outil est né d'un chiffre qui ne collait pas.</strong> Les associations Lilloises LM Oxygène et Deûl'Air, qui œuvrent toutes
                     deux pour la nature en ville, ont chacune calculé à la main les surfaces de parcs de leur quartier. Le compte
                     n'y était pas avec les 17&nbsp;m² par habitant annoncés par la ville.
                 </p>
                 <p>
                     Après des échanges sur la méthode la plus précise et la plus factuelle, nous avons créé une mini-application.
-                    Elle s'est enrichie au fil des années, en fonctionnalités comme en étendue de données.
+                    Les associations Entrelianes et Aut’Mel nous ont rejoints dans cette démarche ainsi que bien d’autres contributeurs et elle s'est enrichie au fil des années, en fonctionnalités comme en étendue de données.
                 </p>
                 <p>
                     Les premiers résultats recoupaient nos calculs faits à la main. Nous avons alors élargi le périmètre : Lille,
@@ -153,7 +156,7 @@
                 </p>
             </section>
             <section aria-labelledby="insee" class="[&_p]:mb-3">
-                <h2 id="insee" class="text-2xl font-bold mt-8 mb-3">Espaces verts : l'étude de l'INSEE et la nôtre</h2>
+                <h2 id="insee" class="text-2xl font-bold mt-8 mb-3">Espaces verts : pourquoi l’étude de l’INSEE et la nôtre ne donnent pas les mêmes résultats</h2>
                 <p>
                     <strong>Réponse courte&nbsp;:</strong> les deux travaux ne mesurent ni la même population ni le même accès.
                     L'INSEE rapporte les espaces verts à la population d'un grand centre urbain avec une zone tampon autour des
@@ -162,6 +165,7 @@
                     grand centre urbain de Lille (et non de la commune seule) vivait à moins de 300&nbsp;m d'un espace vert en 2019.
                 </p>
                 <p>
+                    … il est possible de mieux comprendre ces différences de méthodologie dans l’article en lien ci-dessous :<br />
                     <router-link to="/etude-insee" class="text-blue-900 hover:text-black visited:text-blue-900 underline font-semibold">L'étude de l'INSEE et la nôtre, pourquoi les chiffres diffèrent&nbsp;: périmètre, seuils, mesure de l'accès, tableau comparatif et sources</router-link>
                 </p>
             </section>
